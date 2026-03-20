@@ -1,22 +1,8 @@
 // import fs from 'fs';
 import Player from '../classes/Player';
-import Creature from '../classes/mobs/Creature';
+import { Creature } from '../classes/mobs/Creature';
 import { Random } from './Random';
 
-const creatureClasses: typeof Creature[] = [];
-
-import Bandit from '../classes/mobs/Bandit';
-import DarkKnight from '../classes/mobs/DarkKnight';
-import Demon from '../classes/mobs/Demon';
-import GiantSpider from '../classes/mobs/GiantSpider';
-import Goblin from '../classes/mobs/Goblin';
-import Orc from '../classes/mobs/Orc';
-import Skeleton from '../classes/mobs/Skeleton';
-import Slime from '../classes/mobs/Slime';
-import Troll from '../classes/mobs/Troll';
-import Zombie from '../classes/mobs/Zombie';
-
-creatureClasses.push(Troll, Slime, Goblin, Orc, Skeleton, Zombie, GiantSpider, Bandit, DarkKnight, Demon);
 
 function makeid(length: number): string {
   let result = '';
@@ -48,11 +34,50 @@ export default async function processGame(
   let creature: Creature | null = null;
 
   if (monster) {
-    if (fs.existsSync(__dirname + '/../classes/mobs/' + monster + '.js')) {
-      creature = new (require(__dirname + '/../classes/mobs/' + monster))(rand);
-    } else {
-      creature = new (require(__dirname + '/../classes/mobs/Troll'))(rand);
-    }
+    const mobMap: { [key: string]: typeof Creature } = {
+      AliveTree,
+      AngryShaman,
+      Austrich,
+      Beldia,
+      DarkBat,
+      DarkBear,
+      DarkRat,
+      DarkWolf,
+      Destroyer,
+      Dragon,
+      GeneralWinter,
+      Ghoul,
+      GiantEarthworm,
+      GiantOctopus,
+      Golem,
+      GolemQueen,
+      HansSlime,
+      Hydra,
+      Kamachi,
+      KingTroll,
+      Knight,
+      LoveBunny,
+      MaidBot,
+      MedusaMan,
+      Milim,
+      Minotaur,
+      PigWoman,
+      Quomodo,
+      Ruijerd,
+      Samurai,
+      SharkMan,
+      Slime,
+      Squall,
+      Sylvia,
+      Toad,
+      Troll,
+      UglySpirit,
+      Vanir,
+      Wizard,
+    };
+
+    const MonsterClass = mobMap[monster] || Troll;
+    creature = new MonsterClass(rand);
   } else {
     creature = new (rand.choice(creatureClasses))(rand);
   }

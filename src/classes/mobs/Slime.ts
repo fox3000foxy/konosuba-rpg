@@ -1,6 +1,7 @@
+import { Random } from "../../utils/Random";
 import { Creature } from "./Creature";
 export default class Slime extends Creature {
-    constructor(rand: any) {
+    constructor(rand: Random) {
         super(rand);
         this.attack = [3, 7];
         this.love = 100;

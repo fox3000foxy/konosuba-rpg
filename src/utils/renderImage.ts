@@ -1,5 +1,5 @@
+import { CanvasRenderingContext2D, createCanvas, loadImage } from 'canvas';
 import fs from 'fs';
-import { createCanvas, loadImage, registerFont, CanvasRenderingContext2D } from 'canvas';
 
 const images: Record<string, any> = {};
 
@@ -54,7 +54,7 @@ export default async function renderImage(
   messages: string[],
   player: any,
   creature: any,
-  rand: any,
+  rand: Random,
   training = false,
   lang = 'en'
 ): Promise<Buffer> {

@@ -1,6 +1,7 @@
+import { Random } from "../../utils/Random";
 import { Creature } from "./Creature";
 export default class Milim extends Creature {
-    constructor(rand: any) {
+    constructor(rand: Random) {
         super(rand);
         this.attack = [4, 6];
         this.love = 20;

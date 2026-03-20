@@ -1,5 +1,7 @@
+import { Random } from "../../utils/Random";
+
 export class Creature {
-    rand: any;
+    rand: Random;
     hpMax: number;
     hp: number;
     attack: number[];
@@ -9,7 +11,7 @@ export class Creature {
     color?: string;
     prefix: boolean;
 
-    constructor(rand: any) {
+    constructor(rand: Random) {
         this.rand = rand;
         this.hpMax = 10;
         this.hp = this.hpMax;
@@ -25,7 +27,7 @@ export class Creature {
     }
 
     turn(lang: string) {
-        const dmg = this.rand.integer(this.attack[0], this.attack[1]);
+        const dmg = this.rand.randint(this.attack[0], this.attack[1]);
 		if(lang=="fr")
 			if(dmg)
 				return [`${this.prefix?"Le ":""}${this.name} l'attaque et lui inflige ${dmg} dégats.`, dmg];

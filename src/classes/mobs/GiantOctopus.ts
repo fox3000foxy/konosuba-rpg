@@ -1,7 +1,8 @@
+import { Random } from "../../utils/Random";
 import { Creature } from "./Creature";
 
 export default class GiantOctopus extends Creature {
-    constructor(rand: any) {
+    constructor(rand: Random) {
         super(rand);
         this.attack = [5, 10];
         this.love = 100;

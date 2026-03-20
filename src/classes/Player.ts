@@ -1,5 +1,7 @@
+import { Random } from "../utils/Random";
+
 export default class Player {
-	rand: any;
+	rand: Random;
 	hpMax: number[];
 	hp: number[];
 	attack: number[][]
@@ -7,7 +9,7 @@ export default class Player {
 	name: string[]
 	images: string[][];
 	currentPlayerId: number;
-	constructor(rand: any, playerId: number) {
+	constructor(rand: Random, playerId: number) {
 		this.rand = rand;
 		this.hpMax = [40, 80, 30, 40];
 		this.hp = [...this.hpMax];

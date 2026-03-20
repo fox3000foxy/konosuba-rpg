@@ -1,7 +1,8 @@
+import { Random } from "../../utils/Random";
 import { Creature } from "./Creature";
 
 export default class GeneralWinter extends Creature {
-    constructor(rand: any) {
+    constructor(rand: Random) {
         super(rand);
         this.attack = [10, 15];
         this.love = 40;

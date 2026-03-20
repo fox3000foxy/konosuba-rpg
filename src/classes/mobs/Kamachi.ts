@@ -1,6 +1,7 @@
+import { Random } from "../../utils/Random";
 import { Creature } from "./Creature";
 export default class Kamachi extends Creature {
-    constructor(rand: any) {
+    constructor(rand: Random) {
         super(rand);
         this.attack = [5, 15];
         this.love = 100;

@@ -1,5 +1,5 @@
 import fs from 'fs';
-import Creature from '../classes/mobs/Creature';
+import { Creature } from '../classes/mobs/Creature';
 import Player from '../classes/Player';
 import { Random } from './Random';
 

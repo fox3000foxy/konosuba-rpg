@@ -1,7 +1,8 @@
+import { Random } from "../../utils/Random";
 import { Creature } from "./Creature";
 
 export default class Troll extends Creature {
-    constructor(rand: any) {
+    constructor(rand: Random) {
         super(rand);
         this.attack = [0, 10];
         this.love = 100;
