@@ -1,5 +1,15 @@
-module.exports = class Creature {
-    constructor(rand) {
+export class Creature {
+    rand: any;
+    hpMax: number;
+    hp: number;
+    attack: number[];
+    love: number;
+    name: string;
+    images: string[];
+    color?: string;
+    prefix: boolean;
+
+    constructor(rand: any) {
         this.rand = rand;
         this.hpMax = 10;
         this.hp = this.hpMax;
@@ -14,7 +24,7 @@ module.exports = class Creature {
         this.love -= 1;
     }
 
-    turn(lang) {
+    turn(lang: string) {
         const dmg = this.rand.integer(this.attack[0], this.attack[1]);
 		if(lang=="fr")
 			if(dmg)
@@ -28,7 +38,7 @@ module.exports = class Creature {
 				return [`${this.prefix?"The ":""}${this.name} tried to attack but missed.`, dmg];
     }
 
-    dealAttack(dmg) {
+    dealAttack(dmg: number) {
         this.hp -= dmg;
     }
 }

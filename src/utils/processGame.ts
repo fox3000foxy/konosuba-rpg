@@ -1,13 +1,22 @@
-import fs from 'fs';
-import Player from '../../classes/Player';
-import Creature from '../../classes/mobs/Creature';
+// import fs from 'fs';
+import Player from '../classes/Player';
+import Creature from '../classes/mobs/Creature';
 import { Random } from './Random';
 
 const creatureClasses: typeof Creature[] = [];
-const allMobs = fs.readdirSync(__dirname + '/../classes/mobs/').filter((m) => m.endsWith('.js'));
-allMobs.forEach((mob) => {
-  creatureClasses.push(require(__dirname + '/../classes/mobs/' + mob));
-});
+
+import Bandit from '../classes/mobs/Bandit';
+import DarkKnight from '../classes/mobs/DarkKnight';
+import Demon from '../classes/mobs/Demon';
+import GiantSpider from '../classes/mobs/GiantSpider';
+import Goblin from '../classes/mobs/Goblin';
+import Orc from '../classes/mobs/Orc';
+import Skeleton from '../classes/mobs/Skeleton';
+import Slime from '../classes/mobs/Slime';
+import Troll from '../classes/mobs/Troll';
+import Zombie from '../classes/mobs/Zombie';
+
+creatureClasses.push(Troll, Slime, Goblin, Orc, Skeleton, Zombie, GiantSpider, Bandit, DarkKnight, Demon);
 
 function makeid(length: number): string {
   let result = '';

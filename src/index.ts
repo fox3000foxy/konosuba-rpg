@@ -1,5 +1,6 @@
-import { Context, Hono } from 'hono';
-import { serveStatic } from 'hono/serve-static.module';
+import { Context, Env, Hono } from 'hono';
+import { Data } from 'hono/dist/types/context';
+import { serveStatic } from 'hono/serve-static';
 import processGame from './utils/processGame';
 import processUrl from './utils/processUrl';
 
@@ -17,7 +18,12 @@ function makeid(length: number): string {
   return result;
 }
 
-app.use('/konosuba-rpg/assets/*', serveStatic({ root: './assets' }));
+app.use('/konosuba-rpg/assets/*', serveStatic({
+	root: './assets',
+	getContent: function (path: string, c: Context<Env, any, {}>): Promise<Data | Response | null> {
+		throw new Error('Function not implemented.');
+	}
+}));
 
 app.get('/konosuba-rpg/:lang/*', async (c: Context) => {
   const { lang } = c.req.param();
