@@ -1,6 +1,6 @@
 import fs from 'fs';
-import Player from '../classes/Player';
-import Creature from '../classes/mobs/Creature';
+import Creature from '../../classes/mobs/Creature';
+import Player from '../../classes/Player';
 import { Random } from './Random';
 
 const creatureClasses: typeof Creature[] = [];
@@ -27,7 +27,7 @@ function pascalCaseToString(pascalCaseWord: string): string {
   return stringWithSpaces.charAt(0).toUpperCase() + stringWithSpaces.slice(1);
 }
 
-export default async function processGame(
+export default async function progressGame(
   rand: Random,
   moves: string[],
   seed_str: string,
@@ -62,3 +62,4 @@ export default async function processGame(
 
   return { player, creature, messages };
 }
+
