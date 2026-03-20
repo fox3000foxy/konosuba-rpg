@@ -1,0 +1,10 @@
+{
+  "dependencies": {
+    "canvas": "^2.11.2",
+    "combine-image": "^1.0.3",
+    "discord.js": "^13.17.1",
+    "express": "^4.19.2",
+    "localtunnel": "^2.0.2",
+    "random-seed": "^0.3.0"
+  }
+}
