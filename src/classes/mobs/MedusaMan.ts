@@ -1,4 +1,4 @@
-import Creature from "./Creature";
+import { Creature } from "./Creature";
 export default class MedusaMan extends Creature {
     constructor(rand: any) {
         super(rand);

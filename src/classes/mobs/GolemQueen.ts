@@ -1,4 +1,4 @@
-import Creature from "./Creature";
+import { Creature } from "./Creature";
 export default class GolemQueen extends Creature {
     constructor(rand: any) {
         super(rand);

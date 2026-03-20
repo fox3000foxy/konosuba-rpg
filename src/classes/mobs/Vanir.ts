@@ -1,5 +1,5 @@
-import Creature from "./Creature";
-export default class Troll extends Creature {
+import { Creature } from "./Creature";
+export default class Vanir extends Creature {
     constructor(rand: any) {
         super(rand);
         this.attack = [5, 10];

@@ -1,4 +1,4 @@
-import Creature from "./Creature";
+import { Creature } from "./Creature";
 export default class Sylvia extends Creature {
     constructor(rand: any) {
         super(rand);
@@ -12,7 +12,7 @@ export default class Sylvia extends Creature {
 		this.prefix = false
     }
 	
-	dealAttack(dmg) {
+	dealAttack(dmg: number) {
         this.hp -= dmg;
 		if(this.hp <= 20)
 			this.images = [`enemy_image_14501`];
