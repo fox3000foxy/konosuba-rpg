@@ -1,0 +1,14 @@
+name = "konosuba-rpg"
+type = "javascript"
+
+[build]
+command = "npm run build"
+
+[env]
+workers_dev = true
+
+[vars]
+DISCORD_TOKEN = "your-discord-token-here"
+
+[triggers]
+branch = "main"

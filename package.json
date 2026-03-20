@@ -1,10 +1,17 @@
 {
   "dependencies": {
+    "@cloudflare/workers-types": "^4.20260317.1",
     "canvas": "^2.11.2",
     "combine-image": "^1.0.3",
     "discord.js": "^13.17.1",
     "express": "^4.19.2",
+    "hono": "^4.12.8",
     "localtunnel": "^2.0.2",
     "random-seed": "^0.3.0"
+  },
+  "scripts": {
+    "build": "tsc",
+    "start": "wrangler dev",
+    "deploy": "wrangler publish"
   }
 }
