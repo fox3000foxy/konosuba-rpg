@@ -51,7 +51,7 @@ function extractMonster(payload: string): string {
   return payload.split('.')[1] || 'Troll';
 }
 
-const BASE_URL = 'https://71z3lhx5-8787.uks1.devtunnels.ms';
+const BASE_URL = 'https://konosuba-rpg.vercel.app';
 
 /** Construit l'URL d'image pour un payload donné */
 function buildImageUrl(payload: string, lang: string): string {
