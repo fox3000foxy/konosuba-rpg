@@ -20,7 +20,11 @@ const convertPngToAvif = async (directory) => {
       try {
         
         await sharp(filePath)
-          .avif({ quality: 80 }) 
+          .avif({
+            lossless: true,
+            effort: 9,
+            chromaSubsampling: "4:4:4"
+          })
           .toFile(avifPath);
 
         
