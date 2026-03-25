@@ -180,7 +180,7 @@ app.get('/konosuba-rpg/assets/*', serveStatic({
     const buffer = await res.arrayBuffer();
     return new Response(buffer, {
       headers: {
-        'Content-Type': 'image/png',
+        'Content-Type': 'image/webp',
       },
     });
   },
@@ -191,7 +191,7 @@ app.get('/konosuba-rpg/:lang/*', async (c: Context) => {
   const { lang } = c.req.param();
   const [rand, moves, seed_str, monster] = await processUrl(c.req.url);
   const { image } = await processGame(rand, moves, monster, lang);
-  c.header('Content-Type', 'image/png');
+  c.header('Content-Type', 'image/webp');
   return c.body(image);
 });
 
