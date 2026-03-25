@@ -33,6 +33,6 @@ const convertPngToAvif = async (directory) => {
   });
 };
 
-const startingDirectory = "./uploads";
+const startingDirectory = "./assets";
 convertPngToAvif(startingDirectory);
 
