@@ -16,57 +16,43 @@ async function ensureWasm(): Promise<void> {
   return;
   // }
   // else {
-  //   console.log('Running in Cloudflare Workers environment, using global WebAssembly.instantiate for resvg WASM module');
-  //   // @ts-ignore
   //   const resvgWasm = await import('@resvg/resvg-wasm/index_bg.wasm?module').then((m) => m.default);
   //   await initWasm(resvgWasm);
-  //   console.log('WASM initialized (prod)');
   //   wasmReady = true;
-  //   return;
   // }
 }
 
-ensureWasm().then(() => {
-}).catch((err) => {
-  console.error('Failed to initialize WASM:', err);
-});
+ensureWasm().catch((err) => console.error('Failed to initialize WASM:', err));
 
 // ─── GLOBAL CACHE (survit aux re-imports en dev/hot-reload) ──────────────────
 
 const GLOBAL = globalThis as any;
 
-// ArrayBuffers des images sources (fetch réseau)
 GLOBAL.__imageCache     ??= {} as Record<string, ArrayBuffer>;
-// PhotonImages décodées + éventuellement flippées/redimensionnées
-GLOBAL.__photonCache    ??= new Map<string, Photon.PhotonImage>();
-// Couches composites prêtes à l'emploi (bg, characters…)
-GLOBAL.__layerCache     ??= new Map<string, Photon.PhotonImage>();
-// Overlay UI sérialisé en Uint8Array (SVG→PNG via resvg)
-GLOBAL.__uiCache        ??= new Map<string, Uint8Array>();
-// Fonts fetchées (ArrayBuffer)
+GLOBAL.__base64Cache    ??= {} as Record<string, string>;          // base64 des end-images, calculé une fois par état
+GLOBAL.__photonCache    ??= new Map<string, Photon.PhotonImage>(); // sprites décodés/flippés/resizés
+GLOBAL.__layerCache     ??= new Map<string, Photon.PhotonImage>(); // bg + characters composités
+GLOBAL.__uiPhotonCache  ??= new Map<string, Photon.PhotonImage>(); // overlay UI parsé en PhotonImage (évite le re-parse PNG)
 GLOBAL.__fontCache      ??= {} as Record<string, ArrayBuffer>;
 
-const imageCache:  Record<string, ArrayBuffer>          = GLOBAL.__imageCache;
-const photonCache: Map<string, Photon.PhotonImage>      = GLOBAL.__photonCache;
-const layerCache:  Map<string, Photon.PhotonImage>      = GLOBAL.__layerCache;
-const uiCache:     Map<string, Uint8Array>              = GLOBAL.__uiCache;
-const fontCache:   Record<string, ArrayBuffer>          = GLOBAL.__fontCache;
+const imageCache:    Record<string, ArrayBuffer>         = GLOBAL.__imageCache;
+const base64Cache:   Record<string, string>              = GLOBAL.__base64Cache;
+const photonCache:   Map<string, Photon.PhotonImage>     = GLOBAL.__photonCache;
+const layerCache:    Map<string, Photon.PhotonImage>     = GLOBAL.__layerCache;
+const uiPhotonCache: Map<string, Photon.PhotonImage>     = GLOBAL.__uiPhotonCache;
+const fontCache:     Record<string, ArrayBuffer>         = GLOBAL.__fontCache;
 
-// ─── Image cache (ArrayBuffer) ───────────────────────────────────────────────
+// ─── Image / Font cache ───────────────────────────────────────────────────────
 
 export async function getImageBytes(key: string): Promise<ArrayBuffer> {
   if (imageCache[key]) return imageCache[key];
-
   const url: string = imageManifest[key];
-
   const resp = await fetch(url);
   if (!resp.ok) throw new Error(`Failed to fetch image "${key}": ${resp.status}`);
   const buf = await resp.arrayBuffer();
   imageCache[key] = buf;
   return buf;
 }
-
-// ─── Font cache ──────────────────────────────────────────────────────────────
 
 async function getFontBytes(url: string): Promise<ArrayBuffer> {
   if (fontCache[url]) return fontCache[url];
@@ -75,7 +61,24 @@ async function getFontBytes(url: string): Promise<ArrayBuffer> {
   return buf;
 }
 
-// ─── Photon helpers ──────────────────────────────────────────────────────────
+/**
+ * Convertit un ArrayBuffer en base64, avec mise en cache par clé.
+ * Évite de recalculer btoa() sur une même image d'état à chaque render.
+ */
+function getBase64Cached(key: string, buf: ArrayBuffer): string {
+  if (base64Cache[key]) return base64Cache[key];
+  const bytes = new Uint8Array(buf);
+  let binary = '';
+  const chunkSize = 0x8000;
+  for (let i = 0; i < bytes.length; i += chunkSize) {
+    binary += String.fromCharCode(...bytes.subarray(i, Math.min(i + chunkSize, bytes.length)));
+  }
+  const b64 = btoa(binary);
+  base64Cache[key] = b64;
+  return b64;
+}
+
+// ─── Photon helpers ───────────────────────────────────────────────────────────
 
 async function toPhoton(buf: ArrayBuffer): Promise<Photon.PhotonImage> {
   const bytes = new Uint8Array(buf);
@@ -85,7 +88,6 @@ async function toPhoton(buf: ArrayBuffer): Promise<Photon.PhotonImage> {
     console.warn('Photon cannot decode bytes directly, trying fallback decoder:', err);
   }
 
-  // Fallback path for formats not supported by Photon (AVIF, etc.)
   if (typeof createImageBitmap !== 'undefined' && typeof OffscreenCanvas !== 'undefined') {
     const blob = new Blob([buf], { type: 'image/avif' });
     const bitmap = await createImageBitmap(blob);
@@ -99,8 +101,7 @@ async function toPhoton(buf: ArrayBuffer): Promise<Photon.PhotonImage> {
     return Photon.PhotonImage.new_from_byteslice(new Uint8Array(fallbackBuffer));
   }
 
-  // Node.js fallback using sharp if available
-  if (typeof process !== 'undefined' && process.versions && process.versions.node) {
+  if (typeof process !== 'undefined' && process.versions?.node) {
     try {
       const sharp = await import('sharp');
       const converted = await sharp.default(bytes).webp({ quality: 100 }).toBuffer();
@@ -115,7 +116,7 @@ async function toPhoton(buf: ArrayBuffer): Promise<Photon.PhotonImage> {
 
 /**
  * Clone léger d'un PhotonImage : copie mémoire directe des pixels RGBA,
- * sans passer par un codec ni par resize. O(W×H) en mémoire, pas de filtre.
+ * sans codec ni filtre. O(W×H), sans passer par WASM resize.
  */
 function clonePhoton(img: Photon.PhotonImage): Photon.PhotonImage {
   return new Photon.PhotonImage(
@@ -125,13 +126,11 @@ function clonePhoton(img: Photon.PhotonImage): Photon.PhotonImage {
   );
 }
 
-/** Flip an image horizontally (mirror on X axis) */
 function flipX(img: Photon.PhotonImage): Photon.PhotonImage {
   const w = img.get_width();
   const h = img.get_height();
-  const raw = img.get_raw_pixels(); // Uint8Array of RGBA
+  const raw = img.get_raw_pixels();
   const flipped = new Uint8Array(raw.length);
-
   for (let y = 0; y < h; y++) {
     for (let x = 0; x < w; x++) {
       const src = (y * w + x) * 4;
@@ -142,27 +141,16 @@ function flipX(img: Photon.PhotonImage): Photon.PhotonImage {
       flipped[dst + 3] = raw[src + 3];
     }
   }
-
   return new Photon.PhotonImage(flipped, w, h);
 }
 
 /**
- * Retourne un PhotonImage décodé, éventuellement flippé et redimensionné,
- * depuis le cache. L'image stockée en cache n'est JAMAIS mutée directement :
- * on retourne une copie (clonePhoton) pour que les appelants puissent la
- * watermark sans corrompre le cache.
+ * Retourne un PhotonImage décodé/flippé/resizé depuis le cache.
+ * Toujours retourné comme clone — l'entrée cache n'est jamais exposée ni mutée.
  */
-async function getImage(
-  key: string,
-  w?: number,
-  h?: number,
-  flipped = false
-): Promise<Photon.PhotonImage> {
+async function getImage(key: string, w?: number, h?: number, flipped = false): Promise<Photon.PhotonImage> {
   const cacheKey = `${key}_${w ?? 0}_${h ?? 0}_${flipped}`;
-
-  if (photonCache.has(cacheKey)) {
-    return clonePhoton(photonCache.get(cacheKey)!);
-  }
+  if (photonCache.has(cacheKey)) return clonePhoton(photonCache.get(cacheKey)!);
 
   let img = await toPhoton(await getImageBytes(key));
 
@@ -179,37 +167,17 @@ async function getImage(
   }
 
   photonCache.set(cacheKey, img);
-  // On retourne une copie — l'original reste intact dans le cache
   return clonePhoton(img);
 }
 
-/**
- * Draw `src` onto `canvas` at (x, y), scaled to (w, h).
- * Photon's watermark() requires same-size images, so we resize src first.
- */
-function composite(
-  canvas: Photon.PhotonImage,
-  src: Photon.PhotonImage,
-  x: number,
-  y: number,
-  w: number,
-  h: number
-) {
-  const resized = Photon.resize(src, w, h, Photon.SamplingFilter.Lanczos3);
-  Photon.watermark(canvas, resized, BigInt(Math.round(x)), BigInt(Math.round(y)));
-  resized.free();
-}
-
-// ─── BACKGROUND LAYER (board + frameless, prêt à cloner) ─────────────────────
+// ─── BACKGROUND LAYER ────────────────────────────────────────────────────────
 
 async function getBackground(W: number, H: number): Promise<Photon.PhotonImage> {
   const key = `bg_${W}_${H}`;
   if (layerCache.has(key)) return clonePhoton(layerCache.get(key)!);
 
-  // getImage fait déjà le resize Lanczos3 — pas de double resize ici
   const board = await getImage('board', W, H);
   const frame = await getImage('frameless', W, H);
-
   Photon.watermark(board, frame, 0n, 0n);
   frame.free();
 
@@ -256,78 +224,17 @@ async function getCharactersLayer(
   return clonePhoton(layer);
 }
 
-// ─── UI OVERLAY (Satori → resvg → PNG bytes, mis en cache) ───────────────────
+// ─── UI OVERLAY ───────────────────────────────────────────────────────────────
 
-async function getUIOverlay(
-  overlayJsx: object,
-  fontMediumBuf: ArrayBuffer,
-  W: number,
-  H: number,
-  cacheKey: string
-): Promise<Uint8Array> {
-  if (uiCache.has(cacheKey)) return uiCache.get(cacheKey)!;
-
-  const overlaySvg = await satori(overlayJsx, {
-    width: W,
-    height: H,
-    fonts: [
-      { name: 'Sans-Serif', data: fontMediumBuf, weight: 400, style: 'normal' },
-    ],
-  });
-
-  const resvg = new Resvg(overlaySvg, { fitTo: { mode: 'width', value: W } });
-  const png = resvg.render().asPng();
-  uiCache.set(cacheKey, png);
-  return png;
-}
-
-// ─── Main render ─────────────────────────────────────────────────────────────
-
-export default async function renderImage(
-  state: string | null,
-  messages: string[],
+async function buildOverlayJsx(
   player: any,
   creature: any,
-  lang = 'en'
-): Promise<Uint8Array> {
-  await ensureWasm();
-
-  const W = 1000;
-  const H = 600;
-
-  // ── 1. Mutation défensive de player.images si la créature est morte ──────
-  if (creature.hp <= 0) {
-    player.images = [
-      ['character_kazuma04'],
-      ['character_daku04'],
-      ['character_meg04'],
-      ['character_aqua04'],
-    ];
-  }
-  creature.hp = Math.max(creature.hp, 0);
-
-  // ── 2. Background (board + frameless, cloné depuis le cache) ────────────
-  const canvas = await getBackground(W, H);
-
-  // ── 3. Characters layer (cloné depuis le cache) ──────────────────────────
-  const chars = await getCharactersLayer(
-    player.images,
-    player.hp,
-    creature.images,
-    creature.hp,
-    W,
-    H
-  );
-  Photon.watermark(canvas, chars, 0n, 0n);
-  chars.free();
-
-  // ── 4. Fonts (mis en cache, fetché une seule fois par lifetime) ──────────
-  const [fontBlackBuf, fontMediumBuf] = await Promise.all([
-    getFontBytes('https://raw.githubusercontent.com/fox3000foxy/konosuba-rpg/refs/heads/main/swordgame/font/GintoNordBlack.otf'),
-    getFontBytes('https://raw.githubusercontent.com/fox3000foxy/konosuba-rpg/refs/heads/main/swordgame/font/GintoNordMedium.otf'),
-  ]);
-  void fontBlackBuf; // chargé en cache pour usage futur éventuel
-
+  messages: string[],
+  state: string | null,
+  lang: string,
+  W: number,
+  H: number
+): Promise<object> {
   const hp  = lang === 'fr' ? 'PV' : 'HP';
   const pid = player.currentPlayerId;
 
@@ -338,7 +245,6 @@ export default async function renderImage(
     'https://raw.githubusercontent.com/fox3000foxy/konosuba-rpg/refs/heads/main/assets/player/thmb_in_1011100.png',
   ];
 
-  // Health bar helper (returns JSX-like object)
   function healthBar(current: number, max: number, x: number, y: number, w: number, h: number) {
     const pct = Math.max(0, Math.min(1, current / max));
     return {
@@ -353,92 +259,41 @@ export default async function renderImage(
     };
   }
 
-  // End-state messages
   const endMsg = state ? ({
-    good:   lang === 'fr' ? `Vous avez réussi à vaincre ${creature.prefix ? 'le ' : ''}${creature.name} !`     : `You won from ${creature.prefix ? 'the ' : ''}${creature.name}!`,
-    bad:    lang === 'fr' ? "L'adversaire vous a vaincu..."                                                     : 'The adversary has defeated you...',
-    giveup: lang === 'fr' ? 'Vous avez déclaré forfait.'                                                        : 'You have withdrawn.',
+    good:   lang === 'fr' ? `Vous avez réussi à vaincre ${creature.prefix ? 'le ' : ''}${creature.name} !`       : `You won from ${creature.prefix ? 'the ' : ''}${creature.name}!`,
+    bad:    lang === 'fr' ? "L'adversaire vous a vaincu..."                                                       : 'The adversary has defeated you...',
+    giveup: lang === 'fr' ? 'Vous avez déclaré forfait.'                                                          : 'You have withdrawn.',
     best:   lang === 'fr' ? `Vous avez réussi à être ami avec ${creature.prefix ? 'le ' : ''}${creature.name} !` : `You managed to be friends with ${creature.prefix ? 'the ' : ''}${creature.name}!`,
   } as Record<string, string>)[state] : null;
 
   const endMsg2 = state ? ({
-    good:   lang === 'fr' ? 'Arriverez vous a faire mieux ?'                        : 'Will you get it better?',
-    bad:    lang === 'fr' ? 'Rententez votre chance.'                               : 'Retry.',
-    giveup: lang === 'fr' ? 'Peut être une prochaine fois ?'                        : 'Maybe next time?',
-    best:   lang === 'fr' ? "Pourrez vous être ami avec d'autres créatures ?"       : 'Can you be friends with other creatures?',
+    good:   lang === 'fr' ? 'Arriverez vous a faire mieux ?'                  : 'Will you get it better?',
+    bad:    lang === 'fr' ? 'Rententez votre chance.'                         : 'Retry.',
+    giveup: lang === 'fr' ? 'Peut être une prochaine fois ?'                  : 'Maybe next time?',
+    best:   lang === 'fr' ? "Pourrez vous être ami avec d'autres créatures ?" : 'Can you be friends with other creatures?',
   } as Record<string, string>)[state] : null;
 
-  // Clé de cache UI : tout ce qui peut faire changer le rendu du SVG
-  const uiCacheKey = JSON.stringify({
-    hp: player.hp,
-    hpMax: player.hpMax,
-    attack: player.attack,
-    name: player.name,
-    pid,
-    cHp: creature.hp,
-    cHpMax: creature.hpMax,
-    cAttack: creature.attack,
-    cName: creature.name,
-    messages,
-    state,
-    lang,
-  });
+  // base64 mis en cache par clé d'état — btoa() n'est appelé qu'une seule fois par état
+  const endImgSrc = endMsg
+    ? `data:image/png;base64,${getBase64Cached('end_' + state, await getImageBytes('end_' + state))}`
+    : null;
 
-  // ── 5. Construction du JSX overlay ────────────────────────────────────────
-
-  // arrayBufferToBase64 uniquement si nécessaire (end state)
-  async function endImageBase64(): Promise<string> {
-    const buf = await getImageBytes('end_' + state);
-    const bytes = new Uint8Array(buf);
-    let binary = '';
-    const chunkSize = 0x8000;
-    for (let i = 0; i < bytes.length; i += chunkSize) {
-      const chunk = bytes.subarray(i, Math.min(i + chunkSize, bytes.length));
-      binary += String.fromCharCode(...chunk);
-    }
-    return btoa(binary);
-  }
-
-  const endImgSrc = endMsg ? `data:image/png;base64,${await endImageBase64()}` : null;
-
-  const overlayJsx = {
+  return {
     type: 'div',
     props: {
-      style: {
-        display: 'flex' as const,
-        position: 'relative' as const,
-        width: W,
-        height: H,
-        fontFamily: '"Ginto Nord Black"',
-        color: '#000000',
-        overflow: 'hidden',
-      },
+      style: { display: 'flex' as const, position: 'relative' as const, width: W, height: H, fontFamily: '"Ginto Nord Black"', color: '#000000', overflow: 'hidden' },
       children: [
         // ── Chat messages ──────────────────────────────────────────────
         ...messages.map((msg, i) => ({
           type: 'div',
           props: {
-            style: {
-              display: 'flex' as const,
-              position: 'absolute' as const,
-              left: 104,
-              top: (192 + i * 16) * 2 + 120,
-              fontSize: 20,
-              fontFamily: '"Ginto Nord Black"',
-              color: '#000000',
-            },
+            style: { display: 'flex' as const, position: 'absolute' as const, left: 104, top: (192 + i * 16) * 2 + 120, fontSize: 20, fontFamily: '"Ginto Nord Black"', color: '#000000' },
             children: msg,
           },
         })),
 
         // ── Player info (main) ─────────────────────────────────────────
-        {
-          type: 'img',
-          props: {
-            src: thmb[pid],
-            style: { position: 'absolute' as const, left: 40 * 1.5 + 10, top: 40 + 10 - 38, width: 50, height: 50 },
-          },
-        },
+        { type: 'img', props: { src: thmb[pid], style: { position: 'absolute' as const, left: 40 * 1.5 + 10, top: 40 + 10 - 38, width: 50, height: 50 } } },
         {
           type: 'div',
           props: {
@@ -462,15 +317,8 @@ export default async function renderImage(
           const yBase = offset === 3 ? 56.25 * 2 - 38 : 36 * 2 - 38 + 3;
           const thmX  = offset === 2 ? 300 * 1.5 + 10 + 200 : 300 * 1.5 + 10;
           const thmY  = offset === 3 ? 70 + 10 - 38 : 40 - 38;
-
           return [
-            {
-              type: 'img',
-              props: {
-                src: thmb[offset],
-                style: { position: 'absolute' as const, left: thmX, top: thmY, width: 40, height: 40 },
-              },
-            },
+            { type: 'img', props: { src: thmb[offset], style: { position: 'absolute' as const, left: thmX, top: thmY, width: 40, height: 40 } } },
             {
               type: 'div',
               props: {
@@ -501,13 +349,7 @@ export default async function renderImage(
 
         // ── End-state overlay ──────────────────────────────────────────
         ...(endMsg && endImgSrc ? [
-          {
-            type: 'img',
-            props: {
-              src: endImgSrc,
-              style: { position: 'absolute' as const, left: 0, top: 0, width: '100%', height: '100%' },
-            },
-          },
+          { type: 'img', props: { src: endImgSrc, style: { position: 'absolute' as const, left: 0, top: 0, width: '100%', height: '100%' } } },
           {
             type: 'div',
             props: {
@@ -526,15 +368,92 @@ export default async function renderImage(
       ],
     },
   };
+}
 
-  // ── 6. UI overlay (mis en cache par clé état+hp+messages) ────────────────
-  const overlayPng = await getUIOverlay(overlayJsx, fontMediumBuf, W, H, uiCacheKey);
+/**
+ * Retourne le PhotonImage de l'overlay UI depuis le cache si possible,
+ * sinon construit le JSX, passe par Satori → resvg → toPhoton, et met en cache.
+ * Le cache est vérifié AVANT toute construction de JSX ou appel Satori.
+ */
+async function getUIOverlay(
+  uiCacheKey: string,
+  player: any,
+  creature: any,
+  messages: string[],
+  state: string | null,
+  lang: string,
+  fontMediumBuf: ArrayBuffer,
+  W: number,
+  H: number
+): Promise<Photon.PhotonImage> {
+  if (uiPhotonCache.has(uiCacheKey)) return clonePhoton(uiPhotonCache.get(uiCacheKey)!);
 
-  const overlayImgPhoton = await toPhoton(overlayPng.buffer.slice(0) as ArrayBuffer);
-  Photon.watermark(canvas, overlayImgPhoton, 0n, 0n);
-  overlayImgPhoton.free();
+  const overlayJsx = await buildOverlayJsx(player, creature, messages, state, lang, W, H);
 
-  // ── 7. Export ─────────────────────────────────────────────────────────────
+  const overlaySvg = await satori(overlayJsx, {
+    width: W,
+    height: H,
+    fonts: [{ name: 'Sans-Serif', data: fontMediumBuf, weight: 400, style: 'normal' }],
+  });
+
+  const png = new Resvg(overlaySvg, { fitTo: { mode: 'width', value: W } }).render().asPng();
+  const img = await toPhoton(png.buffer.slice(0) as ArrayBuffer);
+
+  uiPhotonCache.set(uiCacheKey, img);
+  return clonePhoton(img);
+}
+
+// ─── Main render ─────────────────────────────────────────────────────────────
+
+export default async function renderImage(
+  state: string | null,
+  messages: string[],
+  player: any,
+  creature: any,
+  lang = 'en'
+): Promise<Uint8Array> {
+  await ensureWasm();
+
+  const W = 1000;
+  const H = 600;
+
+  if (creature.hp <= 0) {
+    player.images = [
+      ['character_kazuma04'],
+      ['character_daku04'],
+      ['character_meg04'],
+      ['character_aqua04'],
+    ];
+  }
+  creature.hp = Math.max(creature.hp, 0);
+
+  // Clé de cache UI calculée une seule fois ici, avant tout travail
+  const uiCacheKey = JSON.stringify({
+    hp: player.hp, hpMax: player.hpMax, attack: player.attack, name: player.name,
+    pid: player.currentPlayerId,
+    cHp: creature.hp, cHpMax: creature.hpMax, cAttack: creature.attack, cName: creature.name,
+    messages, state, lang,
+  });
+
+  // Fonts mises en cache — quasi-instantané après le premier appel
+  const [, fontMediumBuf] = await Promise.all([
+    getFontBytes('https://raw.githubusercontent.com/fox3000foxy/konosuba-rpg/refs/heads/main/swordgame/font/GintoNordBlack.otf'),
+    getFontBytes('https://raw.githubusercontent.com/fox3000foxy/konosuba-rpg/refs/heads/main/swordgame/font/GintoNordMedium.otf'),
+  ]);
+
+  // Les trois layers en parallèle — chacun court-circuite son propre cache si possible
+  const [canvas, chars, uiImg] = await Promise.all([
+    getBackground(W, H),
+    getCharactersLayer(player.images, player.hp, creature.images, creature.hp, W, H),
+    getUIOverlay(uiCacheKey, player, creature, messages, state, lang, fontMediumBuf, W, H),
+  ]);
+
+  Photon.watermark(canvas, chars, 0n, 0n);
+  chars.free();
+
+  Photon.watermark(canvas, uiImg, 0n, 0n);
+  uiImg.free();
+
   const output = canvas.get_bytes_webp();
   canvas.free();
   return output;
