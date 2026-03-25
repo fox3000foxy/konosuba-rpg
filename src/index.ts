@@ -210,7 +210,8 @@ app.post('/api/interactions', async (c: Context) => {
     return c.text('invalid request headers', 400);
   }
 
-  const isValid = verifyKey(body, signature, timestamp, PUBLIC_KEY);
+  const isValid = await verifyKey(body, signature, timestamp, PUBLIC_KEY);
+  // console.log(isValid ? 'Valid request signature' : 'Invalid request signature');
   if (!isValid) {
     console.warn('Invalid request signature');
     return c.text('invalid request signature', 401);
