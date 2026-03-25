@@ -4,14 +4,19 @@
     "canvas": "^2.11.2",
     "combine-image": "^1.0.3",
     "discord.js": "^13.17.1",
-    "express": "^4.19.2",
-    "hono": "^4.12.8",
+    "express": "^4.22.1",
+    "hono": "^4.12.9",
     "localtunnel": "^2.0.2",
     "random-seed": "^0.3.0"
   },
   "scripts": {
-    "build": "tsc",
-    "start": "wrangler dev",
-    "deploy": "wrangler publish"
+    "build": "npx tsc",
+    "start": "npx wrangler dev",
+    "deploy": "npx wrangler publish"
+  },
+  "devDependencies": {
+    "@types/node": "^25.5.0",
+    "typescript": "^6.0.2",
+    "wrangler": "^4.77.0"
   }
 }
