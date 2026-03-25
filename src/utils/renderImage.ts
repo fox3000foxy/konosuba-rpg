@@ -52,8 +52,40 @@ export async function getImageBytes(key: string): Promise<ArrayBuffer> {
   return buf;
 }
 
-function toPhoton(buf: ArrayBuffer): Photon.PhotonImage {
-  return Photon.PhotonImage.new_from_byteslice(new Uint8Array(buf));
+async function toPhoton(buf: ArrayBuffer): Promise<Photon.PhotonImage> {
+  const bytes = new Uint8Array(buf);
+  try {
+    return Photon.PhotonImage.new_from_byteslice(bytes);
+  } catch (err) {
+    console.warn('Photon cannot decode bytes directly, trying fallback decoder:', err);
+  }
+
+  // Fallback path for formats not supported by Photon (AVIF, etc.)
+  if (typeof createImageBitmap !== 'undefined' && typeof OffscreenCanvas !== 'undefined') {
+    const blob = new Blob([buf], { type: 'image/avif' });
+    const bitmap = await createImageBitmap(blob);
+    const canvas = new OffscreenCanvas(bitmap.width, bitmap.height);
+    const ctx = canvas.getContext('2d');
+    if (!ctx) throw new Error('OffscreenCanvas context could not be created');
+    ctx.drawImage(bitmap, 0, 0);
+    const fallbackBlob = await canvas.convertToBlob({ type: 'image/webp', quality: 1 });
+    const fallbackBuffer = await fallbackBlob.arrayBuffer();
+    bitmap.close();
+    return Photon.PhotonImage.new_from_byteslice(new Uint8Array(fallbackBuffer));
+  }
+
+  // Node.js fallback using sharp if available
+  if (typeof process !== 'undefined' && process.versions && process.versions.node) {
+    try {
+      const sharp = await import('sharp');
+      const converted = await sharp.default(bytes).webp({ quality: 100 }).toBuffer();
+      return Photon.PhotonImage.new_from_byteslice(new Uint8Array(converted));
+    } catch (sharpErr) {
+      console.warn('Sharp fallback failed:', sharpErr);
+    }
+  }
+
+  throw new Error('Unsupported image format for PhotonImage (avif decode fallback failed).');
 }
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -111,11 +143,11 @@ export default async function renderImage(
   const H = 600;
 
   // ── 1. Load board and create base canvas ──────────────────────────────────
-  const boardImg = toPhoton(await getImageBytes('board'));
+  const boardImg = await toPhoton(await getImageBytes('board'));
   const canvas = Photon.resize(boardImg, W, H, Photon.SamplingFilter.Lanczos3);
   boardImg.free();
 
-  const boardImg2 = toPhoton(await getImageBytes('frameless'));
+  const boardImg2 = await toPhoton(await getImageBytes('frameless'));
   composite(canvas, boardImg2, 0, 0, W, H);
   boardImg2.free();
 
@@ -150,7 +182,7 @@ export default async function renderImage(
     const i = slot.index;
     if (player.hp[i] <= 0) continue;
     const key = player.images[i][0];
-    const srcImg = toPhoton(await getImageBytes(key));
+    const srcImg = await toPhoton(await getImageBytes(key));
     const srcW = srcImg.get_width();
     const srcH = srcImg.get_height();
     const drawH = 184;
@@ -165,7 +197,7 @@ export default async function renderImage(
 
   // Creature (also on mirrored side in original, but drawn at left)
   if (creature.hp > 0) {
-    const creatureImg = toPhoton(await getImageBytes(creature.images[0]));
+    const creatureImg = await toPhoton(await getImageBytes(creature.images[0]));
     const flipped = flipX(creatureImg);
     composite(canvas, flipped, ((W * 1) / 8 - 140) + W / 2 + 55, H / 2 - 240, 400, 400);
     flipped.free();
@@ -466,11 +498,11 @@ export default async function renderImage(
   // Rasterize SVG overlay to PNG
   const resvg = new Resvg(overlaySvg, { fitTo: { mode: 'width', value: W } });
   const overlayPng = resvg.render().asPng();
-  const overlayImg = toPhoton(overlayPng.buffer.slice(0) as ArrayBuffer);
 
   // Composite text overlay onto photon canvas (full-size, transparent bg)
-  Photon.watermark(canvas, overlayImg, 0n, 0n);
-  overlayImg.free();
+  const overlayImgPhoton = await toPhoton(overlayPng.buffer.slice(0) as ArrayBuffer);
+  Photon.watermark(canvas, overlayImgPhoton, 0n, 0n);
+  overlayImgPhoton.free();
 
   // ── 5. Export ─────────────────────────────────────────────────────────────
   const output = canvas.get_bytes_webp(); // or .get_bytes() for PNG (larger)

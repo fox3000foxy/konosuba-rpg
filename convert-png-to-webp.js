@@ -20,7 +20,7 @@ const convertPngToAvif = async (directory) => {
       try {
 
         await sharp(filePath)
-          .avif({
+          .webp({
             lossless: false,
             effort: 4,
             quality: 90,
