@@ -183,8 +183,6 @@ export default async function renderImage(
 
   ctx.drawImage(await getImage('board'), 0, 0, canvas.width, canvas.height);
 
-  // ctx.transform(-1, 0, 0, 1, canvas.width, 0);
-
   creature.hp = Math.max(creature.hp, 0)
   if (creature.hp == 0)
     player.images = [
@@ -194,11 +192,13 @@ export default async function renderImage(
       ["character_aqua04"]
     ];
 
+  ctx.transform(-1, 0, 0, 1, canvas.width, 0);
   if (player.hp[3] > 0) ctx.drawImage(await getImage(player.images[3][0]), canvas.width - (canvas.width * 2 / 8) - 45, (canvas.height / 2 - (52) * 2) - 45, 184 * (await getImage(player.images[3][0])).width / (await getImage(player.images[3][0])).height, 184);
   if (player.hp[2] > 0) ctx.drawImage(await getImage(player.images[2][0]), canvas.width - (canvas.width * 2 / 8) + 75, (canvas.height / 2 - (52) * 2) - 45, 184 * (await getImage(player.images[2][0])).width / (await getImage(player.images[2][0])).height, 184);
   if (player.hp[1] > 0) ctx.drawImage(await getImage(player.images[1][0]), canvas.width - (canvas.width * 2 / 8) - 75, (canvas.height / 2 - (52) * 2) + 45, 184 * (await getImage(player.images[1][0])).width / (await getImage(player.images[1][0])).height, 184);
   if (player.hp[0] > 0) ctx.drawImage(await getImage(player.images[0][0]), canvas.width - (canvas.width * 2 / 8) + 50, (canvas.height / 2 - (52) * 2) + 45, 184 * (await getImage(player.images[0][0])).width / (await getImage(player.images[0][0])).height, 184);
   if (creature.hp > 0) ctx.drawImage(await getImage(creature.images[0]), (canvas.width * 1 / 8) - 140, canvas.height / 2 - 240, 400, 400);
+  ctx.transform(-1, 0, 0, 1, canvas.width, 0);
   ctx.font = '20px "Ginto Nord Black"';
   ctx.textAlign = 'left';
   ctx.fillStyle = '#000000';

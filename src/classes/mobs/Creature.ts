@@ -23,7 +23,7 @@ export class Creature {
     }
 
     giveHug() {
-        this.love -= 1;
+        this.love -= this.rand.randint(1, 5);
     }
 
     turn(lang: string): [string, number] {
