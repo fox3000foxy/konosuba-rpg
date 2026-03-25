@@ -1,35 +1,63 @@
-import { CanvasRenderingContext2D, createCanvas, loadImage } from 'canvas';
-import fs from 'fs';
 import { Random } from './Random';
+import { imageManifest } from './imageManifest';
 
-const images: Record<string, any> = {};
+let createCanvas: any;
+let loadImage: any;
 
-function loadFolderImages(path: string): void {
-  console.log(`Loading images from ${path}...`);
-  fs.readdirSync(path).forEach((file) => {
-    const img = fs.readFileSync(`${path}/${file}`);
-    images[file.slice(0, -4)] = img;
-    console.log(`Loaded image: ${file}`);
-  });
+async function initializeCanvasBackend(): Promise<void> {
+  console.log('Initializing canvas backend...');
+  if (createCanvas && loadImage) return;
+
+  const errors: string[] = [];
+
+  try {
+    const imp = await import('canvas');
+    createCanvas = imp.createCanvas;
+    loadImage = imp.loadImage;
+    return;
+  } catch (err) {
+    errors.push(`canvas: ${err}`);
+  }
+
+  try {
+    const imp = await import('@napi-rs/canvas');
+    createCanvas = imp.createCanvas;
+    loadImage = imp.loadImage;
+    return;
+  } catch (err) {
+    errors.push(`@napi-rs/canvas: ${err}`);
+  }
+
+  throw new Error(
+    'Unable to load canvas backend. Install either `canvas` or `@napi-rs/canvas` (recommended on Windows). Errors: ' + errors.join('; ')
+  );
 }
 
-loadFolderImages(process.cwd() + '/assets/swordgame/art');
-loadFolderImages(process.cwd() + '/assets/mobs');
-loadFolderImages(process.cwd() + '/assets/player');
+const images: Record<string, any> = {};
+let preloadPromise: Promise<void> | null = null;
 
-const loadPromises = Object.keys(images).map((imgName) => {
-  return new Promise<void>((resolve, reject) => {
-    loadImage(images[imgName])
-      .then((img) => {
-        images[imgName] = img;
-        resolve();
-      })
-      .catch((err) => {
-        reject(err);
-      });
-  });
+export async function preloadImages(): Promise<void> {
+  if (preloadPromise) return preloadPromise;
+
+  await initializeCanvasBackend();
+
+  const entries = Object.entries(imageManifest);
+  console.log(`Preloading ${entries.length} images...`);
+  preloadPromise = Promise.all(
+    entries.map(async ([key, uri]) => {
+      const img = await loadImage(uri);
+      console.log(`Preloaded image: ${key}`);
+      images[key] = img;
+    })
+  ).then(() => undefined);
+
+  return preloadPromise;
+}
+
+preloadImages().catch((err) => {
+  console.error('Error preloading images:', err);
+  throw err;
 });
-Promise.all(loadPromises);
 
 function roundedImage(
   ctx: CanvasRenderingContext2D,
@@ -61,11 +89,17 @@ export default async function renderImage(
   training = false,
   lang = 'en'
 ): Promise<Buffer> {
+  await preloadImages();
+
+  if (!images['board'] || !images['frameless']) {
+    throw new Error('Images not loaded. Call preloadImages() first or verify imageManifest.');
+  }
+
   const canvas = createCanvas(1000, 600);
   const ctx = canvas.getContext('2d');
 
   ctx.drawImage(images['board'], 0, 0, canvas.width, canvas.height);
-  console.log(ctx)
+  console.log(ctx);
 
   ctx.transform(-1, 0, 0, 1, canvas.width, 0);
 

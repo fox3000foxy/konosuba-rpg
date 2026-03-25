@@ -1,6 +1,7 @@
 {
   "dependencies": {
     "@cloudflare/workers-types": "^4.20260317.1",
+    "@napi-rs/canvas": "^0.1.97",
     "canvas": "^2.11.2",
     "combine-image": "^1.0.3",
     "discord.js": "^13.17.1",
@@ -10,6 +11,7 @@
     "random-seed": "^0.3.0"
   },
   "scripts": {
+    "generate:image-manifest": "npx ts-node scripts/generate-image-manifest.ts",
     "build": "npx tsc",
     "start": "npx wrangler dev",
     "dev": "npx ts-node-dev src/index.ts",
