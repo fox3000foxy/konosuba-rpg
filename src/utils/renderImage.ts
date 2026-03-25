@@ -31,17 +31,31 @@ ensureWasm().then(() => {
   console.error('Failed to initialize WASM:', err);
 });
 
-// ─── Image cache (ArrayBuffer, not canvas Image objects) ─────────────────────
+// ─── GLOBAL CACHE (survit aux re-imports en dev/hot-reload) ──────────────────
 
-const imageCache: Record<string, ArrayBuffer> = {};
+const GLOBAL = globalThis as any;
+
+// ArrayBuffers des images sources (fetch réseau)
+GLOBAL.__imageCache     ??= {} as Record<string, ArrayBuffer>;
+// PhotonImages décodées + éventuellement flippées/redimensionnées
+GLOBAL.__photonCache    ??= new Map<string, Photon.PhotonImage>();
+// Couches composites prêtes à l'emploi (bg, characters…)
+GLOBAL.__layerCache     ??= new Map<string, Photon.PhotonImage>();
+// Overlay UI sérialisé en Uint8Array (SVG→PNG via resvg)
+GLOBAL.__uiCache        ??= new Map<string, Uint8Array>();
+// Fonts fetchées (ArrayBuffer)
+GLOBAL.__fontCache      ??= {} as Record<string, ArrayBuffer>;
+
+const imageCache:  Record<string, ArrayBuffer>          = GLOBAL.__imageCache;
+const photonCache: Map<string, Photon.PhotonImage>      = GLOBAL.__photonCache;
+const layerCache:  Map<string, Photon.PhotonImage>      = GLOBAL.__layerCache;
+const uiCache:     Map<string, Uint8Array>              = GLOBAL.__uiCache;
+const fontCache:   Record<string, ArrayBuffer>          = GLOBAL.__fontCache;
+
+// ─── Image cache (ArrayBuffer) ───────────────────────────────────────────────
 
 export async function getImageBytes(key: string): Promise<ArrayBuffer> {
   if (imageCache[key]) return imageCache[key];
-
-  // imageManifest[key] should be a URL string or a dynamic import that resolves to one
-  // const url: string = typeof imageManifest[key] === 'string'
-  //   ? imageManifest[key]
-  //   : await import(imageManifest[key]).then((m) => m.default ?? m);
 
   const url: string = imageManifest[key];
 
@@ -51,6 +65,17 @@ export async function getImageBytes(key: string): Promise<ArrayBuffer> {
   imageCache[key] = buf;
   return buf;
 }
+
+// ─── Font cache ──────────────────────────────────────────────────────────────
+
+async function getFontBytes(url: string): Promise<ArrayBuffer> {
+  if (fontCache[url]) return fontCache[url];
+  const buf = await fetch(url).then((r) => r.arrayBuffer());
+  fontCache[url] = buf;
+  return buf;
+}
+
+// ─── Photon helpers ──────────────────────────────────────────────────────────
 
 async function toPhoton(buf: ArrayBuffer): Promise<Photon.PhotonImage> {
   const bytes = new Uint8Array(buf);
@@ -88,7 +113,17 @@ async function toPhoton(buf: ArrayBuffer): Promise<Photon.PhotonImage> {
   throw new Error('Unsupported image format for PhotonImage (avif decode fallback failed).');
 }
 
-// ─── Helpers ─────────────────────────────────────────────────────────────────
+/**
+ * Clone léger d'un PhotonImage : copie mémoire directe des pixels RGBA,
+ * sans passer par un codec ni par resize. O(W×H) en mémoire, pas de filtre.
+ */
+function clonePhoton(img: Photon.PhotonImage): Photon.PhotonImage {
+  return new Photon.PhotonImage(
+    new Uint8Array(img.get_raw_pixels()),
+    img.get_width(),
+    img.get_height()
+  );
+}
 
 /** Flip an image horizontally (mirror on X axis) */
 function flipX(img: Photon.PhotonImage): Photon.PhotonImage {
@@ -101,7 +136,7 @@ function flipX(img: Photon.PhotonImage): Photon.PhotonImage {
     for (let x = 0; x < w; x++) {
       const src = (y * w + x) * 4;
       const dst = (y * w + (w - 1 - x)) * 4;
-      flipped[dst] = raw[src];
+      flipped[dst]     = raw[src];
       flipped[dst + 1] = raw[src + 1];
       flipped[dst + 2] = raw[src + 2];
       flipped[dst + 3] = raw[src + 3];
@@ -109,6 +144,43 @@ function flipX(img: Photon.PhotonImage): Photon.PhotonImage {
   }
 
   return new Photon.PhotonImage(flipped, w, h);
+}
+
+/**
+ * Retourne un PhotonImage décodé, éventuellement flippé et redimensionné,
+ * depuis le cache. L'image stockée en cache n'est JAMAIS mutée directement :
+ * on retourne une copie (clonePhoton) pour que les appelants puissent la
+ * watermark sans corrompre le cache.
+ */
+async function getImage(
+  key: string,
+  w?: number,
+  h?: number,
+  flipped = false
+): Promise<Photon.PhotonImage> {
+  const cacheKey = `${key}_${w ?? 0}_${h ?? 0}_${flipped}`;
+
+  if (photonCache.has(cacheKey)) {
+    return clonePhoton(photonCache.get(cacheKey)!);
+  }
+
+  let img = await toPhoton(await getImageBytes(key));
+
+  if (flipped) {
+    const f = flipX(img);
+    img.free();
+    img = f;
+  }
+
+  if (w && h) {
+    const r = Photon.resize(img, w, h, Photon.SamplingFilter.Lanczos3);
+    img.free();
+    img = r;
+  }
+
+  photonCache.set(cacheKey, img);
+  // On retourne une copie — l'original reste intact dans le cache
+  return clonePhoton(img);
 }
 
 /**
@@ -128,6 +200,87 @@ function composite(
   resized.free();
 }
 
+// ─── BACKGROUND LAYER (board + frameless, prêt à cloner) ─────────────────────
+
+async function getBackground(W: number, H: number): Promise<Photon.PhotonImage> {
+  const key = `bg_${W}_${H}`;
+  if (layerCache.has(key)) return clonePhoton(layerCache.get(key)!);
+
+  // getImage fait déjà le resize Lanczos3 — pas de double resize ici
+  const board = await getImage('board', W, H);
+  const frame = await getImage('frameless', W, H);
+
+  Photon.watermark(board, frame, 0n, 0n);
+  frame.free();
+
+  layerCache.set(key, board);
+  return clonePhoton(board);
+}
+
+// ─── CHARACTERS LAYER ────────────────────────────────────────────────────────
+
+async function getCharactersLayer(
+  playerImages: string[][],
+  playerHp: number[],
+  creatureImages: string[],
+  creatureHp: number,
+  W: number,
+  H: number
+): Promise<Photon.PhotonImage> {
+  const key = JSON.stringify({ playerImages, playerHp, creatureImages, creatureHp });
+  if (layerCache.has(key)) return clonePhoton(layerCache.get(key)!);
+
+  const layer = new Photon.PhotonImage(new Uint8Array(W * H * 4), W, H);
+
+  const slots = [
+    { i: 3, x: (W * 2) / 8 - 45, y: (H / 2 - 52 * 2) - 45 },
+    { i: 2, x: (W * 2) / 8 + 75, y: (H / 2 - 52 * 2) - 45 },
+    { i: 1, x: (W * 2) / 8 - 75, y: (H / 2 - 52 * 2) + 45 },
+    { i: 0, x: (W * 2) / 8 + 50, y: (H / 2 - 52 * 2) + 45 },
+  ];
+
+  for (const s of slots) {
+    if (playerHp[s.i] <= 0) continue;
+    const img = await getImage(playerImages[s.i][0], 120, 184, true);
+    Photon.watermark(layer, img, BigInt(Math.round(s.x)), BigInt(Math.round(s.y)));
+    img.free();
+  }
+
+  if (creatureHp > 0) {
+    const img = await getImage(creatureImages[0], 400, 400, true);
+    Photon.watermark(layer, img, BigInt(600), BigInt(Math.round(H / 2 - 240)));
+    img.free();
+  }
+
+  layerCache.set(key, layer);
+  return clonePhoton(layer);
+}
+
+// ─── UI OVERLAY (Satori → resvg → PNG bytes, mis en cache) ───────────────────
+
+async function getUIOverlay(
+  overlayJsx: object,
+  fontMediumBuf: ArrayBuffer,
+  W: number,
+  H: number,
+  cacheKey: string
+): Promise<Uint8Array> {
+  if (uiCache.has(cacheKey)) return uiCache.get(cacheKey)!;
+
+  const overlaySvg = await satori(overlayJsx, {
+    width: W,
+    height: H,
+    fonts: [
+      { name: 'Sans-Serif', data: fontMediumBuf, weight: 400, style: 'normal' },
+    ],
+  });
+
+  const resvg = new Resvg(overlaySvg, { fitTo: { mode: 'width', value: W } });
+  const png = resvg.render().asPng();
+  uiCache.set(cacheKey, png);
+  return png;
+}
+
 // ─── Main render ─────────────────────────────────────────────────────────────
 
 export default async function renderImage(
@@ -142,22 +295,7 @@ export default async function renderImage(
   const W = 1000;
   const H = 600;
 
-  // ── 1. Load board and create base canvas ──────────────────────────────────
-  const boardImg = await toPhoton(await getImageBytes('board'));
-  const canvas = Photon.resize(boardImg, W, H, Photon.SamplingFilter.Lanczos3);
-  boardImg.free();
-
-  const boardImg2 = await toPhoton(await getImageBytes('frameless'));
-  composite(canvas, boardImg2, 0, 0, W, H);
-  boardImg2.free();
-
-  // ── 2. Composite character sprites (mirrored side = right side) ───────────
-  //
-  // Original code did ctx.transform(-1,0,0,1,W,0) before drawing characters,
-  // which mirrors the entire coordinate system. We replicate this by:
-  //   a) flipping each character image horizontally
-  //   b) computing the mirrored X position manually: mirroredX = W - x - imgW
-
+  // ── 1. Mutation défensive de player.images si la créature est morte ──────
   if (creature.hp <= 0) {
     player.images = [
       ['character_kazuma04'],
@@ -166,63 +304,94 @@ export default async function renderImage(
       ['character_aqua04'],
     ];
   }
-
   creature.hp = Math.max(creature.hp, 0);
 
-  // Character draw positions (converted for no global transform, player side is right)
-  // We flip each sprite manually and use absolute target X (same visual expected as the old mirrored transform layout).
-  const charSlots = [
-    { index: 3, x: (W * 2) / 8 - 45, y: (H / 2 - 52 * 2) - 45 },
-    { index: 2, x: (W * 2) / 8 + 75, y: (H / 2 - 52 * 2) - 45 },
-    { index: 1, x: (W * 2) / 8 - 75, y: (H / 2 - 52 * 2) + 45 },
-    { index: 0, x: (W * 2) / 8 + 50, y: (H / 2 - 52 * 2) + 45 },
-  ];
+  // ── 2. Background (board + frameless, cloné depuis le cache) ────────────
+  const canvas = await getBackground(W, H);
 
-  for (const slot of charSlots) {
-    const i = slot.index;
-    if (player.hp[i] <= 0) continue;
-    const key = player.images[i][0];
-    const srcImg = await toPhoton(await getImageBytes(key));
-    const srcW = srcImg.get_width();
-    const srcH = srcImg.get_height();
-    const drawH = 184;
-    const drawW = Math.round(drawH * srcW / srcH);
+  // ── 3. Characters layer (cloné depuis le cache) ──────────────────────────
+  const chars = await getCharactersLayer(
+    player.images,
+    player.hp,
+    creature.images,
+    creature.hp,
+    W,
+    H
+  );
+  Photon.watermark(canvas, chars, 0n, 0n);
+  chars.free();
 
-    const flipped = flipX(srcImg);
-    const targetX = slot.x - drawW;
-    const actualX = Math.max(0, Math.min(W - drawW, targetX));
-    composite(canvas, flipped, actualX, slot.y, drawW, drawH);
-    flipped.free();
-  }
-
-  // Creature (also on mirrored side in original, but drawn at left)
-  if (creature.hp > 0) {
-    const creatureImg = await toPhoton(await getImageBytes(creature.images[0]));
-    const flipped = flipX(creatureImg);
-    composite(canvas, flipped, ((W * 1) / 8 - 140) + W / 2 + 55, H / 2 - 240, 400, 400);
-    flipped.free();
-  }
-
-  // ── 4. Text + UI overlay via Satori → resvg → composite ──────────────────
-  //
-  // Load fonts (fetch from your assets/R2/KV)
+  // ── 4. Fonts (mis en cache, fetché une seule fois par lifetime) ──────────
   const [fontBlackBuf, fontMediumBuf] = await Promise.all([
-    fetch('https://raw.githubusercontent.com/fox3000foxy/konosuba-rpg/refs/heads/main/swordgame/font/GintoNordBlack.otf').then((r) => r.arrayBuffer()),
-    fetch('https://raw.githubusercontent.com/fox3000foxy/konosuba-rpg/refs/heads/main/swordgame/font/GintoNordMedium.otf').then((r) => r.arrayBuffer()),
+    getFontBytes('https://raw.githubusercontent.com/fox3000foxy/konosuba-rpg/refs/heads/main/swordgame/font/GintoNordBlack.otf'),
+    getFontBytes('https://raw.githubusercontent.com/fox3000foxy/konosuba-rpg/refs/heads/main/swordgame/font/GintoNordMedium.otf'),
   ]);
+  void fontBlackBuf; // chargé en cache pour usage futur éventuel
 
-  const hp = (lang === 'fr') ? 'PV' : 'HP';
+  const hp  = lang === 'fr' ? 'PV' : 'HP';
   const pid = player.currentPlayerId;
 
-  // Thumbnail keys
-  // const thmbs = [
-  //   'thmb_in_1001100', 'thmb_in_1031100', 'thmb_in_1021100', 'thmb_in_1011100',
-  // ];
+  const thmb = [
+    'https://raw.githubusercontent.com/fox3000foxy/konosuba-rpg/refs/heads/main/assets/player/thmb_in_1001100.png',
+    'https://raw.githubusercontent.com/fox3000foxy/konosuba-rpg/refs/heads/main/assets/player/thmb_in_1031100.png',
+    'https://raw.githubusercontent.com/fox3000foxy/konosuba-rpg/refs/heads/main/assets/player/thmb_in_1021100.png',
+    'https://raw.githubusercontent.com/fox3000foxy/konosuba-rpg/refs/heads/main/assets/player/thmb_in_1011100.png',
+  ];
 
-  function arrayBufferToBase64(buffer: ArrayBuffer): string {
-    const bytes = new Uint8Array(buffer);
+  // Health bar helper (returns JSX-like object)
+  function healthBar(current: number, max: number, x: number, y: number, w: number, h: number) {
+    const pct = Math.max(0, Math.min(1, current / max));
+    return {
+      type: 'div',
+      props: {
+        style: { position: 'absolute' as const, display: 'flex' as const, left: x, top: y, width: w, height: h, background: '#ff0000' },
+        children: {
+          type: 'div',
+          props: { style: { width: Math.round(w * pct), height: h, background: '#00FF00' }, children: null },
+        },
+      },
+    };
+  }
+
+  // End-state messages
+  const endMsg = state ? ({
+    good:   lang === 'fr' ? `Vous avez réussi à vaincre ${creature.prefix ? 'le ' : ''}${creature.name} !`     : `You won from ${creature.prefix ? 'the ' : ''}${creature.name}!`,
+    bad:    lang === 'fr' ? "L'adversaire vous a vaincu..."                                                     : 'The adversary has defeated you...',
+    giveup: lang === 'fr' ? 'Vous avez déclaré forfait.'                                                        : 'You have withdrawn.',
+    best:   lang === 'fr' ? `Vous avez réussi à être ami avec ${creature.prefix ? 'le ' : ''}${creature.name} !` : `You managed to be friends with ${creature.prefix ? 'the ' : ''}${creature.name}!`,
+  } as Record<string, string>)[state] : null;
+
+  const endMsg2 = state ? ({
+    good:   lang === 'fr' ? 'Arriverez vous a faire mieux ?'                        : 'Will you get it better?',
+    bad:    lang === 'fr' ? 'Rententez votre chance.'                               : 'Retry.',
+    giveup: lang === 'fr' ? 'Peut être une prochaine fois ?'                        : 'Maybe next time?',
+    best:   lang === 'fr' ? "Pourrez vous être ami avec d'autres créatures ?"       : 'Can you be friends with other creatures?',
+  } as Record<string, string>)[state] : null;
+
+  // Clé de cache UI : tout ce qui peut faire changer le rendu du SVG
+  const uiCacheKey = JSON.stringify({
+    hp: player.hp,
+    hpMax: player.hpMax,
+    attack: player.attack,
+    name: player.name,
+    pid,
+    cHp: creature.hp,
+    cHpMax: creature.hpMax,
+    cAttack: creature.attack,
+    cName: creature.name,
+    messages,
+    state,
+    lang,
+  });
+
+  // ── 5. Construction du JSX overlay ────────────────────────────────────────
+
+  // arrayBufferToBase64 uniquement si nécessaire (end state)
+  async function endImageBase64(): Promise<string> {
+    const buf = await getImageBytes('end_' + state);
+    const bytes = new Uint8Array(buf);
     let binary = '';
-    const chunkSize = 0x8000; // 32KB chunks to avoid call stack overflow
+    const chunkSize = 0x8000;
     for (let i = 0; i < bytes.length; i += chunkSize) {
       const chunk = bytes.subarray(i, Math.min(i + chunkSize, bytes.length));
       binary += String.fromCharCode(...chunk);
@@ -230,75 +399,7 @@ export default async function renderImage(
     return btoa(binary);
   }
 
-  // // Pre-fetch thumbs as base64 data URIs for inline SVG <image> tags
-  // async function toDataURI(key: string): Promise<string> {
-  //   const buf = await getImageBytes(key);
-  //   const b64 = arrayBufferToBase64(buf);
-  //   return `data:image/png;base64,${b64}`;
-  // }
-
-  // const thmb = await Promise.all(thmbs.map((_, i) => toDataURI(thmbs[(pid + i) % 4])));
-
-  const thmb = [
-    "https://raw.githubusercontent.com/fox3000foxy/konosuba-rpg/refs/heads/main/assets/player/thmb_in_1001100.png",
-    "https://raw.githubusercontent.com/fox3000foxy/konosuba-rpg/refs/heads/main/assets/player/thmb_in_1031100.png",
-    "https://raw.githubusercontent.com/fox3000foxy/konosuba-rpg/refs/heads/main/assets/player/thmb_in_1021100.png",
-    "https://raw.githubusercontent.com/fox3000foxy/konosuba-rpg/refs/heads/main/assets/player/thmb_in_1011100.png"
-  ];
-
-  // Health bar helper (returns JSX-like object)
-  function healthBar(
-    current: number, max: number,
-    x: number, y: number,
-    w: number, h: number
-  ) {
-    const pct = Math.max(0, Math.min(1, current / max));
-    return {
-      type: 'div',
-      props: {
-        style: {
-          position: 'absolute' as const,
-          display: 'flex' as const,
-          left: x, top: y, width: w, height: h,
-          background: '#ff0000',
-        },
-        children: {
-          type: 'div',
-          props: {
-            style: {
-              width: Math.round(w * pct),
-              height: h,
-              background: '#00FF00',
-            },
-            children: null,
-          },
-        },
-      },
-    };
-  }
-
-  // End-state text
-  const endMsg = state ? ({
-    good: lang === 'fr' ? `Vous avez réussi à vaincre ${creature.prefix ? "le " : ""}${creature.name} !` : `You won from ${creature.prefix ? "the " : ""}${creature.name}!`,
-    bad: lang === 'fr' ? "L'adversaire vous a vaincu..." : "The adversary has defeated you...",
-    giveup: lang === 'fr' ? "Vous avez déclaré forfait." : "You have withdrawn.",
-    best: lang === 'fr' ? `Vous avez réussi à être ami avec ${creature.prefix ? "le " : ""}${creature.name} !` : `You managed to be friends with ${creature.prefix ? "the " : ""}${creature.name}!`,
-  } as Record<string, string>)[state] : null;
-
-  const endMsg2 = state ? ({
-    good: lang === 'fr' ? "Arriverez vous a faire mieux ?" : "Will you get it better?",
-    bad: lang === 'fr' ? "Rententez votre chance." : "Retry.",
-    giveup: lang === 'fr' ? "Peut être une prochaine fois ?" : "Maybe next time?",
-    best: lang === 'fr' ? "Pourrez vous être ami avec d'autres créatures ?" : "Can you be friends with other creatures?",
-  } as Record<string, string>)[state] : null;
-
-  // ── 3. End-state overlay (win/lose/giveup/best) ───────────────────────────
-  // if (state) {
-  //   const endImg = toPhoton(await getImageBytes('end_' + state));
-  //   composite(canvas, endImg, 0, 0, W, H);
-  //   endImg.free();
-  // }
-
+  const endImgSrc = endMsg ? `data:image/png;base64,${await endImageBase64()}` : null;
 
   const overlayJsx = {
     type: 'div',
@@ -335,40 +436,20 @@ export default async function renderImage(
           type: 'img',
           props: {
             src: thmb[pid],
-            style: {
-              position: 'absolute' as const,
-              left: 40 * 1.5 + 10,
-              top: 40 + 10 - 38,
-              width: 50,
-              height: 50,
-            },
+            style: { position: 'absolute' as const, left: 40 * 1.5 + 10, top: 40 + 10 - 38, width: 50, height: 50 },
           },
         },
         {
           type: 'div',
           props: {
-            style: {
-              display: 'flex' as const,
-              position: 'absolute' as const,
-              left: 40 * 2 + 40,
-              top: 42 * 2 - 55,
-              fontSize: 16,
-              fontFamily: '"Ginto Nord Black"',
-            },
+            style: { display: 'flex' as const, position: 'absolute' as const, left: 40 * 2 + 40, top: 42 * 2 - 55, fontSize: 16, fontFamily: '"Ginto Nord Black"' },
             children: `${player.name[pid]} (${Math.max(player.hp[pid], 0)} ${hp})`,
           },
         },
         {
           type: 'div',
           props: {
-            style: {
-              display: 'flex' as const,
-              position: 'absolute' as const,
-              right: W - 210 * 2,
-              top: 42 * 2 - 55,
-              fontSize: 16,
-              fontFamily: '"Ginto Nord Medium"',
-            },
+            style: { display: 'flex' as const, position: 'absolute' as const, right: W - 210 * 2, top: 42 * 2 - 55, fontSize: 16, fontFamily: '"Ginto Nord Medium"' },
             children: `${player.attack[pid][0]}-${player.attack[pid][1]}ATK`,
           },
         },
@@ -379,8 +460,8 @@ export default async function renderImage(
           const i = (pid + offset) % 4;
           const xBase = offset === 2 ? 332 * 2 : 234 * 2;
           const yBase = offset === 3 ? 56.25 * 2 - 38 : 36 * 2 - 38 + 3;
-          const thmX = offset === 2 ? 300 * 1.5 + 10 + 200 : 300 * 1.5 + 10;
-          const thmY = offset === 3 ? 70 + 10 - 38 : 40 - 38;
+          const thmX  = offset === 2 ? 300 * 1.5 + 10 + 200 : 300 * 1.5 + 10;
+          const thmY  = offset === 3 ? 70 + 10 - 38 : 40 - 38;
 
           return [
             {
@@ -393,14 +474,7 @@ export default async function renderImage(
             {
               type: 'div',
               props: {
-                style: {
-                  display: 'flex' as const,
-                  position: 'absolute' as const,
-                  left: xBase + 32,
-                  top: yBase - 16,
-                  fontSize: 12,
-                  fontFamily: '"Ginto Nord Black"',
-                },
+                style: { display: 'flex' as const, position: 'absolute' as const, left: xBase + 32, top: yBase - 16, fontSize: 12, fontFamily: '"Ginto Nord Black"' },
                 children: `${player.name[i]} (${Math.max(player.hp[i], 0)} ${hp})`,
               },
             },
@@ -412,79 +486,39 @@ export default async function renderImage(
         {
           type: 'div',
           props: {
-            style: {
-              display: 'flex' as const,
-              position: 'absolute' as const,
-              left: 288 * 2,
-              top: 148 * 2 + 129,
-              fontSize: 12,
-              fontFamily: '"Ginto Nord Black"',
-            },
+            style: { display: 'flex' as const, position: 'absolute' as const, left: 288 * 2, top: 148 * 2 + 129, fontSize: 12, fontFamily: '"Ginto Nord Black"' },
             children: `${creature.name} (${creature.hp} ${hp})`,
           },
         },
         {
           type: 'div',
           props: {
-            style: {
-              display: 'flex' as const,
-              position: 'absolute' as const,
-              right: W - 460 * 2,
-              top: 148 * 2 + 129,
-              fontSize: 12,
-              fontFamily: '"Ginto Nord Medium"',
-            },
+            style: { display: 'flex' as const, position: 'absolute' as const, right: W - 460 * 2, top: 148 * 2 + 129, fontSize: 12, fontFamily: '"Ginto Nord Medium"' },
             children: `${creature.attack[0]}-${creature.attack[1]}ATK`,
           },
         },
         healthBar(creature.hp, creature.hpMax, 286.5 * 2, 152 * 2 + 139, 173.5 * 2, 8.5 * 2),
 
-        // ── End-state text ─────────────────────────────────────────────
-        ...(endMsg ? [
+        // ── End-state overlay ──────────────────────────────────────────
+        ...(endMsg && endImgSrc ? [
           {
             type: 'img',
             props: {
-              src: `data:image/png;base64,${arrayBufferToBase64(await getImageBytes('end_' + state))}`,
-              style: {
-                position: 'absolute' as const,
-                left: 0, // rough centering based on expected image size
-                top: 0,
-                width: "100%",
-                height: "100%"
-              },
+              src: endImgSrc,
+              style: { position: 'absolute' as const, left: 0, top: 0, width: '100%', height: '100%' },
             },
           },
           {
             type: 'div',
             props: {
-              style: {
-                display: 'flex' as const,
-                position: 'absolute' as const,
-                left: W / 2 - endMsg.length * 9, // rough centering based on char count
-                right: 0,
-                top: 135 * 2 + 100,
-                textAlign: 'center' as const,
-                fontSize: 32,
-                fontFamily: '"Ginto Nord Medium"',
-                color: '#FFFFFF',
-              },
+              style: { display: 'flex' as const, position: 'absolute' as const, left: W / 2 - endMsg.length * 9, right: 0, top: 135 * 2 + 100, textAlign: 'center' as const, fontSize: 32, fontFamily: '"Ginto Nord Medium"', color: '#FFFFFF' },
               children: endMsg,
             },
           },
           {
             type: 'div',
             props: {
-              style: {
-                display: 'flex' as const,
-                position: 'absolute' as const,
-                left: W / 2 - (endMsg2?.length || 0) * 9, // rough centering based on char count
-                right: 0,
-                top: 135 * 2 + 100 + 50,
-                textAlign: 'center' as const,
-                fontSize: 32,
-                fontFamily: '"Ginto Nord Medium"',
-                color: '#FFFFFF',
-              },
+              style: { display: 'flex' as const, position: 'absolute' as const, left: W / 2 - (endMsg2?.length || 0) * 9, right: 0, top: 135 * 2 + 100 + 50, textAlign: 'center' as const, fontSize: 32, fontFamily: '"Ginto Nord Medium"', color: '#FFFFFF' },
               children: endMsg2,
             },
           },
@@ -493,26 +527,15 @@ export default async function renderImage(
     },
   };
 
-  const overlaySvg = await satori(overlayJsx, {
-    width: W,
-    height: H,
-    fonts: [
-      { name: 'Sans-Serif', data: fontMediumBuf, weight: 400, style: 'normal' },
+  // ── 6. UI overlay (mis en cache par clé état+hp+messages) ────────────────
+  const overlayPng = await getUIOverlay(overlayJsx, fontMediumBuf, W, H, uiCacheKey);
 
-    ],
-  });
-
-  // Rasterize SVG overlay to PNG
-  const resvg = new Resvg(overlaySvg, { fitTo: { mode: 'width', value: W } });
-  const overlayPng = resvg.render().asPng();
-
-  // Composite text overlay onto photon canvas (full-size, transparent bg)
   const overlayImgPhoton = await toPhoton(overlayPng.buffer.slice(0) as ArrayBuffer);
   Photon.watermark(canvas, overlayImgPhoton, 0n, 0n);
   overlayImgPhoton.free();
 
-  // ── 5. Export ─────────────────────────────────────────────────────────────
-  const output = canvas.get_bytes_webp(); // or .get_bytes() for PNG (larger)
+  // ── 7. Export ─────────────────────────────────────────────────────────────
+  const output = canvas.get_bytes_webp();
   canvas.free();
   return output;
 }

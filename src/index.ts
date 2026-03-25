@@ -186,6 +186,14 @@ app.get('/konosuba-rpg/assets/*', serveStatic({
   },
 }));
 
+app.get('/game/:lang/*', async (c: Context) => {
+    console.log('Received request:', c.req.url);
+  const { lang } = c.req.param();
+  const [rand, moves, seed_str, monster] = await processUrl(c.req.url);
+  const game = await processGame(rand, moves, monster, lang, false);
+  return c.json(game);
+})
+
 app.get('/konosuba-rpg/:lang/*', async (c: Context) => {
   console.log('Received request:', c.req.url);
   const { lang } = c.req.param();
