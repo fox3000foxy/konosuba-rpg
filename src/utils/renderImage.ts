@@ -282,7 +282,7 @@ export default async function renderImage(
               display: 'flex' as const,
               position: 'absolute' as const,
               left: 104,
-              top: (192 + i * 16) * 2 + 135,
+              top: (192 + i * 16) * 2 + 120,
               fontSize: 20,
               fontFamily: '"Ginto Nord Black"',
               color: '#000000',
@@ -411,8 +411,7 @@ export default async function renderImage(
                 left: 0, // rough centering based on expected image size
                 top: 0,
                 width: "100%",
-                height: "100%",
-                zIndex: 5,
+                height: "100%"
               },
             },
           },
@@ -425,7 +424,6 @@ export default async function renderImage(
                 left: W / 2 - endMsg.length * 9, // rough centering based on char count
                 right: 0,
                 top: 135 * 2 + 100,
-                zIndex: 10,
                 textAlign: 'center' as const,
                 fontSize: 32,
                 fontFamily: '"Ginto Nord Medium"',
