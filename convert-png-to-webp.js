@@ -15,7 +15,7 @@ const convertPngToAvif = async (directory) => {
 
   walkDir(directory, async (filePath) => {
     if (filePath.toLowerCase().endsWith(".png") || filePath.toLowerCase().endsWith(".jpg") || filePath.toLowerCase().endsWith(".jpeg") || filePath.toLowerCase().endsWith(".webp")) {
-      const avifPath = path.join(path.dirname(filePath), `${path.parse(filePath).name}.avif`);
+      const avifPath = path.join(path.dirname(filePath), `${path.parse(filePath).name}.webp`);
 
       try {
 
