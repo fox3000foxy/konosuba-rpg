@@ -17,6 +17,10 @@
   "scripts": {
     "generate:image-manifest": "npx ts-node scripts/generate-image-manifest.ts",
     "build": "npx tsc",
+    "test": "jest --runInBand",
+    "test:watch": "jest --watch",
+    "test:perf": "node --expose-gc ./node_modules/jest/bin/jest.js --runInBand --testPathPatterns=tests/perf",
+    "test:leaks": "node --expose-gc ./node_modules/jest/bin/jest.js --runInBand --testPathPatterns=tests/perf/leaks.spec.ts",
     "start": "npx wrangler dev",
     "dev": "npx ts-node-dev src/index.ts",
     "deploy": "npx wrangler publish",
@@ -26,8 +30,11 @@
   },
   "devDependencies": {
     "@hono/node-server": "^1.19.11",
+    "@types/jest": "^30.0.0",
     "@types/node": "^25.5.0",
+    "jest": "^30.3.0",
     "sharp": "^0.34.5",
+    "ts-jest": "^29.4.6",
     "typescript": "^6.0.2",
     "wrangler": "^4.77.0"
   }
