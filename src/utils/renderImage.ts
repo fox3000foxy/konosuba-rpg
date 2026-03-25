@@ -22,8 +22,6 @@ async function ensureWasm(): Promise<void> {
   // }
 }
 
-ensureWasm().catch((err) => console.error('Failed to initialize WASM:', err));
-
 // ─── GLOBAL CACHE (survit aux re-imports en dev/hot-reload) ──────────────────
 
 const GLOBAL = globalThis as any;
