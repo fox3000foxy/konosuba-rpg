@@ -19,20 +19,6 @@ type LinesType = {
 
 const linesTyped = lines as LinesType;
 
-const creatureClasses: typeof Creature[] = [];
-
-function makeid(length: number): string {
-  let result = '';
-  const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZbcefgijklmnopqrstuvwxyz0123456789';
-  const charactersLength = characters.length;
-  let counter = 0;
-  while (counter < length) {
-    result += characters.charAt(Math.floor(Math.random() * charactersLength));
-    counter += 1;
-  }
-  return result;
-}
-
 function pascalCaseToString(pascalCaseWord: string): string {
   const regex = /([a-z])([A-Z])/g;
   const stringWithSpaces = pascalCaseWord.replace(regex, '$1 $2');
@@ -42,7 +28,6 @@ function pascalCaseToString(pascalCaseWord: string): string {
 export default async function processGame(
   rand: Random,
   moves: string[],
-  seed_str: string,
   monster: string | null = null,
   lang: string = 'en'
 ): Promise<any> {

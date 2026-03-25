@@ -28,7 +28,7 @@ app.use('/konosuba-rpg/assets/*', serveStatic({
 app.get('/konosuba-rpg/:lang/*', async (c: Context) => {
   const { lang } = c.req.param();
   const [rand, moves, seed_str, monster] = await processUrl(c.req.url);
-  const buffer = await processGame(rand, moves, seed_str, monster, lang);
+  const buffer = await processGame(rand, moves, monster, lang);
   c.header('Content-Type', 'image/png');
   return c.body(buffer);
 });

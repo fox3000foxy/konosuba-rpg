@@ -1,5 +1,5 @@
-import { imageManifest } from './imageManifest';
 import { Random } from './Random';
+import { imageManifest } from './imageManifest';
 
 let createCanvas: any;
 let loadImage: any;
@@ -33,52 +33,136 @@ async function initializeCanvasBackend(): Promise<void> {
   );
 }
 
-const images: Record<string, any> = {};
-let preloadPromise: Promise<void> | null = null;
+initializeCanvasBackend().catch((err) => {
+  console.error('Error initializing canvas backend:', err);
+  throw err;
+});
 
-export async function preloadImages(): Promise<void> {
-  if (preloadPromise) return preloadPromise;
+// export async function preloadImages(): Promise<void> {
+//   if (preloadPromise) return preloadPromise;
 
-  await initializeCanvasBackend();
+//   await initializeCanvasBackend();
 
-  const entries = Object.entries(imageManifest) as Array<[string, () => Promise<string>]>;
-  console.log(`Preloading ${entries.length} images...`);
-  preloadPromise = Promise.all(
-    entries.map(async ([key, loader]) => {
-      const uri = await loader();
-      const img = await loadImage(uri);
-      console.log(`Preloaded image: ${key}`);
-      images[key] = img;
-    })
-  ).then(() => undefined);
+//   const entries = Object.entries(imageManifest) as Array<[string, () => Promise<string>]>;
+//   console.log(`Preloading ${entries.length} images...`);
+//   preloadPromise = Promise.all(
+//     entries.map(async ([key, loader]) => {
+//       const uri = await loader();
+//       const img = await loadImage(uri);
+//       console.log(`Preloaded image: ${key}`);
+//       images[key] = img;
+//     })
+//   ).then(() => undefined);
 
-  return preloadPromise;
-}
+//   return preloadPromise;
+// }
 
 // preloadImages().catch((err) => {
 //   console.error('Error preloading images:', err);
 //   throw err;
 // });
 
-function roundedImage(
-  ctx: CanvasRenderingContext2D,
-  x: number,
-  y: number,
-  width: number,
-  height: number,
-  radius: number
-): void {
-  ctx.beginPath();
-  ctx.moveTo(x + radius, y);
-  ctx.lineTo(x + width - radius, y);
-  ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
-  ctx.lineTo(x + width, y + height - radius);
-  ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
-  ctx.lineTo(x + radius, y + height);
-  ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
-  ctx.lineTo(x, y + radius);
-  ctx.quadraticCurveTo(x, y, x + radius, y);
-  ctx.closePath();
+// function roundedImage(
+//   ctx: CanvasRenderingContext2D,
+//   x: number,
+//   y: number,
+//   width: number,
+//   height: number,
+//   radius: number
+// ): void {
+//   ctx.beginPath();
+//   ctx.moveTo(x + radius, y);
+//   ctx.lineTo(x + width - radius, y);
+//   ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+//   ctx.lineTo(x + width, y + height - radius);
+//   ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+//   ctx.lineTo(x + radius, y + height);
+//   ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
+//   ctx.lineTo(x, y + radius);
+//   ctx.quadraticCurveTo(x, y, x + radius, y);
+//   ctx.closePath();
+// }
+
+// class ImageLoader {
+//   private cache: Record<string, Promise<any>> = {};
+//   public images: Record<string, any> = {};
+//   private loaders: Record<string, () => Promise<string>> = {};
+
+//   constructor() {
+//     this.images = new Proxy(this.images, {
+//       get: (target, key: string) => {
+//         if (typeof key !== "string") {
+//           console.log("key is not a string:", key);
+//           return target[key];
+//         }
+//         // déjà chargé → retourne direct
+//         if (target[key]) {
+//           console.log(`Image ${key} already loaded, returning from cache.`);
+//           return target[key];
+//         }
+
+//         // déjà en cours → retourne la promise
+//         // if (this.cache[key]) {
+//         //   console.log(`Image ${key} is currently loading, returning existing promise.`);
+//         //   return this.cache[key];
+//         // }
+
+//         // pas de loader → undefined
+//         if (!this.loaders[key]) {
+//           this.register(key, async () => {
+//             //loadImage
+//             const uri = imageManifest[key];
+//             const img = await loadImage(uri);
+//             console.log(`Loaded image: ${key}`);
+//             console.log(img)
+//             target[key] = img;
+//             return img;
+//           });
+//         }
+
+//         // sinon → on charge
+//         // const promise = this.loaders[key]()
+//         //   .then((uri) => loadImage(uri))
+//         //   .then((img) => {
+//         //     target[key] = img;
+//         //     return img;
+//         //   })
+//         //   .catch((err) => {
+//         //     console.error(`Error loading image ${key}:`, err);
+//         //     throw err;
+//         //   });
+
+//         // this.cache[key] = promise;
+//         // return promise;
+//       },
+//     });
+//   }
+
+//   register(key: string, loader: () => Promise<string>) {
+//     this.loaders[key] = loader;
+//   }
+// }
+
+const cache: Record<string, any> = {};
+async function getImage(key: string): Promise<any> {
+  if (cache[key]) return cache[key];
+  const { uri } = await import(imageManifest[key]).then((mod) => (typeof mod === 'string' ? mod : mod.default))
+    .catch((err) => {
+      console.error(`Error importing image ${key} from manifest:`, err);
+      return null;
+    });
+  if (!uri) {
+    console.warn(`No URI found for image key: ${key}`);
+    return null;
+  }
+  try {
+    const img = await loadImage(uri);
+    cache[key] = img;
+    return img;
+  } catch (err) {
+    console.error(`Error loading image ${key} from URI ${uri}:`, err);
+    return null;
+  }
 }
 
 export default async function renderImage(
@@ -90,18 +174,17 @@ export default async function renderImage(
   training = false,
   lang = 'en'
 ): Promise<Buffer> {
-  await preloadImages();
-
-  if (!images['board'] || !images['frameless']) {
+  if (!await getImage('board') || !await getImage('frameless')) {
     throw new Error('Images not loaded. Call preloadImages() first or verify imageManifest.');
   }
 
   const canvas = createCanvas(1000, 600);
   const ctx = canvas.getContext('2d');
 
-  ctx.drawImage(images['board'], 0, 0, canvas.width, canvas.height);
+  console.log('Rendering board background...');
+  ctx.drawImage(await getImage('board'), 0, 0, canvas.width, canvas.height);
 
-  ctx.transform(-1, 0, 0, 1, canvas.width, 0);
+  // ctx.transform(-1, 0, 0, 1, canvas.width, 0);
 
   creature.hp = Math.max(creature.hp, 0)
   if (creature.hp == 0)
@@ -112,23 +195,16 @@ export default async function renderImage(
       ["character_aqua04"]
     ];
 
-  if (player.hp[3] > 0) ctx.drawImage(images[player.images[3][0]], canvas.width - (canvas.width * 2 / 8) - 45, (canvas.height / 2 - (52) * 2) - 45, 184 * images[player.images[3][0]].width / images[player.images[3][0]].height, 184);
-  if (player.hp[2] > 0) ctx.drawImage(images[player.images[2][0]], canvas.width - (canvas.width * 2 / 8) + 75, (canvas.height / 2 - (52) * 2) - 45, 184 * images[player.images[2][0]].width / images[player.images[2][0]].height, 184);
-  if (player.hp[1] > 0) ctx.drawImage(images[player.images[1][0]], canvas.width - (canvas.width * 2 / 8) - 75, (canvas.height / 2 - (52) * 2) + 45, 184 * images[player.images[1][0]].width / images[player.images[1][0]].height, 184);
-  if (player.hp[0] > 0) ctx.drawImage(images[player.images[0][0]], canvas.width - (canvas.width * 2 / 8) + 50, (canvas.height / 2 - (52) * 2) + 45, 184 * images[player.images[0][0]].width / images[player.images[0][0]].height, 184);
-  if (creature.hp > 0) ctx.drawImage(images[creature.images[0]], (canvas.width * 1 / 8) - 140, canvas.height / 2 - 240, 400, 400);
-  ctx.transform(1, 0, 0, 1, 0, 0);
-
-  // Draw frame
-  ctx.drawImage(images['frameless'], 0, 0, canvas.width, canvas.height);
-
-  // Messages
+  if (player.hp[3] > 0) ctx.drawImage(await getImage(player.images[3][0]), canvas.width - (canvas.width * 2 / 8) - 45, (canvas.height / 2 - (52) * 2) - 45, 184 * (await getImage(player.images[3][0])).width / (await getImage(player.images[3][0])).height, 184);
+  if (player.hp[2] > 0) ctx.drawImage(await getImage(player.images[2][0]), canvas.width - (canvas.width * 2 / 8) + 75, (canvas.height / 2 - (52) * 2) - 45, 184 * (await getImage(player.images[2][0])).width / (await getImage(player.images[2][0])).height, 184);
+  if (player.hp[1] > 0) ctx.drawImage(await getImage(player.images[1][0]), canvas.width - (canvas.width * 2 / 8) - 75, (canvas.height / 2 - (52) * 2) + 45, 184 * (await getImage(player.images[1][0])).width / (await getImage(player.images[1][0])).height, 184);
+  if (player.hp[0] > 0) ctx.drawImage(await getImage(player.images[0][0]), canvas.width - (canvas.width * 2 / 8) + 50, (canvas.height / 2 - (52) * 2) + 45, 184 * (await getImage(player.images[0][0])).width / (await getImage(player.images[0][0])).height, 184);
+  if (creature.hp > 0) ctx.drawImage(await getImage(creature.images[0]), (canvas.width * 1 / 8) - 140, canvas.height / 2 - 240, 400, 400);
   ctx.font = '20px "Ginto Nord Black"';
   ctx.textAlign = 'left';
   ctx.fillStyle = '#000000';
   for (let i = 0; i < messages.length; i++) {
-    ctx.fillStyle = '#666666';
-    ctx.fillText(messages[i], 104 + 1.5, (192 + i * 16) * 2 + 135 + 1.5);
+    ctx.fillStyle = '#666666'; ctx.fillText(messages[i], 104 + 1.5, (192 + i * 16) * 2 + 135 + 1.5);
     ctx.fillStyle = '#000000';
     ctx.fillText(messages[i], 104, (192 + i * 16) * 2 + 135);
   }
@@ -155,14 +231,13 @@ export default async function renderImage(
   ctx.font = '12px "Ginto Nord Black"';
   ctx.textAlign = 'left';
   ctx.fillStyle = '#000000';
-  ctx.fillText(player.name[(player.currentPlayerId + 3) % 4] + " (" + Math.max(player.hp[(player.currentPlayerId + 1) % 4], 0) + " " + (lang == "fr" ? "PV" : "HP") + ")", 230 * 2 + 40, 55 * 2 - 38);
+  ctx.fillText(player.name[(player.currentPlayerId + 3) % 4] + " (" + Math.max(player.hp[(player.currentPlayerId + 3) % 4], 0) + " " + (lang == "fr" ? "PV" : "HP") + ")", 230 * 2 + 40, 55 * 2 - 38);
 
-  ctx.drawImage([images['thmb_in_1001100'], images['thmb_in_1031100'], images['thmb_in_1021100'], images['thmb_in_1011100']][player.currentPlayerId], 40 * 1.5 + 10, 40 + 10 - 38, 50, 50)
-  ctx.drawImage([images['thmb_in_1001100'], images['thmb_in_1031100'], images['thmb_in_1021100'], images['thmb_in_1011100']][(player.currentPlayerId + 1) % 4], 300 * 1.5 + 10, 40 - 38, 40, 40)
-  ctx.drawImage([images['thmb_in_1001100'], images['thmb_in_1031100'], images['thmb_in_1021100'], images['thmb_in_1011100']][(player.currentPlayerId + 2) % 4], 300 * 1.5 + 10 + 200, 40 - 38, 40, 40)
-  ctx.drawImage([images['thmb_in_1001100'], images['thmb_in_1031100'], images['thmb_in_1021100'], images['thmb_in_1011100']][(player.currentPlayerId + 3) % 4], 300 * 1.5 + 10, 70 + 10 - 38, 40, 40)
-
-  ctx.font = '20px "Ginto Nord Black"';
+  ctx.drawImage([await getImage('thmb_in_1001100'), await getImage('thmb_in_1031100'), await getImage('thmb_in_1021100'), await getImage('thmb_in_1011100')][player.currentPlayerId], 40 * 1.5 + 10, 40 + 10 - 38, 50, 50)
+  ctx.drawImage([await getImage('thmb_in_1001100'), await getImage('thmb_in_1031100'), await getImage('thmb_in_1021100'), await getImage('thmb_in_1011100')][(player.currentPlayerId + 1) % 4], 300 * 1.5 + 10, 40 - 38, 40, 40)
+  ctx.drawImage([await getImage('thmb_in_1001100'), await getImage('thmb_in_1031100'), await getImage('thmb_in_1021100'), await getImage('thmb_in_1011100')][(player.currentPlayerId + 2) % 4], 300 * 1.5 + 10 + 200, 40 - 38, 40, 40)
+  ctx.drawImage([await getImage('thmb_in_1001100'), await getImage('thmb_in_1031100'), await getImage('thmb_in_1021100'), await getImage('thmb_in_1011100')][(player.currentPlayerId + 3) % 4], 300 * 1.5 + 10, 70 + 10 - 38, 40, 40)
+  
   ctx.textAlign = 'left';
   ctx.fillStyle = '#000000';
   ctx.fillText(creature.name + " (" + creature.hp + " " + (lang == "fr" ? "PV" : "HP") + ")", 288 * 2, 148 * 2 + 139);
@@ -207,7 +282,7 @@ export default async function renderImage(
     // ctx.save();
     // roundedImage(ctx,0,0,canvas.width,canvas.height,100);
     // ctx.clip();
-    ctx.drawImage(images['end_' + state], 0, 0, canvas.width, canvas.height);
+    ctx.drawImage(await getImage('end_' + state), 0, 0, canvas.width, canvas.height);
     // ctx.restore();
     ctx.font = '32px "Ginto Nord Medium"';
     ctx.fillStyle = '#FFFFFF';
@@ -225,6 +300,9 @@ export default async function renderImage(
   }
 
   // Return the image to the client
-
-  return canvas.toBuffer();
+  // console.log(canvas.toDataURL());
+  const dataURL = canvas.toDataURL();
+  const base64Data = dataURL.replace(/^data:image\/\w+;base64,/, '');
+  const buffer = Buffer.from(base64Data, 'base64');
+  return buffer;
 }

@@ -10,7 +10,8 @@ export default function processUrl(url: string): [Random, string[], string, stri
 
   url = url.toLowerCase();
   let seed = 0;
-  let seed_str = url.split('?')[0].split('/')[3];
+  let seed_str = url.split('?')[0].split('/')[5];
+  // console.log(url, seed_str)
 
   let moves = url.toUpperCase().split('/');
   moves = moves.filter((m) => valid_moves.indexOf(m) !== -1);
