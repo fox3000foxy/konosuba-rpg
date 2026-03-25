@@ -10,10 +10,10 @@ async function ensureWasm(): Promise<void> {
   if (wasmReady) return;
 
   // if (navigator.userAgent !== 'Cloudflare-Workers') {
-    await initWasm(await fetch('https://unpkg.com/@resvg/resvg-wasm/index_bg.wasm').then((r) => r.arrayBuffer()));
-    console.log('WASM initialized (dev)');
-    wasmReady = true;
-    return;
+  await initWasm(await fetch('https://unpkg.com/@resvg/resvg-wasm/index_bg.wasm').then((r) => r.arrayBuffer()));
+  console.log('WASM initialized (dev)');
+  wasmReady = true;
+  return;
   // }
   // else {
   //   console.log('Running in Cloudflare Workers environment, using global WebAssembly.instantiate for resvg WASM module');
@@ -219,16 +219,16 @@ export default async function renderImage(
   //   'thmb_in_1001100', 'thmb_in_1031100', 'thmb_in_1021100', 'thmb_in_1011100',
   // ];
 
-  // function arrayBufferToBase64(buffer: ArrayBuffer): string {
-  //   const bytes = new Uint8Array(buffer);
-  //   let binary = '';
-  //   const chunkSize = 0x8000; // 32KB chunks to avoid call stack overflow
-  //   for (let i = 0; i < bytes.length; i += chunkSize) {
-  //     const chunk = bytes.subarray(i, Math.min(i + chunkSize, bytes.length));
-  //     binary += String.fromCharCode(...chunk);
-  //   }
-  //   return btoa(binary);
-  // }
+  function arrayBufferToBase64(buffer: ArrayBuffer): string {
+    const bytes = new Uint8Array(buffer);
+    let binary = '';
+    const chunkSize = 0x8000; // 32KB chunks to avoid call stack overflow
+    for (let i = 0; i < bytes.length; i += chunkSize) {
+      const chunk = bytes.subarray(i, Math.min(i + chunkSize, bytes.length));
+      binary += String.fromCharCode(...chunk);
+    }
+    return btoa(binary);
+  }
 
   // // Pre-fetch thumbs as base64 data URIs for inline SVG <image> tags
   // async function toDataURI(key: string): Promise<string> {
@@ -444,7 +444,7 @@ export default async function renderImage(
           {
             type: 'img',
             props: {
-              src: thmb[pid],
+              src: `data:image/png;base64,${arrayBufferToBase64(await getImageBytes('end_' + state))}`,
               style: {
                 position: 'absolute' as const,
                 left: 0, // rough centering based on expected image size

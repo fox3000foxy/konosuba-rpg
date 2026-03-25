@@ -295,9 +295,9 @@ export const imageManifest: Record<string, string> = {
   "thmb_in_1021100": "https://raw.githubusercontent.com/fox3000foxy/konosuba-rpg/refs/heads/main/assets/player/thmb_in_1021100.webp",
   "thmb_in_1031100": "https://raw.githubusercontent.com/fox3000foxy/konosuba-rpg/refs/heads/main/assets/player/thmb_in_1031100.webp",
   "board": "https://raw.githubusercontent.com/fox3000foxy/konosuba-rpg/refs/heads/main/swordgame/art/board.webp",
-  "end_bad": "https://raw.githubusercontent.com/fox3000foxy/konosuba-rpg/refs/heads/main/swordgame/art/end_bad.webp",
-  "end_best": "https://raw.githubusercontent.com/fox3000foxy/konosuba-rpg/refs/heads/main/swordgame/art/end_best.webp",
-  "end_good": "https://raw.githubusercontent.com/fox3000foxy/konosuba-rpg/refs/heads/main/swordgame/art/end_good.webp",
+  "end_bad": "https://raw.githubusercontent.com/fox3000foxy/konosuba-rpg/refs/heads/main/swordgame/art/end_bad.png",
+  "end_best": "https://raw.githubusercontent.com/fox3000foxy/konosuba-rpg/refs/heads/main/swordgame/art/end_best.png",
+  "end_good": "https://raw.githubusercontent.com/fox3000foxy/konosuba-rpg/refs/heads/main/swordgame/art/end_good.png",
   "frame": "https://raw.githubusercontent.com/fox3000foxy/konosuba-rpg/refs/heads/main/swordgame/art/frame.webp",
   "frameless": "https://raw.githubusercontent.com/fox3000foxy/konosuba-rpg/refs/heads/main/swordgame/art/frameless.webp"
 };
