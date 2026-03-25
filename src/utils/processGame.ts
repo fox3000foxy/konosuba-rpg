@@ -29,7 +29,8 @@ export default async function processGame(
   rand: Random,
   moves: string[],
   monster: string | null = null,
-  lang: string = 'en'
+  lang: string = 'en',
+  renderingImage: boolean = true
 ): Promise<any> {
   lang = lang === 'fr' ? 'fr' : 'en';
   const player = new Player(rand);
@@ -137,6 +138,11 @@ export default async function processGame(
   }
 
   let training = !!monster
-  const image = await renderImage(state, messages, player, creature, lang);
-  return image;
+  if (state === null && moves.length > 0) state = "incomplete";
+  if (renderingImage) {
+    const image = await renderImage(state, messages, player, creature, lang);
+    return { image, state, messages, player, creature, training };
+  } else {
+    return { state, messages, player, creature, training };
+  }
 }

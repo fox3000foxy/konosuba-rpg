@@ -5,6 +5,7 @@ import { imageManifest } from './utils/imageManifest';
 import { mobMap } from './utils/mobMap';
 import processGame from './utils/processGame';
 import processUrl from './utils/processUrl';
+import { Random } from './utils/Random';
 
 const app = new Hono();
 
@@ -62,21 +63,73 @@ function buildImageUrl(payload: string, lang: string): string {
 }
 
 /** Génère les deux rangées de boutons (identique JS d'origine) */
-function buildComponents(payload: string, userID: string, lang: string, disableChangeMonster = false) {
+async function buildComponents(payload: string, userID: string, lang: string, disableChangeMonster = false) {
+  const imageUrl = buildImageUrl(payload, lang);
+
+  // const game = processGame
+  const [rand, moves, seed_str, monster] = processUrl(imageUrl);
+  const { state } = await processGame(rand, moves, monster, lang, false);
   const training = isTraining(payload);
   const fr = lang === 'fr';
+
+  if (state === "incomplete") {
+    disableChangeMonster = true;
+  }
+
+  if (state === "good" || state === "bad" || state === "best" || state === "giveup") {
+    return [
+      {
+        type: 1,
+        components: [
+          {
+            type: 2,
+            label: fr ? 'Recommencer' : 'Restart',
+            style: 2,
+            custom_id: `${restartId(payload)}:${userID}`,
+          },
+          {
+            type: 2,
+            label: fr ? 'Abandonner' : 'Give up',
+            style: 2,
+            custom_id: `${payload}/g:${userID}`,
+          },
+          {
+            type: 2,
+            label: fr ? 'Changer de monstre' : 'Change monster',
+            style: 2,
+            // En training : le bouton est désactivé (comme dans le JS). En partie normale : nouveau seed.
+            custom_id: training
+              ? `train.${extractMonster(payload)}.${makeid(10)}:${userID}`
+              : `${makeid(15)}:${userID}`
+          },
+        ],
+      },
+    ]
+  }
 
   return [
     {
       type: 1,
       components: [
-        { type: 2, label: fr ? 'Attaquer 1 fois'  : 'Attack 1 time',  style: 4, custom_id: `${payload}/a:${userID}` },
-        { type: 2, label: fr ? 'Attaquer 4 fois'  : 'Attack 4 times', style: 4, custom_id: `${payload}/aaaa:${userID}` },
-        { type: 2, label: fr ? 'Câliner 1 fois'   : 'Hug 1 time',     style: 1, custom_id: `${payload}/h:${userID}` },
-        { type: 2, label: fr ? 'Câliner 4 fois'   : 'Hug 4 times',    style: 1, custom_id: `${payload}/hhhh:${userID}` },
-        { type: 2, label: fr ? 'Se défendre'       : 'Defend',         style: 3, custom_id: `${payload}/d:${userID}` },
+        { type: 2, label: fr ? 'Attaquer 1 fois' : 'Attack 1 time', style: 4, custom_id: `${payload}/a:${userID}` },
+        { type: 2, label: fr ? 'Attaquer 4 fois' : 'Attack 4 times', style: 4, custom_id: `${payload}/aaaa:${userID}` },
+        { type: 2, label: fr ? 'Attaquer 10 fois' : 'Attack 10 times', style: 4, custom_id: `${payload}/aaaaaaaaaa:${userID}` },
+      ],
+    }, {
+      type: 1,
+      components: [
+        { type: 2, label: fr ? 'Câliner 1 fois' : 'Hug 1 time', style: 1, custom_id: `${payload}/h:${userID}` },
+        { type: 2, label: fr ? 'Câliner 4 fois' : 'Hug 4 times', style: 1, custom_id: `${payload}/hhhh:${userID}` },
+        { type: 2, label: fr ? 'Câliner 10 fois' : 'Hug 10 times', style: 1, custom_id: `${payload}/hhhhhhhhhh:${userID}` },
       ],
     },
+    {
+      type: 1,
+      components: [
+        { type: 2, label: fr ? 'Se défendre' : 'Defend', style: 3, custom_id: `${payload}/d:${userID}` },
+      ],
+    },
+
     {
       type: 1,
       components: [
@@ -107,7 +160,7 @@ function buildComponents(payload: string, userID: string, lang: string, disableC
   ];
 }
 
-app.use('/konosuba-rpg/assets/*', serveStatic({
+app.get('/konosuba-rpg/assets/*', serveStatic({
   root: process.cwd() + '/assets',
   getContent: async function (path: string, c: Context<Env, any, {}>): Promise<Response | null> {
     const url = new URL(path, 'http://localhost');
@@ -137,14 +190,14 @@ app.get('/konosuba-rpg/:lang/*', async (c: Context) => {
   console.log('Received request:', c.req.url);
   const { lang } = c.req.param();
   const [rand, moves, seed_str, monster] = await processUrl(c.req.url);
-  const buffer = await processGame(rand, moves, monster, lang);
+  const { image } = await processGame(rand, moves, monster, lang);
   c.header('Content-Type', 'image/png');
-  return c.body(buffer);
+  return c.body(image);
 });
 
 app.post('/api/interactions', async (c: Context) => {
   const signature = c.req.header('x-signature-ed25519');
-  const timestamp  = c.req.header('x-signature-timestamp');
+  const timestamp = c.req.header('x-signature-timestamp');
   const body = await c.req.text();
 
   if (!c.env) return c.text('Environment variables not found', 500);
@@ -152,7 +205,7 @@ app.post('/api/interactions', async (c: Context) => {
 
   if (!signature || !timestamp || !PUBLIC_KEY) {
     if (!signature) console.warn('Missing signature');
-    if (!timestamp)  console.warn('Missing timestamp');
+    if (!timestamp) console.warn('Missing timestamp');
     if (!PUBLIC_KEY) console.warn('Missing public key');
     return c.text('invalid request headers', 400);
   }
@@ -189,7 +242,7 @@ app.post('/api/interactions', async (c: Context) => {
             description: fr ? `**Partie de <@${userID}>**` : `**<@${userID}> game**`,
             color: 0x2b2d31,
           }],
-          components: buildComponents(id, userID, lang),
+          components: await buildComponents(id, userID, lang),
         },
       });
     }
@@ -213,7 +266,83 @@ app.post('/api/interactions', async (c: Context) => {
               : `**Training vs ${monsterKey} (player <@${userID}>)**`,
             color: 0x2b2d31,
           }],
-          components: buildComponents(payload, userID, lang),
+          components: await buildComponents(payload, userID, lang),
+        },
+      });
+    }
+
+    // /infos-monster
+    if (interaction.data?.name === 'infos-monster') {
+      const commandMonster = interaction.data.options?.find((o: any) => o.name === 'monster')?.value;
+      const monsterCandidate = typeof commandMonster === 'string' ? commandMonster.trim().toLowerCase() : '';
+      const monsterKey = Object.keys(mobMap).find((k) => k.toLowerCase() === monsterCandidate);
+      if (!monsterKey) {
+        const allMobs = Object.keys(mobMap).sort();
+        return c.json({
+          type: 4,
+          data: {
+            embeds: [{
+              description: fr
+                ? `Ce monstre est invalide. Voici les monstres valides: ${allMobs.join(', ')}`
+                : `Invalid monster. Valid monsters: ${allMobs.join(', ')}`,
+            }],
+          },
+        });
+      }
+
+      const rand = new Random(Math.floor(Math.random() * Number.MAX_SAFE_INTEGER));
+      const MonsterClass = mobMap[monsterKey];
+      const monster = new MonsterClass(rand);
+      const imgUrl = `${BASE_URL}/konosuba-rpg/assets/${monster.images[0]}`;
+
+      return c.json({
+        type: 4,
+        data: {
+          embeds: [{
+            description: fr
+              ? `# Informations de monstre:\n\n**Nom**: ${monster.name}\n**PV**: ${monster.hp} PV\n**ATK**: ${monster.attack[0]}-${monster.attack[1]} points de dégâts.\n**LP**: ${monster.love !== 100 ? monster.love + ' points d\'amour' : 'Ne peut pas être ami'}`
+              : `# Monster infos:\n\n**Name**: ${monster.name}\n**HP**: ${monster.hp} HP\n**ATK**: ${monster.attack[0]}-${monster.attack[1]} damage points.\n**LP**: ${monster.love !== 100 ? monster.love + ' love points' : 'Can\'t be friends'}`,
+            image: { url: imgUrl },
+            color: 0x2b2d31,
+          }],
+        },
+      });
+    }
+
+    // /infos-player
+    if (interaction.data?.name === 'infos-player') {
+      const characterId = Number(interaction.data.options?.find((o: any) => o.name === 'character')?.value);
+      if (!Number.isInteger(characterId) || characterId < 0 || characterId > 3) {
+        return c.json({
+          type: 4,
+          data: {
+            embeds: [{
+              description: fr
+                ? 'Personnage invalide. Choisissez 0-3 (Kazuma, Darkness, Megumin, Aqua).'
+                : 'Invalid character. Choose 0-3 (Kazuma, Darkness, Megumin, Aqua).',
+            }],
+          },
+        });
+      }
+
+      const randP = new Random(Math.floor(Math.random() * Number.MAX_SAFE_INTEGER));
+      const PlayerClass = (require('./classes/Player').default);
+      const player = new PlayerClass(randP);
+      const charName = player.name[characterId];
+      const hp = player.hp[characterId];
+      const attackR = player.attack[characterId];
+      const imgUrl = `${BASE_URL}/konosuba-rpg/assets/${player.images[characterId][0]}`;
+      console.log(imgUrl)
+      return c.json({
+        type: 4,
+        data: {
+          embeds: [{
+            description: fr
+              ? `# Informations sur ${charName}:\n\n**Nom**: ${charName}\n**PV**: ${hp} PV\n**ATK**: ${attackR[0]}-${attackR[1]} points de dégâts.`
+              : `# Player infos for ${charName}:\n\n**Name**: ${charName}\n**HP**: ${hp} HP\n**ATK**: ${attackR[0]}-${attackR[1]} damage points.`,
+            image: { url: imgUrl },
+            color: 0x2b2d31,
+          }],
         },
       });
     }
@@ -226,7 +355,7 @@ app.post('/api/interactions', async (c: Context) => {
     const customId: string = interaction.data.custom_id;
     const colonIdx = customId.lastIndexOf(':');
     const payload = colonIdx !== -1 ? customId.slice(0, colonIdx) : customId;
-    const owner   = colonIdx !== -1 ? customId.slice(colonIdx + 1) : '';
+    const owner = colonIdx !== -1 ? customId.slice(colonIdx + 1) : '';
 
     // Vérification du propriétaire (comme dans le JS d'origine)
     if (owner && owner !== userID && owner !== 'all') {
@@ -254,7 +383,7 @@ app.post('/api/interactions', async (c: Context) => {
             : (fr ? `**Partie de <@${userID}>**` : `**<@${userID}> game**`),
           color: 0x2b2d31,
         }],
-        components: buildComponents(payload, userID, lang),
+        components: await buildComponents(payload, userID, lang),
       },
     });
   }
@@ -266,9 +395,9 @@ export default app;
 
 async function start() {
   // if (navigator.userAgent !== 'Cloudflare-Workers') {
-    const serve = (await import('@hono/node-server')).serve;
-    serve({ fetch: app.fetch, port: 8787 });
-    console.log('Server running on http://localhost:8787');
+  const serve = (await import('@hono/node-server')).serve;
+  serve({ fetch: app.fetch, port: 8787 });
+  console.log('Server running on http://localhost:8787');
   // }
 }
 start();
