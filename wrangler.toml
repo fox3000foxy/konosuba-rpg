@@ -2,6 +2,7 @@ name = "konosuba-rpg"
 type = "typescript"
 main = "src/index.ts"
 compatibility_date = "2026-03-25"
+compatibility_flags = ["nodejs_compat"]
 
 [build]
 command = "npm run build"

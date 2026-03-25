@@ -137,6 +137,6 @@ export default async function processGame(
   }
 
   let training = !!monster
-  const image = await renderImage(state, messages, player, creature, rand, training, lang);
+  const image = await renderImage(state, messages, player, creature, lang);
   return image;
 }

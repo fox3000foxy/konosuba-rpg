@@ -1,6 +1,7 @@
 import { serve } from '@hono/node-server';
 import { Context, Env, Hono } from 'hono';
 import { serveStatic } from 'hono/serve-static';
+import { imageManifest } from './utils/imageManifest';
 import processGame from './utils/processGame';
 import processUrl from './utils/processUrl';
 
@@ -20,8 +21,11 @@ function makeid(length: number): string {
 
 app.use('/konosuba-rpg/assets/*', serveStatic({
   root: process.cwd() + '/assets',
-  getContent: function (path: string, c: Context<Env, any, {}>): Promise<Response | null> {
-    throw new Error('Function not implemented.');
+  getContent: async function (path: string, c: Context<Env, any, {}>): Promise<Response | null> {
+    const url = new URL(path, 'http://localhost');
+    const key = url.pathname.split('assets/')[2];
+    const image = imageManifest[key];
+    return fetch(image);
   }
 }));
 

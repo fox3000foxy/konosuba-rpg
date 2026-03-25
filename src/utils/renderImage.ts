@@ -1,317 +1,464 @@
-import { Random } from './Random';
+import * as Photon from '@cf-wasm/photon';
+import { initWasm, Resvg } from '@resvg/resvg-wasm';
+// import resvgWasm from '@resvg/resvg-wasm/index_bg.wasm?module';
+import satori from 'satori';
 import { imageManifest } from './imageManifest';
 
-let createCanvas: any;
-let loadImage: any;
+// ─── WASM init (once per Worker lifetime) ────────────────────────────────────
 
-async function initializeCanvasBackend(): Promise<void> {
-  console.log('Initializing canvas backend...');
-  if (createCanvas && loadImage) return;
-
-  const errors: string[] = [];
-
-  try {
-    const imp = await import('canvas');
-    createCanvas = imp.createCanvas;
-    loadImage = imp.loadImage;
-    return;
-  } catch (err) {
-    errors.push(`canvas: ${err}`);
-  }
-
-  try {
-    const imp = await import('@napi-rs/canvas');
-    createCanvas = imp.createCanvas;
-    loadImage = imp.loadImage;
-    return;
-  } catch (err) {
-    errors.push(`@napi-rs/canvas: ${err}`);
-  }
-
-  throw new Error(
-    'Unable to load canvas backend. Install either `canvas` or `@napi-rs/canvas` (recommended on Windows). Errors: ' + errors.join('; ')
-  );
+let wasmReady = false;
+async function ensureWasm(): Promise<void> {
+  if (wasmReady) return;
+  initWasm(await fetch('https://unpkg.com/@resvg/resvg-wasm/index_bg.wasm').then((r) => r.arrayBuffer()));
+  // await initResvg(resvgWasm);
+  wasmReady = true;
 }
 
-initializeCanvasBackend().catch((err) => {
-  console.error('Error initializing canvas backend:', err);
-  throw err;
-});
+// ─── Image cache (ArrayBuffer, not canvas Image objects) ─────────────────────
 
-// export async function preloadImages(): Promise<void> {
-//   if (preloadPromise) return preloadPromise;
+const imageCache: Record<string, ArrayBuffer> = {};
 
-//   await initializeCanvasBackend();
+export async function getImageBytes(key: string): Promise<ArrayBuffer> {
+  if (imageCache[key]) return imageCache[key];
 
-//   const entries = Object.entries(imageManifest) as Array<[string, () => Promise<string>]>;
-//   console.log(`Preloading ${entries.length} images...`);
-//   preloadPromise = Promise.all(
-//     entries.map(async ([key, loader]) => {
-//       const uri = await loader();
-//       const img = await loadImage(uri);
-//       console.log(`Preloaded image: ${key}`);
-//       images[key] = img;
-//     })
-//   ).then(() => undefined);
+  // imageManifest[key] should be a URL string or a dynamic import that resolves to one
+  // const url: string = typeof imageManifest[key] === 'string'
+  //   ? imageManifest[key]
+  //   : await import(imageManifest[key]).then((m) => m.default ?? m);
 
-//   return preloadPromise;
-// }
+  const url: string = imageManifest[key];
 
-// preloadImages().catch((err) => {
-//   console.error('Error preloading images:', err);
-//   throw err;
-// });
-
-// function roundedImage(
-//   ctx: CanvasRenderingContext2D,
-//   x: number,
-//   y: number,
-//   width: number,
-//   height: number,
-//   radius: number
-// ): void {
-//   ctx.beginPath();
-//   ctx.moveTo(x + radius, y);
-//   ctx.lineTo(x + width - radius, y);
-//   ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
-//   ctx.lineTo(x + width, y + height - radius);
-//   ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
-//   ctx.lineTo(x + radius, y + height);
-//   ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
-//   ctx.lineTo(x, y + radius);
-//   ctx.quadraticCurveTo(x, y, x + radius, y);
-//   ctx.closePath();
-// }
-
-// class ImageLoader {
-//   private cache: Record<string, Promise<any>> = {};
-//   public images: Record<string, any> = {};
-//   private loaders: Record<string, () => Promise<string>> = {};
-
-//   constructor() {
-//     this.images = new Proxy(this.images, {
-//       get: (target, key: string) => {
-//         if (typeof key !== "string") {
-//           console.log("key is not a string:", key);
-//           return target[key];
-//         }
-//         // déjà chargé → retourne direct
-//         if (target[key]) {
-//           console.log(`Image ${key} already loaded, returning from cache.`);
-//           return target[key];
-//         }
-
-//         // déjà en cours → retourne la promise
-//         // if (this.cache[key]) {
-//         //   console.log(`Image ${key} is currently loading, returning existing promise.`);
-//         //   return this.cache[key];
-//         // }
-
-//         // pas de loader → undefined
-//         if (!this.loaders[key]) {
-//           this.register(key, async () => {
-//             //loadImage
-//             const uri = imageManifest[key];
-//             const img = await loadImage(uri);
-//             console.log(`Loaded image: ${key}`);
-//             console.log(img)
-//             target[key] = img;
-//             return img;
-//           });
-//         }
-
-//         // sinon → on charge
-//         // const promise = this.loaders[key]()
-//         //   .then((uri) => loadImage(uri))
-//         //   .then((img) => {
-//         //     target[key] = img;
-//         //     return img;
-//         //   })
-//         //   .catch((err) => {
-//         //     console.error(`Error loading image ${key}:`, err);
-//         //     throw err;
-//         //   });
-
-//         // this.cache[key] = promise;
-//         // return promise;
-//       },
-//     });
-//   }
-
-//   register(key: string, loader: () => Promise<string>) {
-//     this.loaders[key] = loader;
-//   }
-// }
-
-const cache: Record<string, any> = {};
-async function getImage(key: string): Promise<any> {
-  if (cache[key]) return cache[key];
-  const { uri } = await import(imageManifest[key]).then((mod) => (typeof mod === 'string' ? mod : mod.default))
-    .catch((err) => {
-      console.error(`Error importing image ${key} from manifest:`, err);
-      return null;
-    });
-  if (!uri) {
-    console.warn(`No URI found for image key: ${key}`);
-    return null;
-  }
-  try {
-    const img = await loadImage(uri);
-    cache[key] = img;
-    return img;
-  } catch (err) {
-    console.error(`Error loading image ${key} from URI ${uri}:`, err);
-    return null;
-  }
+  const resp = await fetch(url);
+  if (!resp.ok) throw new Error(`Failed to fetch image "${key}": ${resp.status}`);
+  const buf = await resp.arrayBuffer();
+  imageCache[key] = buf;
+  return buf;
 }
 
-export default async function renderImage(
-  state: any,
-  messages: string[],
-  player: any,
-  creature: any,
-  rand: Random,
-  training = false,
-  lang = 'en'
-): Promise<Buffer> {
-  if (!await getImage('board') || !await getImage('frameless')) {
-    throw new Error('Images not loaded. Call preloadImages() first or verify imageManifest.');
-  }
+function toPhoton(buf: ArrayBuffer): Photon.PhotonImage {
+  return Photon.PhotonImage.new_from_byteslice(new Uint8Array(buf));
+}
 
-  const canvas = createCanvas(1000, 600);
-  const ctx = canvas.getContext('2d');
+// ─── Helpers ─────────────────────────────────────────────────────────────────
 
-  ctx.drawImage(await getImage('board'), 0, 0, canvas.width, canvas.height);
+/** Flip an image horizontally (mirror on X axis) */
+function flipX(img: Photon.PhotonImage): Photon.PhotonImage {
+  const w = img.get_width();
+  const h = img.get_height();
+  const raw = img.get_raw_pixels(); // Uint8Array of RGBA
+  const flipped = new Uint8Array(raw.length);
 
-  creature.hp = Math.max(creature.hp, 0)
-  if (creature.hp == 0)
-    player.images = [
-      ["character_kazuma04"],
-      ["character_daku04"],
-      ["character_meg04"],
-      ["character_aqua04"]
-    ];
-
-  ctx.transform(-1, 0, 0, 1, canvas.width, 0);
-  if (player.hp[3] > 0) ctx.drawImage(await getImage(player.images[3][0]), canvas.width - (canvas.width * 2 / 8) - 45, (canvas.height / 2 - (52) * 2) - 45, 184 * (await getImage(player.images[3][0])).width / (await getImage(player.images[3][0])).height, 184);
-  if (player.hp[2] > 0) ctx.drawImage(await getImage(player.images[2][0]), canvas.width - (canvas.width * 2 / 8) + 75, (canvas.height / 2 - (52) * 2) - 45, 184 * (await getImage(player.images[2][0])).width / (await getImage(player.images[2][0])).height, 184);
-  if (player.hp[1] > 0) ctx.drawImage(await getImage(player.images[1][0]), canvas.width - (canvas.width * 2 / 8) - 75, (canvas.height / 2 - (52) * 2) + 45, 184 * (await getImage(player.images[1][0])).width / (await getImage(player.images[1][0])).height, 184);
-  if (player.hp[0] > 0) ctx.drawImage(await getImage(player.images[0][0]), canvas.width - (canvas.width * 2 / 8) + 50, (canvas.height / 2 - (52) * 2) + 45, 184 * (await getImage(player.images[0][0])).width / (await getImage(player.images[0][0])).height, 184);
-  if (creature.hp > 0) ctx.drawImage(await getImage(creature.images[0]), (canvas.width * 1 / 8) - 140, canvas.height / 2 - 240, 400, 400);
-  ctx.transform(-1, 0, 0, 1, canvas.width, 0);
-  ctx.font = '20px "Ginto Nord Black"';
-  ctx.textAlign = 'left';
-  ctx.fillStyle = '#000000';
-  for (let i = 0; i < messages.length; i++) {
-    ctx.fillStyle = '#666666'; ctx.fillText(messages[i], 104 + 1.5, (192 + i * 16) * 2 + 135 + 1.5);
-    ctx.fillStyle = '#000000';
-    ctx.fillText(messages[i], 104, (192 + i * 16) * 2 + 135);
-  }
-
-  // Infoboxes
-  ctx.font = '20px "Ginto Nord Black"';
-  ctx.textAlign = 'left';
-  ctx.fillStyle = '#000000';
-  ctx.fillText(player.name[player.currentPlayerId] + " (" + Math.max(player.hp[player.currentPlayerId], 0) + " " + (lang == "fr" ? "PV" : "HP") + ")", 40 * 2 + 40, 42 * 2 - 38);
-  ctx.font = '18px "Ginto Nord Medium"';
-  ctx.textAlign = 'right';
-  ctx.fillText(`${player.attack[player.currentPlayerId][0]}-${player.attack[player.currentPlayerId][1]}ATK`, 210 * 2, 42 * 2 - 38);
-
-  ctx.font = '12px "Ginto Nord Black"';
-  ctx.textAlign = 'left';
-  ctx.fillStyle = '#000000';
-  ctx.fillText(player.name[(player.currentPlayerId + 1) % 4] + " (" + Math.max(player.hp[(player.currentPlayerId + 1) % 4], 0) + " " + (lang == "fr" ? "PV" : "HP") + ")", 230 * 2 + 40, 36 * 2 - 38);
-
-  ctx.font = '12px "Ginto Nord Black"';
-  ctx.textAlign = 'left';
-  ctx.fillStyle = '#000000';
-  ctx.fillText(player.name[(player.currentPlayerId + 2) % 4] + " (" + Math.max(player.hp[(player.currentPlayerId + 2) % 4], 0) + " " + (lang == "fr" ? "PV" : "HP") + ")", 230 * 2 + 40 + 200, 36 * 2 - 38);
-
-  ctx.font = '12px "Ginto Nord Black"';
-  ctx.textAlign = 'left';
-  ctx.fillStyle = '#000000';
-  ctx.fillText(player.name[(player.currentPlayerId + 3) % 4] + " (" + Math.max(player.hp[(player.currentPlayerId + 3) % 4], 0) + " " + (lang == "fr" ? "PV" : "HP") + ")", 230 * 2 + 40, 55 * 2 - 38);
-
-  ctx.drawImage([await getImage('thmb_in_1001100'), await getImage('thmb_in_1031100'), await getImage('thmb_in_1021100'), await getImage('thmb_in_1011100')][player.currentPlayerId], 40 * 1.5 + 10, 40 + 10 - 38, 50, 50)
-  ctx.drawImage([await getImage('thmb_in_1001100'), await getImage('thmb_in_1031100'), await getImage('thmb_in_1021100'), await getImage('thmb_in_1011100')][(player.currentPlayerId + 1) % 4], 300 * 1.5 + 10, 40 - 38, 40, 40)
-  ctx.drawImage([await getImage('thmb_in_1001100'), await getImage('thmb_in_1031100'), await getImage('thmb_in_1021100'), await getImage('thmb_in_1011100')][(player.currentPlayerId + 2) % 4], 300 * 1.5 + 10 + 200, 40 - 38, 40, 40)
-  ctx.drawImage([await getImage('thmb_in_1001100'), await getImage('thmb_in_1031100'), await getImage('thmb_in_1021100'), await getImage('thmb_in_1011100')][(player.currentPlayerId + 3) % 4], 300 * 1.5 + 10, 70 + 10 - 38, 40, 40)
-  
-  ctx.textAlign = 'left';
-  ctx.fillStyle = '#000000';
-  ctx.fillText(creature.name + " (" + creature.hp + " " + (lang == "fr" ? "PV" : "HP") + ")", 288 * 2, 148 * 2 + 139);
-  ctx.font = '18px "Ginto Nord Medium"';
-  ctx.textAlign = 'right';
-  ctx.fillText(`${creature.attack[0]}-${creature.attack[1]}ATK`, 460 * 2, 148 * 2 + 139);
-
-  // Health bars
-  let [healthPosX, healthPosY, healthEntity] = [38 * 2, 46.25 * 2 - 38, player];
-  let healthSize = [173.5 * 2, 8.5 * 2];
-  let healthDelta = Math.max(173.5 * 2 * healthEntity.hp[player.currentPlayerId] / healthEntity.hpMax[player.currentPlayerId], 0);
-  ctx.fillStyle = '#ff0000';
-  ctx.fillRect(healthPosX, healthPosY, healthSize[0], healthSize[1]);
-  ctx.fillStyle = '#00FF00';
-  ctx.fillRect(healthPosX, healthPosY, healthDelta, healthSize[1]);
-
-  [healthPosX, healthPosY, healthEntity] = [234 * 2, 75 - 38, player];
-  healthSize = [173, 8.5];
-  healthDelta = Math.max(173 * healthEntity.hp[(player.currentPlayerId + 1) % 4] / healthEntity.hpMax[(player.currentPlayerId + 1) % 4], 0);
-  ctx.fillStyle = '#ff0000';
-  ctx.fillRect(healthPosX, healthPosY, healthSize[0], healthSize[1]);
-  ctx.fillStyle = '#00FF00';
-  ctx.fillRect(healthPosX, healthPosY, healthDelta, healthSize[1]);
-
-  [healthPosX, healthPosY, healthEntity] = [332 * 2, 75 - 38, player];
-  healthSize = [173, 8.5];
-  healthDelta = Math.max(173.5 * healthEntity.hp[(player.currentPlayerId + 2) % 4] / healthEntity.hpMax[(player.currentPlayerId + 2) % 4], 0);
-  ctx.fillStyle = '#ff0000';
-  ctx.fillRect(healthPosX, healthPosY, healthSize[0], healthSize[1]);
-  ctx.fillStyle = '#00FF00';
-  ctx.fillRect(healthPosX, healthPosY, healthDelta, healthSize[1]);
-
-  [healthPosX, healthPosY, healthEntity] = [234 * 2, 56.25 * 2 - 38, player];
-  healthSize = [173, 8.5];
-  healthDelta = Math.max(173.5 * healthEntity.hp[(player.currentPlayerId + 3) % 4] / healthEntity.hpMax[(player.currentPlayerId + 3) % 4], 0);
-  ctx.fillStyle = '#ff0000';
-  ctx.fillRect(healthPosX, healthPosY, healthSize[0], healthSize[1]);
-  ctx.fillStyle = '#00FF00';
-  ctx.fillRect(healthPosX, healthPosY, healthDelta, healthSize[1]);
-
-
-  [healthPosX, healthPosY, healthEntity] = [286.5 * 2, 152 * 2 + 139, creature];
-  healthSize = [173.5 * 2, 8.5 * 2];
-  healthDelta = Math.max(173.5 * 2 * healthEntity.hp / healthEntity.hpMax, 0);
-  ctx.fillStyle = '#ff0000';
-  ctx.fillRect(healthPosX, healthPosY, healthSize[0], healthSize[1]);
-  ctx.fillStyle = '#00FF00';
-  ctx.fillRect(healthPosX, healthPosY, healthDelta, healthSize[1]);
-
-  // Draw end state if applicable
-  if (state) {
-    // ctx.save();
-    // roundedImage(ctx,0,0,canvas.width,canvas.height,100);
-    // ctx.clip();
-    ctx.drawImage(await getImage('end_' + state), 0, 0, canvas.width, canvas.height);
-    // ctx.restore();
-    ctx.font = '32px "Ginto Nord Medium"';
-    ctx.fillStyle = '#FFFFFF';
-    const msg = {
-      "good": lang == "fr" ? `Vous avez réussi à vaincre le ${creature.name} !\nArriverez vous a faire mieux ?` : `You won from ${creature.name} !\nWill you get it better ?`,
-      "bad": lang == "fr" ? "L'adversaire vous a vaincu...\nRententez votre chance." : "The adversary has defeated you...\nRetry.",
-      "giveup": lang == "fr" ? "Vous avez déclaré forfait.\nPeut être une prochaine fois ?" : "You have withdrawn.\nMaybe next time?",
-      "best": lang == "fr" ? `Vous avez réussi à être ami avec le ${creature.name} !\nPourrez vous être ami avec d'autres créatures ?` : `You managed to be friends with the ${creature.name}!\nCan you be friends with other creatures?`,
-    }[state as "good" | "bad" | "giveup" | "best"];
-    const lines = msg.split("\n");
-    for (let i = 0; i < lines.length; i++) {
-      ctx.textAlign = "center";
-      ctx.fillText(lines[i], canvas.width / 2, (135 + i * 15) * 2 + 100);
+  for (let y = 0; y < h; y++) {
+    for (let x = 0; x < w; x++) {
+      const src = (y * w + x) * 4;
+      const dst = (y * w + (w - 1 - x)) * 4;
+      flipped[dst] = raw[src];
+      flipped[dst + 1] = raw[src + 1];
+      flipped[dst + 2] = raw[src + 2];
+      flipped[dst + 3] = raw[src + 3];
     }
   }
 
-  // Return the image to the client
-  // console.log(canvas.toDataURL());
-  const dataURL = canvas.toDataURL();
-  const base64Data = dataURL.replace(/^data:image\/\w+;base64,/, '');
-  const buffer = Buffer.from(base64Data, 'base64');
-  return buffer;
+  return new Photon.PhotonImage(flipped, w, h);
+}
+
+/**
+ * Draw `src` onto `canvas` at (x, y), scaled to (w, h).
+ * Photon's watermark() requires same-size images, so we resize src first.
+ */
+function composite(
+  canvas: Photon.PhotonImage,
+  src: Photon.PhotonImage,
+  x: number,
+  y: number,
+  w: number,
+  h: number
+) {
+  const resized = Photon.resize(src, w, h, Photon.SamplingFilter.Lanczos3);
+  Photon.watermark(canvas, resized, BigInt(Math.round(x)), BigInt(Math.round(y)));
+  resized.free();
+}
+
+// ─── Main render ─────────────────────────────────────────────────────────────
+
+export default async function renderImage(
+  state: string | null,
+  messages: string[],
+  player: any,
+  creature: any,
+  lang = 'en'
+): Promise<Uint8Array> {
+  await ensureWasm();
+
+  const W = 1000;
+  const H = 600;
+
+  // ── 1. Load board and create base canvas ──────────────────────────────────
+  const boardImg = toPhoton(await getImageBytes('board'));
+  const canvas = Photon.resize(boardImg, W, H, Photon.SamplingFilter.Lanczos3);
+  boardImg.free();
+
+  const boardImg2 = toPhoton(await getImageBytes('frameless'));
+  composite(canvas, boardImg2, 0, 0, W, H);
+  boardImg2.free();
+
+  // ── 2. Composite character sprites (mirrored side = right side) ───────────
+  //
+  // Original code did ctx.transform(-1,0,0,1,W,0) before drawing characters,
+  // which mirrors the entire coordinate system. We replicate this by:
+  //   a) flipping each character image horizontally
+  //   b) computing the mirrored X position manually: mirroredX = W - x - imgW
+
+  if (creature.hp <= 0) {
+    player.images = [
+      ['character_kazuma04'],
+      ['character_daku04'],
+      ['character_meg04'],
+      ['character_aqua04'],
+    ];
+  }
+
+  creature.hp = Math.max(creature.hp, 0);
+
+  // Character draw positions (converted for no global transform, player side is right)
+  // We flip each sprite manually and use absolute target X (same visual expected as the old mirrored transform layout).
+  const charSlots = [
+    { index: 3, x: (W * 2) / 8 - 45, y: (H / 2 - 52 * 2) - 45 },
+    { index: 2, x: (W * 2) / 8 + 75, y: (H / 2 - 52 * 2) - 45 },
+    { index: 1, x: (W * 2) / 8 - 75, y: (H / 2 - 52 * 2) + 45 },
+    { index: 0, x: (W * 2) / 8 + 50, y: (H / 2 - 52 * 2) + 45 },
+  ];
+
+  for (const slot of charSlots) {
+    const i = slot.index;
+    if (player.hp[i] <= 0) continue;
+    const key = player.images[i][0];
+    const srcImg = toPhoton(await getImageBytes(key));
+    const srcW = srcImg.get_width();
+    const srcH = srcImg.get_height();
+    const drawH = 184;
+    const drawW = Math.round(drawH * srcW / srcH);
+
+    const flipped = flipX(srcImg);
+    const targetX = slot.x - drawW;
+    const actualX = Math.max(0, Math.min(W - drawW, targetX));
+    composite(canvas, flipped, actualX, slot.y, drawW, drawH);
+    flipped.free();
+  }
+
+  // Creature (also on mirrored side in original, but drawn at left)
+  if (creature.hp > 0) {
+    const creatureImg = toPhoton(await getImageBytes(creature.images[0]));
+    const flipped = flipX(creatureImg);
+    composite(canvas, flipped, ((W * 1) / 8 - 140) + W/2 + 55, H / 2 - 240, 400, 400);
+    flipped.free();
+  }
+
+  // ── 4. Text + UI overlay via Satori → resvg → composite ──────────────────
+  //
+  // Load fonts (fetch from your assets/R2/KV)
+  const [fontBlackBuf, fontMediumBuf] = await Promise.all([
+    fetch('https://raw.githubusercontent.com/fox3000foxy/konosuba-rpg/refs/heads/main/swordgame/font/GintoNordBlack.otf').then((r) => r.arrayBuffer()),
+    fetch('https://raw.githubusercontent.com/fox3000foxy/konosuba-rpg/refs/heads/main/swordgame/font/GintoNordMedium.otf').then((r) => r.arrayBuffer()),
+  ]);
+
+  const hp = (lang === 'fr') ? 'PV' : 'HP';
+  const pid = player.currentPlayerId;
+
+  // Thumbnail keys
+  const thmbs = [
+    'thmb_in_1001100', 'thmb_in_1031100', 'thmb_in_1021100', 'thmb_in_1011100',
+  ];
+
+  function arrayBufferToBase64(buffer: ArrayBuffer): string {
+    const bytes = new Uint8Array(buffer);
+    let binary = '';
+    const chunkSize = 0x8000; // 32KB chunks to avoid call stack overflow
+    for (let i = 0; i < bytes.length; i += chunkSize) {
+      const chunk = bytes.subarray(i, Math.min(i + chunkSize, bytes.length));
+      binary += String.fromCharCode(...chunk);
+    }
+    return btoa(binary);
+  }
+
+  // Pre-fetch thumbs as base64 data URIs for inline SVG <image> tags
+  async function toDataURI(key: string): Promise<string> {
+    const buf = await getImageBytes(key);
+    const b64 = arrayBufferToBase64(buf);
+    return `data:image/png;base64,${b64}`;
+  }
+
+  const thmb = await Promise.all(thmbs.map((_, i) => toDataURI(thmbs[(pid + i) % 4])));
+
+  // Health bar helper (returns JSX-like object)
+  function healthBar(
+    current: number, max: number,
+    x: number, y: number,
+    w: number, h: number
+  ) {
+    const pct = Math.max(0, Math.min(1, current / max));
+    return {
+      type: 'div',
+      props: {
+        style: {
+          position: 'absolute' as const,
+          display: 'flex' as const,
+          left: x, top: y, width: w, height: h,
+          background: '#ff0000',
+        },
+        children: {
+          type: 'div',
+          props: {
+            style: {
+              width: Math.round(w * pct),
+              height: h,
+              background: '#00FF00',
+            },
+            children: null,
+          },
+        },
+      },
+    };
+  }
+
+  // End-state text
+  const endMsg = state ? ({
+    good: lang === 'fr' ? `Vous avez réussi à vaincre ${creature.prefix ? "le ": ""}${creature.name} !` : `You won from ${creature.prefix ? "the ": ""}${creature.name}!`,
+    bad: lang === 'fr' ? "L'adversaire vous a vaincu..." : "The adversary has defeated you...",
+    giveup: lang === 'fr' ? "Vous avez déclaré forfait." : "You have withdrawn.",
+    best: lang === 'fr' ? `Vous avez réussi à être ami avec ${creature.prefix ? "le ": ""}${creature.name} !` : `You managed to be friends with ${creature.prefix ? "the ": ""}${creature.name}!`,
+  } as Record<string, string>)[state] : null;
+
+  const endMsg2 = state ? ({
+    good: lang === 'fr' ? "Arriverez vous a faire mieux ?" : "Will you get it better?",
+    bad: lang === 'fr' ? "Rententez votre chance." : "Retry.",
+    giveup: lang === 'fr' ? "Peut être une prochaine fois ?" : "Maybe next time?",
+    best: lang === 'fr' ? "Pourrez vous être ami avec d'autres créatures ?" : "Can you be friends with other creatures?",
+  } as Record<string, string>)[state] : null;
+
+  // ── 3. End-state overlay (win/lose/giveup/best) ───────────────────────────
+  // if (state) {
+  //   const endImg = toPhoton(await getImageBytes('end_' + state));
+  //   composite(canvas, endImg, 0, 0, W, H);
+  //   endImg.free();
+  // }
+
+
+  const overlayJsx = {
+    type: 'div',
+    props: {
+      style: {
+        display: 'flex' as const,
+        position: 'relative' as const,
+        width: W,
+        height: H,
+        fontFamily: '"Ginto Nord Black"',
+        color: '#000000',
+        overflow: 'hidden',
+      },
+      children: [
+        // ── Chat messages ──────────────────────────────────────────────
+        ...messages.map((msg, i) => ({
+          type: 'div',
+          props: {
+            style: {
+              display: 'flex' as const,
+              position: 'absolute' as const,
+              left: 104,
+              top: (192 + i * 16) * 2 + 135,
+              fontSize: 20,
+              fontFamily: '"Ginto Nord Black"',
+              color: '#000000',
+            },
+            children: msg,
+          },
+        })),
+
+        // ── Player info (main) ─────────────────────────────────────────
+        {
+          type: 'img',
+          props: {
+            src: thmb[0],
+            style: {
+              position: 'absolute' as const,
+              left: 40 * 1.5 + 10,
+              top: 40 + 10 - 38,
+              width: 50,
+              height: 50,
+            },
+          },
+        },
+        {
+          type: 'div',
+          props: {
+            style: {
+              display: 'flex' as const,
+              position: 'absolute' as const,
+              left: 40 * 2 + 40,
+              top: 42 * 2 - 55,
+              fontSize: 16,
+              fontFamily: '"Ginto Nord Black"',
+            },
+            children: `${player.name[pid]} (${Math.max(player.hp[pid], 0)} ${hp})`,
+          },
+        },
+        {
+          type: 'div',
+          props: {
+            style: {
+              display: 'flex' as const,
+              position: 'absolute' as const,
+              right: W - 210 * 2,
+              top: 42 * 2 - 55,
+              fontSize: 16,
+              fontFamily: '"Ginto Nord Medium"',
+            },
+            children: `${player.attack[pid][0]}-${player.attack[pid][1]}ATK`,
+          },
+        },
+        healthBar(player.hp[pid], player.hpMax[pid], 38 * 2, 46.25 * 2 - 38, 173.5 * 2, 8.5 * 2),
+
+        // ── Player info (secondary x3) ─────────────────────────────────
+        ...[1, 2, 3].flatMap((offset) => {
+          const i = (pid + offset) % 4;
+          const xBase = offset === 2 ? 332 * 2 : 234 * 2;
+          const yBase = offset === 3 ? 56.25 * 2 - 38 : 36 * 2 - 38 + 3;
+          const thmX = offset === 2 ? 300 * 1.5 + 10 + 200 : 300 * 1.5 + 10;
+          const thmY = offset === 3 ? 70 + 10 - 38 : 40 - 38;
+
+          return [
+            {
+              type: 'img',
+              props: {
+                src: thmb[offset],
+                style: { position: 'absolute' as const, left: thmX, top: thmY, width: 40, height: 40 },
+              },
+            },
+            {
+              type: 'div',
+              props: {
+                style: {
+                  display: 'flex' as const,
+                  position: 'absolute' as const,
+                  left: xBase + 32,
+                  top: yBase - 16,
+                  fontSize: 12,
+                  fontFamily: '"Ginto Nord Black"',
+                },
+                children: `${player.name[i]} (${Math.max(player.hp[i], 0)} ${hp})`,
+              },
+            },
+            healthBar(player.hp[i], player.hpMax[i], xBase, yBase, 173, 8.5),
+          ];
+        }),
+
+        // ── Creature info ──────────────────────────────────────────────
+        {
+          type: 'div',
+          props: {
+            style: {
+              display: 'flex' as const,
+              position: 'absolute' as const,
+              left: 288 * 2,
+              top: 148 * 2 + 129,
+              fontSize: 12,
+              fontFamily: '"Ginto Nord Black"',
+            },
+            children: `${creature.name} (${creature.hp} ${hp})`,
+          },
+        },
+        {
+          type: 'div',
+          props: {
+            style: {
+              display: 'flex' as const,
+              position: 'absolute' as const,
+              right: W - 460 * 2,
+              top: 148 * 2 + 129,
+              fontSize: 12,
+              fontFamily: '"Ginto Nord Medium"',
+            },
+            children: `${creature.attack[0]}-${creature.attack[1]}ATK`,
+          },
+        },
+        healthBar(creature.hp, creature.hpMax, 286.5 * 2, 152 * 2 + 139, 173.5 * 2, 8.5 * 2),
+
+        // ── End-state text ─────────────────────────────────────────────
+        ...(endMsg ? [
+          {
+            type: 'img',
+            props: {
+              src: `data:image/png;base64,${arrayBufferToBase64(await getImageBytes('end_' + state))}`,
+              style: {
+                position: 'absolute' as const,
+                left: 0, // rough centering based on expected image size
+                top: 0,
+                width: "100%",
+                height: "100%",
+                zIndex: 5,
+              },
+            },
+          },
+          {
+            type: 'div',
+            props: {
+              style: {
+                display: 'flex' as const,
+                position: 'absolute' as const,
+                left: W / 2 - endMsg.length * 9, // rough centering based on char count
+                right: 0,
+                top: 135 * 2 + 100,
+                zIndex: 10,
+                textAlign: 'center' as const,
+                fontSize: 32,
+                fontFamily: '"Ginto Nord Medium"',
+                color: '#FFFFFF',
+              },
+              children: endMsg,
+            },
+          },
+          {
+            type: 'div',
+            props: {
+              style: {
+                display: 'flex' as const,
+                position: 'absolute' as const,
+                left: W / 2 - (endMsg2?.length || 0) * 9, // rough centering based on char count
+                right: 0,
+                top: 135 * 2 + 100 + 50,
+                textAlign: 'center' as const,
+                fontSize: 32,
+                fontFamily: '"Ginto Nord Medium"',
+                color: '#FFFFFF',
+              },
+              children: endMsg2,
+            },
+          },
+        ] : []),
+      ],
+    },
+  };
+
+  const overlaySvg = await satori(overlayJsx, {
+    width: W,
+    height: H,
+    fonts: [
+      { name: 'Sans-Serif', data: fontMediumBuf, weight: 400, style: 'normal' },
+
+    ],
+  });
+
+  // Rasterize SVG overlay to PNG
+  const resvg = new Resvg(overlaySvg, { fitTo: { mode: 'width', value: W } });
+  const overlayPng = resvg.render().asPng();
+  const overlayImg = toPhoton(overlayPng.buffer.slice(0) as ArrayBuffer);
+
+  // Composite text overlay onto photon canvas (full-size, transparent bg)
+  Photon.watermark(canvas, overlayImg, 0n, 0n);
+  overlayImg.free();
+
+  // ── 5. Export ─────────────────────────────────────────────────────────────
+  const output = canvas.get_bytes_webp(); // or .get_bytes() for PNG (larger)
+  canvas.free();
+  return output;
 }

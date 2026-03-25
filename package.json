@@ -1,21 +1,27 @@
 {
   "dependencies": {
+    "@cf-wasm/photon": "^0.3.4",
     "@cloudflare/workers-types": "^4.20260317.1",
     "@napi-rs/canvas": "^0.1.97",
+    "@resvg/resvg-wasm": "^2.6.2",
     "canvas": "^2.11.2",
     "combine-image": "^1.0.3",
     "discord.js": "^13.17.1",
     "express": "^4.22.1",
     "hono": "^4.12.9",
     "localtunnel": "^2.0.2",
-    "random-seed": "^0.3.0"
+    "random-seed": "^0.3.0",
+    "satori": "^0.26.0"
   },
   "scripts": {
     "generate:image-manifest": "npx ts-node scripts/generate-image-manifest.ts",
     "build": "npx tsc",
     "start": "npx wrangler dev",
     "dev": "npx ts-node-dev src/index.ts",
-    "deploy": "npx wrangler publish"
+    "deploy": "npx wrangler publish",
+    "dev:node": "npx ts-node-dev --respawn --transpile-only --logger=debug --ignore-watch node_modules src/index.ts",
+    "dev:wrangler": "npx wrangler dev",
+    "check": "npm run build && npm run test"
   },
   "devDependencies": {
     "@hono/node-server": "^1.19.11",

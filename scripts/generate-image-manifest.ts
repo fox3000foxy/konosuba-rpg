@@ -12,7 +12,7 @@ const ASSET_DIRS = [
 const IMAGE_TS_ROOT = path.join(BASE_DIR, 'src', 'images');
 const OUT_FILE = path.join(BASE_DIR, 'src', 'utils', 'imageManifest.ts');
 
-const exts = ['.png', '.jpg', '.jpeg', '.gif', '.webp', '.avif'];
+const exts = ['.png', '.jpg', '.jpeg', '.gif', '.webp', '.avif', '.otf', '.ttf', '.woff', '.woff2'];
 
 function walk(dir: string): string[] {
   const full = path.join(BASE_DIR, dir);
@@ -59,22 +59,24 @@ for (const dir of ASSET_DIRS) {
 
     const buffer = fs.readFileSync(path.join(BASE_DIR, file));
 
-    const dataUri = `data:image/${ext};base64,${buffer.toString('base64')}`;
-    const content = `// Auto-generated. Regenerate with: pnpm ts-node scripts/generate-image-manifest.ts\nexport const uri = ${JSON.stringify(dataUri)};\n`;
+    // const dataUri = `data:image/${ext};base64,${buffer.toString('base64')}`;
+    // const content = `// Auto-generated. Regenerate with: pnpm ts-node scripts/generate-image-manifest.ts\nexport const uri = ${JSON.stringify(dataUri)};\n`;
 
     ensureDir(targetFile);
-    fs.writeFileSync(targetFile, content, 'utf8');
+    // fs.writeFileSync(targetFile, content, 'utf8');
 
-    const modulePath = path.posix.join(
-      '..',
-      'images',
-      posixPath(fromAssetSubpath),
-      `${key}.ts`
-    );
-
+    // const modulePath = path.posix.join(
+    //   '..',
+    //   'images',
+    //   posixPath(fromAssetSubpath),
+    //   `${key}.ts`
+    // );
+    const basePath = 'https://raw.githubusercontent.com/fox3000foxy/konosuba-rpg/refs/heads/main/';
+    const modulePath = basePath + posixPath(file);
     loaders.push({ key, modulePath });
   }
 }
+
 
 const importsObjectEntries = loaders
   // .map((entry) => `  ${JSON.stringify(entry.key)}: () => import(${JSON.stringify(entry.modulePath)}).then((m) => m.uri)`.replace(".ts",".js"))
