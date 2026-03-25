@@ -1,7 +1,7 @@
 import * as Photon from '@cf-wasm/photon';
 import { initWasm, Resvg } from '@resvg/resvg-wasm';
 import satori from 'satori';
-import { imageManifest } from './imageManifest';
+import { imageManifest } from '../data/imageManifest';
 
 // ─── WASM init (once per Worker lifetime) ────────────────────────────────────
 

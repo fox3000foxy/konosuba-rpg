@@ -1,4 +1,4 @@
-import { Random } from './Random';
+import { Random } from '../classes/Random';
 
 export default function processUrl(url: string): [Random, string[], string, string | null] {
   const valid_moves = ['ATK', 'DEF', 'HUG', 'GIV'];

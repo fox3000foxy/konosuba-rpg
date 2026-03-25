@@ -1,4 +1,4 @@
-import { Random } from "../../utils/Random";
+import { Random } from "../Random";
 import { Creature } from "./Creature";
 export default class Vanir extends Creature {
     constructor(rand: Random) {

@@ -1,10 +1,10 @@
 // import fs from 'fs';
-import Player from '../classes/Player';
 import { Creature } from '../classes/mobs/Creature';
 import Troll from '../classes/mobs/Troll';
-import { Random } from './Random';
-import lines from './constants';
-import { mobMap } from './mobMap';
+import Player from '../classes/Player';
+import { Random } from '../classes/Random';
+import lines from '../data/constants';
+import { mobMap } from '../data/mobMap';
 import renderImage from './renderImage';
 
 type Lang = 'en' | 'fr';

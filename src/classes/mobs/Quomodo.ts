@@ -1,4 +1,4 @@
-import { Random } from "../../utils/Random";
+import { Random } from "../Random";
 import { Creature } from "./Creature";
 export default class Quomodo extends Creature {
     constructor(rand: Random) {

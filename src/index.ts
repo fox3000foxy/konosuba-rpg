@@ -1,11 +1,11 @@
 import { verifyKey } from 'discord-interactions';
 import { Context, Env, Hono } from 'hono';
 import { serveStatic } from 'hono/serve-static';
-import { imageManifest } from './utils/imageManifest';
-import { mobMap } from './utils/mobMap';
+import { Random } from './classes/Random';
+import { imageManifest } from './data/imageManifest';
+import { mobMap } from './data/mobMap';
 import processGame from './utils/processGame';
 import processUrl from './utils/processUrl';
-import { Random } from './utils/Random';
 
 const app = new Hono();
 

@@ -2,8 +2,8 @@
 import { Creature } from '../classes/mobs/Creature';
 import Troll from '../classes/mobs/Troll';
 import Player from '../classes/Player';
-import { mobMap } from './mobMap';
-import { Random } from './Random';
+import { Random } from '../classes/Random';
+import { mobMap } from '../data/mobMap';
 
 
 const creatureClasses: typeof Creature[] = [];

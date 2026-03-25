@@ -1,4 +1,4 @@
-import { Random } from "../../utils/Random";
+import { Random } from "../Random";
 
 export class Creature {
     rand: Random;
