@@ -265,10 +265,10 @@ app.post('/api/interactions', async (c: Context) => {
 export default app;
 
 async function start() {
-  if (navigator.userAgent !== 'Cloudflare-Workers') {
+  // if (navigator.userAgent !== 'Cloudflare-Workers') {
     const serve = (await import('@hono/node-server')).serve;
     serve({ fetch: app.fetch, port: 8787 });
     console.log('Server running on http://localhost:8787');
-  }
+  // }
 }
 start();

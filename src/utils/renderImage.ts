@@ -9,21 +9,21 @@ let wasmReady = false;
 async function ensureWasm(): Promise<void> {
   if (wasmReady) return;
 
-  if (navigator.userAgent !== 'Cloudflare-Workers') {
+  // if (navigator.userAgent !== 'Cloudflare-Workers') {
     await initWasm(await fetch('https://unpkg.com/@resvg/resvg-wasm/index_bg.wasm').then((r) => r.arrayBuffer()));
     console.log('WASM initialized (dev)');
     wasmReady = true;
     return;
-  }
-  else {
-    console.log('Running in Cloudflare Workers environment, using global WebAssembly.instantiate for resvg WASM module');
-    // @ts-ignore
-    const resvgWasm = await import('@resvg/resvg-wasm/index_bg.wasm?module').then((m) => m.default);
-    await initWasm(resvgWasm);
-    console.log('WASM initialized (prod)');
-    wasmReady = true;
-    return;
-  }
+  // }
+  // else {
+  //   console.log('Running in Cloudflare Workers environment, using global WebAssembly.instantiate for resvg WASM module');
+  //   // @ts-ignore
+  //   const resvgWasm = await import('@resvg/resvg-wasm/index_bg.wasm?module').then((m) => m.default);
+  //   await initWasm(resvgWasm);
+  //   console.log('WASM initialized (prod)');
+  //   wasmReady = true;
+  //   return;
+  // }
 }
 
 ensureWasm().then(() => {
