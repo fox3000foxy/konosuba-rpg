@@ -1,6 +1,5 @@
 import * as Photon from '@cf-wasm/photon';
 import { initWasm, Resvg } from '@resvg/resvg-wasm';
-// import resvgWasm from '@resvg/resvg-wasm/index_bg.wasm?module';
 import satori from 'satori';
 import { imageManifest } from './imageManifest';
 
@@ -9,10 +8,28 @@ import { imageManifest } from './imageManifest';
 let wasmReady = false;
 async function ensureWasm(): Promise<void> {
   if (wasmReady) return;
-  initWasm(await fetch('https://unpkg.com/@resvg/resvg-wasm/index_bg.wasm').then((r) => r.arrayBuffer()));
-  // await initResvg(resvgWasm);
-  wasmReady = true;
+
+  if (navigator.userAgent !== 'Cloudflare-Workers') {
+    await initWasm(await fetch('https://unpkg.com/@resvg/resvg-wasm/index_bg.wasm').then((r) => r.arrayBuffer()));
+    console.log('WASM initialized (dev)');
+    wasmReady = true;
+    return;
+  }
+  else {
+    console.log('Running in Cloudflare Workers environment, using global WebAssembly.instantiate for resvg WASM module');
+    // @ts-ignore
+    const resvgWasm = await import('@resvg/resvg-wasm/index_bg.wasm?module').then((m) => m.default);
+    await initWasm(resvgWasm);
+    console.log('WASM initialized (prod)');
+    wasmReady = true;
+    return;
+  }
 }
+
+ensureWasm().then(() => {
+}).catch((err) => {
+  console.error('Failed to initialize WASM:', err);
+});
 
 // ─── Image cache (ArrayBuffer, not canvas Image objects) ─────────────────────
 
@@ -150,7 +167,7 @@ export default async function renderImage(
   if (creature.hp > 0) {
     const creatureImg = toPhoton(await getImageBytes(creature.images[0]));
     const flipped = flipX(creatureImg);
-    composite(canvas, flipped, ((W * 1) / 8 - 140) + W/2 + 55, H / 2 - 240, 400, 400);
+    composite(canvas, flipped, ((W * 1) / 8 - 140) + W / 2 + 55, H / 2 - 240, 400, 400);
     flipped.free();
   }
 
@@ -223,10 +240,10 @@ export default async function renderImage(
 
   // End-state text
   const endMsg = state ? ({
-    good: lang === 'fr' ? `Vous avez réussi à vaincre ${creature.prefix ? "le ": ""}${creature.name} !` : `You won from ${creature.prefix ? "the ": ""}${creature.name}!`,
+    good: lang === 'fr' ? `Vous avez réussi à vaincre ${creature.prefix ? "le " : ""}${creature.name} !` : `You won from ${creature.prefix ? "the " : ""}${creature.name}!`,
     bad: lang === 'fr' ? "L'adversaire vous a vaincu..." : "The adversary has defeated you...",
     giveup: lang === 'fr' ? "Vous avez déclaré forfait." : "You have withdrawn.",
-    best: lang === 'fr' ? `Vous avez réussi à être ami avec ${creature.prefix ? "le ": ""}${creature.name} !` : `You managed to be friends with ${creature.prefix ? "the ": ""}${creature.name}!`,
+    best: lang === 'fr' ? `Vous avez réussi à être ami avec ${creature.prefix ? "le " : ""}${creature.name} !` : `You managed to be friends with ${creature.prefix ? "the " : ""}${creature.name}!`,
   } as Record<string, string>)[state] : null;
 
   const endMsg2 = state ? ({

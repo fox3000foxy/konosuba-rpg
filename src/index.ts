@@ -1,4 +1,3 @@
-import { serve } from '@hono/node-server';
 import { Context, Env, Hono } from 'hono';
 import { serveStatic } from 'hono/serve-static';
 import { imageManifest } from './utils/imageManifest';
@@ -81,8 +80,14 @@ app.post('/discordmon/interactions', async (c: Context) => {
 
 export default app;
 
-serve({
-  fetch: app.fetch,
-  port: 8787,
-});
-console.log('Server running on http://localhost:8787');
+async function start() {
+  if (navigator.userAgent !== 'Cloudflare-Workers') {
+    const serve = (await import('@hono/node-server')).serve;
+    serve({
+      fetch: app.fetch,
+      port: 8787,
+    });
+    console.log('Server running on http://localhost:8787');
+  }
+}
+start();
