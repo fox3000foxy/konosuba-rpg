@@ -181,7 +181,6 @@ export default async function renderImage(
   const canvas = createCanvas(1000, 600);
   const ctx = canvas.getContext('2d');
 
-  console.log('Rendering board background...');
   ctx.drawImage(await getImage('board'), 0, 0, canvas.width, canvas.height);
 
   // ctx.transform(-1, 0, 0, 1, canvas.width, 0);
@@ -249,24 +248,32 @@ export default async function renderImage(
   let [healthPosX, healthPosY, healthEntity] = [38 * 2, 46.25 * 2 - 38, player];
   let healthSize = [173.5 * 2, 8.5 * 2];
   let healthDelta = Math.max(173.5 * 2 * healthEntity.hp[player.currentPlayerId] / healthEntity.hpMax[player.currentPlayerId], 0);
+  ctx.fillStyle = '#ff0000';
+  ctx.fillRect(healthPosX, healthPosY, healthSize[0], healthSize[1]);
   ctx.fillStyle = '#00FF00';
   ctx.fillRect(healthPosX, healthPosY, healthDelta, healthSize[1]);
 
   [healthPosX, healthPosY, healthEntity] = [234 * 2, 75 - 38, player];
   healthSize = [173, 8.5];
   healthDelta = Math.max(173 * healthEntity.hp[(player.currentPlayerId + 1) % 4] / healthEntity.hpMax[(player.currentPlayerId + 1) % 4], 0);
+  ctx.fillStyle = '#ff0000';
+  ctx.fillRect(healthPosX, healthPosY, healthSize[0], healthSize[1]);
   ctx.fillStyle = '#00FF00';
   ctx.fillRect(healthPosX, healthPosY, healthDelta, healthSize[1]);
 
   [healthPosX, healthPosY, healthEntity] = [332 * 2, 75 - 38, player];
   healthSize = [173, 8.5];
   healthDelta = Math.max(173.5 * healthEntity.hp[(player.currentPlayerId + 2) % 4] / healthEntity.hpMax[(player.currentPlayerId + 2) % 4], 0);
+  ctx.fillStyle = '#ff0000';
+  ctx.fillRect(healthPosX, healthPosY, healthSize[0], healthSize[1]);
   ctx.fillStyle = '#00FF00';
   ctx.fillRect(healthPosX, healthPosY, healthDelta, healthSize[1]);
 
   [healthPosX, healthPosY, healthEntity] = [234 * 2, 56.25 * 2 - 38, player];
   healthSize = [173, 8.5];
   healthDelta = Math.max(173.5 * healthEntity.hp[(player.currentPlayerId + 3) % 4] / healthEntity.hpMax[(player.currentPlayerId + 3) % 4], 0);
+  ctx.fillStyle = '#ff0000';
+  ctx.fillRect(healthPosX, healthPosY, healthSize[0], healthSize[1]);
   ctx.fillStyle = '#00FF00';
   ctx.fillRect(healthPosX, healthPosY, healthDelta, healthSize[1]);
 
@@ -274,6 +281,8 @@ export default async function renderImage(
   [healthPosX, healthPosY, healthEntity] = [286.5 * 2, 152 * 2 + 139, creature];
   healthSize = [173.5 * 2, 8.5 * 2];
   healthDelta = Math.max(173.5 * 2 * healthEntity.hp / healthEntity.hpMax, 0);
+  ctx.fillStyle = '#ff0000';
+  ctx.fillRect(healthPosX, healthPosY, healthSize[0], healthSize[1]);
   ctx.fillStyle = '#00FF00';
   ctx.fillRect(healthPosX, healthPosY, healthDelta, healthSize[1]);
 

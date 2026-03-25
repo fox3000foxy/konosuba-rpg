@@ -1,6 +1,6 @@
 import { Random } from "../../utils/Random";
 import { Creature } from "./Creature";
-export default class Toad extends Creature {
+export default class Squall extends Creature {
     constructor(rand: Random) {
         super(rand);
         this.attack = [3, 8];

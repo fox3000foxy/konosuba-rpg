@@ -49,9 +49,7 @@ export default async function processGame(
     creature = new CreatureClass(rand);
   }
 
-  if (lang !== 'fr') {
-    creature.name = pascalCaseToString(monster || creature.constructor.name);
-  }
+  creature.name = pascalCaseToString(monster || creature.constructor.name);
 
   const messages = [
     lang === 'fr'
