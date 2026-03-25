@@ -215,29 +215,36 @@ export default async function renderImage(
   const pid = player.currentPlayerId;
 
   // Thumbnail keys
-  const thmbs = [
-    'thmb_in_1001100', 'thmb_in_1031100', 'thmb_in_1021100', 'thmb_in_1011100',
+  // const thmbs = [
+  //   'thmb_in_1001100', 'thmb_in_1031100', 'thmb_in_1021100', 'thmb_in_1011100',
+  // ];
+
+  // function arrayBufferToBase64(buffer: ArrayBuffer): string {
+  //   const bytes = new Uint8Array(buffer);
+  //   let binary = '';
+  //   const chunkSize = 0x8000; // 32KB chunks to avoid call stack overflow
+  //   for (let i = 0; i < bytes.length; i += chunkSize) {
+  //     const chunk = bytes.subarray(i, Math.min(i + chunkSize, bytes.length));
+  //     binary += String.fromCharCode(...chunk);
+  //   }
+  //   return btoa(binary);
+  // }
+
+  // // Pre-fetch thumbs as base64 data URIs for inline SVG <image> tags
+  // async function toDataURI(key: string): Promise<string> {
+  //   const buf = await getImageBytes(key);
+  //   const b64 = arrayBufferToBase64(buf);
+  //   return `data:image/png;base64,${b64}`;
+  // }
+
+  // const thmb = await Promise.all(thmbs.map((_, i) => toDataURI(thmbs[(pid + i) % 4])));
+
+  const thmb = [
+    "https://raw.githubusercontent.com/fox3000foxy/konosuba-rpg/refs/heads/main/assets/player/thmb_in_1001100.png",
+    "https://raw.githubusercontent.com/fox3000foxy/konosuba-rpg/refs/heads/main/assets/player/thmb_in_1031100.png",
+    "https://raw.githubusercontent.com/fox3000foxy/konosuba-rpg/refs/heads/main/assets/player/thmb_in_1021100.png",
+    "https://raw.githubusercontent.com/fox3000foxy/konosuba-rpg/refs/heads/main/assets/player/thmb_in_1011100.png"
   ];
-
-  function arrayBufferToBase64(buffer: ArrayBuffer): string {
-    const bytes = new Uint8Array(buffer);
-    let binary = '';
-    const chunkSize = 0x8000; // 32KB chunks to avoid call stack overflow
-    for (let i = 0; i < bytes.length; i += chunkSize) {
-      const chunk = bytes.subarray(i, Math.min(i + chunkSize, bytes.length));
-      binary += String.fromCharCode(...chunk);
-    }
-    return btoa(binary);
-  }
-
-  // Pre-fetch thumbs as base64 data URIs for inline SVG <image> tags
-  async function toDataURI(key: string): Promise<string> {
-    const buf = await getImageBytes(key);
-    const b64 = arrayBufferToBase64(buf);
-    return `data:image/png;base64,${b64}`;
-  }
-
-  const thmb = await Promise.all(thmbs.map((_, i) => toDataURI(thmbs[(pid + i) % 4])));
 
   // Health bar helper (returns JSX-like object)
   function healthBar(
@@ -327,7 +334,7 @@ export default async function renderImage(
         {
           type: 'img',
           props: {
-            src: thmb[0],
+            src: thmb[pid],
             style: {
               position: 'absolute' as const,
               left: 40 * 1.5 + 10,
@@ -437,7 +444,7 @@ export default async function renderImage(
           {
             type: 'img',
             props: {
-              src: `data:image/png;base64,${arrayBufferToBase64(await getImageBytes('end_' + state))}`,
+              src: thmb[pid],
               style: {
                 position: 'absolute' as const,
                 left: 0, // rough centering based on expected image size
