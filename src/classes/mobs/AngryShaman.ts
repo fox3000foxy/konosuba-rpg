@@ -1,5 +1,5 @@
+import { Creature } from "../Creature";
 import { Random } from "../Random";
-import { Creature } from "./Creature";
 
 export default class AngryShaman extends Creature {
     constructor(rand: Random) {

@@ -1,5 +1,5 @@
+import { Creature } from "../Creature";
 import { Random } from "../Random";
-import { Creature } from "./Creature";
 export default class HansSlime extends Creature {
     constructor(rand: Random) {
         super(rand);
