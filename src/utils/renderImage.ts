@@ -1,5 +1,5 @@
-import { Random } from './Random';
 import { imageManifest } from './imageManifest';
+import { Random } from './Random';
 
 let createCanvas: any;
 let loadImage: any;
@@ -41,10 +41,11 @@ export async function preloadImages(): Promise<void> {
 
   await initializeCanvasBackend();
 
-  const entries = Object.entries(imageManifest);
+  const entries = Object.entries(imageManifest) as Array<[string, () => Promise<string>]>;
   console.log(`Preloading ${entries.length} images...`);
   preloadPromise = Promise.all(
-    entries.map(async ([key, uri]) => {
+    entries.map(async ([key, loader]) => {
+      const uri = await loader();
       const img = await loadImage(uri);
       console.log(`Preloaded image: ${key}`);
       images[key] = img;
@@ -54,10 +55,10 @@ export async function preloadImages(): Promise<void> {
   return preloadPromise;
 }
 
-preloadImages().catch((err) => {
-  console.error('Error preloading images:', err);
-  throw err;
-});
+// preloadImages().catch((err) => {
+//   console.error('Error preloading images:', err);
+//   throw err;
+// });
 
 function roundedImage(
   ctx: CanvasRenderingContext2D,
@@ -99,7 +100,6 @@ export default async function renderImage(
   const ctx = canvas.getContext('2d');
 
   ctx.drawImage(images['board'], 0, 0, canvas.width, canvas.height);
-  console.log(ctx);
 
   ctx.transform(-1, 0, 0, 1, canvas.width, 0);
 

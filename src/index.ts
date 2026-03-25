@@ -19,7 +19,7 @@ function makeid(length: number): string {
 }
 
 app.use('/konosuba-rpg/assets/*', serveStatic({
-  root: './assets',
+  root: process.cwd() + '/assets',
   getContent: function (path: string, c: Context<Env, any, {}>): Promise<Response | null> {
     throw new Error('Function not implemented.');
   }
