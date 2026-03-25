@@ -26,16 +26,23 @@
     "deploy": "npx wrangler publish",
     "dev:node": "npx ts-node-dev --respawn --transpile-only --logger=debug --ignore-watch node_modules src/index.ts",
     "dev:wrangler": "npx wrangler dev",
-    "check": "npm run build && npm run test"
+    "check": "npm run build && npm run test",
+    "lint": "npx eslint src"
   },
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
     "@hono/node-server": "^1.19.11",
     "@types/jest": "^30.0.0",
     "@types/node": "^25.5.0",
+    "eslint": "^10.1.0",
+    "eslint-plugin-security": "^4.0.0",
+    "globals": "^17.4.0",
     "jest": "^30.3.0",
+    "jiti": "^2.6.1",
     "sharp": "^0.34.5",
     "ts-jest": "^29.4.6",
     "typescript": "^6.0.2",
+    "typescript-eslint": "^8.57.2",
     "wrangler": "^4.77.0"
   }
 }
