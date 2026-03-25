@@ -38,6 +38,8 @@ const convertPngToAvif = async (directory) => {
   });
 };
 
-const startingDirectory = "./assets";
-convertPngToAvif(startingDirectory);
+//const startingDirectory = "./assets";
+convertPngToAvif("./assets");
+convertPngToAvif("./swordgame");
+convertPngToAvif("./future");
 
