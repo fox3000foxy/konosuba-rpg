@@ -18,16 +18,17 @@ const convertPngToAvif = async (directory) => {
       const avifPath = path.join(path.dirname(filePath), `${path.parse(filePath).name}.avif`);
 
       try {
-        
+
         await sharp(filePath)
           .avif({
-            lossless: true,
-            effort: 9,
+            lossless: false,
+            effort: 4,
+            quality: 90,
             chromaSubsampling: "4:4:4"
           })
           .toFile(avifPath);
 
-        
+
         fs.unlinkSync(filePath);
         console.log(`Converted and replaced: ${filePath} -> ${avifPath}`);
       } catch (err) {
