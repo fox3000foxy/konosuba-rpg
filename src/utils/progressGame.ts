@@ -1,13 +1,13 @@
-import fs from 'fs';
+
 import { Creature } from '../classes/mobs/Creature';
+import Troll from '../classes/mobs/Troll';
 import Player from '../classes/Player';
+import { mobMap } from './mobMap';
 import { Random } from './Random';
 
+
 const creatureClasses: typeof Creature[] = [];
-const allMobs = fs.readdirSync(__dirname + '/../classes/mobs/').filter((m) => m.endsWith('.js'));
-allMobs.forEach((mob) => {
-  creatureClasses.push(require(__dirname + '/../classes/mobs/' + mob));
-});
+
 
 function makeid(length: number): string {
   let result = '';
@@ -39,11 +39,8 @@ export default async function progressGame(
   let creature: Creature | null = null;
 
   if (monster) {
-    if (fs.existsSync(__dirname + '/../classes/mobs/' + monster + '.js')) {
-      creature = new (require(__dirname + '/../classes/mobs/' + monster))(rand);
-    } else {
-      creature = new (require(__dirname + '/../classes/mobs/Troll'))(rand);
-    }
+    const MonsterClass = mobMap[monster] || Troll;
+    creature = new MonsterClass(rand);
   } else {
     creature = new (rand.choice(creatureClasses))(rand);
   }

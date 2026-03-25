@@ -1,8 +1,11 @@
 // import fs from 'fs';
 import Player from '../classes/Player';
 import { Creature } from '../classes/mobs/Creature';
+import Troll from '../classes/mobs/Troll';
 import { Random } from './Random';
+import { mobMap } from './mobMap';
 
+const creatureClasses: typeof Creature[] = [];
 
 function makeid(length: number): string {
   let result = '';
@@ -34,48 +37,6 @@ export default async function processGame(
   let creature: Creature | null = null;
 
   if (monster) {
-    const mobMap: { [key: string]: typeof Creature } = {
-      AliveTree,
-      AngryShaman,
-      Austrich,
-      Beldia,
-      DarkBat,
-      DarkBear,
-      DarkRat,
-      DarkWolf,
-      Destroyer,
-      Dragon,
-      GeneralWinter,
-      Ghoul,
-      GiantEarthworm,
-      GiantOctopus,
-      Golem,
-      GolemQueen,
-      HansSlime,
-      Hydra,
-      Kamachi,
-      KingTroll,
-      Knight,
-      LoveBunny,
-      MaidBot,
-      MedusaMan,
-      Milim,
-      Minotaur,
-      PigWoman,
-      Quomodo,
-      Ruijerd,
-      Samurai,
-      SharkMan,
-      Slime,
-      Squall,
-      Sylvia,
-      Toad,
-      Troll,
-      UglySpirit,
-      Vanir,
-      Wizard,
-    };
-
     const MonsterClass = mobMap[monster] || Troll;
     creature = new MonsterClass(rand);
   } else {

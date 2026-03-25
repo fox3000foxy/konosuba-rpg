@@ -9,7 +9,7 @@ export default class Player {
 	name: string[]
 	images: string[][];
 	currentPlayerId: number;
-	constructor(rand: Random, playerId: number) {
+	constructor(rand: Random) {
 		this.rand = rand;
 		this.hpMax = [40, 80, 30, 40];
 		this.hp = [...this.hpMax];
