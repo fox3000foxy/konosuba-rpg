@@ -5,15 +5,17 @@ import { Random } from './Random';
 const images: Record<string, any> = {};
 
 function loadFolderImages(path: string): void {
+  console.log(`Loading images from ${path}...`);
   fs.readdirSync(path).forEach((file) => {
     const img = fs.readFileSync(`${path}/${file}`);
     images[file.slice(0, -4)] = img;
+    console.log(`Loaded image: ${file}`);
   });
 }
 
-loadFolderImages(__dirname + '/../swordgame/art');
-loadFolderImages(__dirname + '/../assets/mobs');
-loadFolderImages(__dirname + '/../assets/player');
+loadFolderImages(process.cwd() + '/assets/swordgame/art');
+loadFolderImages(process.cwd() + '/assets/mobs');
+loadFolderImages(process.cwd() + '/assets/player');
 
 const loadPromises = Object.keys(images).map((imgName) => {
   return new Promise<void>((resolve, reject) => {
@@ -63,6 +65,7 @@ export default async function renderImage(
   const ctx = canvas.getContext('2d');
 
   ctx.drawImage(images['board'], 0, 0, canvas.width, canvas.height);
+  console.log(ctx)
 
   ctx.transform(-1, 0, 0, 1, canvas.width, 0);
 

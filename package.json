@@ -12,9 +12,11 @@
   "scripts": {
     "build": "npx tsc",
     "start": "npx wrangler dev",
+    "dev": "npx ts-node-dev src/index.ts",
     "deploy": "npx wrangler publish"
   },
   "devDependencies": {
+    "@hono/node-server": "^1.19.11",
     "@types/node": "^25.5.0",
     "typescript": "^6.0.2",
     "wrangler": "^4.77.0"

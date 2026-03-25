@@ -1,3 +1,4 @@
+import { serve } from '@hono/node-server';
 import { Context, Env, Hono } from 'hono';
 import { serveStatic } from 'hono/serve-static';
 import processGame from './utils/processGame';
@@ -18,7 +19,7 @@ function makeid(length: number): string {
 }
 
 app.use('/konosuba-rpg/assets/*', serveStatic({
-	root: './assets',
+  root: './assets',
   getContent: function (path: string, c: Context<Env, any, {}>): Promise<Response | null> {
     throw new Error('Function not implemented.');
   }
@@ -75,3 +76,9 @@ app.post('/discordmon/interactions', async (c: Context) => {
 });
 
 export default app;
+
+serve({
+  fetch: app.fetch,
+  port: 8787,
+});
+console.log('Server running on http://localhost:8787');

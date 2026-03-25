@@ -26,7 +26,7 @@ export class Creature {
         this.love -= 1;
     }
 
-    turn(lang: string) {
+    turn(lang: string): [string, number] {
         const dmg = this.rand.randint(this.attack[0], this.attack[1]);
 		if(lang=="fr")
 			if(dmg)
