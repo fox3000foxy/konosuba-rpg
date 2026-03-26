@@ -1,15 +1,19 @@
-import { Creature } from "../Creature";
+import { GenericCreature, GenericCreatureInterface } from "../GenericCreature";
 import { Random } from "../Random";
-export default class PigWoman extends Creature {
-    constructor(rand: Random) {
-        super(rand);
+
+export default class PigWoman extends GenericCreature implements GenericCreatureInterface {
+    constructor() {
+        super();
         this.attack = [0, 10];
         this.love = 5;
         this.hpMax = 50;
         this.hp = this.hpMax;
         this.name = "Femme cochon";
-        this.color = rand.choice(["11101", "11104", "11105", "11102"]);
+        this.prefix = true;
+    }
+
+    pickColor(rng: Random) {
+        this.color = rng.choice(["11101", "11104", "11105", "11102"]);
         this.images = [`enemy_image_${this.color}`];
-		this.prefix = true
     }
 }

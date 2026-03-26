@@ -1,15 +1,14 @@
-import { Creature } from "../Creature";
-import { Random } from "../Random";
-export default class MedusaMan extends Creature {
-    constructor(rand: Random) {
-        super(rand);
+import { Creature, CreatureInterface } from "../Creature";
+
+export default class MedusaMan extends Creature implements CreatureInterface {
+    constructor() {
+        super();
         this.attack = [3, 7];
         this.love = 100;
         this.hpMax = 60;
         this.hp = this.hpMax;
         this.name = "Homme méduse";
-        // this.color = rand.choice(["11000", "11001", "11002", "11003", "11004", "11005", "11006"]);
         this.images = [`enemy_image_22600`,`enemy_image_22601`];
-		this.prefix = true
+        this.prefix = true;
     }
 }

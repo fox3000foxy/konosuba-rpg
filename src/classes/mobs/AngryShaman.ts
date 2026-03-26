@@ -1,9 +1,8 @@
 import { Creature } from "../Creature";
-import { Random } from "../Random";
 
-export default class AngryShaman extends Creature {
-    constructor(rand: Random) {
-        super(rand);
+export default class AngryShaman extends Creature implements Creature {
+    constructor() {
+        super();
         this.attack = [5, 12];
         this.love = 100;
         this.hpMax = 40;
@@ -12,4 +11,6 @@ export default class AngryShaman extends Creature {
         this.images = [`enemy_image_22800`,`enemy_image_22801`];
 		this.prefix = true;
     }
+
+    pickColor() {}
 }

@@ -1,7 +1,6 @@
 
 import { Errors } from "../enums/Errors";
 import { Prefix } from "../enums/Prefix";
-import { Random } from "./Random";
 
 export enum MessagesTemplates {
     French_CreatureAttacks = "${NAME} l'attaque et lui inflige {DMG} DMG.",
@@ -10,8 +9,7 @@ export enum MessagesTemplates {
     English_CreatureMisses = "${NAME} tried to attack but missed.",
 }
 
-export class Creature {
-    rand: Random;
+export interface CreatureInterface {
     hpMax: number;
     hp: number;
     attack: number[];
@@ -20,42 +18,52 @@ export class Creature {
     images: string[];
     color?: string;
     prefix: boolean;
+}
 
-    constructor(rand: Random) {
-        this.rand = rand;
+export abstract class Creature implements CreatureInterface {
+    public hpMax: number;
+    public hp: number;
+    public attack: number[];
+    public love: number;
+    public name: string;
+    public images: string[];
+    public color?: string;
+    public prefix: boolean;
+
+    constructor() {
         this.hpMax = 10;
         this.hp = this.hpMax;
         this.attack = [0, 12];
         this.love = 10;
         this.name = "Creature";
         this.images = ["frame"];
-        this.prefix = true
+        this.prefix = true;
 
         if (new.target === Creature) {
             throw new Error(Errors.ABSTRACT_ERROR);
         }
     }
 
-    giveHug() {
-        this.love -= this.rand.randint(1, 5);
+    giveHug(loveDecrease: number) {
+        this.love -= loveDecrease;
     }
 
-    turn(lang: string): [string, number] {
-        const dmg = this.rand.randint(this.attack[0], this.attack[1]);
-        switch (lang) {
+    turn(options: { lang: string, dmg: number }): [string, number] {
+        const dmg = options.dmg;
+        switch (options.lang) {
             case "fr":
-                if (dmg) 
+                if (dmg)
                     return [MessagesTemplates.French_CreatureAttacks.replace("${NAME}", `${this.prefix ? Prefix.French_Determined : Prefix.None}${this.name}`).replace("{DMG}", dmg.toString()), dmg];
-                else 
+                else
                     return [MessagesTemplates.French_CreatureMisses.replace("${NAME}", `${this.prefix ? Prefix.French_Determined : Prefix.None}${this.name}`).replace("{DMG}", dmg.toString()), dmg];
             case "en":
             default:
-                if (dmg) 
+                if (dmg)
                     return [MessagesTemplates.English_CreatureAttacks.replace("${NAME}", `${this.prefix ? Prefix.English_Determined : Prefix.None}${this.name}`).replace("{DMG}", dmg.toString()), dmg];
-                else 
+                else
                     return [MessagesTemplates.English_CreatureMisses.replace("${NAME}", `${this.prefix ? Prefix.English_Determined : Prefix.None}${this.name}`).replace("{DMG}", dmg.toString()), dmg];
         }
-}
+    }
 
     dealAttack(dmg: number) {
         this.hp -= dmg;

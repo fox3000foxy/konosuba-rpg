@@ -1,8 +1,8 @@
-import { Creature } from "../Creature";
-import { Random } from "../Random";
-export default class Ruijerd extends Creature {
-    constructor(rand: Random) {
-        super(rand);
+import { Creature, CreatureInterface } from "../Creature";
+
+export default class Ruijerd extends Creature implements CreatureInterface {
+    constructor() {
+        super();
         this.attack = [0, 10];
         this.love = 20;
         this.hpMax = 80;

@@ -1,8 +1,8 @@
-import { Creature } from "../Creature";
-import { Random } from "../Random";
-export default class Squall extends Creature {
-    constructor(rand: Random) {
-        super(rand);
+import { Creature, CreatureInterface } from "../Creature";
+
+export default class Squall extends Creature implements CreatureInterface {
+    constructor() {
+        super();
         this.attack = [3, 8];
         this.love = 50;
         this.hpMax = 50;
