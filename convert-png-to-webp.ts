@@ -1,19 +1,20 @@
-const sharp = require("sharp");
-const path = require("path");
-const fs = require("fs");
+import * as fs from "fs";
+import * as path from "path";
+import sharp from "sharp";
 
-const walkDir = (dir, callback) => {
+// eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
+const walkDir = (dir: string, callback: Function) => {
   fs.readdirSync(dir).forEach((f) => {
-    let dirPath = path.join(dir, f);
-    let isDirectory = fs.statSync(dirPath).isDirectory();
-    isDirectory ? walkDir(dirPath, callback) : callback(dirPath);
+    const dirPath: string = path.join(dir, f);
+    const isDirectory: boolean = fs.statSync(dirPath).isDirectory();
+    return isDirectory ? walkDir(dirPath, callback) : callback(dirPath);
   });
 };
 
-const convertPngToAvif = async (directory) => {
+const convertPngToAvif = async (directory: string) => {
   console.log(`Starting conversion in: ${directory}`);
 
-  walkDir(directory, async (filePath) => {
+  walkDir(directory, async (filePath: string) => {
     if (filePath.toLowerCase().endsWith(".png") || filePath.toLowerCase().endsWith(".jpg") || filePath.toLowerCase().endsWith(".jpeg") || filePath.toLowerCase().endsWith(".webp")) {
       const avifPath = path.join(path.dirname(filePath), `${path.parse(filePath).name}.webp`);
 
@@ -24,7 +25,7 @@ const convertPngToAvif = async (directory) => {
             lossless: false,
             effort: 4,
             quality: 90,
-            chromaSubsampling: "4:4:4"
+            // chromaSubsampling: "4:4:4"
           })
           .toFile(avifPath);
 
