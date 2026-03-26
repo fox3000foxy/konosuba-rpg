@@ -117,16 +117,16 @@ async function buildComponents(payload: string, userID: string, lang: string, di
     {
       type: 1,
       components: [
-        { type: 2, label: fr ? ButtonsLabels.AttackFr.replace("x", "1") : ButtonsLabels.Attack, style: 4, custom_id: `${payload}/a:${userID}` },
-        { type: 2, label: fr ? ButtonsLabels.AttackFr.replace("x", "4") : ButtonsLabels.Attack, style: 4, custom_id: `${payload}/aaaa:${userID}` },
-        { type: 2, label: fr ? ButtonsLabels.AttackFr.replace("x", "10") : ButtonsLabels.Attack, style: 4, custom_id: `${payload}/aaaaaaaaaa:${userID}` },
+        { type: 2, label: fr ? ButtonsLabels.AttackFr.replace("x", "1") : ButtonsLabels.Attack.replace("x", "1"), style: 4, custom_id: `${payload}/a:${userID}` },
+        { type: 2, label: fr ? ButtonsLabels.AttackFr.replace("x", "4") : ButtonsLabels.Attack.replace("x", "4"), style: 4, custom_id: `${payload}/aaaa:${userID}` },
+        { type: 2, label: fr ? ButtonsLabels.AttackFr.replace("x", "10") : ButtonsLabels.Attack.replace("x", "10"), style: 4, custom_id: `${payload}/aaaaaaaaaa:${userID}` },
       ],
     }, {
       type: 1,
       components: [
-        { type: 2, label: fr ? ButtonsLabels.HugFr.replace("x", "1") : ButtonsLabels.Hug, style: 1, custom_id: `${payload}/h:${userID}` },
-        { type: 2, label: fr ? ButtonsLabels.HugFr.replace("x", "4") : ButtonsLabels.Hug, style: 1, custom_id: `${payload}/hhhh:${userID}` },
-        { type: 2, label: fr ? ButtonsLabels.HugFr.replace("x", "10") : ButtonsLabels.Hug, style: 1, custom_id: `${payload}/hhhhhhhhhh:${userID}` },
+        { type: 2, label: fr ? ButtonsLabels.HugFr.replace("x", "1") : ButtonsLabels.Hug.replace("x", "1"), style: 1, custom_id: `${payload}/h:${userID}` },
+        { type: 2, label: fr ? ButtonsLabels.HugFr.replace("x", "4") : ButtonsLabels.Hug.replace("x", "4"), style: 1, custom_id: `${payload}/hhhh:${userID}` },
+        { type: 2, label: fr ? ButtonsLabels.HugFr.replace("x", "10") : ButtonsLabels.Hug.replace("x", "10"), style: 1, custom_id: `${payload}/hhhhhhhhhh:${userID}` },
       ],
     },
     {
