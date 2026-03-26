@@ -7,6 +7,7 @@ export enum PlayerAction {
 	Atk = "Atk",
 	Hug = "Hug",
 	Idle = "Idle",
+	Giv = "Giv",
 }
 
 // Enum for player names
