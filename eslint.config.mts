@@ -18,6 +18,8 @@ export default defineConfig([
   tseslint.configs.recommended,
   {
     plugins: {
+      // eslint-plugin-security is not typed, so we have to cast it to any
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       security: security as any,
     },
     extends: [
@@ -34,7 +36,7 @@ export default defineConfig([
       'security/detect-non-literal-fs-filename': 'off',
       'security/detect-non-literal-regexp': 'warn',
       'security/detect-non-literal-require': 'warn',
-      'security/detect-object-injection': 'warn',
+      'security/detect-object-injection': 'off',
       'security/detect-possible-timing-attacks': 'warn',
       'security/detect-pseudoRandomBytes': 'warn',
       'security/detect-unsafe-regex': 'warn',

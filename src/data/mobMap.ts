@@ -1,8 +1,8 @@
+import { Creature } from "../classes/Creature";
 import AliveTree from '../classes/mobs/AliveTree';
 import AngryShaman from '../classes/mobs/AngryShaman';
 import Austrich from '../classes/mobs/Austrich';
 import Beldia from '../classes/mobs/Beldia';
-import { Creature } from "../classes/mobs/Creature";
 import DarkBat from '../classes/mobs/DarkBat';
 import DarkBear from '../classes/mobs/DarkBear';
 import DarkRat from '../classes/mobs/DarkRat';
