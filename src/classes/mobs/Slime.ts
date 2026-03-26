@@ -4,9 +4,9 @@ import { Random } from "../Random";
 export default class Slime extends GenericCreature implements GenericCreatureInterface {
     constructor() {
         super();
-        this.attack = [3, 7];
+        this.attack = [2, 8];
         this.love = 100;
-        this.hpMax = 30;
+        this.hpMax = 40;
         this.hp = this.hpMax;
         this.name = "Slime";
         this.prefix = true;

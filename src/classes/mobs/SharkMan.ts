@@ -4,7 +4,7 @@ import { Random } from "../Random";
 export default class SharkMan extends GenericCreature implements GenericCreatureInterface {
     constructor() {
         super();
-        this.attack = [0, 10];
+        this.attack = [6, 14];
         this.love = 100;
         this.hpMax = 100;
         this.hp = this.hpMax;

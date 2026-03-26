@@ -4,9 +4,9 @@ import { Random } from "../Random";
 export default class DarkRat extends GenericCreature implements GenericCreatureInterface {
     constructor() {
         super();
-        this.attack = [0, 10];
+        this.attack = [1, 8];
         this.love = 15;
-        this.hpMax = 20;
+        this.hpMax = 25;
         this.hp = this.hpMax;
         this.name = "Rat Ténébreux";
         this.prefix = true;

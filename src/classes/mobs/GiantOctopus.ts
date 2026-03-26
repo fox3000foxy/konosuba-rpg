@@ -4,9 +4,9 @@ import { Random } from "../Random";
 export default class GiantOctopus extends GenericCreature implements GenericCreatureInterface {
     constructor() {
         super();
-        this.attack = [5, 10];
+        this.attack = [5, 12];
         this.love = 100;
-        this.hpMax = 75;
+        this.hpMax = 85;
         this.hp = this.hpMax;
         this.name = "Poulpe Géant";
         this.prefix = true;

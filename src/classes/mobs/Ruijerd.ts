@@ -3,9 +3,9 @@ import { Creature, CreatureInterface } from "../Creature";
 export default class Ruijerd extends Creature implements CreatureInterface {
     constructor() {
         super();
-        this.attack = [0, 10];
+        this.attack = [7, 16];
         this.love = 20;
-        this.hpMax = 80;
+        this.hpMax = 120;
         this.hp = this.hpMax;
         this.name = "Ruijerd Superdia";
         // this.color = rand.choice(["11000", "11001", "11002", "11003", "11004", "11005", "11006"]);

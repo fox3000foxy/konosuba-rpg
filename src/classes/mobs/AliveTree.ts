@@ -4,9 +4,9 @@ import { Random } from "../Random";
 export default class AliveTree extends GenericCreature implements GenericCreatureInterface {
     constructor() {
         super();
-        this.attack = [3, 10];
+        this.attack = [4, 11];
         this.love = 100;
-        this.hpMax = 40;
+        this.hpMax = 55;
         this.hp = this.hpMax;
         this.name = "Arbre vivant";
 		this.prefix = true;

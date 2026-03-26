@@ -4,9 +4,9 @@ import { Random } from "../Random";
 export default class Knight extends GenericCreature implements GenericCreatureInterface {
     constructor() {
         super();
-        this.attack = [0, 10];
+        this.attack = [4, 12];
         this.love = 30;
-        this.hpMax = 60;
+        this.hpMax = 70;
         this.hp = this.hpMax;
         this.name = "Chevalier maudit";
         this.prefix = true;

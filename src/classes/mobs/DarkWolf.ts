@@ -4,9 +4,9 @@ import { Random } from "../Random";
 export default class DarkWolf extends GenericCreature implements GenericCreatureInterface {
     constructor() {
         super();
-        this.attack = [0, 10];
+        this.attack = [5, 13];
         this.love = 100;
-        this.hpMax = 100;
+        this.hpMax = 95;
         this.hp = this.hpMax;
         this.name = "Loup ténébreux";
         this.prefix = true;

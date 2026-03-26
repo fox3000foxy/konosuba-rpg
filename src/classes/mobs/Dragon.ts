@@ -4,7 +4,7 @@ import { Random } from "../Random";
 export default class Dragon extends GenericCreature implements GenericCreatureInterface {
     constructor() {
         super();
-        this.attack = [10, 15];
+        this.attack = [12, 20];
         this.love = 80;
         this.hpMax = 500;
         this.hp = this.hpMax;

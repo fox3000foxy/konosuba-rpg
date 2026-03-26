@@ -4,9 +4,9 @@ import { Random } from "../Random";
 export default class Wizard extends GenericCreature implements GenericCreatureInterface {
     constructor() {
         super();
-        this.attack = [0, 10];
+        this.attack = [4, 14];
         this.love = 100;
-        this.hpMax = 50;
+        this.hpMax = 45;
         this.hp = this.hpMax;
         this.name = "Sorcier";
         this.prefix = true;
