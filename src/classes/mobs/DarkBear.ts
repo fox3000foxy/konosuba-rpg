@@ -6,7 +6,7 @@ export default class DarkBear extends GenericCreature implements GenericCreature
         super();
         this.attack = [4, 12];
         this.love = 20;
-        this.hpMax = 50;
+        this.hpMax = 500;
         this.hp = this.hpMax;
         this.name = "Ours Ténébreuse";
         this.prefix = true;

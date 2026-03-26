@@ -6,7 +6,7 @@ export default class Wizard extends GenericCreature implements GenericCreatureIn
         super();
         this.attack = [4, 14];
         this.love = 100;
-        this.hpMax = 45;
+        this.hpMax = 450;
         this.hp = this.hpMax;
         this.name = "Sorcier";
         this.prefix = true;

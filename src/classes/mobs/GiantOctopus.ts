@@ -6,7 +6,7 @@ export default class GiantOctopus extends GenericCreature implements GenericCrea
         super();
         this.attack = [5, 12];
         this.love = 100;
-        this.hpMax = 85;
+        this.hpMax = 850;
         this.hp = this.hpMax;
         this.name = "Poulpe Géant";
         this.prefix = true;

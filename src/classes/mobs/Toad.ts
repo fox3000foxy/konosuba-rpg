@@ -6,7 +6,7 @@ export default class Toad extends GenericCreature implements GenericCreatureInte
         super();
         this.attack = [3, 8];
         this.love = 50;
-        this.hpMax = 45;
+        this.hpMax = 450;
         this.hp = this.hpMax;
         this.name = "Crapaud";
         this.prefix = true;

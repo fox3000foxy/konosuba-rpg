@@ -6,7 +6,7 @@ export default class DarkBat extends GenericCreature implements GenericCreatureI
         super();
         this.attack = [2, 9];
         this.love = 15;
-        this.hpMax = 30;
+        this.hpMax = 300;
         this.hp = this.hpMax;
         this.name = "Chauve-Souris Ténébreuse";
         this.prefix = true;

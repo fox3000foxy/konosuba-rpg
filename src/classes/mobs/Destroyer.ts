@@ -6,7 +6,7 @@ export default class Destroyer extends GenericCreature implements GenericCreatur
         super();
         this.attack = [10, 18];
         this.love = 100;
-        this.hpMax = 350;
+        this.hpMax = 3500;
         this.hp = this.hpMax;
         this.name = "Destroyer";
         this.prefix = true;

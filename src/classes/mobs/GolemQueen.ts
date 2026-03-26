@@ -6,7 +6,7 @@ export default class GolemQueen extends GenericCreature implements GenericCreatu
         super();
         this.attack = [9, 16];
         this.love = 100;
-        this.hpMax = 220;
+        this.hpMax = 2200;
         this.hp = this.hpMax;
         this.name = "Golem Queen";
         this.prefix = false;

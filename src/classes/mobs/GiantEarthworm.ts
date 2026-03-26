@@ -6,7 +6,7 @@ export default class GiantEarthworm extends GenericCreature implements GenericCr
         super();
         this.attack = [4, 10];
         this.love = 100;
-        this.hpMax = 80;
+        this.hpMax = 800;
         this.hp = this.hpMax;
         this.name = "Ver de terre Géant";
         this.prefix = true;
