@@ -1,10 +1,10 @@
-import { Creature } from '../../src/classes/Creature';
+import Troll from '../../src/classes/mobs/Troll';
 import { Random } from '../../src/classes/Random';
 import { mobMap } from '../../src/data/mobMap';
 
 describe('Creature base mechanics', () => {
   it('giveHug decreases love by expected range', () => {
-    const creature = new Creature(new Random(10));
+    const creature = new Troll(new Random(10));
     const before = creature.love;
 
     creature.giveHug();
@@ -14,7 +14,7 @@ describe('Creature base mechanics', () => {
   });
 
   it('turn returns damage tuple and localized message', () => {
-    const creature = new Creature(new Random(7));
+    const creature = new Troll(new Random(7));
     creature.attack = [2, 3];
     creature.name = 'Demo';
 

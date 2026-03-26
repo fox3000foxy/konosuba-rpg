@@ -1,26 +1,26 @@
-import Player from '../../src/classes/Player';
+import { Kazuma } from '../../src/classes/Player';
 import { Random } from '../../src/classes/Random';
+import { PlayerAction } from '../../src/enums/player/PlayerAction';
 
 describe('Player mechanics', () => {
   it('initializes with expected default stats', () => {
-    const player = new Player(new Random(1));
+    const player = new Kazuma(new Random(1));
 
     expect(player.hp).toEqual(player.hpMax);
-    expect(player.name).toEqual(['Kazuma', 'Darkness', 'Megumin', 'Aqua']);
-    expect(player.currentPlayerId).toBe(0);
+    expect(player.name).toEqual(Kazuma.name);
     expect(player.defending).toBe(false);
   });
 
   it('changes sprite set on attack/defend/hug action', () => {
-    const player = new Player(new Random(1));
+    const player = new Kazuma(new Random(1));
 
-    player.actionAtk('', 2);
-    expect(player.images[2][0]).toContain('02');
+    player.performAction(PlayerAction.Atk);
+    expect(player.images[0]).toContain('02');
 
-    player.actionDef('', 1);
-    expect(player.images[1][0]).toContain('03');
+    player.performAction(PlayerAction.Def);
+    expect(player.images[0]).toContain('03');
 
-    player.actionHug('', 0);
-    expect(player.images[0][0]).toContain('04');
+    player.performAction(PlayerAction.Hug);
+    expect(player.images[0]).toContain('04');
   });
 });

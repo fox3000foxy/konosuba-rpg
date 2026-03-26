@@ -16,7 +16,7 @@ describe('processGame core loop', () => {
 
     expect(g1.state).toBe(g2.state);
     expect(g1.messages).toEqual(g2.messages);
-    expect(g1.player.hp).toEqual(g2.player.hp);
+    expect(g1.team.players[0].hp).toEqual(g2.team.players[0].hp);
     expect(g1.creature.hp).toBe(g2.creature.hp);
     expect(g1.creature.love).toBe(g2.creature.love);
   });

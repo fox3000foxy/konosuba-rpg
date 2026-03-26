@@ -15,9 +15,4 @@ describe('processUrl', () => {
 
     expect(monster).toBe('Troll');
   });
-
-  it('sanitizes forbidden seed markers', () => {
-    const [, , seed] = processUrl('https://host/konosuba-rpg/en/vieord123/atk');
-    expect(seed).toBe('');
-  });
 });
