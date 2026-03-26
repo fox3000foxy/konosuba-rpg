@@ -92,6 +92,10 @@ export abstract class Player {
 		this.name = name;
 		this.images = images;
 		this.icon = icon;
+
+		if (new.target === Player) {
+			throw new Error("This is an abstract class, you should not instantiate it directly.");
+		}
 	}
 
 	abstract performAction(action: PlayerAction): void;
