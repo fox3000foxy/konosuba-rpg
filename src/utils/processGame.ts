@@ -1,5 +1,5 @@
 // import fs from 'fs';
-import { Creature } from '../classes/mobs/Creature';
+import { Creature } from '../classes/Creature';
 import Troll from '../classes/mobs/Troll';
 import Player from '../classes/Player';
 import { Random } from '../classes/Random';
@@ -17,6 +17,16 @@ type LinesType = {
   };
 };
 
+type GameState = "good" | "bad" | "best" | "incomplete" | "giveup";
+type Game = {
+  image?: Uint8Array<ArrayBufferLike>;
+  state: GameState;
+  messages: string[];
+  player: Player;
+  creature: Creature;
+  training: boolean;
+}
+
 const linesTyped = lines as LinesType;
 
 function pascalCaseToString(pascalCaseWord: string): string {
@@ -31,10 +41,10 @@ export default async function processGame(
   monster: string | null = null,
   lang: string = 'en',
   renderingImage: boolean = true
-): Promise<any> {
+): Promise<Game> {
   lang = lang === 'fr' ? 'fr' : 'en';
   const player = new Player(rand);
-  let creature: Creature | null = null;
+  let creature: Creature | null;
 
   if (monster) {
     const MonsterClass = mobMap[monster] || Troll;
@@ -58,8 +68,8 @@ export default async function processGame(
       : `Watch out, ${creature.prefix ? 'a ' : ''}${creature.name} !`,
   ];
 
-  let state = null;
-  let playerId = 0;
+  let state: GameState = "incomplete";
+  let playerId;
   let counter = -1
   // console.log(moves)
   for (const move of moves) {
@@ -71,10 +81,6 @@ export default async function processGame(
     else if (playerId == 1 && player.hp[1] <= 0) playerId = 2;
     else if (playerId == 2 && player.hp[2] <= 0) playerId = 3;
     else if (playerId == 3 && player.hp[3] <= 0) playerId = 0;
-    // else {
-    // state = "bad";
-    // break;
-    // }
     player.currentPlayerId = playerId;
 
     player.defending = move === "DEF";
@@ -137,7 +143,7 @@ export default async function processGame(
     }
   }
 
-  let training = !!monster
+  const training = !!monster
   if (state === null && moves.length > 0) state = "incomplete";
   if (renderingImage) {
     const image = await renderImage(state, messages, player, creature, lang);

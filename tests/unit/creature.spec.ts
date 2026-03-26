@@ -1,5 +1,5 @@
+import { Creature } from '../../src/classes/Creature';
 import { Random } from '../../src/classes/Random';
-import { Creature } from '../../src/classes/mobs/Creature';
 import { mobMap } from '../../src/data/mobMap';
 
 describe('Creature base mechanics', () => {

@@ -1,5 +1,5 @@
 
-import { Creature } from '../classes/mobs/Creature';
+import { Creature } from '../classes/Creature';
 import Troll from '../classes/mobs/Troll';
 import Player from '../classes/Player';
 import { Random } from '../classes/Random';
