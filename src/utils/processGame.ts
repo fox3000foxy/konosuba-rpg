@@ -64,7 +64,7 @@ export default async function processGame(
       : `Watch out, ${creature.prefix ? Prefix.English_Undetermined : Prefix.None}${creature.name} !`,
   ];
 
-  const embedDescription = lang === Lang.French
+  let embedDescription = lang === Lang.French
     ? ["Utilisez les boutons pour attaquer, défendre ou faire un câlin à la créature. Essayez de réduire ses points de vie à zéro ou son amour à zéro pour gagner !"]
     : ["Use the buttons to attack, defend, or hug the creature. Try to reduce its HP to zero or its love to zero to win!"];
 
@@ -77,6 +77,7 @@ export default async function processGame(
   team.players.forEach(player => player.resetSpecialAttack());
 
   for (const move of moves) {
+    embedDescription = [];
     messages.length = 0;
 
     counter += 1;
