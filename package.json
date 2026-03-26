@@ -1,18 +1,12 @@
 {
   "dependencies": {
     "@cf-wasm/photon": "^0.3.4",
-    "@cloudflare/workers-types": "^4.20260317.1",
-    "@napi-rs/canvas": "^0.1.97",
     "@resvg/resvg-wasm": "^2.6.2",
-    "canvas": "^2.11.2",
-    "combine-image": "^1.0.3",
     "discord-interactions": "^4.4.0",
-    "discord.js": "^13.17.1",
     "express": "^4.22.1",
     "hono": "^4.12.9",
-    "localtunnel": "^2.0.2",
-    "random-seed": "^0.3.0",
-    "satori": "^0.26.0"
+    "satori": "^0.26.0",
+    "sharp": "^0.34.5"
   },
   "scripts": {
     "generate:image-manifest": "npx ts-node scripts/generate-image-manifest.ts",
@@ -40,10 +34,8 @@
     "globals": "^17.4.0",
     "jest": "^30.3.0",
     "jiti": "^2.6.1",
-    "sharp": "^0.34.5",
     "ts-jest": "^29.4.6",
     "typescript": "^6.0.2",
-    "typescript-eslint": "^8.57.2",
-    "wrangler": "^4.77.0"
+    "typescript-eslint": "^8.57.2"
   }
 }
