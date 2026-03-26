@@ -21,6 +21,10 @@ export class Creature {
         this.name = "Creature";
         this.images = ["frame"];
 		this.prefix = true
+
+        if(new.target === Creature) {
+            throw new Error("This is an abstract class, you should not instantiate it directly.");
+        }
     }
 
     giveHug() {
