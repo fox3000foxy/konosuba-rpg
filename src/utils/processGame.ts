@@ -19,7 +19,7 @@ type LinesType = {
 
 type GameState = "good" | "bad" | "best" | "incomplete" | "giveup";
 type Game = {
-  image?: Uint8Array<ArrayBufferLike>;
+  image?: Uint8Array;
   state: GameState;
   messages: string[];
   player: Player;

@@ -1,6 +1,8 @@
 import * as Photon from '@cf-wasm/photon';
 import { initWasm, Resvg } from '@resvg/resvg-wasm';
 import satori from 'satori';
+import { Creature } from '../classes/Creature';
+import Player from '../classes/Player';
 import { imageManifest } from '../data/imageManifest';
 
 // ─── WASM init (once per Worker lifetime) ────────────────────────────────────
@@ -24,6 +26,7 @@ async function ensureWasm(): Promise<void> {
 
 // ─── GLOBAL CACHE (survit aux re-imports en dev/hot-reload) ──────────────────
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const GLOBAL = globalThis as any;
 
 GLOBAL.__imageCache     ??= {} as Record<string, ArrayBuffer>;
@@ -164,6 +167,15 @@ async function getImage(key: string, w?: number, h?: number, flipped = false): P
     img = r;
   }
 
+  // only h
+  if (!w && h) {
+    const ratio = img.get_width() / img.get_height();
+    const newW = Math.round(h * ratio);
+    const r = Photon.resize(img, newW, h, Photon.SamplingFilter.Lanczos3);
+    img.free();
+    img = r;
+  }
+
   photonCache.set(cacheKey, img);
   return clonePhoton(img);
 }
@@ -207,7 +219,7 @@ async function getCharactersLayer(
 
   for (const s of slots) {
     if (playerHp[s.i] <= 0) continue;
-    const img = await getImage(playerImages[s.i][0], 120, 184, true);
+    const img = await getImage(playerImages[s.i][0], undefined, 184, true);
     Photon.watermark(layer, img, BigInt(Math.round(s.x)), BigInt(Math.round(s.y)));
     img.free();
   }
@@ -225,8 +237,8 @@ async function getCharactersLayer(
 // ─── UI OVERLAY ───────────────────────────────────────────────────────────────
 
 async function buildOverlayJsx(
-  player: any,
-  creature: any,
+  player: Player,
+  creature: Creature,
   messages: string[],
   state: string | null,
   lang: string,
@@ -375,8 +387,8 @@ async function buildOverlayJsx(
  */
 async function getUIOverlay(
   uiCacheKey: string,
-  player: any,
-  creature: any,
+  player: Player,
+  creature: Creature,
   messages: string[],
   state: string | null,
   lang: string,
@@ -406,8 +418,8 @@ async function getUIOverlay(
 export default async function renderImage(
   state: string | null,
   messages: string[],
-  player: any,
-  creature: any,
+  player: Player,
+  creature: Creature,
   lang = 'en'
 ): Promise<Uint8Array> {
   await ensureWasm();
@@ -453,6 +465,7 @@ export default async function renderImage(
   uiImg.free();
 
   const output = canvas.get_bytes_webp();
+  const outputUint8 = new Uint8Array(output);
   canvas.free();
-  return output;
+  return outputUint8;
 }

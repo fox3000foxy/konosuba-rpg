@@ -1,11 +1,17 @@
 import { verifyKey } from 'discord-interactions';
-import { Context, Env, Hono } from 'hono';
+import { Context, Hono } from 'hono';
 import { serveStatic } from 'hono/serve-static';
+import Player from './classes/Player';
 import { Random } from './classes/Random';
 import { imageManifest } from './data/imageManifest';
 import { mobMap } from './data/mobMap';
 import processGame from './utils/processGame';
 import processUrl from './utils/processUrl';
+
+type InteractionDataOption = {
+  name: string;
+  value: string | number;
+}
 
 const app = new Hono();
 
@@ -67,7 +73,7 @@ async function buildComponents(payload: string, userID: string, lang: string, di
   const imageUrl = buildImageUrl(payload, lang);
 
   // const game = processGame
-  const [rand, moves, seed_str, monster] = processUrl(imageUrl);
+  const [rand, moves, , monster] = processUrl(imageUrl);
   const { state } = await processGame(rand, moves, monster, lang, false);
   const training = isTraining(payload);
   const fr = lang === 'fr';
@@ -162,7 +168,7 @@ async function buildComponents(payload: string, userID: string, lang: string, di
 
 app.get('/konosuba-rpg/assets/*', serveStatic({
   root: process.cwd() + '/assets',
-  getContent: async function (path: string, c: Context<Env, any, {}>): Promise<Response | null> {
+  getContent: async function (path: string): Promise<Response | null> {
     const url = new URL(path, 'http://localhost');
     const key = url.pathname.split('assets/')[2];
     const image = imageManifest[key];
@@ -187,9 +193,9 @@ app.get('/konosuba-rpg/assets/*', serveStatic({
 }));
 
 app.get('/game/:lang/*', async (c: Context) => {
-    console.log('Received request:', c.req.url);
+  console.log('Received request:', c.req.url);
   const { lang } = c.req.param();
-  const [rand, moves, seed_str, monster] = await processUrl(c.req.url);
+  const [rand, moves, , monster] = await processUrl(c.req.url);
   const game = await processGame(rand, moves, monster, lang, false);
   return c.json(game);
 })
@@ -197,10 +203,24 @@ app.get('/game/:lang/*', async (c: Context) => {
 app.get('/konosuba-rpg/:lang/*', async (c: Context) => {
   console.log('Received request:', c.req.url);
   const { lang } = c.req.param();
-  const [rand, moves, seed_str, monster] = await processUrl(c.req.url);
-  const { image } = await processGame(rand, moves, monster, lang);
+  const [rand, moves, , monster] = await processUrl(c.req.url);
+  const { image } = await processGame(rand, moves, monster, lang, true);
+
+  if (!image) {
+    return c.text('Image generation failed', 500);
+  }
+
   c.header('Content-Type', 'image/webp');
-  return c.body(image);
+  const responseBody =
+    image instanceof Uint8Array
+      ? image.buffer.slice(image.byteOffset, image.byteOffset + image.byteLength)
+      : image;
+
+  return new Response(responseBody as ArrayBuffer, {
+    headers: {
+      'Content-Type': 'image/webp',
+    },
+  });
 });
 
 app.post('/api/interactions', async (c: Context) => {
@@ -258,7 +278,7 @@ app.post('/api/interactions', async (c: Context) => {
 
     // /train
     if (interaction.data?.name === 'train') {
-      const commandMonster = interaction.data.options?.find((o: any) => o.name === 'monster')?.value;
+      const commandMonster = interaction.data.options?.find((o: InteractionDataOption) => o.name === 'monster')?.value;
       const monsterCandidate = typeof commandMonster === 'string' ? commandMonster.trim().toLowerCase() : '';
       const monsterKey = Object.keys(mobMap).find((k) => k.toLowerCase() === monsterCandidate) || 'Troll';
       const id = makeid(10);
@@ -282,7 +302,7 @@ app.post('/api/interactions', async (c: Context) => {
 
     // /infos-monster
     if (interaction.data?.name === 'infos-monster') {
-      const commandMonster = interaction.data.options?.find((o: any) => o.name === 'monster')?.value;
+      const commandMonster = interaction.data.options?.find((o: InteractionDataOption) => o.name === 'monster')?.value;
       const monsterCandidate = typeof commandMonster === 'string' ? commandMonster.trim().toLowerCase() : '';
       const monsterKey = Object.keys(mobMap).find((k) => k.toLowerCase() === monsterCandidate);
       if (!monsterKey) {
@@ -320,7 +340,7 @@ app.post('/api/interactions', async (c: Context) => {
 
     // /infos-player
     if (interaction.data?.name === 'infos-player') {
-      const characterId = Number(interaction.data.options?.find((o: any) => o.name === 'character')?.value);
+      const characterId = Number(interaction.data.options?.find((o: InteractionDataOption) => o.name === 'character')?.value);
       if (!Number.isInteger(characterId) || characterId < 0 || characterId > 3) {
         return c.json({
           type: 4,
@@ -335,8 +355,7 @@ app.post('/api/interactions', async (c: Context) => {
       }
 
       const randP = new Random(Math.floor(Math.random() * Number.MAX_SAFE_INTEGER));
-      const PlayerClass = (require('./classes/Player').default);
-      const player = new PlayerClass(randP);
+      const player = new Player(randP);
       const charName = player.name[characterId];
       const hp = player.hp[characterId];
       const attackR = player.attack[characterId];
