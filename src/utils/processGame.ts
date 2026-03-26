@@ -88,20 +88,20 @@ export default async function processGame(
       const dmg = rand.randint(player.attack[playerId][0], player.attack[playerId][1]);
       const msg = rand.choice(linesTyped[lang as Lang].youDefendMsgs[playerId]).replace("CREATURE", creature.name).replace("DAMAGE", dmg.toString());
       messages.push(msg);
-      player.actionDef(msg, playerId);
+      player.actionDef(playerId);
     }
     if (move === "ATK") {
       const dmg = rand.randint(player.attack[playerId][0], player.attack[playerId][1]);
       creature.dealAttack(dmg);
       const msg = rand.choice(linesTyped[lang as Lang].youAttackMsgs[playerId]).replace("CREATURE", creature.name).replace("DAMAGE", dmg.toString());
       messages.push(msg);
-      player.actionAtk(msg, playerId);
+      player.actionAtk(playerId);
     }
     if (move === "HUG") {
       const msg = rand.choice(linesTyped[lang as Lang].youHugMsgs[playerId]).replace("CREATURE", creature.name);
       messages.push(msg);
       creature.giveHug();
-      player.actionHug(msg, playerId);
+      player.actionHug(playerId);
     }
 
     if (creature.hp <= 0) {

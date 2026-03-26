@@ -31,7 +31,7 @@ export default class Player {
 		];
 	}
 
-	actionDef(msg: any, playerId: number) {
+	actionDef(playerId: number) {
 		this.images = [
 			["character_kazuma0" + (playerId % 4 == 0 ? "3" : "1")],
 			["character_daku0" + (playerId % 4 == 1 ? "3" : "1")],
@@ -40,7 +40,7 @@ export default class Player {
 		];
 	}
 
-	actionAtk(msg: any, playerId: number) {
+	actionAtk(playerId: number) {
 		this.images = [
 			["character_kazuma0" + (playerId % 4 == 0 ? "2" : "1")],
 			["character_daku0" + (playerId % 4 == 1 ? "2" : "1")],
@@ -49,7 +49,7 @@ export default class Player {
 		];
 	}
 
-	actionHug(msg: any, playerId: number) {
+	actionHug(playerId: number) {
 		this.images = [
 			["character_kazuma0" + (playerId % 4 == 0 ? "4" : "1")],
 			["character_daku0" + (playerId % 4 == 1 ? "4" : "1")],
