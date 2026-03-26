@@ -15,6 +15,7 @@
  *   BENCH_WARMUP=N   Warm-up ignorés dans les stats (défaut : 2)
  */
 
+import { Lang } from '../enums/Lang';
 import processGame from './processGame';
 import processUrl from './processUrl';
 import { getCacheDiagnostics, getLastPerfReport, type PerfReport } from './renderImage';
@@ -27,7 +28,7 @@ const BASE_URL = 'https://konosuba-rpg.vercel.app';
  * Construit une URL de jeu valide, identique à celles produites par index.ts.
  * Format : https://.../konosuba-rpg/:lang/:seed[/action]*[?monster=X]
  */
-function buildUrl(seed: string, moves: string[], lang: string, monster?: string): string {
+function buildUrl(seed: string, moves: string[], lang: Lang | undefined, monster?: string): string {
   const path = [seed, ...moves].join('/');
   const query = monster ? `?monster=${encodeURIComponent(monster)}` : '';
   return `${BASE_URL}/konosuba-rpg/${lang}/${path}${query}`;
@@ -45,7 +46,7 @@ interface Scenario {
   name: string;
   seed: string;
   moves: string[];
-  lang: string;
+  lang: Lang | undefined;
   monster?: string;
 }
 
@@ -55,56 +56,56 @@ function buildScenarios(fixedSeed: string, fixedMonster?: string): Scenario[] {
       name: '🆕  Nouvelle partie — aucun coup joué',
       seed: fixedSeed,
       moves: [],
-      lang: 'fr',
+      lang: Lang.French,
       monster: fixedMonster,
     },
     {
       name: '🔁  Cache chaud — même URL exacte (doit être quasi-instantané)',
       seed: fixedSeed,
       moves: [],
-      lang: 'fr',
+      lang: Lang.French,
       monster: fixedMonster,
     },
     {
       name: '⚔️   Partie courte — atk/atk/def (3 coups)',
       seed: fixedSeed,
       moves: ['atk', 'atk', 'def'],
-      lang: 'fr',
+      lang: Lang.French,
       monster: fixedMonster,
     },
     {
       name: '🥊  Partie longue — 10 coups mixtes',
       seed: fixedSeed,
       moves: ['atk', 'atk', 'def', 'hug', 'atk', 'def', 'atk', 'atk', 'hug', 'atk'],
-      lang: 'fr',
+      lang: Lang.French,
       monster: fixedMonster,
     },
     {
       name: '🏁  Victoire probable — 20 attaques en rafale',
       seed: fixedSeed,
       moves: Array<string>(20).fill('atk'),
-      lang: 'fr',
+      lang: Lang.French,
       monster: fixedMonster,
     },
     {
       name: '🌐  Locale EN — partie courte',
       seed: fixedSeed,
       moves: ['atk', 'def', 'hug'],
-      lang: 'en',
+      lang: Lang.English,
       monster: fixedMonster,
     },
     {
       name: '🎲  Seed aléatoire A — cold cache UI garanti',
       seed: makeSeed(),
       moves: ['atk', 'def'],
-      lang: 'fr',
+      lang: Lang.French,
       monster: fixedMonster,
     },
     {
       name: '🎲  Seed aléatoire B — variabilité du rendu',
       seed: makeSeed(),
       moves: ['hug', 'atk', 'atk'],
-      lang: 'fr',
+      lang: Lang.French,
       monster: fixedMonster,
     },
   ];
@@ -150,9 +151,9 @@ async function runScenario(
   runs: number,
   warmup: number
 ): Promise<RunResult> {
-  const timings: number[]        = [];
-  const reports: PerfReport[]    = [];
-  const outputSizes: number[]    = [];
+  const timings: number[] = [];
+  const reports: PerfReport[] = [];
+  const outputSizes: number[] = [];
   const states: (string | null)[] = [];
 
   const url = buildUrl(scenario.seed, scenario.moves, scenario.lang, scenario.monster);
@@ -161,7 +162,7 @@ async function runScenario(
     // Reconstitue exactement le pipeline serveur — aucun mock
     const [rand, moves, , monster] = processUrl(url);
 
-    const t0   = performance.now();
+    const t0 = performance.now();
     const game = await processGame(rand, moves, monster, scenario.lang, true /* renderingImage */);
     const elapsed = performance.now() - t0;
 
@@ -186,13 +187,13 @@ function printScenarioReport(
   result: RunResult
 ): void {
   const { timings, reports, outputSizes, states } = result;
-  const mean  = timings.reduce((a, b) => a + b, 0) / timings.length;
-  const sd    = stddev(timings, mean);
-  const min   = Math.min(...timings);
-  const max   = Math.max(...timings);
-  const med   = median(timings);
-  const p95   = percentile(timings, 95);
-  const p99   = percentile(timings, 99);
+  const mean = timings.reduce((a, b) => a + b, 0) / timings.length;
+  const sd = stddev(timings, mean);
+  const min = Math.min(...timings);
+  const max = Math.max(...timings);
+  const med = median(timings);
+  const p95 = percentile(timings, 95);
+  const p99 = percentile(timings, 99);
   const avgSz = outputSizes.reduce((a, b) => a + b, 0) / outputSizes.length;
   const lastState = states[states.length - 1] ?? 'incomplete';
 
@@ -211,9 +212,9 @@ function printScenarioReport(
 
   // Distribution visuelle
   if (timings.length >= 3) {
-    const range      = max - min;
+    const range = max - min;
     const bucketSize = Math.max(5, Math.round(range / Math.min(10, timings.length)));
-    const buckets    = new Map<number, number>();
+    const buckets = new Map<number, number>();
     for (const t of timings) {
       const b = Math.floor((t - min) / bucketSize) * bucketSize + Math.ceil(min);
       buckets.set(b, (buckets.get(b) ?? 0) + 1);
@@ -263,8 +264,8 @@ function printScenarioReport(
 function printThroughput(allTimings: number[]): void {
   if (allTimings.length === 0) return;
   const mean = allTimings.reduce((a, b) => a + b, 0) / allTimings.length;
-  const med  = median(allTimings);
-  const p95  = percentile(allTimings, 95);
+  const med = median(allTimings);
+  const p95 = percentile(allTimings, 95);
 
   console.log('\n' + '═'.repeat(72));
   console.log('🚀  Estimation de scalabilité (pipeline complet processGame + render)');
@@ -291,15 +292,15 @@ function printThroughput(allTimings: number[]): void {
 // ─── Main ─────────────────────────────────────────────────────────────────────
 
 async function main(): Promise<void> {
-  const args   = process.argv.slice(2);
+  const args = process.argv.slice(2);
   const getStr = (prefix: string, def: string) =>
     args.find(a => a.startsWith(prefix))?.split('=').slice(1).join('=') ?? def;
   const getInt = (prefix: string, envKey: string, def: number) =>
     parseInt(getStr(prefix, process.env[envKey] ?? String(def)), 10);
 
-  const RUNS    = getInt('--runs=',    'BENCH_RUNS',   10);
-  const WARMUP  = getInt('--warmup=',  'BENCH_WARMUP', 2);
-  const SEED    = getStr('--seed=',    makeSeed());
+  const RUNS = getInt('--runs=', 'BENCH_RUNS', 10);
+  const WARMUP = getInt('--warmup=', 'BENCH_WARMUP', 2);
+  const SEED = getStr('--seed=', makeSeed());
   const MONSTER = getStr('--monster=', '') || undefined;
 
   console.log('═'.repeat(72));
@@ -312,7 +313,7 @@ async function main(): Promise<void> {
   console.log(`  Spans     : ${process.env.RENDER_PERF === '1' ? '✅ activés' : '❌ désactivés — lancez avec RENDER_PERF=1'}`);
   console.log(`  Date      : ${new Date().toISOString()}`);
 
-  const scenarios  = buildScenarios(SEED, MONSTER);
+  const scenarios = buildScenarios(SEED, MONSTER);
   const allTimings: number[] = [];
 
   for (const scenario of scenarios) {
