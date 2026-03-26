@@ -2,31 +2,29 @@ import { Random } from '../classes/Random';
 import { PlayerAction } from '../enums/player/PlayerAction';
 
 export default function processUrl(url: string): [Random, string[], string, string | null] {
-  const valid_moves = [
+  const validMovesSet = new Set([
     PlayerAction.Atk.toLocaleUpperCase(),
     PlayerAction.Def.toLocaleUpperCase(),
     PlayerAction.Hug.toLocaleUpperCase(),
     PlayerAction.Giv.toLocaleUpperCase()
-  ];
-  let monster: string | null = null;
+  ]);
 
-  if (url.indexOf('monster') !== -1) {
-    monster = url.split('monster=')[1];
+  let monster: string | null = null;
+  if (url.includes('monster')) {
+    const monsterParam = url.split('monster=')[1];
+    monster = monsterParam ? monsterParam.split('&')[0] : null;
   }
 
   url = url.toLowerCase();
-  let seed = 0;
-  const seed_str = url.split('?')[0].split('/')[5];
-  // console.log(url, seed_str)
+  const seedStr = url.split('?')[0].split('/')[5] || '';
 
-  let moves = url.toUpperCase().split('/');
-  moves = moves.filter((m) => valid_moves.indexOf(m) !== -1);
+  const moves = url
+    .toUpperCase()
+    .split('/')
+    .filter((move) => validMovesSet.has(move));
 
-  for (let j = 0; j < seed_str.length; j++) {
-    const c = seed_str.charAt(j);
-    seed = (seed + c.charCodeAt(0)) % 8096;
-  }
+  const seed = Array.from(seedStr).reduce((acc, char) => (acc + char.charCodeAt(0)) % 8096, 0);
 
   const rand = new Random(seed);
-  return [rand, moves, seed_str, monster];
+  return [rand, moves, seedStr, monster];
 }

@@ -1,5 +1,5 @@
 // import fs from 'fs';
-import { Creature } from '../classes/Creature';
+import { Creature, MessagesTemplates } from '../classes/Creature';
 import Troll from '../classes/mobs/Troll';
 import { Team } from '../classes/Player';
 import { Random } from '../classes/Random';
@@ -52,39 +52,45 @@ export default async function processGame(
   let state: GameState = GameState.Incomplete;
   let playerId;
   let counter = -1;
-  // console.log(moves)
+  const playerCount = team.players.length;
+
   for (const move of moves) {
-    // const move = moves[i]
     messages.length = 0;
-    if (counter >= 0)
-      team.players[counter % 4].performAction(PlayerAction.Idle);
+    if (counter >= 0) {
+      team.players[counter % playerCount].performAction(PlayerAction.Idle);
+    }
     counter += 1;
-    playerId = counter % 4;
-    if (playerId == 0 && team.players[0].hp <= 0) playerId = 1;
-    else if (playerId == 1 && team.players[1].hp <= 0) playerId = 2;
-    else if (playerId == 2 && team.players[2].hp <= 0) playerId = 3;
-    else if (playerId == 3 && team.players[3].hp <= 0) playerId = 0;
+    playerId = counter % playerCount;
 
-    team.players[playerId].defending = move === PlayerAction.Def.toLocaleUpperCase();
-
-    if (team.players[playerId].defending) {
-      const dmg = rand.randint(team.players[playerId].attack[0], team.players[playerId].attack[1]);
-      const msg = rand.choice(linesTyped[lang as Lang].youDefendMsgs[playerId]).replace("CREATURE", creature.name).replace("DAMAGE", dmg.toString());
-      messages.push(msg);
-      team.players[playerId].performAction(PlayerAction.Def);
+    // Skip players with 0 HP
+    while (team.players[playerId].hp <= 0) {
+      playerId = (playerId + 1) % playerCount;
     }
-    if (move === PlayerAction.Atk.toLocaleUpperCase()) {
-      const dmg = rand.randint(team.players[playerId].attack[0], team.players[playerId].attack[1]);
+
+    const currentPlayer = team.players[playerId];
+    currentPlayer.defending = move === PlayerAction.Def.toLocaleUpperCase();
+
+    if (currentPlayer.defending) {
+      const dmg = rand.randint(currentPlayer.attack[0], currentPlayer.attack[1]);
+      const msg = rand.choice(linesTyped[lang as Lang].youDefendMsgs[playerId])
+        .replace("CREATURE", creature.name)
+        .replace("DAMAGE", dmg.toString());
+      messages.push(msg);
+      currentPlayer.performAction(PlayerAction.Def);
+    } else if (move === PlayerAction.Atk.toLocaleUpperCase()) {
+      const dmg = rand.randint(currentPlayer.attack[0], currentPlayer.attack[1]);
       creature.dealAttack(dmg);
-      const msg = rand.choice(linesTyped[lang as Lang].youAttackMsgs[playerId]).replace("CREATURE", creature.name).replace("DAMAGE", dmg.toString());
+      const msg = rand.choice(linesTyped[lang as Lang].youAttackMsgs[playerId])
+        .replace("CREATURE", creature.name)
+        .replace("DAMAGE", dmg.toString());
       messages.push(msg);
-      team.players[playerId].performAction(PlayerAction.Atk);
-    }
-    if (move === PlayerAction.Hug.toLocaleUpperCase()) {
-      const msg = rand.choice(linesTyped[lang as Lang].youHugMsgs[playerId]).replace("CREATURE", creature.name);
+      currentPlayer.performAction(PlayerAction.Atk);
+    } else if (move === PlayerAction.Hug.toLocaleUpperCase()) {
+      const msg = rand.choice(linesTyped[lang as Lang].youHugMsgs[playerId])
+        .replace("CREATURE", creature.name);
       messages.push(msg);
       creature.giveHug();
-      team.players[playerId].performAction(PlayerAction.Hug);
+      currentPlayer.performAction(PlayerAction.Hug);
     }
 
     if (creature.hp <= 0) {
@@ -97,33 +103,32 @@ export default async function processGame(
       break;
     }
 
-    let creatureMove = creature.turn(lang);
-    if (team.players[playerId].defending) {
-      creatureMove = [creatureMove[0].replace(creatureMove[1].toString(), "0"), creatureMove[1]];
+    const creatureMove = creature.turn(lang);
+    if (currentPlayer.defending) {
       messages.push(
-        lang == Lang.French ?
-          `${creature.prefix ? Prefix.French_Determined : Prefix.None}${creature.name} a essayé de l'attaquer mais l'a donc raté.` :
-          `${creature.prefix ? Prefix.English_Determined : Prefix.None}${creature.name} tried to attack but missed.`
+        lang === Lang.French
+          ? MessagesTemplates.French_CreatureMisses.replace("${NAME}",creature.prefix ? Prefix.French_Determined + creature.name : creature.name).replace("{DMG}", creatureMove[1].toString())
+          : MessagesTemplates.English_CreatureMisses.replace("${NAME}",creature.prefix ? Prefix.English_Determined + creature.name : creature.name).replace("{DMG}", creatureMove[1].toString())
       );
-    }
-
-
-    if (!team.players[playerId].defending) {
-      team.players[playerId].hp -= creatureMove[1];
-      if (team.players[playerId].hp > 0)
+    } else {
+      currentPlayer.hp -= creatureMove[1];
+      if (currentPlayer.hp > 0) {
         messages.push(creatureMove[0]);
-      else
-        messages.push(lang == Lang.French ?
-          creatureMove[0] + " " + team.players[playerId].name + " est a terre..." :
-          creatureMove[0] + " " + team.players[playerId].name + " is down..."
+      } else {
+        messages.push(
+          lang === Lang.French
+            ? `${creatureMove[0]} ${currentPlayer.name} est à terre...`
+            : `${creatureMove[0]} ${currentPlayer.name} is down...`
         );
+      }
     }
 
-    if (team.players[playerId].hp <= 0) {
+    if (currentPlayer.hp <= 0) {
       state = GameState.Bad;
       break;
     }
-    if (move === "GIV") { // Give Up is not an action performable by a character, it's a signal that the player wants to end the game immediately
+
+    if (move === "GIV") {
       state = GameState.Giveup;
       break;
     }
