@@ -1,6 +1,7 @@
 // import fs from 'fs';
 import { Creature, MessagesTemplates } from '../classes/Creature';
 import { GenericCreature } from '../classes/GenericCreature';
+import Troll from '../classes/mobs/Troll';
 import { Team } from '../classes/Player';
 import { Random } from '../classes/Random';
 import lines from '../data/constants';
@@ -15,7 +16,7 @@ import renderImage from './renderImage';
 
 const linesTyped = lines as LinesType;
 
-function pascalCaseToString(pascalCaseWord: string): string {
+export function pascalCaseToString(pascalCaseWord: string): string {
   const regex = /([a-z])([A-Z])/g;
   const stringWithSpaces = pascalCaseWord.replace(regex, '$1 $2');
   return stringWithSpaces.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
@@ -43,7 +44,10 @@ export default async function processGame(
   }
 
   if (!creature) {
-    throw new Error("Failed to create creature");
+    const troll = new Troll();
+    troll.pickColor(rand);
+    creature = troll;
+    // throw new Error("Failed to create creature");
   }
 
   if (creature instanceof GenericCreature) {

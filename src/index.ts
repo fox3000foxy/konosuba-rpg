@@ -10,7 +10,7 @@ import { ButtonsLabels } from './enums/ButtonsLabels';
 import { GameState } from './enums/GameState';
 import { Lang } from './enums/Lang';
 import { InteractionDataOption } from './types/InteractionDataOption';
-import processGame from './utils/processGame';
+import processGame, { pascalCaseToString } from './utils/processGame';
 import processUrl from './utils/processUrl';
 
 const app = new Hono();
@@ -61,7 +61,7 @@ function extractMonster(payload: string): string {
 const BASE_URL = 'https://konosuba-rpg.vercel.app';
 
 /** Construit l'URL d'image pour un payload donné */
-function buildImageUrl(payload: string, lang: string): string {
+function buildImageUrl(payload: string, lang: Lang): string {
   const path = customIdToPath(payload);
   const training = isTraining(payload);
   const monsterName = training ? extractMonster(payload) : '';
@@ -69,7 +69,7 @@ function buildImageUrl(payload: string, lang: string): string {
 }
 
 /** Génère les deux rangées de boutons (identique JS d'origine) */
-async function buildComponents(payload: string, userID: string, lang: string, disableChangeMonster = false) {
+async function buildComponents(payload: string, userID: string, lang: Lang, disableChangeMonster = false) {
   const imageUrl = buildImageUrl(payload, lang);
 
   // const game = processGame
@@ -211,7 +211,7 @@ app.get('/assets/*', serveStatic({
 
 app.get('/game/:lang/*', async (c: Context) => {
   console.log('Received request:', c.req.url);
-  const { lang } = c.req.param();
+  const { lang } = c.req.param() as { lang: Lang };
   const [rand, moves, , monster] = await processUrl(c.req.url);
   const game = await processGame(rand, moves, monster, lang, false);
   return c.json(game);
@@ -219,7 +219,7 @@ app.get('/game/:lang/*', async (c: Context) => {
 
 app.get('/konosuba-rpg/:lang/*', async (c: Context) => {
   console.log('Received request:', c.req.url);
-  const { lang } = c.req.param();
+  const { lang } = c.req.param() as { lang: Lang };
   const [rand, moves, , monster] = await processUrl(c.req.url);
   const { image } = await processGame(rand, moves, monster, lang, true);
 
@@ -337,8 +337,22 @@ app.post('/api/interactions', async (c: Context) => {
       }
 
       const rand = new Random(Math.floor(Math.random() * Number.MAX_SAFE_INTEGER));
-      const MonsterClass = mobMap[monsterKey];
-      const monster = new MonsterClass(rand);
+      const monster = mobMap.find(m=>m.name || m.constructor.name || pascalCaseToString(m.constructor.name) === monsterKey);
+      
+      if(!monster) {
+        const allMobs = Object.keys(mobMap).sort();
+        return c.json({
+          type: 4,
+          data: {
+            embeds: [{
+              description: fr
+                ? `Ce monstre est invalide. Voici les monstres valides: ${allMobs.join(', ')}`
+                : `Invalid monster. Valid monsters: ${allMobs.join(', ')}`,
+            }],
+          },
+        });
+      }
+
       const imgUrl = `${BASE_URL}/konosuba-rpg/assets/${monster.images[0]}`;
 
       return c.json({
@@ -375,16 +389,16 @@ app.post('/api/interactions', async (c: Context) => {
       let player: Kazuma | Darkness | Megumin | Aqua;
       switch (characterId) {
         case 0:
-          player = new Kazuma(randP);
+          player = new Kazuma();
           break;
         case 1:
-          player = new Darkness(randP);
+          player = new Darkness();
           break;
         case 2:
-          player = new Megumin(randP);
+          player = new Megumin();
           break;
         case 3:
-          player = new Aqua(randP);
+          player = new Aqua();
           break;
         default:
           return c.json({
