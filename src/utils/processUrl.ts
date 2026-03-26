@@ -7,7 +7,8 @@ export default function processUrl(url: string): [Random, string[], string, stri
     PlayerAction.Def.toLocaleUpperCase(),
     PlayerAction.Hug.toLocaleUpperCase(),
     PlayerAction.Hea.toLocaleUpperCase(),
-    PlayerAction.Giv.toLocaleUpperCase()
+    PlayerAction.Giv.toLocaleUpperCase(),
+    PlayerAction.Spe.toLocaleUpperCase()
   ]);
 
   let monster: string | null = null;

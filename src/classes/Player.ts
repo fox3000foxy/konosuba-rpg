@@ -17,6 +17,9 @@ export abstract class Player {
 	public name: PlayerName;
 	public images: string[];
 	public icon: PlayerThmb.Kazuma | PlayerThmb.Darkness | PlayerThmb.Megumin | PlayerThmb.Aqua;
+	protected specialAttackNeededRounds: number = 0;
+	protected specialAttackCurrentRounds: number = 0;
+	public specialAttackReady: boolean = false;
 
 	constructor(name: PlayerName, hpMax: number, attack: [number, number], images: string[], icon: PlayerThmb.Kazuma | PlayerThmb.Darkness | PlayerThmb.Megumin | PlayerThmb.Aqua) {
 		this.hpMax = hpMax;
@@ -26,6 +29,9 @@ export abstract class Player {
 		this.name = name;
 		this.images = images;
 		this.icon = icon;
+		this.specialAttackNeededRounds = 0;
+		this.specialAttackCurrentRounds = 0;
+		this.specialAttackReady = false;
 
 		if (new.target === Player) {
 			throw new Error(Errors.ABSTRACT_ERROR);
@@ -33,6 +39,10 @@ export abstract class Player {
 	}
 
 	abstract performAction(action: PlayerAction): void;
+	resetSpecialAttack() {
+		this.specialAttackReady = false;
+		this.specialAttackCurrentRounds = 0;
+	}
 }
 
 // Kazuma — Aventurier bas niveau, polyvalent mais physiquement faible
@@ -40,9 +50,15 @@ export abstract class Player {
 export class Kazuma extends Player {
 	constructor() {
 		super(PlayerName.Kazuma, PlayerStats.KazumaHp, [PlayerStats.KazumaAttackMin, PlayerStats.KazumaAttackMax], [KazumaImages.Idle], PlayerThmb.Kazuma);
+		this.specialAttackNeededRounds = 3; // Kazuma's special attack is ready after 3 rounds
 	}
 
 	performAction(action: PlayerAction): void {
+		this.specialAttackCurrentRounds++;
+		if (!this.specialAttackReady && this.specialAttackCurrentRounds >= this.specialAttackNeededRounds) {
+			this.specialAttackReady = true;
+			this.specialAttackCurrentRounds = 0;
+		}
 		switch (action) {
 			case PlayerAction.Idle:
 				this.images = [KazumaImages.Idle];
@@ -56,8 +72,10 @@ export class Kazuma extends Player {
 			case PlayerAction.Hug:
 				this.images = [KazumaImages.Hug];
 				break;
-			case PlayerAction.Hea:
-				this.images = [KazumaImages.Hug];
+			case PlayerAction.Spe:
+				this.images = [KazumaImages.Atk];
+				this.specialAttackReady = false;
+				this.specialAttackCurrentRounds = 0;
 				break;
 		}
 	}
@@ -68,9 +86,15 @@ export class Kazuma extends Player {
 export class Darkness extends Player {
 	constructor() {
 		super(PlayerName.Darkness, PlayerStats.DarknessHp, [PlayerStats.DarknessAttackMin, PlayerStats.DarknessAttackMax], [DarknessImages.Idle], PlayerThmb.Darkness);
+		this.specialAttackNeededRounds = 5; // Darkness's special attack is ready after 5 rounds
 	}
 
 	performAction(action: PlayerAction): void {
+		this.specialAttackCurrentRounds++;
+		if (!this.specialAttackReady && this.specialAttackCurrentRounds >= this.specialAttackNeededRounds) {
+			this.specialAttackReady = true;
+			this.specialAttackCurrentRounds = 0;
+		}
 		switch (action) {
 			case PlayerAction.Idle:
 				this.images = [DarknessImages.Idle];
@@ -84,8 +108,10 @@ export class Darkness extends Player {
 			case PlayerAction.Hug:
 				this.images = [DarknessImages.Hug];
 				break;
-			case PlayerAction.Hea:
-				this.images = [DarknessImages.Hug];
+			case PlayerAction.Spe:
+				this.images = [DarknessImages.Atk];
+				this.specialAttackReady = false;
+				this.specialAttackCurrentRounds = 0;
 				break;
 		}
 	}
@@ -96,9 +122,15 @@ export class Darkness extends Player {
 export class Megumin extends Player {
 	constructor() {
 		super(PlayerName.Megumin, PlayerStats.MeguminHp, [PlayerStats.MeguminAttackMin, PlayerStats.MeguminAttackMax], [MeguminImages.Idle], PlayerThmb.Megumin);
+		this.specialAttackNeededRounds = 4; // Megumin's special attack is ready after 4 rounds
 	}
 
 	performAction(action: PlayerAction): void {
+		this.specialAttackCurrentRounds++;
+		if (!this.specialAttackReady && this.specialAttackCurrentRounds >= this.specialAttackNeededRounds) {
+			this.specialAttackReady = true;
+			this.specialAttackCurrentRounds = 0;
+		}
 		switch (action) {
 			case PlayerAction.Idle:
 				this.images = [MeguminImages.Idle];
@@ -112,6 +144,11 @@ export class Megumin extends Player {
 			case PlayerAction.Hug:
 				this.images = [MeguminImages.Hug];
 				break;
+			case PlayerAction.Spe:
+				this.images = [MeguminImages.Atk];
+				this.specialAttackReady = false;
+				this.specialAttackCurrentRounds = 0;
+				break;
 		}
 	}
 }
@@ -121,9 +158,15 @@ export class Megumin extends Player {
 export class Aqua extends Player {
 	constructor() {
 		super(PlayerName.Aqua, PlayerStats.AquaHp, [PlayerStats.AquaAttackMin, PlayerStats.AquaAttackMax], [AquaImages.Idle], PlayerThmb.Aqua);
+		this.specialAttackNeededRounds = 3; // Aqua's special attack is ready after 3 rounds
 	}
 
 	performAction(action: PlayerAction): void {
+		this.specialAttackCurrentRounds++;
+		if (!this.specialAttackReady && this.specialAttackCurrentRounds >= this.specialAttackNeededRounds) {
+			this.specialAttackReady = true;
+			this.specialAttackCurrentRounds = 0;
+		}
 		switch (action) {
 			case PlayerAction.Idle:
 				this.images = [AquaImages.Idle];
@@ -137,6 +180,12 @@ export class Aqua extends Player {
 			case PlayerAction.Hug:
 				this.images = [AquaImages.Hug];
 				break;
+			case PlayerAction.Spe:
+				this.images = [AquaImages.Atk];
+				this.specialAttackReady = false;
+				this.specialAttackCurrentRounds = 0;
+				break;
+
 		}
 	}
 

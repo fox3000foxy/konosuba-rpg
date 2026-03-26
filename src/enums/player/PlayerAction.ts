@@ -4,5 +4,6 @@ export enum PlayerAction {
 	Hug = "Hug",
 	Idle = "Idle",
 	Giv = "Giv",
-	Hea = "Hea"
+	Hea = "Hea",
+	Spe = "Spe"
 }
