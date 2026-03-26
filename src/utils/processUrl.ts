@@ -1,7 +1,13 @@
+import { PlayerAction } from '../classes/Player';
 import { Random } from '../classes/Random';
 
 export default function processUrl(url: string): [Random, string[], string, string | null] {
-  const valid_moves = ['ATK', 'DEF', 'HUG', 'GIV'];
+  const valid_moves = [
+    PlayerAction.Atk.toLocaleUpperCase(),
+    PlayerAction.Def.toLocaleUpperCase(),
+    PlayerAction.Hug.toLocaleUpperCase(),
+    PlayerAction.Giv.toLocaleUpperCase()
+  ];
   let monster: string | null = null;
 
   if (url.indexOf('monster') !== -1) {
@@ -10,15 +16,11 @@ export default function processUrl(url: string): [Random, string[], string, stri
 
   url = url.toLowerCase();
   let seed = 0;
-  let seed_str = url.split('?')[0].split('/')[5];
+  const seed_str = url.split('?')[0].split('/')[5];
   // console.log(url, seed_str)
 
   let moves = url.toUpperCase().split('/');
   moves = moves.filter((m) => valid_moves.indexOf(m) !== -1);
-
-  if (seed_str.includes('vieord') || seed_str.includes('vixord')) {
-    seed_str = '';
-  }
 
   for (let j = 0; j < seed_str.length; j++) {
     const c = seed_str.charAt(j);

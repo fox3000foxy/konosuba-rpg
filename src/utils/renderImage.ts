@@ -4,24 +4,21 @@ import satori from 'satori';
 import { Creature } from '../classes/Creature';
 import { AquaImages, DarknessImages, KazumaImages, MeguminImages, PlayerName, Team } from '../classes/Player';
 import { imageManifest } from '../data/imageManifest';
+import { EndMessages } from '../enums/EndMessages';
+import { HealthBarName } from '../enums/HealthBarName';
+import { Lang } from '../enums/Lang';
+import { Prefix } from '../enums/Prefix';
+import { RetryMessages } from '../enums/RetryMessages';
 
 // ─── WASM init (once per Worker lifetime) ────────────────────────────────────
-
 let wasmReady = false;
 async function ensureWasm(): Promise<void> {
   if (wasmReady) return;
 
-  // if (navigator.userAgent !== 'Cloudflare-Workers') {
   await initWasm(await fetch('https://unpkg.com/@resvg/resvg-wasm/index_bg.wasm').then((r) => r.arrayBuffer()));
   console.log('WASM initialized (dev)');
   wasmReady = true;
   return;
-  // }
-  // else {
-  //   const resvgWasm = await import('@resvg/resvg-wasm/index_bg.wasm?module').then((m) => m.default);
-  //   await initWasm(resvgWasm);
-  //   wasmReady = true;
-  // }
 }
 
 // ─── GLOBAL CACHE (survit aux re-imports en dev/hot-reload) ──────────────────
@@ -245,7 +242,7 @@ async function buildOverlayJsx(
   W: number,
   H: number
 ): Promise<object> {
-  const hp = lang === 'fr' ? 'PV' : 'HP';
+  const hp = lang === Lang.French ? HealthBarName.French : HealthBarName.English;
 
   function healthBar(current: number, max: number, x: number, y: number, w: number, h: number) {
     const pct = Math.max(0, Math.min(1, current / max));
@@ -262,17 +259,17 @@ async function buildOverlayJsx(
   }
 
   const endMsg = state ? ({
-    good: lang === 'fr' ? `Vous avez réussi à vaincre ${creature.prefix ? 'le ' : ''}${creature.name} !` : `You won from ${creature.prefix ? 'the ' : ''}${creature.name}!`,
-    bad: lang === 'fr' ? "L'adversaire vous a vaincu..." : 'The adversary has defeated you...',
-    giveup: lang === 'fr' ? 'Vous avez déclaré forfait.' : 'You have withdrawn.',
-    best: lang === 'fr' ? `Vous avez réussi à être ami avec ${creature.prefix ? 'le ' : ''}${creature.name} !` : `You managed to be friends with ${creature.prefix ? 'the ' : ''}${creature.name}!`,
+    "good": lang === Lang.French ? `${EndMessages.French_Good}${creature.prefix ? Prefix.French_Determined : Prefix.None}${creature.name}${EndMessages.French_ExclamationMark}` : `${EndMessages.English_Good}${creature.prefix ? Prefix.English_Determined : Prefix.None}${creature.name}${EndMessages.English_ExclamationMark}`,
+    "bad": lang === Lang.French ? EndMessages.French_Bad : EndMessages.English_Bad,
+    "giveup": lang === Lang.French ? EndMessages.French_Giveup : EndMessages.English_Giveup,
+    "best": lang === Lang.French ? `${EndMessages.French_Best}${creature.prefix ? Prefix.French_Determined : Prefix.None}${creature.name}${EndMessages.French_ExclamationMark}` : `${EndMessages.English_Best}${creature.prefix ? Prefix.English_Determined : Prefix.None}${creature.name}${EndMessages.English_ExclamationMark}`,
   } as Record<string, string>)[state] : null;
 
   const endMsg2 = state ? ({
-    good: lang === 'fr' ? 'Arriverez vous a faire mieux ?' : 'Will you get it better?',
-    bad: lang === 'fr' ? 'Rententez votre chance.' : 'Retry.',
-    giveup: lang === 'fr' ? 'Peut être une prochaine fois ?' : 'Maybe next time?',
-    best: lang === 'fr' ? "Pourrez vous être ami avec d'autres créatures ?" : 'Can you be friends with other creatures?',
+    "good": lang === Lang.French ? RetryMessages.French_Good : RetryMessages.English_Good,
+    "bad": lang === Lang.French ? RetryMessages.French_Bad : RetryMessages.English_Bad,
+    "giveup": lang === Lang.French ? RetryMessages.French_Giveup : RetryMessages.English_Giveup,
+    "best": lang === Lang.French ? RetryMessages.French_Best : RetryMessages.English_Best,
   } as Record<string, string>)[state] : null;
 
   // base64 mis en cache par clé d'état — btoa() n'est appelé qu'une seule fois par état
