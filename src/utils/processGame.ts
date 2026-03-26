@@ -143,7 +143,8 @@ export default async function processGame(
       }
     }
 
-    if (currentPlayer.hp <= 0) {
+    const teamHP = team.players.reduce((sum, player) => sum + player.hp, 0);
+    if (teamHP <= 0) {
       state = GameState.Bad;
       break;
     }
