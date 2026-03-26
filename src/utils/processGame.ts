@@ -58,8 +58,8 @@ export default async function processGame(
 
   const messages = [
     lang === Lang.French
-      ? `Attention, ${creature.prefix ? Prefix.French_Determined : Prefix.None}${creature.name} !`
-      : `Watch out, ${creature.prefix ? Prefix.English_Determined : Prefix.None}${creature.name} !`,
+      ? `Attention, ${creature.prefix ? Prefix.French_Undetermined_Masculine : Prefix.None}${creature.name} !`
+      : `Watch out, ${creature.prefix ? Prefix.English_Undetermined : Prefix.None}${creature.name} !`,
   ];
 
   let state: GameState = GameState.Incomplete;
