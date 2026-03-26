@@ -13,7 +13,7 @@ export default class Slime extends GenericCreature implements GenericCreatureInt
     }
 
     pickColor(rng: Random): string {
-        this.color = rng.choice(["11700", "17701", "17702", "17704"]);
+        this.color = rng.choice(["17700", "17701", "17702", "17704"]);
         this.images = [`enemy_image_${this.color}`];
         return this.color;
     }
