@@ -1,17 +1,17 @@
 import { verifyKey } from 'discord-interactions';
+import * as fs from 'fs/promises';
 import { Context, Hono } from 'hono';
 import { serveStatic } from 'hono/serve-static';
 import { Aqua, Darkness, Kazuma, Megumin } from './classes/Player';
 import { Random } from './classes/Random';
 import { imageManifest } from './data/imageManifest';
 import { mobMap } from './data/mobMap';
+import { ButtonsLabels } from './enums/ButtonsLabels';
+import { GameState } from './enums/GameState';
+import { Lang } from './enums/Lang';
+import { InteractionDataOption } from './types/InteractionDataOption';
 import processGame from './utils/processGame';
 import processUrl from './utils/processUrl';
-
-type InteractionDataOption = {
-  name: string;
-  value: string | number;
-}
 
 const app = new Hono();
 
@@ -76,32 +76,32 @@ async function buildComponents(payload: string, userID: string, lang: string, di
   const [rand, moves, , monster] = processUrl(imageUrl);
   const { state } = await processGame(rand, moves, monster, lang, false);
   const training = isTraining(payload);
-  const fr = lang === 'fr';
+  const fr = lang === Lang.French;
 
-  if (state === "incomplete") {
+  if (state === GameState.Incomplete) {
     disableChangeMonster = true;
   }
 
-  if (state === "good" || state === "bad" || state === "best" || state === "giveup") {
+  if (state === GameState.Good || state === GameState.Bad || state === GameState.Best || state === "giveup") { // GameState.Giveup n'est pas reconnu
     return [
       {
         type: 1,
         components: [
           {
             type: 2,
-            label: fr ? 'Recommencer' : 'Restart',
+            label: fr ? ButtonsLabels.RestartFr : ButtonsLabels.Restart,
             style: 2,
             custom_id: `${restartId(payload)}:${userID}`,
           },
           {
             type: 2,
-            label: fr ? 'Abandonner' : 'Give up',
+            label: fr ? ButtonsLabels.GiveUpFr : ButtonsLabels.GiveUp,
             style: 2,
             custom_id: `${payload}/g:${userID}`,
           },
           {
             type: 2,
-            label: fr ? 'Changer de monstre' : 'Change monster',
+            label: fr ? ButtonsLabels.ChangeMonsterFr : ButtonsLabels.ChangeMonster,
             style: 2,
             // En training : le bouton est désactivé (comme dans le JS). En partie normale : nouveau seed.
             custom_id: training
@@ -117,22 +117,22 @@ async function buildComponents(payload: string, userID: string, lang: string, di
     {
       type: 1,
       components: [
-        { type: 2, label: fr ? 'Attaquer 1 fois' : 'Attack 1 time', style: 4, custom_id: `${payload}/a:${userID}` },
-        { type: 2, label: fr ? 'Attaquer 4 fois' : 'Attack 4 times', style: 4, custom_id: `${payload}/aaaa:${userID}` },
-        { type: 2, label: fr ? 'Attaquer 10 fois' : 'Attack 10 times', style: 4, custom_id: `${payload}/aaaaaaaaaa:${userID}` },
+        { type: 2, label: fr ? ButtonsLabels.AttackFr : ButtonsLabels.Attack, style: 4, custom_id: `${payload}/a:${userID}` },
+        { type: 2, label: fr ? ButtonsLabels.AttackFr : ButtonsLabels.Attack, style: 4, custom_id: `${payload}/aaaa:${userID}` },
+        { type: 2, label: fr ? ButtonsLabels.AttackFr : ButtonsLabels.Attack, style: 4, custom_id: `${payload}/aaaaaaaaaa:${userID}` },
       ],
     }, {
       type: 1,
       components: [
-        { type: 2, label: fr ? 'Câliner 1 fois' : 'Hug 1 time', style: 1, custom_id: `${payload}/h:${userID}` },
-        { type: 2, label: fr ? 'Câliner 4 fois' : 'Hug 4 times', style: 1, custom_id: `${payload}/hhhh:${userID}` },
-        { type: 2, label: fr ? 'Câliner 10 fois' : 'Hug 10 times', style: 1, custom_id: `${payload}/hhhhhhhhhh:${userID}` },
+        { type: 2, label: fr ? ButtonsLabels.HugFr : ButtonsLabels.Hug, style: 1, custom_id: `${payload}/h:${userID}` },
+        { type: 2, label: fr ? ButtonsLabels.HugFr : ButtonsLabels.Hug, style: 1, custom_id: `${payload}/hhhh:${userID}` },
+        { type: 2, label: fr ? ButtonsLabels.HugFr : ButtonsLabels.Hug, style: 1, custom_id: `${payload}/hhhhhhhhhh:${userID}` },
       ],
     },
     {
       type: 1,
       components: [
-        { type: 2, label: fr ? 'Se défendre' : 'Defend', style: 3, custom_id: `${payload}/d:${userID}` },
+        { type: 2, label: fr ? ButtonsLabels.DefendFr : ButtonsLabels.Defend, style: 3, custom_id: `${payload}/d:${userID}` },
       ],
     },
 
@@ -141,19 +141,19 @@ async function buildComponents(payload: string, userID: string, lang: string, di
       components: [
         {
           type: 2,
-          label: fr ? 'Recommencer' : 'Restart',
+          label: fr ? ButtonsLabels.RestartFr : ButtonsLabels.Restart,
           style: 2,
           custom_id: `${restartId(payload)}:${userID}`,
         },
         {
           type: 2,
-          label: fr ? 'Abandonner' : 'Give up',
+          label: fr ? ButtonsLabels.GiveUpFr : ButtonsLabels.GiveUp,
           style: 2,
           custom_id: `${payload}/g:${userID}`,
         },
         {
           type: 2,
-          label: fr ? 'Changer de monstre' : 'Change monster',
+          label: fr ? ButtonsLabels.ChangeMonsterFr : ButtonsLabels.ChangeMonster,
           style: 2,
           // En training : le bouton est désactivé (comme dans le JS). En partie normale : nouveau seed.
           custom_id: training
@@ -189,6 +189,23 @@ app.get('/konosuba-rpg/assets/*', serveStatic({
         'Content-Type': 'image/webp',
       },
     });
+  },
+}));
+
+// /raw_assets/* pour servir les images sans passer par le manifest (utile pour le développement et les tests)
+app.get('/assets/*', serveStatic({
+  root: process.cwd() + '/assets',
+  getContent: async function (path: string): Promise<Response | null> {
+    const url = new URL(path, 'http://localhost');
+    const key = url.pathname.split('assets/')[2];
+    const filePath = process.cwd() + '/assets/' + key;
+    try {
+      const buffer = await fs.readFile(filePath);
+      return new Response(buffer, { headers: { 'Content-Type': 'image/webp' } });
+    } catch (err) {
+      console.warn(`Failed to read raw asset ${key} from ${filePath}:`, err);
+      return null;
+    }
   },
 }));
 
