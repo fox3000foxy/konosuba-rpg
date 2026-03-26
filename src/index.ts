@@ -3,7 +3,6 @@ import * as fs from 'fs/promises';
 import { Context, Hono } from 'hono';
 import { serveStatic } from 'hono/serve-static';
 import { Aqua, Darkness, Kazuma, Megumin } from './classes/Player';
-import { Random } from './classes/Random';
 import { imageManifest } from './data/imageManifest';
 import { generateMob } from './data/mobMap';
 import { ButtonsLabels } from './enums/ButtonsLabels';
@@ -336,7 +335,6 @@ app.post('/api/interactions', async (c: Context) => {
         });
       }
 
-      const rand = new Random(Math.floor(Math.random() * Number.MAX_SAFE_INTEGER));
       const monster = generateMob().find(m=>m.name || m.constructor.name || pascalCaseToString(m.constructor.name) === monsterKey);
       
       if(!monster) {
@@ -385,7 +383,6 @@ app.post('/api/interactions', async (c: Context) => {
         });
       }
 
-      const randP = new Random(Math.floor(Math.random() * Number.MAX_SAFE_INTEGER));
       let player: Kazuma | Darkness | Megumin | Aqua;
       switch (characterId) {
         case 0:
