@@ -13,7 +13,7 @@ export default class AliveTree extends GenericCreature implements GenericCreatur
     }
 
     pickColor(rng: Random) {
-        this.color = rng.choice(["16707","17201","17202","17204","17205"]);
+        this.color = rng.choice(["16707","17201","17202","17204","17206"]);
         this.images = [`enemy_image_${this.color}`];
     }
 }
