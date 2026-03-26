@@ -7,6 +7,7 @@ import { Random } from '../classes/Random';
 import lines from '../data/constants';
 import descriptions from '../data/embedText';
 import { generateMob } from '../data/mobMap';
+import { EndMessages } from '../enums/EndMessages';
 import { GameState } from '../enums/GameState';
 import { Lang } from '../enums/Lang';
 import { PlayerAction } from '../enums/player/PlayerAction';
@@ -247,6 +248,11 @@ export default async function processGame(
 
   const training = !!monsterName;
   if (state === null && moves.length > 0) state = GameState.Incomplete;
+  if (state === GameState.Good) embedDescription.push(lang === Lang.French ? EndMessages.French_Good: EndMessages.English_Good);
+  if (state === GameState.Bad) embedDescription.push(lang === Lang.French ? EndMessages.French_Bad: EndMessages.English_Bad);
+  if (state === GameState.Best) embedDescription.push(lang === Lang.French ? EndMessages.French_Best: EndMessages.English_Best);
+  if (state === GameState.Giveup) embedDescription.push(lang === Lang.French ? EndMessages.French_Giveup: EndMessages.English_Giveup);
+  if (state !== GameState.Incomplete) embedDescription[embedDescription.length - 1] += creature.name + (lang === Lang.French ? EndMessages.French_ExclamationMark : EndMessages.English_ExclamationMark);
   if (renderingImage) {
     const image = await renderImage(state, messages, team, creature, lang);
     return { image, state, messages, embedDescription, team, creature, training };
