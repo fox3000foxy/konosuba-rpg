@@ -391,7 +391,6 @@ async function getCharactersLayer(
 
   // FIX #4 — Chargement des sprites en parallèle
   const activeSlots = slots.filter(s => playerHp[s.i] > 0);
-  console.log('Active player slots:', activeSlots.map(s => s), playerImages[activeSlots[0]?.i][0]);
   const loadedSprites = await Promise.all(
     activeSlots.map(s =>
       getImageReadOnly(playerImages[s.i][0], undefined, 184, true)
