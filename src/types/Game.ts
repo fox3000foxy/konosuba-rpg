@@ -6,6 +6,7 @@ export type Game = {
   image?: Uint8Array;
   state: GameState;
   messages: MessagesTemplates[] | string[];
+  embedDescription: string[];
   team: Team;
   creature: Creature;
   training: boolean;

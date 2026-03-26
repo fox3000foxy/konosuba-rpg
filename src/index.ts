@@ -99,9 +99,8 @@ function buildImageUrl(payload: string, lang: Lang): string {
 async function buildComponents(payload: string, userID: string, lang: Lang, disableChangeMonster = false) {
   const imageUrl = buildImageUrl(payload, lang);
 
-  // const game = processGame
   const [rand, moves, , monster] = processUrl(imageUrl);
-  const { state, team } = await processGame(rand, moves, monster, lang, false);
+  const { state, team, embedDescription } = await processGame(rand, moves, monster, lang, false);
   const training = isTraining(payload);
   const fr = lang === Lang.French;
 
@@ -116,7 +115,66 @@ async function buildComponents(payload: string, userID: string, lang: Lang, disa
   }
 
   if (state === GameState.Good || state === GameState.Bad || state === GameState.Best || state === "giveup") { // GameState.Giveup n'est pas reconnu
-    return [
+    return {
+      buttons: [
+        {
+          type: 1,
+          components: [
+            {
+              type: 2,
+              label: fr ? ButtonsLabels.RestartFr : ButtonsLabels.Restart,
+              style: 2,
+              custom_id: `${restartId(payload)}:${userID}`,
+            },
+            {
+              type: 2,
+              label: fr ? ButtonsLabels.GiveUpFr : ButtonsLabels.GiveUp,
+              style: 2,
+              custom_id: `${payload}/g:${userID}`,
+            },
+            {
+              type: 2,
+              label: fr ? ButtonsLabels.ChangeMonsterFr : ButtonsLabels.ChangeMonster,
+              style: 2,
+              // En training : le bouton est désactivé (comme dans le JS). En partie normale : nouveau seed.
+              custom_id: training
+                ? `train.${extractMonster(payload)}.${makeid(10)}:${userID}`
+                : `${makeid(15)}:${userID}`
+            },
+          ],
+        },
+      ],
+      embedDescription: embedDescription,
+    };
+  }
+
+  return {
+    buttons: [
+      {
+        type: 1,
+        components: [
+          { type: 2, label: fr ? ButtonsLabels.AttackFr.replace("x", "1") : ButtonsLabels.Attack.replace("x", "1"), style: 4, custom_id: `${payload}/a:${userID}` },
+          { type: 2, label: fr ? ButtonsLabels.AttackFr.replace("x", "4") : ButtonsLabels.Attack.replace("x", "4"), style: 4, custom_id: `${payload}/aaaa:${userID}` },
+          { type: 2, label: fr ? ButtonsLabels.AttackFr.replace("x", "10") : ButtonsLabels.Attack.replace("x", "10"), style: 4, custom_id: `${payload}/aaaaaaaaaa:${userID}` },
+        ],
+      },
+      {
+        type: 1,
+        components: [
+          { type: 2, label: fr ? ButtonsLabels.HugFr.replace("x", "1") : ButtonsLabels.Hug.replace("x", "1"), style: 1, custom_id: `${payload}/h:${userID}` },
+          { type: 2, label: fr ? ButtonsLabels.HugFr.replace("x", "4") : ButtonsLabels.Hug.replace("x", "4"), style: 1, custom_id: `${payload}/hhhh:${userID}` },
+          { type: 2, label: fr ? ButtonsLabels.HugFr.replace("x", "10") : ButtonsLabels.Hug.replace("x", "10"), style: 1, custom_id: `${payload}/hhhhhhhhhh:${userID}` },
+        ],
+      },
+      {
+        type: 1,
+        components: [
+          { type: 2, label: fr ? ButtonsLabels.DefendFr : ButtonsLabels.Defend, style: 3, custom_id: `${payload}/d:${userID}` },
+          { type: 2, label: fr ? ButtonsLabels.HealFr : ButtonsLabels.Heal, style: 3, custom_id: `${payload}/s:${userID}`, disabled: !showAquaHealButton },
+          { type: 2, label: fr ? ButtonsLabels.SpecialAttackFr : ButtonsLabels.SpecialAttack, style: 3, custom_id: `${payload}/p:${userID}`, disabled: !(team.activePlayer?.specialAttackReady) },
+        ],
+      },
+
       {
         type: 1,
         components: [
@@ -139,66 +197,15 @@ async function buildComponents(payload: string, userID: string, lang: Lang, disa
             // En training : le bouton est désactivé (comme dans le JS). En partie normale : nouveau seed.
             custom_id: training
               ? `train.${extractMonster(payload)}.${makeid(10)}:${userID}`
-              : `${makeid(15)}:${userID}`
+              : `${makeid(15)}:${userID}`,
+            disabled: disableChangeMonster || training,
           },
         ],
+
       },
-    ]
+    ],
+    embedDescription: embedDescription,
   }
-
-  return [
-    {
-      type: 1,
-      components: [
-        { type: 2, label: fr ? ButtonsLabels.AttackFr.replace("x", "1") : ButtonsLabels.Attack.replace("x", "1"), style: 4, custom_id: `${payload}/a:${userID}` },
-        { type: 2, label: fr ? ButtonsLabels.AttackFr.replace("x", "4") : ButtonsLabels.Attack.replace("x", "4"), style: 4, custom_id: `${payload}/aaaa:${userID}` },
-        { type: 2, label: fr ? ButtonsLabels.AttackFr.replace("x", "10") : ButtonsLabels.Attack.replace("x", "10"), style: 4, custom_id: `${payload}/aaaaaaaaaa:${userID}` },
-      ],
-    }, {
-      type: 1,
-      components: [
-        { type: 2, label: fr ? ButtonsLabels.HugFr.replace("x", "1") : ButtonsLabels.Hug.replace("x", "1"), style: 1, custom_id: `${payload}/h:${userID}` },
-        { type: 2, label: fr ? ButtonsLabels.HugFr.replace("x", "4") : ButtonsLabels.Hug.replace("x", "4"), style: 1, custom_id: `${payload}/hhhh:${userID}` },
-        { type: 2, label: fr ? ButtonsLabels.HugFr.replace("x", "10") : ButtonsLabels.Hug.replace("x", "10"), style: 1, custom_id: `${payload}/hhhhhhhhhh:${userID}` },
-      ],
-    },
-    {
-      type: 1,
-      components: [
-        { type: 2, label: fr ? ButtonsLabels.DefendFr : ButtonsLabels.Defend, style: 3, custom_id: `${payload}/d:${userID}` },
-        { type: 2, label: fr ? ButtonsLabels.HealFr : ButtonsLabels.Heal, style: 3, custom_id: `${payload}/s:${userID}`, disabled: !showAquaHealButton },
-        { type: 2, label: fr ? ButtonsLabels.SpecialAttackFr : ButtonsLabels.SpecialAttack, style: 3, custom_id: `${payload}/p:${userID}`, disabled: !(team.activePlayer?.specialAttackReady) },
-      ],
-    },
-
-    {
-      type: 1,
-      components: [
-        {
-          type: 2,
-          label: fr ? ButtonsLabels.RestartFr : ButtonsLabels.Restart,
-          style: 2,
-          custom_id: `${restartId(payload)}:${userID}`,
-        },
-        {
-          type: 2,
-          label: fr ? ButtonsLabels.GiveUpFr : ButtonsLabels.GiveUp,
-          style: 2,
-          custom_id: `${payload}/g:${userID}`,
-        },
-        {
-          type: 2,
-          label: fr ? ButtonsLabels.ChangeMonsterFr : ButtonsLabels.ChangeMonster,
-          style: 2,
-          // En training : le bouton est désactivé (comme dans le JS). En partie normale : nouveau seed.
-          custom_id: training
-            ? `train.${extractMonster(payload)}.${makeid(10)}:${userID}`
-            : `${makeid(15)}:${userID}`,
-          disabled: disableChangeMonster || training,
-        },
-      ],
-    },
-  ];
 }
 
 app.get('/konosuba-rpg/assets/*', serveStatic({
@@ -315,15 +322,17 @@ app.post('/api/interactions', async (c: Context) => {
     if (interaction.data?.name === 'start') {
       const id = makeid(15);
       const imageUrl = buildImageUrl(id, lang);
+      const buildedComponents = await buildComponents(id, userID, lang);
+      const { embedDescription, buttons } = buildedComponents;
       return c.json({
         type: 4,
         data: {
           embeds: [{
             image: { url: imageUrl },
-            description: fr ? `**Partie de <@${userID}>**` : `**<@${userID}> game**`,
+            description: (fr ? `**Partie de <@${userID}>**` : `**<@${userID}> game**`) + (embedDescription.length > 0 ? `\n\n${embedDescription.join('\n')}` : ''),
             color: 0x2b2d31,
           }],
-          components: await buildComponents(id, userID, lang),
+          components: buttons,
         },
       });
     }
@@ -353,18 +362,18 @@ app.post('/api/interactions', async (c: Context) => {
       const payload = `train.${monsterKey}.${id}`;
       console.log(`Starting training session for ${userID} against ${monsterKey} with payload: ${payload}`);
       const imageUrl = buildImageUrl(payload, lang);
-
+      const { embedDescription, buttons } = await buildComponents(payload, userID, lang);
       return c.json({
         type: 4,
         data: {
           embeds: [{
             image: { url: imageUrl },
-            description: fr
+            description: (fr
               ? `**Entraînement contre ${monsterKey} (joueur <@${userID}>)**`
-              : `**Training vs ${monsterKey} (player <@${userID}>)**`,
+              : `**Training vs ${monsterKey} (player <@${userID}>)**`) + (embedDescription.length > 0 ? `\n\n${embedDescription.join('\n')}` : ''),
             color: 0x2b2d31,
           }],
-          components: await buildComponents(payload, userID, lang),
+          components: buttons,
         },
       });
     }
@@ -523,7 +532,7 @@ app.post('/api/interactions', async (c: Context) => {
     //   },
     // });
 
-    const components = await buildComponents(payload, userID, lang);
+    const { buttons, embedDescription } = (await buildComponents(payload, userID, lang));
 
     const special = interaction.data.custom_id.split(":")[0].endsWith('/p');
     if (special) {
@@ -532,12 +541,12 @@ app.post('/api/interactions', async (c: Context) => {
         data: {
           embeds: [{
             image: { url: imageUrl },
-            description: training
+            description: (training
               ? (fr ? `Entraînement contre ${monsterName}` : `Training vs ${monsterName}`)
-              : (fr ? `**Partie de <@${userID}>**` : `**<@${userID}> game**`),
+              : (fr ? `**Partie de <@${userID}>**` : `**<@${userID}> game**`)) + (embedDescription.length > 0 ? `\n\n${embedDescription.join('\n')}` : ''),
             color: 0x2b2d31,
           }],
-          components,
+          components: buttons,
         },
       }, 2000);
 
@@ -563,12 +572,12 @@ app.post('/api/interactions', async (c: Context) => {
         data: {
           embeds: [{
             image: { url: specialAttackUrl },
-            description: training
+            description: (training
               ? (fr ? `Entraînement contre ${monsterName}` : `Training vs ${monsterName}`)
-              : (fr ? `**Partie de <@${userID}>**` : `**<@${userID}> game**`),
+              : (fr ? `**Partie de <@${userID}>**` : `**<@${userID}> game**`)) + (embedDescription.length > 0 ? `\n\n${embedDescription.join('\n')}` : ''),
             color: 0x2b2d31,
           }],
-          components: components,
+          components: buttons,
           // flags: 1 << 6,
         },
       });
@@ -579,12 +588,12 @@ app.post('/api/interactions', async (c: Context) => {
         data: {
           embeds: [{
             image: { url: imageUrl },
-            description: training
+            description: (training
               ? (fr ? `Entraînement contre ${monsterName}` : `Training vs ${monsterName}`)
-              : (fr ? `**Partie de <@${userID}>**` : `**<@${userID}> game**`),
+              : (fr ? `**Partie de <@${userID}>**` : `**<@${userID}> game**`)) + (embedDescription.length > 0 ? `\n\n${embedDescription.join('\n')}` : ''),
             color: 0x2b2d31,
           }],
-          components: components,
+          components: buttons,
           // flags: 1 << 6,
         },
       });
