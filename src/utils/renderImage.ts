@@ -112,16 +112,25 @@ let wasmInitPromise: Promise<void> | null = null;
 
 async function ensureWasm(): Promise<void> {
   if (wasmReady) return;
-  // Évite les double-initialisations concurrentes
   if (wasmInitPromise) return wasmInitPromise;
-  wasmInitPromise = (async () => {
-    await initWasm(
-      await fetch('https://unpkg.com/@resvg/resvg-wasm/index_bg.wasm').then((r) => r.arrayBuffer())
-    );
-    wasmReady = true;
-    wasmInitPromise = null;
-  })();
-  return wasmInitPromise;
+
+  // Use a local cache for the WASM binary to avoid repeated fetches
+  const wasmUrl = 'https://unpkg.com/@resvg/resvg-wasm/index_bg.wasm';
+  const cachedWasm = imageCache[wasmUrl];
+
+  if (!cachedWasm) {
+    const wasmBuffer = await fetch(wasmUrl).then((r) => {
+      if (!r.ok) throw new Error(`Failed to fetch WASM: ${r.status}`);
+      return r.arrayBuffer();
+    });
+    imageCache[wasmUrl] = wasmBuffer;
+    await initWasm(wasmBuffer);
+  } else {
+    await initWasm(cachedWasm);
+  }
+
+  wasmReady = true;
+  wasmInitPromise = null;
 }
 
 // ─── GLOBAL CACHE (survit aux re-imports en dev/hot-reload) ──────────────────
@@ -149,9 +158,13 @@ const uiPhotonCache: LRUCache<string, Photon.PhotonImage>       = GLOBAL.__uiPho
 
 export async function getImageBytes(key: string): Promise<ArrayBuffer> {
   if (imageCache[key]) return imageCache[key];
+
   const url: string = imageManifest[key];
+  if (!url) throw new Error(`Image key not found in manifest: ${key}`);
+
   const resp = await fetch(url);
   if (!resp.ok) throw new Error(`Failed to fetch image "${key}": ${resp.status}`);
+
   const buf = await resp.arrayBuffer();
   imageCache[key] = buf;
   return buf;
@@ -170,12 +183,15 @@ async function getFontBytes(url: string): Promise<ArrayBuffer> {
  */
 function getBase64Cached(key: string, buf: ArrayBuffer): string {
   if (base64Cache[key]) return base64Cache[key];
+
   const bytes = new Uint8Array(buf);
-  let binary = '';
   const chunkSize = 0x8000;
+  let binary = '';
+
   for (let i = 0; i < bytes.length; i += chunkSize) {
     binary += String.fromCharCode(...bytes.subarray(i, Math.min(i + chunkSize, bytes.length)));
   }
+
   const b64 = btoa(binary);
   base64Cache[key] = b64;
   return b64;
