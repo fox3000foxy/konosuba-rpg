@@ -297,6 +297,7 @@ export const imageManifest: Record<string, string> = {
   "board": "http://localhost:8787/assets/swordgame/art/board.webp",
   "end_bad": "http://localhost:8787/assets/swordgame/art/end_bad.png",
   "end_best": "http://localhost:8787/assets/swordgame/art/end_best.png",
+  "end_giveup": "http://localhost:8787/assets/swordgame/art/end_giveup.png",
   "end_good": "http://localhost:8787/assets/swordgame/art/end_good.png",
   "frame": "http://localhost:8787/assets/swordgame/art/frame.webp",
   "frameless": "http://localhost:8787/assets/swordgame/art/frameless.webp"
