@@ -1,4 +1,3 @@
-import { Creature } from "../classes/Creature";
 import AliveTree from '../classes/mobs/AliveTree';
 import AngryShaman from '../classes/mobs/AngryShaman';
 import Austrich from '../classes/mobs/Austrich';
@@ -39,44 +38,9 @@ import UglySpirit from '../classes/mobs/UglySpirit';
 import Vanir from '../classes/mobs/Vanir';
 import Wizard from '../classes/mobs/Wizard';
 
-export const mobMap: { [key: string]: typeof Creature } = {
-    AliveTree,
-    AngryShaman,
-    Austrich,
-    Beldia,
-    DarkBat,
-    DarkBear,
-    DarkRat,
-    DarkWolf,
-    Destroyer,
-    Dragon,
-    GeneralWinter,
-    Ghoul,
-    GiantEarthworm,
-    GiantOctopus,
-    Golem,
-    GolemQueen,
-    HansSlime,
-    Hydra,
-    Kamachi,
-    KingTroll,
-    Knight,
-    LoveBunny,
-    MaidBot,
-    MedusaMan,
-    Milim,
-    Minotaur,
-    PigWoman,
-    Quomodo,
-    Ruijerd,
-    Samurai,
-    SharkMan,
-    Slime,
-    Squall,
-    Sylvia,
-    Toad,
-    Troll,
-    UglySpirit,
-    Vanir,
-    Wizard,
-};
+export const mobMap: [AliveTree, AngryShaman, Austrich, Beldia, DarkBat, DarkBear, DarkRat, DarkWolf, Destroyer, Dragon, GeneralWinter, Ghoul, GiantEarthworm, GiantOctopus, Golem, GolemQueen, HansSlime, Hydra, Kamachi, KingTroll, Knight, LoveBunny, MaidBot, MedusaMan, Milim, Minotaur, PigWoman, Quomodo, Ruijerd, Samurai, SharkMan, Slime, Squall, Sylvia, Toad, Troll, UglySpirit, Vanir, Wizard] = [
+    new AliveTree(), new AngryShaman(), new Austrich(), new Beldia(), new DarkBat(), new DarkBear(), new DarkRat(), new DarkWolf(), new Destroyer(),
+    new Dragon(), new GeneralWinter(), new Ghoul(), new GiantEarthworm(), new GiantOctopus(), new Golem(), new GolemQueen(), new HansSlime(),
+    new Hydra(), new Kamachi(), new KingTroll(), new Knight(), new LoveBunny(), new MaidBot(), new MedusaMan(), new Milim(), new Minotaur(), new PigWoman(),
+    new Quomodo(), new Ruijerd(), new Samurai(), new SharkMan(), new Slime(), new Squall(), new Sylvia(), new Toad(), new Troll(), new UglySpirit(), new Vanir(), new Wizard(),
+];

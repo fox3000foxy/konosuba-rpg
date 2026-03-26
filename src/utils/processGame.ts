@@ -1,6 +1,6 @@
 // import fs from 'fs';
 import { Creature, MessagesTemplates } from '../classes/Creature';
-import Troll from '../classes/mobs/Troll';
+import { GenericCreature } from '../classes/GenericCreature';
 import { Team } from '../classes/Player';
 import { Random } from '../classes/Random';
 import lines from '../data/constants';
@@ -24,27 +24,36 @@ function pascalCaseToString(pascalCaseWord: string): string {
 export default async function processGame(
   rand: Random,
   moves: string[],
-  monster: string | null = null,
-  lang: string = 'en',
+  monsterName: string | null = null,
+  lang: Lang = Lang.English,
   renderingImage: boolean = true
 ): Promise<Game> {
-  lang = lang === 'fr' ? 'fr' : 'en';
-  const team = new Team(rand);
-  let creature: Creature | null;
+  lang = lang === Lang.French ? Lang.French : Lang.English;
+  const team = new Team();
+  let creature: Creature | null = null;
 
-  if (monster) {
-    const MonsterClass = mobMap[monster] || Troll;
-    creature = new MonsterClass(rand);
+  if (monsterName) {
+    const monsterInstance = mobMap.find((MobClass) => MobClass.name.toLowerCase() === monsterName.toLowerCase());
+    if (monsterInstance) {
+      creature = monsterInstance;
+    }
   } else {
-    mobMap["troll"] = Troll;
-    const CreatureClass = mobMap[rand.choice(Object.keys(mobMap))] || Troll;
-    creature = new CreatureClass(rand);
+    const monsterInstance = rand.choice(Object.values(mobMap));
+    creature = monsterInstance;
   }
 
-  creature.name = pascalCaseToString(monster || creature.constructor.name);
+  if (!creature) {
+    throw new Error("Failed to create creature");
+  }
+
+  if (creature instanceof GenericCreature) {
+    creature.pickColor(rand);
+  }
+
+  creature.name = pascalCaseToString(monsterName || creature.constructor.name);
 
   const messages = [
-    lang === 'fr'
+    lang === Lang.French
       ? `Attention, ${creature.prefix ? Prefix.French_Determined : Prefix.None}${creature.name} !`
       : `Watch out, ${creature.prefix ? Prefix.English_Determined : Prefix.None}${creature.name} !`,
   ];
@@ -89,7 +98,8 @@ export default async function processGame(
       const msg = rand.choice(linesTyped[lang as Lang].youHugMsgs[playerId])
         .replace("CREATURE", creature.name);
       messages.push(msg);
-      creature.giveHug();
+      const loveDecrease = rand.randint(1, 4);
+      creature.giveHug(loveDecrease);
       currentPlayer.performAction(PlayerAction.Hug);
     }
 
@@ -103,12 +113,12 @@ export default async function processGame(
       break;
     }
 
-    const creatureMove = creature.turn(lang);
+    const creatureMove = creature.turn({ lang, dmg: rand.randint(creature.attack[0], creature.attack[1]) });
     if (currentPlayer.defending) {
       messages.push(
         lang === Lang.French
-          ? MessagesTemplates.French_CreatureMisses.replace("${NAME}",creature.prefix ? Prefix.French_Determined + creature.name : creature.name).replace("{DMG}", creatureMove[1].toString())
-          : MessagesTemplates.English_CreatureMisses.replace("${NAME}",creature.prefix ? Prefix.English_Determined + creature.name : creature.name).replace("{DMG}", creatureMove[1].toString())
+          ? MessagesTemplates.French_CreatureMisses.replace("${NAME}", creature.prefix ? Prefix.French_Determined + creature.name : creature.name).replace("{DMG}", creatureMove[1].toString())
+          : MessagesTemplates.English_CreatureMisses.replace("${NAME}", creature.prefix ? Prefix.English_Determined + creature.name : creature.name).replace("{DMG}", creatureMove[1].toString())
       );
     } else {
       currentPlayer.hp -= creatureMove[1];
@@ -134,7 +144,7 @@ export default async function processGame(
     }
   }
 
-  const training = !!monster
+  const training = !!monsterName;
   if (state === null && moves.length > 0) state = GameState.Incomplete;
   if (renderingImage) {
     const image = await renderImage(state, messages, team, creature, lang);

@@ -9,7 +9,6 @@ export default class AliveTree extends GenericCreature implements GenericCreatur
         this.hpMax = 40;
         this.hp = this.hpMax;
         this.name = "Arbre vivant";
-        this.images = [`enemy_image_${this.color}`];
 		this.prefix = true;
     }
 

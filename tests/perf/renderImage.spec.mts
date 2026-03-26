@@ -1,5 +1,6 @@
 import { performance } from 'node:perf_hooks';
 import { Random } from '../../src/classes/Random';
+import { Lang } from '../../src/enums/Lang';
 import processGame from '../../src/utils/processGame';
 
 
@@ -10,7 +11,7 @@ describe('Performance - processGame simulation only', () => {
 
     const t0 = performance.now();
     for (let i = 0; i < iterations; i++) {
-      await processGame(new Random(1000 + i), moves, 'Troll', 'en');
+      await processGame(new Random(1000 + i), moves, 'Troll', Lang.English);
     }
     const elapsedMs = performance.now() - t0;
 

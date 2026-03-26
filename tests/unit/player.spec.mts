@@ -1,10 +1,9 @@
 import { Kazuma } from '../../src/classes/Player';
-import { Random } from '../../src/classes/Random';
 import { PlayerAction } from '../../src/enums/player/PlayerAction';
 
 describe('Player mechanics', () => {
   it('initializes with expected default stats', () => {
-    const player = new Kazuma(new Random(1));
+    const player = new Kazuma();
 
     expect(player.hp).toEqual(player.hpMax);
     expect(player.name).toEqual(Kazuma.name);
@@ -12,7 +11,7 @@ describe('Player mechanics', () => {
   });
 
   it('changes sprite set on attack/defend/hug action', () => {
-    const player = new Kazuma(new Random(1));
+    const player = new Kazuma();
 
     player.performAction(PlayerAction.Atk);
     expect(player.images[0]).toContain('02');
