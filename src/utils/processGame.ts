@@ -7,7 +7,10 @@ import lines from '../data/constants';
 import { mobMap } from '../data/mobMap';
 import renderImage from './renderImage';
 
-type Lang = 'en' | 'fr';
+enum Lang {
+  English = 'en',
+  French = 'fr'
+}
 
 type LinesType = {
   [key in Lang]: {
@@ -17,7 +20,23 @@ type LinesType = {
   };
 };
 
-type GameState = "good" | "bad" | "best" | "incomplete" | "giveup";
+enum GameState {
+  Good = "good",
+  Bad = "bad",
+  Best = "best",
+  Incomplete = "incomplete",
+  Giveup = "giveup"
+}
+
+enum Prefix {
+  English_Determined = "the ",
+  English_Undetermined = "a ",
+  French_Determined = "le ",
+  French_Undetermined_Masculine = "un ",
+  French_Undetermined_Feminine = "une ",
+  None = "",
+}
+
 type Game = {
   image?: Uint8Array;
   state: GameState;
@@ -59,11 +78,11 @@ export default async function processGame(
 
   const messages = [
     lang === 'fr'
-      ? `Attention, ${creature.prefix ? 'un ' : ''}${creature.name} !`
-      : `Watch out, ${creature.prefix ? 'a ' : ''}${creature.name} !`,
+      ? `Attention, ${creature.prefix ? Prefix.French_Determined : Prefix.None}${creature.name} !`
+      : `Watch out, ${creature.prefix ? Prefix.English_Determined : Prefix.None}${creature.name} !`,
   ];
 
-  let state: GameState = "incomplete";
+  let state: GameState = GameState.Incomplete;
   let playerId;
   let counter = -1;
   // console.log(moves)
@@ -102,12 +121,12 @@ export default async function processGame(
     }
 
     if (creature.hp <= 0) {
-      state = "good";
+      state = GameState.Good;
       break;
     }
 
     if (creature.love <= 0) {
-      state = "best";
+      state = GameState.Best;
       break;
     }
 
@@ -115,9 +134,9 @@ export default async function processGame(
     if (team.players[playerId].defending) {
       creatureMove = [creatureMove[0].replace(creatureMove[1].toString(), "0"), creatureMove[1]];
       messages.push(
-        lang == "fr" ?
-          `${creature.prefix ? "Le " : ""}${creature.name} a essayé de l'attaquer mais l'a donc raté.` :
-          `${creature.prefix ? "The " : ""}${creature.name} tried to attack but missed.`
+        lang == Lang.French ?
+          `${creature.prefix ? Prefix.French_Determined : Prefix.None}${creature.name} a essayé de l'attaquer mais l'a donc raté.` :
+          `${creature.prefix ? Prefix.English_Determined : Prefix.None}${creature.name} tried to attack but missed.`
       );
     }
 
@@ -127,21 +146,24 @@ export default async function processGame(
       if (team.players[playerId].hp > 0)
         messages.push(creatureMove[0]);
       else
-        messages.push(lang == "fr" ? creatureMove[0] + " " + team.players[playerId].name + " est a terre..." : creatureMove[0] + " " + team.players[playerId].name + " is down...");
+        messages.push(lang == Lang.French ?
+          creatureMove[0] + " " + team.players[playerId].name + " est a terre..." :
+          creatureMove[0] + " " + team.players[playerId].name + " is down..."
+        );
     }
 
     if (team.players[playerId].hp <= 0) {
-      state = "bad";
+      state = GameState.Bad;
       break;
     }
     if (move === "GIV") { // Give Up is not an action performable by a character, it's a signal that the player wants to end the game immediately
-      state = "giveup";
+      state = GameState.Giveup;
       break;
     }
   }
 
   const training = !!monster
-  if (state === null && moves.length > 0) state = "incomplete";
+  if (state === null && moves.length > 0) state = GameState.Incomplete;
   if (renderingImage) {
     const image = await renderImage(state, messages, team, creature, lang);
     return { image, state, messages, team, creature, training };
