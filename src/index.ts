@@ -12,6 +12,30 @@ import { InteractionDataOption } from './types/InteractionDataOption';
 import processGame, { pascalCaseToString } from './utils/processGame';
 import processUrl from './utils/processUrl';
 
+const DISCORD_API_URL = 'https://discord.com/api/v10';
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function followUpTimeout(interaction: any, reponse: { type: number, data?: any }, delay: number = 3000) {
+  setTimeout(() => {
+    if (reponse.type === 4) {
+      reponse.data = {
+        content: reponse.data.content || ' ',
+        embeds: reponse.data.embeds || [],
+        components: reponse.data.components || [],
+      };
+    }
+
+    // PATCH /webhooks/<application_id>/<interaction_token>/messages/@original
+    fetch(`${DISCORD_API_URL}/webhooks/${interaction.application_id}/${interaction.token}/messages/@original`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(reponse.data),
+    })
+  }, delay);
+}
+
 const app = new Hono();
 
 function makeid(length: number): string {
@@ -81,7 +105,7 @@ async function buildComponents(payload: string, userID: string, lang: Lang, disa
 
   let showAquaHealButton = false;
 
-  if(team.activePlayer && team.activePlayer.name === "Megumin" && state === GameState.Incomplete) {
+  if (team.activePlayer && team.activePlayer.name === "Megumin" && state === GameState.Incomplete) {
     showAquaHealButton = true;
   }
 
@@ -200,7 +224,7 @@ app.get('/konosuba-rpg/assets/*', serveStatic({
   },
 }));
 
-// /raw_assets/* pour servir les images sans passer par le manifest (utile pour le développement et les tests)
+// /assets/* pour servir les images sans passer par le manifest (utile pour le développement et les tests)
 app.get('/assets/*', serveStatic({
   root: process.cwd() + '/assets',
   getContent: async function (path: string): Promise<Response | null> {
@@ -344,9 +368,9 @@ app.post('/api/interactions', async (c: Context) => {
         });
       }
 
-      const monster = generateMob().find(m=>m.name || m.constructor.name || pascalCaseToString(m.constructor.name) === monsterKey);
-      
-      if(!monster) {
+      const monster = generateMob().find(m => m.name || m.constructor.name || pascalCaseToString(m.constructor.name) === monsterKey);
+
+      if (!monster) {
         const allMobs = Object.keys(generateMob()).sort();
         return c.json({
           type: 4,
@@ -462,22 +486,75 @@ app.post('/api/interactions', async (c: Context) => {
     const monsterName = training ? extractMonster(payload) : '';
     const imageUrl = buildImageUrl(payload, lang);
 
-    return c.json({
-      // type 7 si le propriétaire est le même joueur, type 4 si "all" (comme dans le JS)
-      type: owner === userID ? 7 : 4,
-      data: {
-        embeds: [{
-          image: { url: imageUrl },
-          description: training
-            ? (fr ? `Entraînement contre ${monsterName}` : `Training vs ${monsterName}`)
-            : (fr ? `**Partie de <@${userID}>**` : `**<@${userID}> game**`),
-          color: 0x2b2d31,
-        }],
-        components: await buildComponents(payload, userID, lang),
-      },
-    });
-  }
+    // return c.json({
+    //   // type 7 si le propriétaire est le même joueur, type 4 si "all" (comme dans le JS)
+    //   type: owner === userID ? 7 : 4,
+    //   data: {
+    //     embeds: [{
+    //       image: { url: imageUrl },
+    //       description: training
+    //         ? (fr ? `Entraînement contre ${monsterName}` : `Training vs ${monsterName}`)
+    //         : (fr ? `**Partie de <@${userID}>**` : `**<@${userID}> game**`),
+    //       color: 0x2b2d31,
+    //     }],
+    //     components: await buildComponents(payload, userID, lang),
+    //   },
+    // });
 
+    const components = await buildComponents(payload, userID, lang);
+
+    const special = false;
+    if (special) {
+      followUpTimeout(interaction, {
+        type: owner === userID ? 7 : 4,
+        data: {
+          embeds: [{
+            image: { url: imageUrl },
+            description: training
+              ? (fr ? `Entraînement contre ${monsterName}` : `Training vs ${monsterName}`)
+              : (fr ? `**Partie de <@${userID}>**` : `**<@${userID}> game**`),
+            color: 0x2b2d31,
+          }],
+          components,
+        },
+      }, 2000);
+
+      const specialAttackLink = imageUrl.split('/konosuba-rpg/')[0]; // Extrait la partie avant "/konosuba-rpg/"
+      const specialAttackUrl = `${specialAttackLink}/assets/player/aqua.gif`; // Construit l'URL de l'animation spéciale d'Aqua
+
+      console.log(specialAttackUrl)
+      return c.json({
+        type: 7,
+        data: {
+          embeds: [{
+            image: { url: specialAttackUrl },
+            description: training
+              ? (fr ? `Entraînement contre ${monsterName}` : `Training vs ${monsterName}`)
+              : (fr ? `**Partie de <@${userID}>**` : `**<@${userID}> game**`),
+            color: 0x2b2d31,
+          }],
+          components: components,
+          // flags: 1 << 6,
+        },
+      });
+    }
+    else {
+      return c.json({
+        type: 7,
+        data: {
+          embeds: [{
+            image: { url: imageUrl },
+            description: training
+              ? (fr ? `Entraînement contre ${monsterName}` : `Training vs ${monsterName}`)
+              : (fr ? `**Partie de <@${userID}>**` : `**<@${userID}> game**`),
+            color: 0x2b2d31,
+          }],
+          components: components,
+          // flags: 1 << 6,
+        },
+      });
+    }
+  }
   return c.json({ error: 'Unknown interaction' }, 400);
 });
 
