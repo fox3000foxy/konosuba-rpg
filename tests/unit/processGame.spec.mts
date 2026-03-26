@@ -1,9 +1,10 @@
 import { Random } from '../../src/classes/Random';
+import { Lang } from '../../src/enums/Lang';
 import processGame from '../../src/utils/processGame';
 
 describe('processGame core loop', () => {
   it('returns giveup state when move is GIV', async () => {
-    const game = await processGame(new Random(20), ['GIV'], 'Troll', 'en', false);
+    const game = await processGame(new Random(20), ['GIV'], 'Troll', Lang.English, false);
 
     expect(game.state).toBe('giveup');
     expect(Array.isArray(game.messages)).toBe(true);
@@ -11,8 +12,8 @@ describe('processGame core loop', () => {
 
   it('is deterministic for same seed, moves, and monster when rendering is disabled', async () => {
     const moves = ['ATK', 'DEF', 'HUG', 'ATK', 'ATK'];
-    const g1 = await processGame(new Random(4444), moves, 'Dragon', 'fr', false);
-    const g2 = await processGame(new Random(4444), moves, 'Dragon', 'fr', false);
+    const g1 = await processGame(new Random(4444), moves, 'Dragon', Lang.French, false);
+    const g2 = await processGame(new Random(4444), moves, 'Dragon', Lang.French, false);
 
     expect(g1.state).toBe(g2.state);
     expect(g1.messages).toEqual(g2.messages);
@@ -22,7 +23,7 @@ describe('processGame core loop', () => {
   });
 
   it('supports unknown monster key by falling back to Troll class', async () => {
-    const game = await processGame(new Random(1), ['ATK'], 'UnknownBoss', 'en', false);
+    const game = await processGame(new Random(1), ['ATK'], 'UnknownBoss', Lang.English, false);
 
     expect(game.creature).toBeDefined();
     expect(game.training).toBe(true);
@@ -41,7 +42,7 @@ describe('processGame core loop', () => {
     ];
 
     for (const monster of monsters) {
-      const game = await processGame(new Random(99), ['ATK'], monster, 'en', false);
+      const game = await processGame(new Random(99), ['ATK'], monster, Lang.English, false);
       expect(game.creature.name.length).toBeGreaterThan(0);
     }
   });

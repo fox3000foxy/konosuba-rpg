@@ -11,6 +11,4 @@ export default class AngryShaman extends Creature implements Creature {
         this.images = [`enemy_image_22800`,`enemy_image_22801`];
 		this.prefix = true;
     }
-
-    pickColor() {}
 }
