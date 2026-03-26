@@ -2,7 +2,7 @@ import * as Photon from '@cf-wasm/photon';
 import { initWasm, Resvg } from '@resvg/resvg-wasm';
 import satori from 'satori';
 import { Creature } from '../classes/Creature';
-import Player from '../classes/Player';
+import { AquaImages, DarknessImages, KazumaImages, MeguminImages, PlayerName, Team } from '../classes/Player';
 import { imageManifest } from '../data/imageManifest';
 
 // ─── WASM init (once per Worker lifetime) ────────────────────────────────────
@@ -29,19 +29,19 @@ async function ensureWasm(): Promise<void> {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const GLOBAL = globalThis as any;
 
-GLOBAL.__imageCache     ??= {} as Record<string, ArrayBuffer>;
-GLOBAL.__base64Cache    ??= {} as Record<string, string>;          // base64 des end-images, calculé une fois par état
-GLOBAL.__photonCache    ??= new Map<string, Photon.PhotonImage>(); // sprites décodés/flippés/resizés
-GLOBAL.__layerCache     ??= new Map<string, Photon.PhotonImage>(); // bg + characters composités
-GLOBAL.__uiPhotonCache  ??= new Map<string, Photon.PhotonImage>(); // overlay UI parsé en PhotonImage (évite le re-parse PNG)
-GLOBAL.__fontCache      ??= {} as Record<string, ArrayBuffer>;
+GLOBAL.__imageCache ??= {} as Record<string, ArrayBuffer>;
+GLOBAL.__base64Cache ??= {} as Record<string, string>;          // base64 des end-images, calculé une fois par état
+GLOBAL.__photonCache ??= new Map<string, Photon.PhotonImage>(); // sprites décodés/flippés/resizés
+GLOBAL.__layerCache ??= new Map<string, Photon.PhotonImage>(); // bg + characters composités
+GLOBAL.__uiPhotonCache ??= new Map<string, Photon.PhotonImage>(); // overlay UI parsé en PhotonImage (évite le re-parse PNG)
+GLOBAL.__fontCache ??= {} as Record<string, ArrayBuffer>;
 
-const imageCache:    Record<string, ArrayBuffer>         = GLOBAL.__imageCache;
-const base64Cache:   Record<string, string>              = GLOBAL.__base64Cache;
-const photonCache:   Map<string, Photon.PhotonImage>     = GLOBAL.__photonCache;
-const layerCache:    Map<string, Photon.PhotonImage>     = GLOBAL.__layerCache;
-const uiPhotonCache: Map<string, Photon.PhotonImage>     = GLOBAL.__uiPhotonCache;
-const fontCache:     Record<string, ArrayBuffer>         = GLOBAL.__fontCache;
+const imageCache: Record<string, ArrayBuffer> = GLOBAL.__imageCache;
+const base64Cache: Record<string, string> = GLOBAL.__base64Cache;
+const photonCache: Map<string, Photon.PhotonImage> = GLOBAL.__photonCache;
+const layerCache: Map<string, Photon.PhotonImage> = GLOBAL.__layerCache;
+const uiPhotonCache: Map<string, Photon.PhotonImage> = GLOBAL.__uiPhotonCache;
+const fontCache: Record<string, ArrayBuffer> = GLOBAL.__fontCache;
 
 // ─── Image / Font cache ───────────────────────────────────────────────────────
 
@@ -136,7 +136,7 @@ function flipX(img: Photon.PhotonImage): Photon.PhotonImage {
     for (let x = 0; x < w; x++) {
       const src = (y * w + x) * 4;
       const dst = (y * w + (w - 1 - x)) * 4;
-      flipped[dst]     = raw[src];
+      flipped[dst] = raw[src];
       flipped[dst + 1] = raw[src + 1];
       flipped[dst + 2] = raw[src + 2];
       flipped[dst + 3] = raw[src + 3];
@@ -237,7 +237,7 @@ async function getCharactersLayer(
 // ─── UI OVERLAY ───────────────────────────────────────────────────────────────
 
 async function buildOverlayJsx(
-  player: Player,
+  team: Team,
   creature: Creature,
   messages: string[],
   state: string | null,
@@ -245,15 +245,7 @@ async function buildOverlayJsx(
   W: number,
   H: number
 ): Promise<object> {
-  const hp  = lang === 'fr' ? 'PV' : 'HP';
-  const pid = player.currentPlayerId;
-
-  const thmb = [
-    'https://raw.githubusercontent.com/fox3000foxy/konosuba-rpg/refs/heads/main/assets/player/thmb_in_1001100.png',
-    'https://raw.githubusercontent.com/fox3000foxy/konosuba-rpg/refs/heads/main/assets/player/thmb_in_1031100.png',
-    'https://raw.githubusercontent.com/fox3000foxy/konosuba-rpg/refs/heads/main/assets/player/thmb_in_1021100.png',
-    'https://raw.githubusercontent.com/fox3000foxy/konosuba-rpg/refs/heads/main/assets/player/thmb_in_1011100.png',
-  ];
+  const hp = lang === 'fr' ? 'PV' : 'HP';
 
   function healthBar(current: number, max: number, x: number, y: number, w: number, h: number) {
     const pct = Math.max(0, Math.min(1, current / max));
@@ -270,17 +262,17 @@ async function buildOverlayJsx(
   }
 
   const endMsg = state ? ({
-    good:   lang === 'fr' ? `Vous avez réussi à vaincre ${creature.prefix ? 'le ' : ''}${creature.name} !`       : `You won from ${creature.prefix ? 'the ' : ''}${creature.name}!`,
-    bad:    lang === 'fr' ? "L'adversaire vous a vaincu..."                                                       : 'The adversary has defeated you...',
-    giveup: lang === 'fr' ? 'Vous avez déclaré forfait.'                                                          : 'You have withdrawn.',
-    best:   lang === 'fr' ? `Vous avez réussi à être ami avec ${creature.prefix ? 'le ' : ''}${creature.name} !` : `You managed to be friends with ${creature.prefix ? 'the ' : ''}${creature.name}!`,
+    good: lang === 'fr' ? `Vous avez réussi à vaincre ${creature.prefix ? 'le ' : ''}${creature.name} !` : `You won from ${creature.prefix ? 'the ' : ''}${creature.name}!`,
+    bad: lang === 'fr' ? "L'adversaire vous a vaincu..." : 'The adversary has defeated you...',
+    giveup: lang === 'fr' ? 'Vous avez déclaré forfait.' : 'You have withdrawn.',
+    best: lang === 'fr' ? `Vous avez réussi à être ami avec ${creature.prefix ? 'le ' : ''}${creature.name} !` : `You managed to be friends with ${creature.prefix ? 'the ' : ''}${creature.name}!`,
   } as Record<string, string>)[state] : null;
 
   const endMsg2 = state ? ({
-    good:   lang === 'fr' ? 'Arriverez vous a faire mieux ?'                  : 'Will you get it better?',
-    bad:    lang === 'fr' ? 'Rententez votre chance.'                         : 'Retry.',
-    giveup: lang === 'fr' ? 'Peut être une prochaine fois ?'                  : 'Maybe next time?',
-    best:   lang === 'fr' ? "Pourrez vous être ami avec d'autres créatures ?" : 'Can you be friends with other creatures?',
+    good: lang === 'fr' ? 'Arriverez vous a faire mieux ?' : 'Will you get it better?',
+    bad: lang === 'fr' ? 'Rententez votre chance.' : 'Retry.',
+    giveup: lang === 'fr' ? 'Peut être une prochaine fois ?' : 'Maybe next time?',
+    best: lang === 'fr' ? "Pourrez vous être ami avec d'autres créatures ?" : 'Can you be friends with other creatures?',
   } as Record<string, string>)[state] : null;
 
   // base64 mis en cache par clé d'état — btoa() n'est appelé qu'une seule fois par état
@@ -288,6 +280,24 @@ async function buildOverlayJsx(
     ? `data:image/png;base64,${getBase64Cached('end_' + state, await getImageBytes('end_' + state))}`
     : null;
 
+  let pid: number = 0;
+  switch (team.activePlayer?.name) {
+    case PlayerName.Kazuma:
+      pid = 0;
+      break;
+    case PlayerName.Aqua:
+      pid = 1;
+      break;
+    case PlayerName.Megumin:
+      pid = 2;
+      break;
+    case PlayerName.Darkness:
+      pid = 3;
+      break;
+  }
+
+  team.setActivePlayer(team.players[pid]);
+  
   return {
     type: 'div',
     props: {
@@ -303,40 +313,42 @@ async function buildOverlayJsx(
         })),
 
         // ── Player info (main) ─────────────────────────────────────────
-        { type: 'img', props: { src: thmb[pid], style: { position: 'absolute' as const, left: 40 * 1.5 + 10, top: 40 + 10 - 38, width: 50, height: 50 } } },
+        { type: 'img', props: { src: team.activePlayer?.icon, style: { position: 'absolute' as const, left: 40 * 1.5 + 10, top: 40 + 10 - 38, width: 50, height: 50 } } },
         {
           type: 'div',
           props: {
             style: { display: 'flex' as const, position: 'absolute' as const, left: 40 * 2 + 40, top: 42 * 2 - 55, fontSize: 16, fontFamily: '"Ginto Nord Black"' },
-            children: `${player.name[pid]} (${Math.max(player.hp[pid], 0)} ${hp})`,
+            children: `${team.activePlayer?.name} (${Math.max(team.activePlayer?.hp || 0, 0)} ${hp})`,
           },
         },
         {
           type: 'div',
           props: {
             style: { display: 'flex' as const, position: 'absolute' as const, right: W - 210 * 2, top: 42 * 2 - 55, fontSize: 16, fontFamily: '"Ginto Nord Medium"' },
-            children: `${player.attack[pid][0]}-${player.attack[pid][1]}ATK`,
+            children: `${team.activePlayer?.attack[0]}-${team.activePlayer?.attack[1]}ATK`,
           },
         },
-        healthBar(player.hp[pid], player.hpMax[pid], 38 * 2, 46.25 * 2 - 38, 173.5 * 2, 8.5 * 2),
+        healthBar(team.activePlayer?.hp || 0, team.activePlayer?.hpMax || 0, 38 * 2, 46.25 * 2 - 38, 173.5 * 2, 8.5 * 2),
 
         // ── Player info (secondary x3) ─────────────────────────────────
         ...[1, 2, 3].flatMap((offset) => {
           const i = (pid + offset) % 4;
           const xBase = offset === 2 ? 332 * 2 : 234 * 2;
           const yBase = offset === 3 ? 56.25 * 2 - 38 : 36 * 2 - 38 + 3;
-          const thmX  = offset === 2 ? 300 * 1.5 + 10 + 200 : 300 * 1.5 + 10;
-          const thmY  = offset === 3 ? 70 + 10 - 38 : 40 - 38;
+          const thmX = offset === 2 ? 300 * 1.5 + 10 + 200 : 300 * 1.5 + 10;
+          const thmY = offset === 3 ? 70 + 10 - 38 : 40 - 38;
+          const offsetPlayer = team.players[i];
+          // console.log(`Offset ${offset}: player ${i} (${offsetPlayer?.name}), hp ${offsetPlayer?.hp}/${offsetPlayer?.hpMax}`, offsetPlayer.icon);
           return [
-            { type: 'img', props: { src: thmb[offset], style: { position: 'absolute' as const, left: thmX, top: thmY, width: 40, height: 40 } } },
+            { type: 'img', props: { src: offsetPlayer?.icon, style: { position: 'absolute' as const, left: thmX, top: thmY, width: 40, height: 40 } } },
             {
               type: 'div',
               props: {
                 style: { display: 'flex' as const, position: 'absolute' as const, left: xBase + 32, top: yBase - 16, fontSize: 12, fontFamily: '"Ginto Nord Black"' },
-                children: `${player.name[i]} (${Math.max(player.hp[i], 0)} ${hp})`,
+                children: `${offsetPlayer?.name} (${Math.max(offsetPlayer?.hp || 0, 0)} ${hp})`,
               },
             },
-            healthBar(player.hp[i], player.hpMax[i], xBase, yBase, 173, 8.5),
+            healthBar(offsetPlayer?.hp || 0, offsetPlayer?.hpMax || 0, xBase, yBase, 173, 8.5),
           ];
         }),
 
@@ -387,7 +399,7 @@ async function buildOverlayJsx(
  */
 async function getUIOverlay(
   uiCacheKey: string,
-  player: Player,
+  team: Team,
   creature: Creature,
   messages: string[],
   state: string | null,
@@ -398,7 +410,7 @@ async function getUIOverlay(
 ): Promise<Photon.PhotonImage> {
   if (uiPhotonCache.has(uiCacheKey)) return clonePhoton(uiPhotonCache.get(uiCacheKey)!);
 
-  const overlayJsx = await buildOverlayJsx(player, creature, messages, state, lang, W, H);
+  const overlayJsx = await buildOverlayJsx(team, creature, messages, state, lang, W, H);
 
   const overlaySvg = await satori(overlayJsx, {
     width: W,
@@ -418,7 +430,7 @@ async function getUIOverlay(
 export default async function renderImage(
   state: string | null,
   messages: string[],
-  player: Player,
+  team: Team,
   creature: Creature,
   lang = 'en'
 ): Promise<Uint8Array> {
@@ -428,19 +440,17 @@ export default async function renderImage(
   const H = 600;
 
   if (creature.hp <= 0) {
-    player.images = [
-      ['character_kazuma04'],
-      ['character_daku04'],
-      ['character_meg04'],
-      ['character_aqua04'],
-    ];
+    team.players[0].images = [KazumaImages.Hug];
+    team.players[1].images = [DarknessImages.Hug];
+    team.players[2].images = [MeguminImages.Hug];
+    team.players[3].images = [AquaImages.Hug];
   }
   creature.hp = Math.max(creature.hp, 0);
 
   // Clé de cache UI calculée une seule fois ici, avant tout travail
   const uiCacheKey = JSON.stringify({
-    hp: player.hp, hpMax: player.hpMax, attack: player.attack, name: player.name,
-    pid: player.currentPlayerId,
+    hp: team.players[0].hp, hpMax: team.players[0].hpMax, attack: team.players[0].attack, name: team.players[0].name,
+    pid: team.players[0],
     cHp: creature.hp, cHpMax: creature.hpMax, cAttack: creature.attack, cName: creature.name,
     messages, state, lang,
   });
@@ -451,11 +461,14 @@ export default async function renderImage(
     getFontBytes('https://raw.githubusercontent.com/fox3000foxy/konosuba-rpg/refs/heads/main/swordgame/font/GintoNordMedium.otf'),
   ]);
 
+  const playerImages = [...team.players.map((p) => p.images)];
+  const teamHp = [...team.players.map((p) => p.hp)];
+
   // Les trois layers en parallèle — chacun court-circuite son propre cache si possible
   const [canvas, chars, uiImg] = await Promise.all([
     getBackground(W, H),
-    getCharactersLayer(player.images, player.hp, creature.images, creature.hp, W, H),
-    getUIOverlay(uiCacheKey, player, creature, messages, state, lang, fontMediumBuf, W, H),
+    getCharactersLayer(playerImages, teamHp, creature.images, creature.hp, W, H),
+    getUIOverlay(uiCacheKey, team, creature, messages, state, lang, fontMediumBuf, W, H),
   ]);
 
   Photon.watermark(canvas, chars, 0n, 0n);
