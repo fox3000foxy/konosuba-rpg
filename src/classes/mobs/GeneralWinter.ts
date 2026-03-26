@@ -1,6 +1,6 @@
-import { GenericCreature, GenericCreatureInterface } from "../GenericCreature";
+import { Creature, CreatureInterface } from "../Creature";
 
-export default class GeneralWinter extends GenericCreature implements GenericCreatureInterface {
+export default class GeneralWinter extends Creature implements CreatureInterface {
     constructor() {
         super();
         this.attack = [9, 17];
