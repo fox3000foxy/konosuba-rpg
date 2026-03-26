@@ -36,6 +36,32 @@ function followUpTimeout(interaction: any, reponse: { type: number, data?: any }
   }, delay);
 }
 
+function compressMoves(moves: string): string {
+  let result = '';
+  let count = 1;
+
+  for (let i = 1; i <= moves.length; i++) {
+    if (moves[i] === moves[i - 1]) {
+      count++;
+    } else {
+      result += moves[i - 1] + (count > 1 ? count : '');
+      count = 1;
+    }
+  }
+
+  return result;
+}
+
+function decompressMoves(comp: string): string {
+  return comp.replace(/([a-z])(\d+)?/g, (_, char, num) => {
+    return char.repeat(num ? parseInt(num) : 1);
+  });
+}
+
+// const encoded = compressMoves('adddddddddddghspuu');
+// console.log('Compressed:', encoded);
+// console.log('Decompressed:', decompressMoves(encoded));
+
 const app = new Hono();
 
 function makeid(length: number): string {
@@ -130,7 +156,7 @@ async function buildComponents(payload: string, userID: string, lang: Lang, disa
               type: 2,
               label: fr ? ButtonsLabels.GiveUpFr : ButtonsLabels.GiveUp,
               style: 2,
-              custom_id: `${payload}/g:${userID}`,
+              custom_id: `${compressMoves(payload)}g:${userID}`,
             },
             {
               type: 2,
@@ -153,25 +179,25 @@ async function buildComponents(payload: string, userID: string, lang: Lang, disa
       {
         type: 1,
         components: [
-          { type: 2, label: fr ? ButtonsLabels.AttackFr.replace("x", "1") : ButtonsLabels.Attack.replace("x", "1"), style: 4, custom_id: `${payload}/a:${userID}` },
-          { type: 2, label: fr ? ButtonsLabels.AttackFr.replace("x", "4") : ButtonsLabels.Attack.replace("x", "4"), style: 4, custom_id: `${payload}/aaaa:${userID}` },
-          { type: 2, label: fr ? ButtonsLabels.AttackFr.replace("x", "10") : ButtonsLabels.Attack.replace("x", "10"), style: 4, custom_id: `${payload}/aaaaaaaaaa:${userID}` },
+          { type: 2, label: fr ? ButtonsLabels.AttackFr.replace("x", "1") : ButtonsLabels.Attack.replace("x", "1"), style: 4, custom_id: `${compressMoves(payload)}a:${userID}` },
+          { type: 2, label: fr ? ButtonsLabels.AttackFr.replace("x", "4") : ButtonsLabels.Attack.replace("x", "4"), style: 4, custom_id: `${compressMoves(payload)}a4:${userID}` },
+          { type: 2, label: fr ? ButtonsLabels.AttackFr.replace("x", "10") : ButtonsLabels.Attack.replace("x", "10"), style: 4, custom_id: `${compressMoves(payload)}a10:${userID}` },
         ],
       },
       {
         type: 1,
         components: [
-          { type: 2, label: fr ? ButtonsLabels.HugFr.replace("x", "1") : ButtonsLabels.Hug.replace("x", "1"), style: 1, custom_id: `${payload}/h:${userID}` },
-          { type: 2, label: fr ? ButtonsLabels.HugFr.replace("x", "4") : ButtonsLabels.Hug.replace("x", "4"), style: 1, custom_id: `${payload}/hhhh:${userID}` },
-          { type: 2, label: fr ? ButtonsLabels.HugFr.replace("x", "10") : ButtonsLabels.Hug.replace("x", "10"), style: 1, custom_id: `${payload}/hhhhhhhhhh:${userID}` },
+          { type: 2, label: fr ? ButtonsLabels.HugFr.replace("x", "1") : ButtonsLabels.Hug.replace("x", "1"), style: 1, custom_id: `${compressMoves(payload)}h:${userID}` },
+          { type: 2, label: fr ? ButtonsLabels.HugFr.replace("x", "4") : ButtonsLabels.Hug.replace("x", "4"), style: 1, custom_id: `${compressMoves(payload)}h4:${userID}` },
+          { type: 2, label: fr ? ButtonsLabels.HugFr.replace("x", "10") : ButtonsLabels.Hug.replace("x", "10"), style: 1, custom_id: `${compressMoves(payload)}h10:${userID}` },
         ],
       },
       {
         type: 1,
         components: [
-          { type: 2, label: fr ? ButtonsLabels.DefendFr : ButtonsLabels.Defend, style: 3, custom_id: `${payload}/d:${userID}` },
-          { type: 2, label: fr ? ButtonsLabels.HealFr : ButtonsLabels.Heal, style: 3, custom_id: `${payload}/s:${userID}`, disabled: !showAquaHealButton },
-          { type: 2, label: fr ? ButtonsLabels.SpecialAttackFr : ButtonsLabels.SpecialAttack, style: 3, custom_id: `${payload}/p:${userID}`, disabled: !(team.activePlayer?.specialAttackReady) },
+          { type: 2, label: fr ? ButtonsLabels.DefendFr : ButtonsLabels.Defend, style: 3, custom_id: `${compressMoves(payload)}d:${userID}` },
+          { type: 2, label: fr ? ButtonsLabels.HealFr : ButtonsLabels.Heal, style: 3, custom_id: `${compressMoves(payload)}s:${userID}`, disabled: !showAquaHealButton },
+          { type: 2, label: fr ? ButtonsLabels.SpecialAttackFr : ButtonsLabels.SpecialAttack, style: 3, custom_id: `${compressMoves(payload)}p:${userID}`, disabled: !(team.activePlayer?.specialAttackReady) },
         ],
       },
 
@@ -188,7 +214,7 @@ async function buildComponents(payload: string, userID: string, lang: Lang, disa
             type: 2,
             label: fr ? ButtonsLabels.GiveUpFr : ButtonsLabels.GiveUp,
             style: 2,
-            custom_id: `${payload}/g:${userID}`,
+            custom_id: `${compressMoves(payload)}g:${userID}`,
           },
           {
             type: 2,
@@ -497,7 +523,8 @@ app.post('/api/interactions', async (c: Context) => {
   if (interaction.type === 3 && interaction.data?.custom_id) {
     const customId: string = interaction.data.custom_id;
     const colonIdx = customId.lastIndexOf(':');
-    const payload = colonIdx !== -1 ? customId.slice(0, colonIdx) : customId;
+    const encodedPayload = colonIdx !== -1 ? customId.slice(0, colonIdx) : customId;
+    const payload = decompressMoves(encodedPayload);
     const owner = colonIdx !== -1 ? customId.slice(colonIdx + 1) : '';
 
     // Vérification du propriétaire (comme dans le JS d'origine)
