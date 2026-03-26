@@ -1,9 +1,8 @@
-import { Creature } from "../Creature";
-import { Random } from "../Random";
+import { Creature, CreatureInterface } from "../Creature";
 
-export default class Beldia extends Creature {
-    constructor(rand: Random) {
-        super(rand);
+export default class Beldia extends Creature implements CreatureInterface {
+    constructor() {
+        super();
         this.attack = [0, 10];
         this.love = 100;
         this.hpMax = 200;

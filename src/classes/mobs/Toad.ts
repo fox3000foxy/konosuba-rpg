@@ -1,15 +1,19 @@
-import { Creature } from "../Creature";
+import { GenericCreature, GenericCreatureInterface } from "../GenericCreature";
 import { Random } from "../Random";
-export default class Toad extends Creature {
-    constructor(rand: Random) {
-        super(rand);
+
+export default class Toad extends GenericCreature implements GenericCreatureInterface {
+    constructor() {
+        super();
         this.attack = [2, 6];
         this.love = 50;
         this.hpMax = 40;
         this.hp = this.hpMax;
         this.name = "Crapaud";
-        this.color = rand.choice(["16700","16701","16702","16704"]);
+        this.prefix = true;
+    }
+
+    pickColor(rng: Random) {
+        this.color = rng.choice(["16700", "16701", "16702", "16704"]);
         this.images = [`enemy_image_${this.color}`];
-		this.prefix = true
     }
 }

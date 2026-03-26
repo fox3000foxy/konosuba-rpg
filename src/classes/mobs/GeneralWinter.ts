@@ -1,9 +1,8 @@
-import { Creature } from "../Creature";
-import { Random } from "../Random";
+import { GenericCreature, GenericCreatureInterface } from "../GenericCreature";
 
-export default class GeneralWinter extends Creature {
-    constructor(rand: Random) {
-        super(rand);
+export default class GeneralWinter extends GenericCreature implements GenericCreatureInterface {
+    constructor() {
+        super();
         this.attack = [10, 15];
         this.love = 40;
         this.hpMax = 200;

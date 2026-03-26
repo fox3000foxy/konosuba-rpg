@@ -7,21 +7,18 @@ import { PlayerAction } from "../enums/player/PlayerAction";
 import { PlayerName } from "../enums/player/PlayerName";
 import { PlayerStats } from "../enums/player/PlayerStats";
 import { PlayerThmb } from "../enums/player/PlayerThmb";
-import { Random } from "./Random";
 
 // Abstract Player class
 export abstract class Player {
-	rand: Random;
-	hpMax: number;
-	hp: number;
-	attack: [number, number];
-	defending: boolean;
-	name: PlayerName;
-	images: string[];
-	icon: PlayerThmb.Kazuma | PlayerThmb.Darkness | PlayerThmb.Megumin | PlayerThmb.Aqua;
+	public hpMax: number;
+	public hp: number;
+	public attack: [number, number];
+	public defending: boolean;
+	public name: PlayerName;
+	public images: string[];
+	public icon: PlayerThmb.Kazuma | PlayerThmb.Darkness | PlayerThmb.Megumin | PlayerThmb.Aqua;
 
-	constructor(rand: Random, name: PlayerName, hpMax: number, attack: [number, number], images: string[], icon: PlayerThmb.Kazuma | PlayerThmb.Darkness | PlayerThmb.Megumin | PlayerThmb.Aqua) {
-		this.rand = rand;
+	constructor(name: PlayerName, hpMax: number, attack: [number, number], images: string[], icon: PlayerThmb.Kazuma | PlayerThmb.Darkness | PlayerThmb.Megumin | PlayerThmb.Aqua) {
 		this.hpMax = hpMax;
 		this.hp = hpMax;
 		this.attack = attack;
@@ -40,8 +37,8 @@ export abstract class Player {
 
 // Subclasses for each player
 export class Kazuma extends Player {
-	constructor(rand: Random) {
-		super(rand, PlayerName.Kazuma, PlayerStats.KazumaHp, [PlayerStats.KazumaAttackMin, PlayerStats.KazumaAttackMax], [KazumaImages.Idle], PlayerThmb.Kazuma);
+	constructor() {
+		super(PlayerName.Kazuma, PlayerStats.KazumaHp, [PlayerStats.KazumaAttackMin, PlayerStats.KazumaAttackMax], [KazumaImages.Idle], PlayerThmb.Kazuma);
 	}
 
 	performAction(action: PlayerAction): void {
@@ -63,8 +60,8 @@ export class Kazuma extends Player {
 }
 
 export class Darkness extends Player {
-	constructor(rand: Random) {
-		super(rand, PlayerName.Darkness, PlayerStats.DarknessHp, [PlayerStats.DarknessAttackMin, PlayerStats.DarknessAttackMax], [DarknessImages.Idle], PlayerThmb.Darkness);
+	constructor() {
+		super(PlayerName.Darkness, PlayerStats.DarknessHp, [PlayerStats.DarknessAttackMin, PlayerStats.DarknessAttackMax], [DarknessImages.Idle], PlayerThmb.Darkness);
 	}
 
 	performAction(action: PlayerAction): void {
@@ -86,8 +83,8 @@ export class Darkness extends Player {
 }
 
 export class Megumin extends Player {
-	constructor(rand: Random) {
-		super(rand, PlayerName.Megumin, PlayerStats.MeguminHp, [PlayerStats.MeguminAttackMin, PlayerStats.MeguminAttackMax], [MeguminImages.Idle], PlayerThmb.Megumin);
+	constructor() {
+		super(PlayerName.Megumin, PlayerStats.MeguminHp, [PlayerStats.MeguminAttackMin, PlayerStats.MeguminAttackMax], [MeguminImages.Idle], PlayerThmb.Megumin);
 	}
 
 	performAction(action: PlayerAction): void {
@@ -109,8 +106,8 @@ export class Megumin extends Player {
 }
 
 export class Aqua extends Player {
-	constructor(rand: Random) {
-		super(rand, PlayerName.Aqua, PlayerStats.AquaHp, [PlayerStats.AquaAttackMin, PlayerStats.AquaAttackMax], [AquaImages.Idle], PlayerThmb.Aqua);
+	constructor() {
+		super(PlayerName.Aqua, PlayerStats.AquaHp, [PlayerStats.AquaAttackMin, PlayerStats.AquaAttackMax], [AquaImages.Idle], PlayerThmb.Aqua);
 	}
 
 	performAction(action: PlayerAction): void {
@@ -136,12 +133,12 @@ export class Team {
 	players: Player[];
 	activePlayer: Player | null = null;
 
-	constructor(rand: Random) {
+	constructor() {
 		this.players = [
-			new Kazuma(rand),
-			new Darkness(rand),
-			new Megumin(rand),
-			new Aqua(rand),
+			new Kazuma(),
+			new Darkness(),
+			new Megumin(),
+			new Aqua(),
 		];
 	}
 

@@ -1,8 +1,7 @@
 import { Creature } from "../Creature";
-import { Random } from "../Random";
 export default class Sylvia extends Creature {
-    constructor(rand: Random) {
-        super(rand);
+    constructor() {
+        super();
         this.attack = [10, 15];
         this.love = 50;
         this.hpMax = 100;
