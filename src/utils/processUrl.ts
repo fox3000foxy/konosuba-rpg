@@ -6,6 +6,7 @@ export default function processUrl(url: string): [Random, string[], string, stri
     PlayerAction.Atk.toLocaleUpperCase(),
     PlayerAction.Def.toLocaleUpperCase(),
     PlayerAction.Hug.toLocaleUpperCase(),
+    PlayerAction.Hea.toLocaleUpperCase(),
     PlayerAction.Giv.toLocaleUpperCase()
   ]);
 

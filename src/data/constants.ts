@@ -66,6 +66,11 @@ const lines = {
         "Aqua serre le CREATURE dans ses bras.",
       ],
     ],
+    aquaHealMsgs: [
+      "Aqua prie pour une guérison divine et restaure 15 PV à l'équipe.",
+      "Aqua utilise sa magie de guérison et restaure 15 PV à l'équipe.",
+      "Aqua invoque son pouvoir divin et soigne l'équipe de 15 PV.",
+    ],
   },
   en: {
     youAttackMsgs: [
@@ -133,7 +138,13 @@ const lines = {
         "Aqua embraces the CREATURE affectionately.",
         "Aqua holds the CREATURE in her arms.",
       ],
-    ]
+    ],
+    aquaHealMsgs: [
+      "Aqua prays for divine healing and restores 15 HP to the team.",
+      "Aqua uses her healing magic and restores 15 HP to the team.",
+      "Aqua calls upon her divine power and heals the team for 15 HP.",
+    ],
+
   },
 };
 

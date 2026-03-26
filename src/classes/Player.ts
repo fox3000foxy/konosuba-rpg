@@ -56,6 +56,9 @@ export class Kazuma extends Player {
 			case PlayerAction.Hug:
 				this.images = [KazumaImages.Hug];
 				break;
+			case PlayerAction.Hea:
+				this.images = [KazumaImages.Hug];
+				break;
 		}
 	}
 }
@@ -79,6 +82,9 @@ export class Darkness extends Player {
 				this.images = [DarknessImages.Atk];
 				break;
 			case PlayerAction.Hug:
+				this.images = [DarknessImages.Hug];
+				break;
+			case PlayerAction.Hea:
 				this.images = [DarknessImages.Hug];
 				break;
 		}
@@ -132,6 +138,14 @@ export class Aqua extends Player {
 				this.images = [AquaImages.Hug];
 				break;
 		}
+	}
+
+	heal(team: Team) {
+		team.players.forEach(player => {
+			if (player.hp > 0) {
+				player.hp = Math.min(player.hp + 15, player.hpMax);
+			}
+		});
 	}
 }
 

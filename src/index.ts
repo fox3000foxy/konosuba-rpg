@@ -32,7 +32,8 @@ function customIdToPath(payload: string): string {
     .split('a').join('/atk')
     .split('d').join('/def')
     .split('g').join('/giv')
-    .split('h').join('/hug');
+    .split('h').join('/hug')
+    .split('s').join('/hea');
 }
 
 /** Génère l'ID "Recommencer" en effaçant les lettres d'action (comme dans le JS d'origine) */
@@ -44,7 +45,8 @@ function restartId(payload: string): string {
     .split('trqin').join('train')
     .split('d').join('')
     .split('g').join('')
-    .split('h').join('');
+    .split('h').join('')
+    .split('s').join('');
 }
 
 /** Détermine si le payload correspond à une session d'entraînement */
@@ -73,9 +75,15 @@ async function buildComponents(payload: string, userID: string, lang: Lang, disa
 
   // const game = processGame
   const [rand, moves, , monster] = processUrl(imageUrl);
-  const { state } = await processGame(rand, moves, monster, lang, false);
+  const { state, team } = await processGame(rand, moves, monster, lang, false);
   const training = isTraining(payload);
   const fr = lang === Lang.French;
+
+  let showAquaHealButton = false;
+
+  if(team.activePlayer && team.activePlayer.name === "Megumin" && state === GameState.Incomplete) {
+    showAquaHealButton = true;
+  }
 
   if (state === GameState.Incomplete) {
     disableChangeMonster = true;
@@ -132,6 +140,7 @@ async function buildComponents(payload: string, userID: string, lang: Lang, disa
       type: 1,
       components: [
         { type: 2, label: fr ? ButtonsLabels.DefendFr : ButtonsLabels.Defend, style: 3, custom_id: `${payload}/d:${userID}` },
+        { type: 2, label: fr ? ButtonsLabels.HealFr : ButtonsLabels.Heal, style: 3, custom_id: `${payload}/s:${userID}`, disabled: !showAquaHealButton },
       ],
     },
 
