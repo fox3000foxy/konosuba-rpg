@@ -1,7 +1,7 @@
 import { verifyKey } from 'discord-interactions';
 import { Context, Hono } from 'hono';
 import { serveStatic } from 'hono/serve-static';
-import Player from './classes/Player';
+import { Aqua, Darkness, Kazuma, Megumin } from './classes/Player';
 import { Random } from './classes/Random';
 import { imageManifest } from './data/imageManifest';
 import { mobMap } from './data/mobMap';
@@ -355,11 +355,36 @@ app.post('/api/interactions', async (c: Context) => {
       }
 
       const randP = new Random(Math.floor(Math.random() * Number.MAX_SAFE_INTEGER));
-      const player = new Player(randP);
-      const charName = player.name[characterId];
-      const hp = player.hp[characterId];
-      const attackR = player.attack[characterId];
-      const imgUrl = `${BASE_URL}/konosuba-rpg/assets/${player.images[characterId][0]}`;
+      let player: Kazuma | Darkness | Megumin | Aqua;
+      switch (characterId) {
+        case 0:
+          player = new Kazuma(randP);
+          break;
+        case 1:
+          player = new Darkness(randP);
+          break;
+        case 2:
+          player = new Megumin(randP);
+          break;
+        case 3:
+          player = new Aqua(randP);
+          break;
+        default:
+          return c.json({
+            type: 4,
+            data: {
+              embeds: [{
+                description: fr
+                  ? 'Personnage invalide. Choisissez 0-3 (Kazuma, Darkness, Megumin, Aqua).'
+                  : 'Invalid character. Choose 0-3 (Kazuma, Darkness, Megumin, Aqua).',
+              }],
+            },
+          });
+      }
+      const charName = player.name;
+      const hp = player.hp;
+      const attackR = player.attack;
+      const imgUrl = `${BASE_URL}/konosuba-rpg/assets/${player.images[0]}`;
       console.log(imgUrl)
       return c.json({
         type: 4,

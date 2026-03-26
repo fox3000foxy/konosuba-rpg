@@ -1,7 +1,7 @@
 // import fs from 'fs';
 import { Creature } from '../classes/Creature';
 import Troll from '../classes/mobs/Troll';
-import Player from '../classes/Player';
+import { PlayerAction, Team } from '../classes/Player';
 import { Random } from '../classes/Random';
 import lines from '../data/constants';
 import { mobMap } from '../data/mobMap';
@@ -22,7 +22,7 @@ type Game = {
   image?: Uint8Array;
   state: GameState;
   messages: string[];
-  player: Player;
+  team: Team;
   creature: Creature;
   training: boolean;
 }
@@ -32,7 +32,7 @@ const linesTyped = lines as LinesType;
 function pascalCaseToString(pascalCaseWord: string): string {
   const regex = /([a-z])([A-Z])/g;
   const stringWithSpaces = pascalCaseWord.replace(regex, '$1 $2');
-  return stringWithSpaces.charAt(0).toUpperCase() + stringWithSpaces.slice(1);
+  return stringWithSpaces.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
 }
 
 export default async function processGame(
@@ -43,18 +43,13 @@ export default async function processGame(
   renderingImage: boolean = true
 ): Promise<Game> {
   lang = lang === 'fr' ? 'fr' : 'en';
-  const player = new Player(rand);
+  const team = new Team(rand);
   let creature: Creature | null;
 
   if (monster) {
     const MonsterClass = mobMap[monster] || Troll;
     creature = new MonsterClass(rand);
   } else {
-    // commeting because : TypeError: rand.choice(...) is not a constructor
-    // creature = new (rand.choice(creatureClasses) as new (rand: Random) => Creature)(rand);
-
-    // const creatureClass = rand.choice(creatureClasses) as Creature;
-    // creature = new creatureClass(rand);
     mobMap["troll"] = Troll;
     const CreatureClass = mobMap[rand.choice(Object.keys(mobMap))] || Troll;
     creature = new CreatureClass(rand);
@@ -70,38 +65,40 @@ export default async function processGame(
 
   let state: GameState = "incomplete";
   let playerId;
-  let counter = -1
+  let counter = -1;
   // console.log(moves)
   for (const move of moves) {
     // const move = moves[i]
     messages.length = 0;
+    if (counter >= 0)
+      team.players[counter % 4].performAction(PlayerAction.Idle);
     counter += 1;
     playerId = counter % 4;
-    if (playerId == 0 && player.hp[0] <= 0) playerId = 1;
-    else if (playerId == 1 && player.hp[1] <= 0) playerId = 2;
-    else if (playerId == 2 && player.hp[2] <= 0) playerId = 3;
-    else if (playerId == 3 && player.hp[3] <= 0) playerId = 0;
-    player.currentPlayerId = playerId;
+    if (playerId == 0 && team.players[0].hp <= 0) playerId = 1;
+    else if (playerId == 1 && team.players[1].hp <= 0) playerId = 2;
+    else if (playerId == 2 && team.players[2].hp <= 0) playerId = 3;
+    else if (playerId == 3 && team.players[3].hp <= 0) playerId = 0;
 
-    player.defending = move === "DEF";
-    if (player.defending) {
-      const dmg = rand.randint(player.attack[playerId][0], player.attack[playerId][1]);
+    team.players[playerId].defending = move === PlayerAction.Def.toLocaleUpperCase();
+
+    if (team.players[playerId].defending) {
+      const dmg = rand.randint(team.players[playerId].attack[0], team.players[playerId].attack[1]);
       const msg = rand.choice(linesTyped[lang as Lang].youDefendMsgs[playerId]).replace("CREATURE", creature.name).replace("DAMAGE", dmg.toString());
       messages.push(msg);
-      player.actionDef(playerId);
+      team.players[playerId].performAction(PlayerAction.Def);
     }
-    if (move === "ATK") {
-      const dmg = rand.randint(player.attack[playerId][0], player.attack[playerId][1]);
+    if (move === PlayerAction.Atk.toLocaleUpperCase()) {
+      const dmg = rand.randint(team.players[playerId].attack[0], team.players[playerId].attack[1]);
       creature.dealAttack(dmg);
       const msg = rand.choice(linesTyped[lang as Lang].youAttackMsgs[playerId]).replace("CREATURE", creature.name).replace("DAMAGE", dmg.toString());
       messages.push(msg);
-      player.actionAtk(playerId);
+      team.players[playerId].performAction(PlayerAction.Atk);
     }
-    if (move === "HUG") {
+    if (move === PlayerAction.Hug.toLocaleUpperCase()) {
       const msg = rand.choice(linesTyped[lang as Lang].youHugMsgs[playerId]).replace("CREATURE", creature.name);
       messages.push(msg);
       creature.giveHug();
-      player.actionHug(playerId);
+      team.players[playerId].performAction(PlayerAction.Hug);
     }
 
     if (creature.hp <= 0) {
@@ -115,7 +112,7 @@ export default async function processGame(
     }
 
     let creatureMove = creature.turn(lang);
-    if (player.defending) {
+    if (team.players[playerId].defending) {
       creatureMove = [creatureMove[0].replace(creatureMove[1].toString(), "0"), creatureMove[1]];
       messages.push(
         lang == "fr" ?
@@ -125,19 +122,19 @@ export default async function processGame(
     }
 
 
-    if (!player.defending) {
-      player.hp[player.currentPlayerId] -= creatureMove[1];
-      if (player.hp[player.currentPlayerId])
+    if (!team.players[playerId].defending) {
+      team.players[playerId].hp -= creatureMove[1];
+      if (team.players[playerId].hp > 0)
         messages.push(creatureMove[0]);
       else
-        messages.push(lang == "fr" ? creatureMove[0] + " " + player.name[player.currentPlayerId] + " est a terre..." : creatureMove[0] + " " + player.name[player.currentPlayerId] + " is down...");
+        messages.push(lang == "fr" ? creatureMove[0] + " " + team.players[playerId].name + " est a terre..." : creatureMove[0] + " " + team.players[playerId].name + " is down...");
     }
 
-    if (player.hp[0] <= 0 && player.hp[1] <= 0 && player.hp[2] <= 0 && player.hp[3] <= 0) {
+    if (team.players[playerId].hp <= 0) {
       state = "bad";
       break;
     }
-    if (move === "GIV") {
+    if (move === "GIV") { // Give Up is not an action performable by a character, it's a signal that the player wants to end the game immediately
       state = "giveup";
       break;
     }
@@ -146,9 +143,9 @@ export default async function processGame(
   const training = !!monster
   if (state === null && moves.length > 0) state = "incomplete";
   if (renderingImage) {
-    const image = await renderImage(state, messages, player, creature, lang);
-    return { image, state, messages, player, creature, training };
+    const image = await renderImage(state, messages, team, creature, lang);
+    return { image, state, messages, team, creature, training };
   } else {
-    return { state, messages, player, creature, training };
+    return { state, messages, team, creature, training };
   }
 }
