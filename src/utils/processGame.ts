@@ -252,7 +252,7 @@ export default async function processGame(
   if (state === GameState.Bad) embedDescription.push(lang === Lang.French ? EndMessages.French_Bad: EndMessages.English_Bad);
   if (state === GameState.Best) embedDescription.push(lang === Lang.French ? EndMessages.French_Best: EndMessages.English_Best);
   if (state === GameState.Giveup) embedDescription.push(lang === Lang.French ? EndMessages.French_Giveup: EndMessages.English_Giveup);
-  if (state !== GameState.Incomplete) embedDescription[embedDescription.length - 1] += creature.name + (lang === Lang.French ? EndMessages.French_ExclamationMark : EndMessages.English_ExclamationMark);
+  if (state === GameState.Good || state === GameState.Best) embedDescription[embedDescription.length - 1] += creature.name + (lang === Lang.French ? EndMessages.French_ExclamationMark : EndMessages.English_ExclamationMark);
   if (renderingImage) {
     const image = await renderImage(state, messages, team, creature, lang);
     return { image, state, messages, embedDescription, team, creature, training };
