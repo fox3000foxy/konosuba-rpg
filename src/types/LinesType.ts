@@ -6,5 +6,6 @@ export type LinesType = {
     youAttackMsgs: MessagesTemplates[][];
     youDefendMsgs: MessagesTemplates[][];
     youHugMsgs: MessagesTemplates[][];
+    aquaHealMsgs: MessagesTemplates[];
   };
 };

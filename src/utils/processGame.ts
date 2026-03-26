@@ -2,7 +2,7 @@
 import { Creature, MessagesTemplates } from '../classes/Creature';
 import { GenericCreature } from '../classes/GenericCreature';
 import Troll from '../classes/mobs/Troll';
-import { Team } from '../classes/Player';
+import { Aqua, Team } from '../classes/Player';
 import { Random } from '../classes/Random';
 import lines from '../data/constants';
 import { generateMob } from '../data/mobMap';
@@ -79,6 +79,7 @@ export default async function processGame(
     }
 
     const currentPlayer = team.players[playerId];
+    team.setActivePlayer(currentPlayer);
     currentPlayer.defending = move === PlayerAction.Def.toLocaleUpperCase();
 
     if (currentPlayer.name === "Kazuma") {
@@ -113,6 +114,11 @@ export default async function processGame(
       const loveDecrease = rand.randint(1, 4);
       creature.giveHug(loveDecrease);
       currentPlayer.performAction(PlayerAction.Hug);
+    } else if (move === PlayerAction.Hea.toLocaleUpperCase() && currentPlayer.name === "Aqua") {
+      currentPlayer.performAction(PlayerAction.Hug);
+      (currentPlayer as Aqua).heal(team);
+      const msg = rand.choice(linesTyped[lang as Lang].aquaHealMsgs);
+      messages.push(msg);
     }
 
     if (creature.hp <= 0) {
