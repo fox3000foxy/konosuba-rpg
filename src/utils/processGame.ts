@@ -239,6 +239,10 @@ export default async function processGame(
       state = GameState.Giveup;
       break;
     }
+
+    if (state !== GameState.Incomplete) {
+      break; // Exit the loop if the game has ended
+    }
   }
 
   const training = !!monsterName;
