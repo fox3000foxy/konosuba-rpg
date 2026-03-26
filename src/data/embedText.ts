@@ -3,27 +3,27 @@ const lines = {
     youAttackMsgs: [
       [
         // Kazuma — roublard, calculateur, rarement courageux
-        "Kazuma vole l'équipement du CREATURE pendant le combat et lui inflige DAMAGE dégâts au passage.",
-        "Kazuma attend que le CREATURE soit distrait, puis tire une flèche dans le dos et inflige DAMAGE dégâts. 'C'est pas de la lâcheté, c'est de la stratégie.'",
-        "Kazuma utilise Drain Touch sur le CREATURE et lui vole DAMAGE points de vie. 'Merci pour les PV.'",
+        "Kazuma vole l'équipement du **CREATURE** pendant le combat et lui inflige **DAMAGE** dégâts au passage.",
+        "Kazuma attend que le **CREATURE** soit distrait, puis tire une flèche dans le dos et inflige **DAMAGE** dégâts. 'C'est pas de la lâcheté, c'est de la stratégie.'",
+        "Kazuma utilise Drain Touch sur le **CREATURE** et lui vole **DAMAGE** points de vie. 'Merci pour les PV.'",
       ],
       [
         // Darkness — masochiste, chevaleresque, rate tout
-        "Darkness charge héroïquement le CREATURE en criant 'Frappez-moi !', rate complètement, mais inflige quand même DAMAGE dégâts par pur accident.",
-        "Darkness attaque le CREATURE avec une noble ardeur… et manque. Sa deuxième tentative inflige DAMAGE dégâts. Elle a l'air déçue de ne pas avoir reçu de coup.",
-        "Darkness frappe le CREATURE et inflige DAMAGE dégâts. 'C'est tout ? Elle ne m'a même pas touchée… quelle tristesse.'",
+        "Darkness charge héroïquement le **CREATURE** en criant 'Frappez-moi !', rate complètement, mais inflige quand même **DAMAGE** dégâts par pur accident.",
+        "Darkness attaque le **CREATURE** avec une noble ardeur… et manque. Sa deuxième tentative inflige **DAMAGE** dégâts. Elle a l'air déçue de ne pas avoir reçu de coup.",
+        "Darkness frappe le **CREATURE** et inflige **DAMAGE** dégâts. 'C'est tout ? Elle ne m'a même pas touchée… quelle tristesse.'",
       ],
       [
         // Megumin — obsédée par l'explosion, un seul sort, théâtrale
-        "Megumin déclame son incantation pendant trois minutes, lève son bâton vers le ciel et déclenche une Explosion dévastatrice sur le CREATURE pour DAMAGE dégâts. Elle s'effondre aussitôt.",
-        "Megumin refuse d'utiliser quoi que ce soit d'autre qu'Explosion. Le CREATURE prend DAMAGE dégâts. Megumin doit être portée pour le reste de la journée.",
-        "'Il n'existe qu'une seule magie !' Megumin invoque une Explosion sur le CREATURE pour DAMAGE dégâts et tombe immédiatement à genoux, épuisée. Elle sourit quand même.",
+        "Megumin déclame son incantation pendant trois minutes, lève son bâton vers le ciel et déclenche une Explosion dévastatrice sur le **CREATURE** pour **DAMAGE** dégâts. Elle s'effondre aussitôt.",
+        "Megumin refuse d'utiliser quoi que ce soit d'autre qu'Explosion. Le **CREATURE** prend **DAMAGE** dégâts. Megumin doit être portée pour le reste de la journée.",
+        "'Il n'existe qu'une seule magie !' Megumin invoque une Explosion sur le **CREATURE** pour **DAMAGE** dégâts et tombe immédiatement à genoux, épuisée. Elle sourit quand même.",
       ],
       [
         // Aqua — déesse inutile, efficace uniquement contre les morts-vivants
-        "Aqua utilise God Requiem sur le CREATURE et inflige DAMAGE dégâts. 'Tu vois ? Je suis utile !'",
-        "Aqua lance Aqua Beam sur le CREATURE et inflige DAMAGE dégâts, puis réclame immédiatement des louanges.",
-        "Aqua invoque le jugement divin sur le CREATURE pour DAMAGE dégâts. 'Kazuma, tu as vu ? Note-le quelque part !'",
+        "Aqua utilise God Requiem sur le **CREATURE** et inflige **DAMAGE** dégâts. 'Tu vois ? Je suis utile !'",
+        "Aqua lance Aqua Beam sur le **CREATURE** et inflige **DAMAGE** dégâts, puis réclame immédiatement des louanges.",
+        "Aqua invoque le jugement divin sur le **CREATURE** pour **DAMAGE** dégâts. 'Kazuma, tu as vu ? Note-le quelque part !'",
       ],
     ],
     youDefendMsgs: [
@@ -54,24 +54,24 @@ const lines = {
     ],
     youHugMsgs: [
       [
-        "Kazuma fait un câlin au CREATURE avec un sourire suspect. Il lui a sûrement volé quelque chose.",
-        "Kazuma serre le CREATURE dans ses bras. 'Tu sais, t'es pas si terrible.' Il vérifie ses poches après.",
-        "Kazuma enlace le CREATURE. Darkness est jalouse. Aqua est dégoûtée. Megumin ne lève pas les yeux de son grimoire.",
+        "Kazuma fait un câlin au **CREATURE** avec un sourire suspect. Il lui a sûrement volé quelque chose.",
+        "Kazuma serre le **CREATURE** dans ses bras. 'Tu sais, t'es pas si terrible.' Il vérifie ses poches après.",
+        "Kazuma enlace le **CREATURE**. Darkness est jalouse. Aqua est dégoûtée. Megumin ne lève pas les yeux de son grimoire.",
       ],
       [
-        "Darkness étreint le CREATURE avec une ferveur chevaleresque. 'Je protégerai même mes ennemis !' Le CREATURE a l'air déstabilisé.",
-        "Darkness serre le CREATURE très fort contre elle. 'Tu peux résister si tu veux.' Il ne résiste pas. Elle est déçue.",
-        "Darkness fait un câlin au CREATURE en lui murmurant une prière. Kazuma soupire depuis l'arrière-plan.",
+        "Darkness étreint le **CREATURE** avec une ferveur chevaleresque. 'Je protégerai même mes ennemis !' Le **CREATURE** a l'air déstabilisé.",
+        "Darkness serre le **CREATURE** très fort contre elle. 'Tu peux résister si tu veux.' Il ne résiste pas. Elle est déçue.",
+        "Darkness fait un câlin au **CREATURE** en lui murmurant une prière. Kazuma soupire depuis l'arrière-plan.",
       ],
       [
-        "Megumin pose son bâton et enlace le CREATURE avec une solennité inattendue. 'Même les ennemis méritent l'Explosion de l'amour.'",
-        "Megumin fait un câlin au CREATURE, les yeux fermés, très sérieusement. Elle appelle ça 'le rituel de réconciliation'. Personne ne la contredit.",
-        "Megumin serre le CREATURE dans ses bras. 'Sois honoré — je ne fais ça qu'une fois par jour. Et j'ai déjà utilisé mon Explosion.'",
+        "Megumin pose son bâton et enlace le **CREATURE** avec une solennité inattendue. 'Même les ennemis méritent l'Explosion de l'amour.'",
+        "Megumin fait un câlin au **CREATURE**, les yeux fermés, très sérieusement. Elle appelle ça 'le rituel de réconciliation'. Personne ne la contredit.",
+        "Megumin serre le **CREATURE** dans ses bras. 'Sois honoré — je ne fais ça qu'une fois par jour. Et j'ai déjà utilisé mon Explosion.'",
       ],
       [
-        "Aqua fait un câlin au CREATURE en pleurant. 'Même les monstres ont une âme !' Elle pleure vraiment beaucoup.",
-        "Aqua enlace le CREATURE avec générosité divine. Elle lui fait passer un bénéfice de purification dans la foulée. Non demandé.",
-        "Aqua serre le CREATURE dans ses bras, puis réclame que Kazuma l'ait ordonné pour éviter de perdre la face.",
+        "Aqua fait un câlin au **CREATURE** en pleurant. 'Même les monstres ont une âme !' Elle pleure vraiment beaucoup.",
+        "Aqua enlace le **CREATURE** avec générosité divine. Elle lui fait passer un bénéfice de purification dans la foulée. Non demandé.",
+        "Aqua serre le **CREATURE** dans ses bras, puis réclame que Kazuma l'ait ordonné pour éviter de perdre la face.",
       ],
     ],
     aquaHealMsgs: [
@@ -82,27 +82,27 @@ const lines = {
     youSpecialAttackMsgs: [
       [
         // Kazuma
-        "Kazuma active Tir Ciblé, vise méthodiquement le point faible du CREATURE et inflige DAMAGE dégâts. 'J'ai quand même des compétences utiles, bande d'ingrats.'",
-        "Kazuma déclenche sa compétence spéciale sur le CREATURE pour DAMAGE dégâts. Il a attendu le bon moment — dix minutes. Ça valait le coup.",
-        "Kazuma utilise Steal Super Charge sur le CREATURE, lui inflige DAMAGE dégâts et lui vole son arme dans le même mouvement. 'Bonus.'",
+        "Kazuma active Tir Ciblé, vise méthodiquement le point faible du **CREATURE** et inflige **DAMAGE** dégâts. 'J'ai quand même des compétences utiles, bande d'ingrats.'",
+        "Kazuma déclenche sa compétence spéciale sur le **CREATURE** pour **DAMAGE** dégâts. Il a attendu le bon moment — dix minutes. Ça valait le coup.",
+        "Kazuma utilise Steal Super Charge sur le **CREATURE**, lui inflige **DAMAGE** dégâts et lui vole son arme dans le même mouvement. 'Bonus.'",
       ],
       [
         // Darkness
-        "Darkness active Divine Slash et inflige DAMAGE dégâts au CREATURE. Elle fronce les sourcils — elle espérait en recevoir autant en retour.",
-        "Darkness déchaîne son attaque spéciale sur le CREATURE pour DAMAGE dégâts. 'C'est tout ? Où est le danger ? Où est la DOULEUR ?'",
-        "Darkness frappe le CREATURE avec une technique chevaleresque secrète et inflige DAMAGE dégâts. Elle avait l'air de vouloir rater, mais ça a marché quand même.",
+        "Darkness active Divine Slash et inflige **DAMAGE** dégâts au **CREATURE**. Elle fronce les sourcils — elle espérait en recevoir autant en retour.",
+        "Darkness déchaîne son attaque spéciale sur le **CREATURE** pour **DAMAGE** dégâts. 'C'est tout ? Où est le danger ? Où est la DOULEUR ?'",
+        "Darkness frappe le **CREATURE** avec une technique chevaleresque secrète et inflige **DAMAGE** dégâts. Elle avait l'air de vouloir rater, mais ça a marché quand même.",
       ],
       [
         // Megumin
-        "Megumin déploie sa magie ultime — une deuxième Explosion. DAMAGE dégâts. Elle s'effondre pour la deuxième fois de la journée avec un sourire radieux.",
-        "Megumin invoque une Explosion encore plus grande sur le CREATURE pour DAMAGE dégâts. 'La magie suprême ne peut être utilisée qu'une seule fois… par heure.' Elle ment.",
-        "Megumin déclenche son attaque spéciale : une Explosion. Comme toujours. DAMAGE dégâts. Le CREATURE n'existait plus vraiment après ça.",
+        "Megumin déploie sa magie ultime — une deuxième Explosion. **DAMAGE** dégâts. Elle s'effondre pour la deuxième fois de la journée avec un sourire radieux.",
+        "Megumin invoque une Explosion encore plus grande sur le **CREATURE** pour **DAMAGE** dégâts. 'La magie suprême ne peut être utilisée qu'une seule fois… par heure.' Elle ment.",
+        "Megumin déclenche son attaque spéciale : une Explosion. Comme toujours. **DAMAGE** dégâts. Le **CREATURE** n'existait plus vraiment après ça.",
       ],
       [
         // Aqua
-        "Aqua invoque God Blow sur le CREATURE et inflige DAMAGE dégâts. Elle regarde Kazuma d'un air qui dit 'j'attends tes excuses'.",
-        "Aqua libère ses pouvoirs divins secrets et inflige DAMAGE dégâts au CREATURE. 'J'aurais pu faire ça depuis le début. Je voulais juste vous voir galérer.'",
-        "Aqua déclenche Sacred Break Spell sur le CREATURE pour DAMAGE dégâts. Surprise générale dans l'équipe. Aqua est offensée qu'ils soient surpris.",
+        "Aqua invoque God Blow sur le **CREATURE** et inflige **DAMAGE** dégâts. Elle regarde Kazuma d'un air qui dit 'j'attends tes excuses'.",
+        "Aqua libère ses pouvoirs divins secrets et inflige **DAMAGE** dégâts au **CREATURE**. 'J'aurais pu faire ça depuis le début. Je voulais juste vous voir galérer.'",
+        "Aqua déclenche Sacred Break Spell sur le **CREATURE** pour **DAMAGE** dégâts. Surprise générale dans l'équipe. Aqua est offensée qu'ils soient surpris.",
       ],
     ],
   },
@@ -110,27 +110,27 @@ const lines = {
     youAttackMsgs: [
       [
         // Kazuma
-        "Kazuma steals the CREATURE's gear mid-fight and deals DAMAGE damage on the way out. 'Not cowardice. Strategy.'",
-        "Kazuma waits until the CREATURE is distracted, then shoots it in the back for DAMAGE damage. He looks very pleased with himself.",
-        "Kazuma uses Drain Touch on the CREATURE and steals DAMAGE HP. 'Thanks for the health points.'",
+        "Kazuma steals the **CREATURE**'s gear mid-fight and deals **DAMAGE** damage on the way out. 'Not cowardice. Strategy.'",
+        "Kazuma waits until the **CREATURE** is distracted, then shoots it in the back for **DAMAGE** damage. He looks very pleased with himself.",
+        "Kazuma uses Drain Touch on the **CREATURE** and steals **DAMAGE** HP. 'Thanks for the health points.'",
       ],
       [
         // Darkness
-        "Darkness charges the CREATURE heroically yelling 'STRIKE ME DOWN!', misses every swing, but still deals DAMAGE damage by sheer accident.",
-        "Darkness attacks the CREATURE with noble fury… and misses. Her second attempt deals DAMAGE damage. She looks disappointed she didn't take a hit.",
-        "Darkness strikes the CREATURE for DAMAGE damage. 'Is that all? It didn't even hit me back… how disappointing.'",
+        "Darkness charges the **CREATURE** heroically yelling 'STRIKE ME DOWN!', misses every swing, but still deals **DAMAGE** damage by sheer accident.",
+        "Darkness attacks the **CREATURE** with noble fury… and misses. Her second attempt deals **DAMAGE** damage. She looks disappointed she didn't take a hit.",
+        "Darkness strikes the **CREATURE** for **DAMAGE** damage. 'Is that all? It didn't even hit me back… how disappointing.'",
       ],
       [
         // Megumin
-        "Megumin chants her incantation for three full minutes, points her staff at the sky, and detonates an Explosion on the CREATURE for DAMAGE damage. She immediately collapses.",
-        "Megumin refuses to use anything but Explosion. The CREATURE takes DAMAGE damage. Megumin must be carried for the rest of the day.",
-        "'There is only one true magic!' Megumin fires an Explosion at the CREATURE for DAMAGE damage and drops to her knees, exhausted. She's smiling anyway.",
+        "Megumin chants her incantation for three full minutes, points her staff at the sky, and detonates an Explosion on the **CREATURE** for **DAMAGE** damage. She immediately collapses.",
+        "Megumin refuses to use anything but Explosion. The **CREATURE** takes **DAMAGE** damage. Megumin must be carried for the rest of the day.",
+        "'There is only one true magic!' Megumin fires an Explosion at the **CREATURE** for **DAMAGE** damage and drops to her knees, exhausted. She's smiling anyway.",
       ],
       [
         // Aqua
-        "Aqua casts God Requiem on the CREATURE for DAMAGE damage. 'See? I'm useful!' Nobody responds.",
-        "Aqua fires Aqua Beam at the CREATURE for DAMAGE damage, then immediately demands praise.",
-        "Aqua calls down divine judgment on the CREATURE for DAMAGE damage. 'Kazuma, you saw that, right? Write it down!'",
+        "Aqua casts God Requiem on the **CREATURE** for **DAMAGE** damage. 'See? I'm useful!' Nobody responds.",
+        "Aqua fires Aqua Beam at the **CREATURE** for **DAMAGE** damage, then immediately demands praise.",
+        "Aqua calls down divine judgment on the **CREATURE** for **DAMAGE** damage. 'Kazuma, you saw that, right? Write it down!'",
       ],
     ],
     youDefendMsgs: [
@@ -161,24 +161,24 @@ const lines = {
     ],
     youHugMsgs: [
       [
-        "Kazuma hugs the CREATURE with a suspicious smile. He definitely pickpocketed it.",
-        "Kazuma holds the CREATURE close. 'You know, you're not so bad.' He checks its pockets afterward.",
-        "Kazuma hugs the CREATURE. Darkness is jealous. Aqua is disgusted. Megumin doesn't look up from her grimoire.",
+        "Kazuma hugs the **CREATURE** with a suspicious smile. He definitely pickpocketed it.",
+        "Kazuma holds the **CREATURE** close. 'You know, you're not so bad.' He checks its pockets afterward.",
+        "Kazuma hugs the **CREATURE**. Darkness is jealous. Aqua is disgusted. Megumin doesn't look up from her grimoire.",
       ],
       [
-        "Darkness embraces the CREATURE with chivalric intensity. 'I protect even my enemies!' The CREATURE looks confused.",
-        "Darkness hugs the CREATURE very tightly. 'Feel free to resist.' It doesn't resist. She's disappointed.",
-        "Darkness hugs the CREATURE and whispers a prayer over it. Kazuma sighs from the background.",
+        "Darkness embraces the **CREATURE** with chivalric intensity. 'I protect even my enemies!' The **CREATURE** looks confused.",
+        "Darkness hugs the **CREATURE** very tightly. 'Feel free to resist.' It doesn't resist. She's disappointed.",
+        "Darkness hugs the **CREATURE** and whispers a prayer over it. Kazuma sighs from the background.",
       ],
       [
-        "Megumin sets down her staff and hugs the CREATURE with unexpected solemnity. 'Even enemies deserve the Explosion of love.'",
-        "Megumin hugs the CREATURE with her eyes closed, very seriously. She calls it 'the reconciliation ritual.' Nobody argues.",
-        "Megumin holds the CREATURE close. 'Be honored — I only do this once a day. And I've already used my Explosion.'",
+        "Megumin sets down her staff and hugs the **CREATURE** with unexpected solemnity. 'Even enemies deserve the Explosion of love.'",
+        "Megumin hugs the **CREATURE** with her eyes closed, very seriously. She calls it 'the reconciliation ritual'. Nobody argues.",
+        "Megumin holds the **CREATURE** close. 'Be honored — I only do this once a day. And I've already used my Explosion.'",
       ],
       [
-        "Aqua hugs the CREATURE while crying. 'Even monsters have souls!' She is crying a lot.",
-        "Aqua generously embraces the CREATURE and accidentally purifies it in the process. It did not ask to be purified.",
-        "Aqua hugs the CREATURE, then insists Kazuma ordered her to do it so she doesn't lose face.",
+        "Aqua hugs the **CREATURE** while crying. 'Even monsters have souls!' She is crying a lot.",
+        "Aqua generously embraces the **CREATURE** and accidentally purifies it in the process. It did not ask to be purified.",
+        "Aqua hugs the **CREATURE**, then insists Kazuma ordered her to do it so she doesn't lose face.",
       ],
     ],
     aquaHealMsgs: [
@@ -189,27 +189,27 @@ const lines = {
     youSpecialAttackMsgs: [
       [
         // Kazuma
-        "Kazuma activates Aimed Shot, methodically finds the CREATURE's weak point, and deals DAMAGE damage. 'See? I have useful skills, you ungrateful lot.'",
-        "Kazuma triggers his special skill on the CREATURE for DAMAGE damage. He waited ten minutes for the right moment. Worth it.",
-        "Kazuma hits the CREATURE with Steal Super Charge for DAMAGE damage and swipes its weapon in the same motion. 'Bonus.'",
+        "Kazuma activates Aimed Shot, methodically finds the **CREATURE**'s weak point, and deals **DAMAGE** damage. 'See? I have useful skills, you ungrateful lot.'",
+        "Kazuma triggers his special skill on the **CREATURE** for **DAMAGE** damage. He waited ten minutes for the right moment. Worth it.",
+        "Kazuma hits the **CREATURE** with Steal Super Charge for **DAMAGE** damage and swipes its weapon in the same motion. 'Bonus.'",
       ],
       [
         // Darkness
-        "Darkness activates Divine Slash and deals DAMAGE damage to the CREATURE. She frowns — she was hoping to receive the same in return.",
-        "Darkness unleashes her special attack on the CREATURE for DAMAGE damage. 'Is that all? Where's the danger? Where's the PAIN?'",
-        "Darkness lands a secret chivalric technique on the CREATURE for DAMAGE damage. She seemed to be trying to miss. It worked anyway.",
+        "Darkness activates Divine Slash and deals **DAMAGE** damage to the **CREATURE**. She frowns — she was hoping to receive the same in return.",
+        "Darkness unleashes her special attack on the **CREATURE** for **DAMAGE** damage. 'Is that all? Where's the danger? Where's the PAIN?'",
+        "Darkness lands a secret chivalric technique on the **CREATURE** for **DAMAGE** damage. She seemed to be trying to miss. It worked anyway.",
       ],
       [
         // Megumin
-        "Megumin deploys her ultimate magic — a second Explosion. DAMAGE damage. She collapses for the second time today with a radiant smile.",
-        "Megumin fires an even bigger Explosion at the CREATURE for DAMAGE damage. 'Ultimate magic can only be used once… per hour.' She's lying.",
-        "Megumin uses her special attack: Explosion. As always. DAMAGE damage. The CREATURE didn't really exist after that.",
+        "Megumin deploys her ultimate magic — a second Explosion. **DAMAGE** damage. She collapses for the second time today with a radiant smile.",
+        "Megumin fires an even bigger Explosion at the **CREATURE** for **DAMAGE** damage. 'Ultimate magic can only be used once… per hour.' She's lying.",
+        "Megumin uses her special attack: Explosion. As always. **DAMAGE** damage. The **CREATURE** didn't really exist after that.",
       ],
       [
         // Aqua
-        "Aqua unleashes God Blow on the CREATURE for DAMAGE damage. She looks at Kazuma in a way that says 'I expect an apology.'",
-        "Aqua releases her hidden divine power and deals DAMAGE damage to the CREATURE. 'I could have done this the whole time. I wanted to watch you struggle.'",
-        "Aqua casts Sacred Break Spell on the CREATURE for DAMAGE damage. The whole party is shocked. Aqua is offended that they're shocked.",
+        "Aqua unleashes God Blow on the **CREATURE** for **DAMAGE** damage. She looks at Kazuma in a way that says 'I expect an apology.'",
+        "Aqua releases her hidden divine power and deals **DAMAGE** damage to the **CREATURE**. 'I could have done this the whole time. I wanted to watch you struggle.'",
+        "Aqua casts Sacred Break Spell on the **CREATURE** for **DAMAGE** damage. The whole party is shocked. Aqua is offended that they're shocked.",
       ],
     ],
   },
