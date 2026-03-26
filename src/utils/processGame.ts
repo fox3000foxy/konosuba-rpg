@@ -67,6 +67,9 @@ export default async function processGame(
   let counter = -1;
   const playerCount = team.players.length;
 
+  // reset special attack status for all players at the start of the game
+  team.players.forEach(player => player.resetSpecialAttack());
+
   for (const move of moves) {
     messages.length = 0;
 
@@ -119,6 +122,27 @@ export default async function processGame(
       (currentPlayer as Aqua).heal(team);
       const msg = rand.choice(linesTyped[lang as Lang].aquaHealMsgs);
       messages.push(msg);
+    } else if (move === PlayerAction.Spe.toLocaleUpperCase()) {
+      const dmg = rand.randint(currentPlayer.attack[0], currentPlayer.attack[1]);
+      if (currentPlayer.specialAttackReady) {
+        const specialDmgMultiplier = rand.randint(2, 4);
+        const totalDmg = dmg * specialDmgMultiplier;
+        creature.dealAttack(totalDmg);
+        currentPlayer.performAction(PlayerAction.Spe);
+        const msg = rand.choice(linesTyped[lang as Lang].youSpecialAttackMsgs[playerId])
+          .replace("CREATURE", creature.name)
+          .replace("DAMAGE", totalDmg.toString());
+        messages.push(msg);
+      }
+      else {
+        // Normal attack if special attack is not ready
+        creature.dealAttack(dmg);
+        const msg = rand.choice(linesTyped[lang as Lang].youAttackMsgs[playerId])
+          .replace("CREATURE", creature.name)
+          .replace("DAMAGE", dmg.toString());
+        messages.push(msg);
+        currentPlayer.performAction(PlayerAction.Atk);
+      }
     }
 
     if (creature.hp <= 0) {

@@ -505,7 +505,7 @@ async function buildOverlayJsx(
         ...messages.map((msg, i) => ({
           type: 'div',
           props: {
-            style: { display: 'flex' as const, position: 'absolute' as const, left: 104, top: (192 + i * 16) * 2 + 120, fontSize: 20, fontFamily: '"Ginto Nord Black"', color: '#000000' },
+            style: { display: 'flex' as const, position: 'absolute' as const, left: 104, top: (192 + i * 16) * 2 + 120, fontSize: 16, fontFamily: '"Ginto Nord Black"', color: '#000000' },
             children: msg,
           },
         })),

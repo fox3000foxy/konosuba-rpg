@@ -57,7 +57,8 @@ function customIdToPath(payload: string): string {
     .split('d').join('/def')
     .split('g').join('/giv')
     .split('h').join('/hug')
-    .split('s').join('/hea');
+    .split('s').join('/hea')
+    .split('p').join('/spe');
 }
 
 /** Génère l'ID "Recommencer" en effaçant les lettres d'action (comme dans le JS d'origine) */
@@ -70,7 +71,8 @@ function restartId(payload: string): string {
     .split('d').join('')
     .split('g').join('')
     .split('h').join('')
-    .split('s').join('');
+    .split('s').join('')
+    .split('p').join('');
 }
 
 /** Détermine si le payload correspond à une session d'entraînement */
@@ -165,6 +167,7 @@ async function buildComponents(payload: string, userID: string, lang: Lang, disa
       components: [
         { type: 2, label: fr ? ButtonsLabels.DefendFr : ButtonsLabels.Defend, style: 3, custom_id: `${payload}/d:${userID}` },
         { type: 2, label: fr ? ButtonsLabels.HealFr : ButtonsLabels.Heal, style: 3, custom_id: `${payload}/s:${userID}`, disabled: !showAquaHealButton },
+        { type: 2, label: fr ? ButtonsLabels.SpecialAttackFr : ButtonsLabels.SpecialAttack, style: 3, custom_id: `${payload}/p:${userID}`, disabled: !(team.activePlayer?.specialAttackReady) },
       ],
     },
 
@@ -328,10 +331,27 @@ app.post('/api/interactions', async (c: Context) => {
     // /train
     if (interaction.data?.name === 'train') {
       const commandMonster = interaction.data.options?.find((o: InteractionDataOption) => o.name === 'monster')?.value;
+      console.log(`Received /train command with monster: ${commandMonster}`);
       const monsterCandidate = typeof commandMonster === 'string' ? commandMonster.trim().toLowerCase() : '';
-      const monsterKey = Object.keys(generateMob()).find((k) => k.toLowerCase() === monsterCandidate) || 'Troll';
+      const monster = Object.values(generateMob()).find((k) => k.name.toLowerCase() === monsterCandidate);
+      if (!monster) {
+        const allMobs = Object.values(generateMob()).sort();
+        return c.json({
+          type: 4,
+          data: {
+            embeds: [{
+              description: fr
+                ? `Monstre invalide. Monstres valides: ${allMobs.join(', ')}`
+                : `Invalid monster. Valid monsters: ${allMobs.join(', ')}`,
+            }],
+          },
+        });
+      }
+
+      const monsterKey = monster.name || monster.constructor.name || pascalCaseToString(monster.constructor.name);
       const id = makeid(10);
       const payload = `train.${monsterKey}.${id}`;
+      console.log(`Starting training session for ${userID} against ${monsterKey} with payload: ${payload}`);
       const imageUrl = buildImageUrl(payload, lang);
 
       return c.json({
@@ -486,6 +506,8 @@ app.post('/api/interactions', async (c: Context) => {
     const monsterName = training ? extractMonster(payload) : '';
     const imageUrl = buildImageUrl(payload, lang);
 
+    console.log(`Button interaction with payload: ${payload}, owner: ${owner}, userID: ${userID}`);
+
     // return c.json({
     //   // type 7 si le propriétaire est le même joueur, type 4 si "all" (comme dans le JS)
     //   type: owner === userID ? 7 : 4,
@@ -503,7 +525,7 @@ app.post('/api/interactions', async (c: Context) => {
 
     const components = await buildComponents(payload, userID, lang);
 
-    const special = false;
+    const special = interaction.data.custom_id.split(":")[0].endsWith('/p');
     if (special) {
       followUpTimeout(interaction, {
         type: owner === userID ? 7 : 4,
@@ -520,9 +542,22 @@ app.post('/api/interactions', async (c: Context) => {
       }, 2000);
 
       const specialAttackLink = imageUrl.split('/konosuba-rpg/')[0]; // Extrait la partie avant "/konosuba-rpg/"
-      const specialAttackUrl = `${specialAttackLink}/assets/player/aqua.gif`; // Construit l'URL de l'animation spéciale d'Aqua
 
-      console.log(specialAttackUrl)
+      // recalcule la partie pour voir qui est le joueur actif et construire l'URL de l'animation spéciale en conséquence
+      const [rand, moves, , monster] = processUrl(imageUrl);
+      const { team } = await processGame(rand, moves, monster, lang, false);
+      const playerName = team.activePlayer?.name || 'Kazuma'; // Par défaut à Kazuma si quelque chose tourne mal
+
+      const gifs: { [key: string]: string } = {
+        "kazuma": "kazuma",
+        "aqua": "aqua",
+        "megumin": "meg",
+        "darkness": "daku",
+      }
+
+      const specialAttackUrl = `${specialAttackLink}/assets/player/${gifs[playerName.toLowerCase()] || 'kazuma'}.gif`; // Construit l'URL de l'animation spéciale d'Aqua
+
+      console.log(`Special attack triggered by ${playerName}, using animation from ${specialAttackUrl}`);
       return c.json({
         type: 7,
         data: {

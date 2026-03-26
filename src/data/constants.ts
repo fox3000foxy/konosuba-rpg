@@ -71,6 +71,28 @@ const lines = {
       "Aqua utilise sa magie de guérison et restaure 15 PV à l'équipe.",
       "Aqua invoque son pouvoir divin et soigne l'équipe de 15 PV.",
     ],
+    youSpecialAttackMsgs: [
+      [
+        "Kazuma utilise son attaque spéciale, infligeant DAMAGE dégâts au CREATURE.",
+        "Kazuma déchaîne son mouvement spécial et inflige DAMAGE dégâts au CREATURE.",
+        "Kazuma effectue une puissante attaque spéciale, causant DAMAGE dégâts au CREATURE.",
+      ],
+      [
+        "Darkness utilise son attaque spéciale, infligeant DAMAGE dégâts au CREATURE.",
+        "Darkness déchaîne son mouvement spécial et inflige DAMAGE dégâts au CREATURE.",
+        "Darkness effectue une puissante attaque spéciale, causant DAMAGE dégâts au CREATURE.",
+      ],
+      [
+        "Megumin utilise son attaque spéciale, infligeant DAMAGE dégâts au CREATURE.",
+        "Megumin déchaîne son mouvement spécial et inflige DAMAGE dégâts au CREATURE.",
+        "Megumin effectue une puissante attaque spéciale, causant DAMAGE dégâts au CREATURE.",
+      ],
+      [
+        "Aqua utilise son attaque spéciale, infligeant DAMAGE dégâts au CREATURE.",
+        "Aqua déchaîne son mouvement spécial et inflige DAMAGE dégâts au CREATURE.",
+        "Aqua effectue une puissante attaque spéciale, causant DAMAGE dégâts au CREATURE.",
+      ],
+    ],
   },
   en: {
     youAttackMsgs: [
@@ -144,7 +166,28 @@ const lines = {
       "Aqua uses her healing magic and restores 15 HP to the team.",
       "Aqua calls upon her divine power and heals the team for 15 HP.",
     ],
-
+    youSpecialAttackMsgs: [
+      [
+        "Kazuma uses his special attack, dealing DAMAGE damage to the CREATURE.",
+        "Kazuma unleashes his special move and inflicts DAMAGE damage on the CREATURE.",
+        "Kazuma performs a powerful special attack, causing DAMAGE damage to the CREATURE.",
+      ],
+      [
+        "Darkness uses her special attack, dealing DAMAGE damage to the CREATURE.",
+        "Darkness unleashes her special move and inflicts DAMAGE damage on the CREATURE.",
+        "Darkness performs a powerful special attack, causing DAMAGE damage to the CREATURE.",
+      ],
+      [
+        "Megumin uses her special attack, dealing DAMAGE damage to the CREATURE.",
+        "Megumin unleashes her special move and inflicts DAMAGE damage on the CREATURE.",
+        "Megumin performs a powerful special attack, causing DAMAGE damage to the CREATURE.",
+      ],
+      [
+        "Aqua uses her special attack, dealing DAMAGE damage to the CREATURE.",
+        "Aqua unleashes her special move and inflicts DAMAGE damage on the CREATURE.",
+        "Aqua performs a powerful special attack, causing DAMAGE damage to the CREATURE.",
+      ],
+    ],
   },
 };
 
