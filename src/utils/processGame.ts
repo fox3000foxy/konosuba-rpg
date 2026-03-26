@@ -5,46 +5,12 @@ import { PlayerAction, Team } from '../classes/Player';
 import { Random } from '../classes/Random';
 import lines from '../data/constants';
 import { mobMap } from '../data/mobMap';
+import { GameState } from '../enums/GameState';
+import { Lang } from '../enums/Lang';
+import { Prefix } from '../enums/Prefix';
+import { Game } from '../types/Game';
+import { LinesType } from '../types/LinesType';
 import renderImage from './renderImage';
-
-enum Lang {
-  English = 'en',
-  French = 'fr'
-}
-
-type LinesType = {
-  [key in Lang]: {
-    youAttackMsgs: string[][];
-    youDefendMsgs: string[][];
-    youHugMsgs: string[][];
-  };
-};
-
-enum GameState {
-  Good = "good",
-  Bad = "bad",
-  Best = "best",
-  Incomplete = "incomplete",
-  Giveup = "giveup"
-}
-
-enum Prefix {
-  English_Determined = "the ",
-  English_Undetermined = "a ",
-  French_Determined = "le ",
-  French_Undetermined_Masculine = "un ",
-  French_Undetermined_Feminine = "une ",
-  None = "",
-}
-
-type Game = {
-  image?: Uint8Array;
-  state: GameState;
-  messages: string[];
-  team: Team;
-  creature: Creature;
-  training: boolean;
-}
 
 const linesTyped = lines as LinesType;
 
