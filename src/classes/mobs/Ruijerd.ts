@@ -5,7 +5,7 @@ export default class Ruijerd extends Creature implements CreatureInterface {
         super();
         this.attack = [7, 16];
         this.love = 20;
-        this.hpMax = 120;
+        this.hpMax = 1200;
         this.hp = this.hpMax;
         this.name = "Ruijerd Superdia";
         // this.color = rand.choice(["11000", "11001", "11002", "11003", "11004", "11005", "11006"]);

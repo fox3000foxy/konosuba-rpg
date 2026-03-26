@@ -6,7 +6,7 @@ export default class MaidBot extends GenericCreature implements GenericCreatureI
         super();
         this.attack = [5, 12];
         this.love = 100;
-        this.hpMax = 80;
+        this.hpMax = 800;
         this.hp = this.hpMax;
         this.name = "Robot Maid";
         this.prefix = true;

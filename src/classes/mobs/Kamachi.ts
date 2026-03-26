@@ -5,7 +5,7 @@ export default class Kamachi extends Creature implements CreatureInterface {
         super();
         this.attack = [7, 15];
         this.love = 100;
-        this.hpMax = 95;
+        this.hpMax = 950;
         this.hp = this.hpMax;
         this.name = "Kamachi Kaiga";
         this.images = [`enemy_image_21200`,`enemy_image_21201`];

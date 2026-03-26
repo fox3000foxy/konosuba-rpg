@@ -6,7 +6,7 @@ export default class Knight extends GenericCreature implements GenericCreatureIn
         super();
         this.attack = [4, 12];
         this.love = 30;
-        this.hpMax = 70;
+        this.hpMax = 700;
         this.hp = this.hpMax;
         this.name = "Chevalier maudit";
         this.prefix = true;

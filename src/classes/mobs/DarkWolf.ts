@@ -6,7 +6,7 @@ export default class DarkWolf extends GenericCreature implements GenericCreature
         super();
         this.attack = [5, 13];
         this.love = 100;
-        this.hpMax = 95;
+        this.hpMax = 950;
         this.hp = this.hpMax;
         this.name = "Loup ténébreux";
         this.prefix = true;

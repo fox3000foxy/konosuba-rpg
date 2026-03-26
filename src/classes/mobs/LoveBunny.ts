@@ -6,7 +6,7 @@ export default class LoveBunny extends GenericCreature implements GenericCreatur
         super();
         this.attack = [1, 6];
         this.love = 20;
-        this.hpMax = 20;
+        this.hpMax = 200;
         this.hp = this.hpMax;
         this.name = "Love Bunny";
         this.prefix = true;

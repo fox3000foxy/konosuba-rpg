@@ -5,7 +5,7 @@ export default class KingTroll extends Creature implements CreatureInterface {
         super();
         this.attack = [7, 15];
         this.love = 100;
-        this.hpMax = 150;
+        this.hpMax = 1500;
         this.hp = this.hpMax;
         this.name = "Roi Troll";
         this.images = [`enemy_image_10001`,`enemy_image_10004`];

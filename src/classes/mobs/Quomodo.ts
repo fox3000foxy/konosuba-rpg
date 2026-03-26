@@ -6,7 +6,7 @@ export default class Quomodo extends GenericCreature implements GenericCreatureI
         super();
         this.attack = [5, 13];
         this.love = 25;
-        this.hpMax = 90;
+        this.hpMax = 900;
         this.hp = this.hpMax;
         this.name = "Komodo";
         this.prefix = true;

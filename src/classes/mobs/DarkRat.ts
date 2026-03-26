@@ -6,7 +6,7 @@ export default class DarkRat extends GenericCreature implements GenericCreatureI
         super();
         this.attack = [1, 8];
         this.love = 15;
-        this.hpMax = 25;
+        this.hpMax = 250;
         this.hp = this.hpMax;
         this.name = "Rat Ténébreux";
         this.prefix = true;

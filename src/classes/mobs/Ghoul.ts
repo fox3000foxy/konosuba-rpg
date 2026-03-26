@@ -6,7 +6,7 @@ export default class Ghoul extends GenericCreature implements GenericCreatureInt
         super();
         this.attack = [3, 10];
         this.love = 100;
-        this.hpMax = 35;
+        this.hpMax = 350;
         this.hp = this.hpMax;
         this.name = "Goule";
         this.prefix = true;

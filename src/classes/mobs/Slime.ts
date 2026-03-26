@@ -6,7 +6,7 @@ export default class Slime extends GenericCreature implements GenericCreatureInt
         super();
         this.attack = [2, 8];
         this.love = 100;
-        this.hpMax = 40;
+        this.hpMax = 400;
         this.hp = this.hpMax;
         this.name = "Slime";
         this.prefix = true;

@@ -6,7 +6,7 @@ export default class Troll extends GenericCreature implements GenericCreatureInt
         super();
         this.attack = [5, 13];
         this.love = 100;
-        this.hpMax = 80;
+        this.hpMax = 800;
         this.hp = this.hpMax;
         this.name = "Troll";
         this.prefix = true;

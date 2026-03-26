@@ -6,7 +6,7 @@ export default class PigWoman extends GenericCreature implements GenericCreature
         super();
         this.attack = [3, 9];
         this.love = 5;
-        this.hpMax = 55;
+        this.hpMax = 550;
         this.hp = this.hpMax;
         this.name = "Femme cochon";
         this.prefix = true;

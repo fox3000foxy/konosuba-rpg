@@ -5,7 +5,7 @@ export default class Squall extends Creature implements CreatureInterface {
         super();
         this.attack = [5, 11];
         this.love = 50;
-        this.hpMax = 60;
+        this.hpMax = 600;
         this.hp = this.hpMax;
         this.name = "Squall";
         // this.color = rand.choice(["16700","16701","16702","16704"]);

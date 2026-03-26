@@ -6,7 +6,7 @@ export default class Dragon extends GenericCreature implements GenericCreatureIn
         super();
         this.attack = [12, 20];
         this.love = 80;
-        this.hpMax = 500;
+        this.hpMax = 5000;
         this.hp = this.hpMax;
         this.name = "Dragon";
         this.prefix = true;

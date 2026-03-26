@@ -6,7 +6,7 @@ export default class AliveTree extends GenericCreature implements GenericCreatur
         super();
         this.attack = [4, 11];
         this.love = 100;
-        this.hpMax = 55;
+        this.hpMax = 550;
         this.hp = this.hpMax;
         this.name = "Arbre vivant";
 		this.prefix = true;

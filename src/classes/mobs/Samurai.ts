@@ -5,7 +5,7 @@ export default class Samurai extends Creature implements CreatureInterface {
         super();
         this.attack = [5, 14];
         this.love = 100;
-        this.hpMax = 75;
+        this.hpMax = 750;
         this.hp = this.hpMax;
         this.name = "Samuraï";
         // this.color = rand.choice(["11000", "11001", "11002", "11003", "11004", "11005", "11006"]);

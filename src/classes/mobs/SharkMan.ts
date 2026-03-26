@@ -6,7 +6,7 @@ export default class SharkMan extends GenericCreature implements GenericCreature
         super();
         this.attack = [6, 14];
         this.love = 100;
-        this.hpMax = 100;
+        this.hpMax = 1000;
         this.hp = this.hpMax;
         this.name = "Homme-Requin";
         this.prefix = true;
