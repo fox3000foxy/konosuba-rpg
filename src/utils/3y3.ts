@@ -1,7 +1,7 @@
-function encode3y3(str: { length: number; codePointAt: (arg0: number) => number; }) {
+function encode3y3(str: string) {
     const encodedCPs = [];
     for (let i = 0; i < str.length; i++)
-        encodedCPs.push(str.codePointAt(i) + 0xE0000);
+        encodedCPs.push(str.codePointAt(i) as number+ 0xE0000);
     return String.fromCodePoint(...encodedCPs);
 }
 
