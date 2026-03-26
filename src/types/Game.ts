@@ -1,11 +1,11 @@
-import { Creature } from "../classes/Creature";
+import { Creature, MessagesTemplates } from "../classes/Creature";
 import { Team } from "../classes/Player";
 import { GameState } from "../enums/GameState";
 
 export type Game = {
   image?: Uint8Array;
   state: GameState;
-  messages: string[];
+  messages: MessagesTemplates[] | string[];
   team: Team;
   creature: Creature;
   training: boolean;
