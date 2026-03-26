@@ -69,9 +69,7 @@ export default async function processGame(
 
   for (const move of moves) {
     messages.length = 0;
-    if (counter >= 0) {
-      team.players[counter % playerCount].performAction(PlayerAction.Idle);
-    }
+
     counter += 1;
     playerId = counter % playerCount;
 
@@ -82,6 +80,16 @@ export default async function processGame(
 
     const currentPlayer = team.players[playerId];
     currentPlayer.defending = move === PlayerAction.Def.toLocaleUpperCase();
+
+    if (currentPlayer.name === "Kazuma") {
+      //reset defend status to everyone
+      team.players.forEach(p => {
+        if (p.name !== "Kazuma") {
+          p.defending = false;
+          p.performAction(PlayerAction.Idle);
+        }
+      });
+    }
 
     if (currentPlayer.defending) {
       const dmg = rand.randint(currentPlayer.attack[0], currentPlayer.attack[1]);
@@ -118,19 +126,21 @@ export default async function processGame(
     }
 
     // Creature's turn
-    // Attacks after Aqua's 
-    if(currentPlayer.name !== "Aqua") {
+    // Attacks only after Aqua's 
+    if (currentPlayer.name !== "Aqua") {
       continue;
     }
-    const creatureMove = creature.turn({ lang, dmg: rand.randint(creature.attack[0], creature.attack[1]) });
-    if (currentPlayer.defending) {
+
+    const randomPlayer = rand.choice(team.players.filter(p => p.hp > 0));
+    const creatureMove = creature.turn({ lang, dmg: rand.randint(creature.attack[0], creature.attack[1]), player: randomPlayer });
+
+    if (randomPlayer.defending) {
       messages.push(
         lang === Lang.French
-          ? MessagesTemplates.French_CreatureMisses.replace("${NAME}", creature.prefix ? Prefix.French_Determined + creature.name : creature.name).replace("{DMG}", creatureMove[1].toString())
-          : MessagesTemplates.English_CreatureMisses.replace("${NAME}", creature.prefix ? Prefix.English_Determined + creature.name : creature.name).replace("{DMG}", creatureMove[1].toString())
+          ? MessagesTemplates.French_CreatureMisses.replace("${NAME}", creature.prefix ? Prefix.French_Determined + creature.name : creature.name).replace("{DMG}", creatureMove[1].toString()).replace("{PLAYER}", randomPlayer.name)
+          : MessagesTemplates.English_CreatureMisses.replace("${NAME}", creature.prefix ? Prefix.English_Determined + creature.name : creature.name).replace("{DMG}", creatureMove[1].toString()).replace("{PLAYER}", randomPlayer.name)
       );
     } else {
-      const randomPlayer = rand.choice(team.players.filter(p => p.hp > 0));
       randomPlayer.hp -= creatureMove[1];
       if (randomPlayer.hp > 0) {
         messages.push(creatureMove[0]);
