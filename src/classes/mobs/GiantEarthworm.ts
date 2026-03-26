@@ -4,9 +4,9 @@ import { Random } from "../Random";
 export default class GiantEarthworm extends GenericCreature implements GenericCreatureInterface {
     constructor() {
         super();
-        this.attack = [5, 10];
+        this.attack = [4, 10];
         this.love = 100;
-        this.hpMax = 75;
+        this.hpMax = 80;
         this.hp = this.hpMax;
         this.name = "Ver de terre Géant";
         this.prefix = true;

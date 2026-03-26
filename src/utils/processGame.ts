@@ -117,6 +117,11 @@ export default async function processGame(
       break;
     }
 
+    // Creature's turn
+    // Attacks after Aqua's 
+    if(currentPlayer.name !== "Aqua") {
+      continue;
+    }
     const creatureMove = creature.turn({ lang, dmg: rand.randint(creature.attack[0], creature.attack[1]) });
     if (currentPlayer.defending) {
       messages.push(
@@ -125,14 +130,15 @@ export default async function processGame(
           : MessagesTemplates.English_CreatureMisses.replace("${NAME}", creature.prefix ? Prefix.English_Determined + creature.name : creature.name).replace("{DMG}", creatureMove[1].toString())
       );
     } else {
-      currentPlayer.hp -= creatureMove[1];
-      if (currentPlayer.hp > 0) {
+      const randomPlayer = rand.choice(team.players.filter(p => p.hp > 0));
+      randomPlayer.hp -= creatureMove[1];
+      if (randomPlayer.hp > 0) {
         messages.push(creatureMove[0]);
       } else {
         messages.push(
           lang === Lang.French
-            ? `${creatureMove[0]} ${currentPlayer.name} est à terre...`
-            : `${creatureMove[0]} ${currentPlayer.name} is down...`
+            ? `${creatureMove[0]} ${randomPlayer.name} est à terre...`
+            : `${creatureMove[0]} ${randomPlayer.name} is down...`
         );
       }
     }

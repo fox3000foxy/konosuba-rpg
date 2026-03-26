@@ -3,9 +3,9 @@ import { Creature, CreatureInterface } from "../Creature";
 export default class Vanir extends Creature implements CreatureInterface {
     constructor() {
         super();
-        this.attack = [5, 10];
+        this.attack = [6, 14];
         this.love = 30;
-        this.hpMax = 100;
+        this.hpMax = 130;
         this.hp = this.hpMax;
         this.name = "Vanir";
         // this.color = rand.choice(["11000", "11001", "11002", "11003", "11004", "11005", "11006"]);

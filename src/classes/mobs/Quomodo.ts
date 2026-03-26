@@ -4,9 +4,9 @@ import { Random } from "../Random";
 export default class Quomodo extends GenericCreature implements GenericCreatureInterface {
     constructor() {
         super();
-        this.attack = [0, 10];
+        this.attack = [5, 13];
         this.love = 25;
-        this.hpMax = 100;
+        this.hpMax = 90;
         this.hp = this.hpMax;
         this.name = "Komodo";
         this.prefix = true;

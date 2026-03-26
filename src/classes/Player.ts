@@ -35,7 +35,8 @@ export abstract class Player {
 	abstract performAction(action: PlayerAction): void;
 }
 
-// Subclasses for each player
+// Kazuma — Aventurier bas niveau, polyvalent mais physiquement faible
+// HP: 80 | Atk: [3, 12]
 export class Kazuma extends Player {
 	constructor() {
 		super(PlayerName.Kazuma, PlayerStats.KazumaHp, [PlayerStats.KazumaAttackMin, PlayerStats.KazumaAttackMax], [KazumaImages.Idle], PlayerThmb.Kazuma);
@@ -59,6 +60,8 @@ export class Kazuma extends Player {
 	}
 }
 
+// Darkness — Chevalier croisé, tank absolu mais rate constamment ses frappes
+// HP: 200 | Atk: [0, 8]
 export class Darkness extends Player {
 	constructor() {
 		super(PlayerName.Darkness, PlayerStats.DarknessHp, [PlayerStats.DarknessAttackMin, PlayerStats.DarknessAttackMax], [DarknessImages.Idle], PlayerThmb.Darkness);
@@ -82,6 +85,8 @@ export class Darkness extends Player {
 	}
 }
 
+// Megumin — Archimage, Explosion dévastatrice mais instable (peut s'effondrer après)
+// HP: 60 | Atk: [0, 60]
 export class Megumin extends Player {
 	constructor() {
 		super(PlayerName.Megumin, PlayerStats.MeguminHp, [PlayerStats.MeguminAttackMin, PlayerStats.MeguminAttackMax], [MeguminImages.Idle], PlayerThmb.Megumin);
@@ -105,6 +110,8 @@ export class Megumin extends Player {
 	}
 }
 
+// Aqua — Déesse de l'eau, soins divins mais piètre combattante directe
+// HP: 100 | Atk: [1, 6]
 export class Aqua extends Player {
 	constructor() {
 		super(PlayerName.Aqua, PlayerStats.AquaHp, [PlayerStats.AquaAttackMin, PlayerStats.AquaAttackMax], [AquaImages.Idle], PlayerThmb.Aqua);

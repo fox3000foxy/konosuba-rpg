@@ -4,9 +4,9 @@ import { Random } from "../Random";
 export default class Troll extends GenericCreature implements GenericCreatureInterface {
     constructor() {
         super();
-        this.attack = [0, 10];
+        this.attack = [5, 13];
         this.love = 100;
-        this.hpMax = 60;
+        this.hpMax = 80;
         this.hp = this.hpMax;
         this.name = "Troll";
         this.prefix = true;

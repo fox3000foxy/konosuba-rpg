@@ -27,6 +27,7 @@ export abstract class Creature implements CreatureInterface {
     public love: number;
     public name: string;
     public images: string[];
+    public color?: string;
     public prefix: boolean;
 
     constructor() {

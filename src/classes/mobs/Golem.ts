@@ -4,9 +4,9 @@ import { Random } from "../Random";
 export default class Golem extends GenericCreature implements GenericCreatureInterface {
     constructor() {
         super();
-        this.attack = [0, 8];
+        this.attack = [4, 10];
         this.love = 100;
-        this.hpMax = 60;
+        this.hpMax = 90;
         this.hp = this.hpMax;
         this.name = "Golem";
         this.prefix = true;

@@ -3,9 +3,9 @@ import { Creature, CreatureInterface } from "../Creature";
 export default class Hydra extends Creature implements CreatureInterface {
     constructor() {
         super();
-        this.attack = [3, 10];
+        this.attack = [6, 13];
         this.love = 100;
-        this.hpMax = 80;
+        this.hpMax = 100;
         this.hp = this.hpMax;
         this.name = "Hydre";
         this.images = [`enemy_image_21800`,`enemy_image_21801`];

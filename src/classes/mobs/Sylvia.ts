@@ -2,9 +2,9 @@ import { Creature } from "../Creature";
 export default class Sylvia extends Creature {
     constructor() {
         super();
-        this.attack = [10, 15];
+        this.attack = [8, 15];
         this.love = 50;
-        this.hpMax = 100;
+        this.hpMax = 160;
         this.hp = this.hpMax;
         this.name = "Sylvia";
         // this.color = rand.choice(["11000", "11001", "11002", "11003", "11004", "11005", "11006"]);

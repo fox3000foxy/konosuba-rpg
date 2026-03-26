@@ -4,9 +4,9 @@ import { Random } from "../Random";
 export default class PigWoman extends GenericCreature implements GenericCreatureInterface {
     constructor() {
         super();
-        this.attack = [0, 10];
+        this.attack = [3, 9];
         this.love = 5;
-        this.hpMax = 50;
+        this.hpMax = 55;
         this.hp = this.hpMax;
         this.name = "Femme cochon";
         this.prefix = true;

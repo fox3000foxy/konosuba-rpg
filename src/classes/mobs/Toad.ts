@@ -4,9 +4,9 @@ import { Random } from "../Random";
 export default class Toad extends GenericCreature implements GenericCreatureInterface {
     constructor() {
         super();
-        this.attack = [2, 6];
+        this.attack = [3, 8];
         this.love = 50;
-        this.hpMax = 40;
+        this.hpMax = 45;
         this.hp = this.hpMax;
         this.name = "Crapaud";
         this.prefix = true;

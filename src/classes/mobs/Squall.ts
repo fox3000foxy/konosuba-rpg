@@ -3,9 +3,9 @@ import { Creature, CreatureInterface } from "../Creature";
 export default class Squall extends Creature implements CreatureInterface {
     constructor() {
         super();
-        this.attack = [3, 8];
+        this.attack = [5, 11];
         this.love = 50;
-        this.hpMax = 50;
+        this.hpMax = 60;
         this.hp = this.hpMax;
         this.name = "Squall";
         // this.color = rand.choice(["16700","16701","16702","16704"]);
