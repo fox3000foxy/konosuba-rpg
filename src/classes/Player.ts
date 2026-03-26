@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-duplicate-enum-values */
 import { Errors } from "../enums/Errors";
 import { AquaImages } from "../enums/player/AquaImages";
 import { DarknessImages } from "../enums/player/DarknessImages";
