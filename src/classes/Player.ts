@@ -1,77 +1,14 @@
 /* eslint-disable @typescript-eslint/no-duplicate-enum-values */
+import { Errors } from "../enums/Errors";
+import { AquaImages } from "../enums/player/AquaImages";
+import { DarknessImages } from "../enums/player/DarknessImages";
+import { KazumaImages } from "../enums/player/KazumaImages";
+import { MeguminImages } from "../enums/player/MeguminImages";
+import { PlayerAction } from "../enums/player/PlayerAction";
+import { PlayerName } from "../enums/player/PlayerName";
+import { PlayerStats } from "../enums/player/PlayerStats";
+import { PlayerThmb } from "../enums/player/PlayerThmb";
 import { Random } from "./Random";
-
-// Enum for actions
-export enum PlayerAction {
-	Def = "Def",
-	Atk = "Atk",
-	Hug = "Hug",
-	Idle = "Idle",
-	Giv = "Giv",
-}
-
-// Enum for player names
-export enum PlayerName {
-	Kazuma = "Kazuma",
-	Darkness = "Darkness",
-	Megumin = "Megumin",
-	Aqua = "Aqua",
-}
-
-// Enum for character images
-export enum KazumaImages {
-	Idle = "character_kazuma01",
-	Def = "character_kazuma03",
-	Atk = "character_kazuma02",
-	Hug = "character_kazuma04",
-}
-
-export enum DarknessImages {
-	Idle = "character_daku01",
-	Def = "character_daku03",
-	Atk = "character_daku02",
-	Hug = "character_daku04",
-}
-
-export enum MeguminImages {
-	Idle = "character_meg01",
-	Def = "character_meg03",
-	Atk = "character_meg02",
-	Hug = "character_meg04",
-}
-
-export enum AquaImages {
-	Idle = "character_aqua01",
-	Def = "character_aqua03",
-	Atk = "character_aqua02",
-	Hug = "character_aqua04",
-}
-
-export enum PlayerThmb {
-	Kazuma = 'https://raw.githubusercontent.com/fox3000foxy/konosuba-rpg/refs/heads/main/assets/player/thmb_in_1001100.png',
-	Darkness = 'https://raw.githubusercontent.com/fox3000foxy/konosuba-rpg/refs/heads/main/assets/player/thmb_in_1031100.png',
-	Megumin = 'https://raw.githubusercontent.com/fox3000foxy/konosuba-rpg/refs/heads/main/assets/player/thmb_in_1021100.png',
-	Aqua = 'https://raw.githubusercontent.com/fox3000foxy/konosuba-rpg/refs/heads/main/assets/player/thmb_in_1011100.png',
-}
-
-// Enum for character stats
-export enum PlayerStats {
-	KazumaHp = 40,
-	KazumaAttackMin = 6,
-	KazumaAttackMax = 12,
-
-	DarknessHp = 80,
-	DarknessAttackMin = 0,
-	DarknessAttackMax = 6,
-
-	MeguminHp = 30,
-	MeguminAttackMin = 25,
-	MeguminAttackMax = 25,
-
-	AquaHp = 40,
-	AquaAttackMin = 6,
-	AquaAttackMax = 12,
-}
 
 // Abstract Player class
 export abstract class Player {
@@ -95,7 +32,7 @@ export abstract class Player {
 		this.icon = icon;
 
 		if (new.target === Player) {
-			throw new Error("This is an abstract class, you should not instantiate it directly.");
+			throw new Error(Errors.ABSTRACT_ERROR);
 		}
 	}
 

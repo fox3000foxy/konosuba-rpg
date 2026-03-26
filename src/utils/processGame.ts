@@ -1,12 +1,13 @@
 // import fs from 'fs';
 import { Creature } from '../classes/Creature';
 import Troll from '../classes/mobs/Troll';
-import { PlayerAction, Team } from '../classes/Player';
+import { Team } from '../classes/Player';
 import { Random } from '../classes/Random';
 import lines from '../data/constants';
 import { mobMap } from '../data/mobMap';
 import { GameState } from '../enums/GameState';
 import { Lang } from '../enums/Lang';
+import { PlayerAction } from '../enums/player/PlayerAction';
 import { Prefix } from '../enums/Prefix';
 import { Game } from '../types/Game';
 import { LinesType } from '../types/LinesType';

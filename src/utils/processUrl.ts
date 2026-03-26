@@ -1,5 +1,5 @@
-import { PlayerAction } from '../classes/Player';
 import { Random } from '../classes/Random';
+import { PlayerAction } from '../enums/player/PlayerAction';
 
 export default function processUrl(url: string): [Random, string[], string, string | null] {
   const valid_moves = [
