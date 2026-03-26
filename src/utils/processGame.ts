@@ -5,7 +5,7 @@ import Troll from '../classes/mobs/Troll';
 import { Team } from '../classes/Player';
 import { Random } from '../classes/Random';
 import lines from '../data/constants';
-import { mobMap } from '../data/mobMap';
+import { generateMob } from '../data/mobMap';
 import { GameState } from '../enums/GameState';
 import { Lang } from '../enums/Lang';
 import { PlayerAction } from '../enums/player/PlayerAction';
@@ -34,12 +34,12 @@ export default async function processGame(
   let creature: Creature | null = null;
 
   if (monsterName) {
-    const monsterInstance = mobMap.find((MobClass) => MobClass.name.toLowerCase() === monsterName.toLowerCase());
+    const monsterInstance = generateMob().find((MobClass) => MobClass.name.toLowerCase() === monsterName.toLowerCase());
     if (monsterInstance) {
       creature = monsterInstance;
     }
   } else {
-    const monsterInstance = rand.choice(Object.values(mobMap));
+    const monsterInstance = rand.choice(Object.values(generateMob()));
     creature = monsterInstance;
   }
 

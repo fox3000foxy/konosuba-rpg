@@ -5,7 +5,7 @@ import { serveStatic } from 'hono/serve-static';
 import { Aqua, Darkness, Kazuma, Megumin } from './classes/Player';
 import { Random } from './classes/Random';
 import { imageManifest } from './data/imageManifest';
-import { mobMap } from './data/mobMap';
+import { generateMob } from './data/mobMap';
 import { ButtonsLabels } from './enums/ButtonsLabels';
 import { GameState } from './enums/GameState';
 import { Lang } from './enums/Lang';
@@ -297,7 +297,7 @@ app.post('/api/interactions', async (c: Context) => {
     if (interaction.data?.name === 'train') {
       const commandMonster = interaction.data.options?.find((o: InteractionDataOption) => o.name === 'monster')?.value;
       const monsterCandidate = typeof commandMonster === 'string' ? commandMonster.trim().toLowerCase() : '';
-      const monsterKey = Object.keys(mobMap).find((k) => k.toLowerCase() === monsterCandidate) || 'Troll';
+      const monsterKey = Object.keys(generateMob()).find((k) => k.toLowerCase() === monsterCandidate) || 'Troll';
       const id = makeid(10);
       const payload = `train.${monsterKey}.${id}`;
       const imageUrl = buildImageUrl(payload, lang);
@@ -321,9 +321,9 @@ app.post('/api/interactions', async (c: Context) => {
     if (interaction.data?.name === 'infos-monster') {
       const commandMonster = interaction.data.options?.find((o: InteractionDataOption) => o.name === 'monster')?.value;
       const monsterCandidate = typeof commandMonster === 'string' ? commandMonster.trim().toLowerCase() : '';
-      const monsterKey = Object.keys(mobMap).find((k) => k.toLowerCase() === monsterCandidate);
+      const monsterKey = Object.keys(generateMob()).find((k) => k.toLowerCase() === monsterCandidate);
       if (!monsterKey) {
-        const allMobs = Object.keys(mobMap).sort();
+        const allMobs = Object.keys(generateMob()).sort();
         return c.json({
           type: 4,
           data: {
@@ -337,10 +337,10 @@ app.post('/api/interactions', async (c: Context) => {
       }
 
       const rand = new Random(Math.floor(Math.random() * Number.MAX_SAFE_INTEGER));
-      const monster = mobMap.find(m=>m.name || m.constructor.name || pascalCaseToString(m.constructor.name) === monsterKey);
+      const monster = generateMob().find(m=>m.name || m.constructor.name || pascalCaseToString(m.constructor.name) === monsterKey);
       
       if(!monster) {
-        const allMobs = Object.keys(mobMap).sort();
+        const allMobs = Object.keys(generateMob()).sort();
         return c.json({
           type: 4,
           data: {
