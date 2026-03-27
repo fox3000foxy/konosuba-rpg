@@ -25,7 +25,8 @@ export async function handleSpecialButton(interaction: Interaction, c: Context, 
     const specialAttackLink = buildImageUrl(payload, lang).split('/konosuba-rpg/')[0];
     const [rand, moves, , monster] = processUrl(buildImageUrl(payload, lang));
     const { team } = await processGame(rand, moves, monster, lang, false);
-    const playerName = team.activePlayer?.name || 'Kazuma';
+    const langIndex = lang === Lang.French ? 1 : 0;
+    const playerName = team.activePlayer?.name[langIndex] || 'Kazuma';
 
     const gifs: { [key: string]: string } = {
         kazuma: 'kazuma',
