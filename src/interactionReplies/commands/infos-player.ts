@@ -1,8 +1,7 @@
 import { Context } from 'hono';
 import { Aqua, Darkness, Kazuma, Megumin } from '../../classes/Player';
-import { BASE_URL } from '../../config/constants';
 
-export async function handleInfosPlayerCommand(c: Context, userID: string, lang: string, fr: boolean, characterId: number) {
+export async function handleInfosPlayerCommand(c: Context, fr: boolean, characterId: number) {
   if (!Number.isInteger(characterId) || characterId < 0 || characterId > 3) {
     return c.json({
       type: 4,
@@ -45,7 +44,7 @@ export async function handleInfosPlayerCommand(c: Context, userID: string, lang:
   const charName = player.name;
   const hp = player.hp;
   const attackR = player.attack;
-  const imgUrl = `${BASE_URL}/konosuba-rpg/assets/${player.images[0]}`;
+  const imgUrl = `https://raw.githubusercontent.com/fox3000foxy/konosuba-rpg/refs/heads/main/assets/player/${player.images[0]}.webp`;
   return c.json({
     type: 4,
     data: {
