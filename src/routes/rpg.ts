@@ -22,6 +22,9 @@ export async function calculateRPG(c: Context) {
   return new Response(responseBody as ArrayBuffer, {
     headers: {
       'Content-Type': 'image/webp',
+      'Cache-Control': 'public, max-age=0, s-maxage=15, stale-while-revalidate=60',
+      'CDN-Cache-Control': 'public, s-maxage=15, stale-while-revalidate=60',
+      'Vercel-CDN-Cache-Control': 'public, s-maxage=15, stale-while-revalidate=60',
     },
   });
 }

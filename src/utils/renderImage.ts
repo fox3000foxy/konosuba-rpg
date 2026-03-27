@@ -146,6 +146,7 @@ GLOBAL.__fontCache ??= {} as Record<string, ArrayBuffer>;
 GLOBAL.__photonCache ??= new LRUCache<string, Photon.PhotonImage>(40, freePhoton);
 GLOBAL.__layerCache ??= new LRUCache<string, Photon.PhotonImage>(12, freePhoton);
 GLOBAL.__uiPhotonCache ??= new LRUCache<string, Photon.PhotonImage>(30, freePhoton);
+GLOBAL.__renderOutputCache ??= new LRUCache<string, Uint8Array>(80);
 
 const imageCache: Record<string, ArrayBuffer> = GLOBAL.__imageCache;
 const base64Cache: Record<string, string> = GLOBAL.__base64Cache;
@@ -153,6 +154,7 @@ const fontCache: Record<string, ArrayBuffer> = GLOBAL.__fontCache;
 const photonCache: LRUCache<string, Photon.PhotonImage> = GLOBAL.__photonCache;
 const layerCache: LRUCache<string, Photon.PhotonImage> = GLOBAL.__layerCache;
 const uiPhotonCache: LRUCache<string, Photon.PhotonImage> = GLOBAL.__uiPhotonCache;
+const renderOutputCache: LRUCache<string, Uint8Array> = GLOBAL.__renderOutputCache;
 
 // ─── Image / Font cache ───────────────────────────────────────────────────────
 
@@ -683,6 +685,20 @@ export default async function renderImage(
   // FIX #3 — clé UI construite avec des scalaires uniquement
   const uiCacheKey = buildUiCacheKey(team, creature, messages, state, lang);
 
+  const playerImages = team.players.map((p) => p.images);
+  const teamHp = team.players.map((p) => p.hp);
+  const charsKey = buildCharactersKey(playerImages, teamHp, creature.images, creature.hp);
+  const renderCacheKey = `render::${uiCacheKey}::${charsKey}`;
+  perfCacheHit('final_render', renderOutputCache.has(renderCacheKey));
+
+  const cachedOutput = renderOutputCache.get(renderCacheKey);
+  if (cachedOutput) {
+    if (_perfReport) {
+      _perfReport.totalMs = performance.now() - renderStart;
+    }
+    return new Uint8Array(cachedOutput);
+  }
+
   // Fonts : quasi-instantané après le premier appel (fontCache en mémoire)
   const tFonts = performance.now();
   const [fontMediumBuf] = await Promise.all([
@@ -690,9 +706,6 @@ export default async function renderImage(
     getFontBytes('https://raw.githubusercontent.com/fox3000foxy/konosuba-rpg/refs/heads/main/assets/swordgame/font/GintoNordMedium.otf'),
   ]);
   perfSpan('fonts', tFonts);
-
-  const playerImages = team.players.map((p) => p.images);
-  const teamHp = team.players.map((p) => p.hp);
 
   // FIX #4 — Les trois layers en parallèle, chacun court-circuite son cache
   const tLayers = performance.now();
@@ -716,6 +729,8 @@ export default async function renderImage(
   canvas.free(); // seul le canvas final (cloné) est libéré
   perfSpan('compose_encode', tCompose);
 
+  renderOutputCache.set(renderCacheKey, new Uint8Array(outputUint8));
+
   if (_perfReport) {
     _perfReport.totalMs = performance.now() - renderStart;
     _perfReport.cacheHits['photon_cache_size'] = photonCache.size > 0;
@@ -733,6 +748,7 @@ export function getCacheDiagnostics(): Record<string, unknown> {
     photonCacheSize: photonCache.size,
     layerCacheSize: layerCache.size,
     uiCacheSize: uiPhotonCache.size,
+    renderOutputCacheSize: renderOutputCache.size,
     imageCacheKeys: Object.keys(imageCache).length,
     base64CacheKeys: Object.keys(base64Cache).length,
     fontCacheKeys: Object.keys(fontCache).length,
