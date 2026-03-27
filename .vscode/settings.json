@@ -5,13 +5,9 @@
         "**/.vercel": true,
         "**/api": true,
         ".vercelignore": true,
-        "jest.config.cjs": true,
         "commands.json": true,
-        ".gitignore": true,
         "tsconfig.test.json": true,
-        "vercel.json": true,
         "TESTING.md": true,
-        "eslint.config.mts": true,
         "convert-png-to-webp.ts": true,
         "tsconfig.tsbuildinfo": true,
         "future.zip": true
