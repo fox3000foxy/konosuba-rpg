@@ -13,6 +13,13 @@ export async function handleDefaultButton(
   buttons: RawButton[],
 ) {
   const imageUrl = buildImageUrl(payload, lang);
+  const title = fr
+    ? `Entraînement contre ${monsterName}`
+    : `Training vs ${monsterName}`;
+  const description =
+    embedDescription.length > 0
+      ? `${title}\n\n${embedDescription.join("\n")}`
+      : title;
 
   return c.json({
     type: 7,
@@ -20,13 +27,7 @@ export async function handleDefaultButton(
       embeds: [
         {
           image: { url: imageUrl },
-          description:
-            (fr
-              ? `Entraînement contre ${monsterName}`
-              : `Training vs ${monsterName}`) +
-            (embedDescription.length > 0
-              ? `\n\n${embedDescription.join("\n")}`
-              : ""),
+          description,
           color: 0x2b2d31,
         },
       ],
