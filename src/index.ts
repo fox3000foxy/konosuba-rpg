@@ -5,7 +5,6 @@ import { handleInfosPlayerCommand } from './interactionReplies/commands/infos-pl
 import { handleStartCommand } from './interactionReplies/commands/start';
 import { handleTrainCommand } from './interactionReplies/commands/train';
 import { InteractionDataOption } from './objects/types/InteractionDataOption';
-import { serveStaticAssets } from './routes/assets';
 import { calculateGame } from './routes/game';
 import { calculateRPG } from './routes/rpg';
 import { buildComponents } from './utils/componentsBuilder';
@@ -18,7 +17,6 @@ import processUrl from './utils/processUrl';
 
 const app = new Hono();
 
-app.get('/assets/*', serveStaticAssets);
 app.get('/game/:lang/*', calculateGame);
 app.get('/konosuba-rpg/:lang/*', calculateRPG);
 app.post('/api/interactions', async (c: Context) => {
