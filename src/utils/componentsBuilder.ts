@@ -11,6 +11,22 @@ import { extractMonster, isTraining } from "./payloadUtils";
 import processGame from "./processGame";
 import processUrl from "./processUrl";
 
+const ATTACK_LABELS = ["1", "4", "10"];
+const HUG_LABELS = ["1", "4", "10"];
+
+const ATTACK_LABELS_FR = ATTACK_LABELS.map((value) =>
+  ButtonsLabels.AttackFr.replace("x", value),
+);
+const ATTACK_LABELS_EN = ATTACK_LABELS.map((value) =>
+  ButtonsLabels.Attack.replace("x", value),
+);
+const HUG_LABELS_FR = HUG_LABELS.map((value) =>
+  ButtonsLabels.HugFr.replace("x", value),
+);
+const HUG_LABELS_EN = HUG_LABELS.map((value) =>
+  ButtonsLabels.Hug.replace("x", value),
+);
+
 export async function buildComponents(
   payload: string,
   userID: string,
@@ -38,7 +54,10 @@ export async function buildComponents(
   const compressedPayload = compressMoves(payload);
   const restartPayload = restartId(payload);
   const userIdSuffix = `:${userID}`;
+  const actionPrefix = `${compressedPayload}`;
   const activePlayerName = team.activePlayer?.name[langIndex] ?? null;
+  const attackLabels = fr ? ATTACK_LABELS_FR : ATTACK_LABELS_EN;
+  const hugLabels = fr ? HUG_LABELS_FR : HUG_LABELS_EN;
 
   const showAquaHealButton =
     activePlayerName === "Megumin" &&
@@ -54,21 +73,21 @@ export async function buildComponents(
       components: [
         {
           type: 2,
-          label: fr ? ButtonsLabels.AttackFr.replace("x", "1") : ButtonsLabels.Attack.replace("x", "1"),
+          label: attackLabels[0],
           style: 4,
-          custom_id: `${compressedPayload}a${userIdSuffix}`,
+          custom_id: `${actionPrefix}a${userIdSuffix}`,
         },
         {
           type: 2,
-          label: fr ? ButtonsLabels.AttackFr.replace("x", "4") : ButtonsLabels.Attack.replace("x", "4"),
+          label: attackLabels[1],
           style: 4,
-          custom_id: `${compressedPayload}a4${userIdSuffix}`,
+          custom_id: `${actionPrefix}a4${userIdSuffix}`,
         },
         {
           type: 2,
-          label: fr ? ButtonsLabels.AttackFr.replace("x", "10") : ButtonsLabels.Attack.replace("x", "10"),
+          label: attackLabels[2],
           style: 4,
-          custom_id: `${compressedPayload}a10${userIdSuffix}`,
+          custom_id: `${actionPrefix}a10${userIdSuffix}`,
         },
       ],
     },
@@ -77,21 +96,21 @@ export async function buildComponents(
       components: [
         {
           type: 2,
-          label: fr ? ButtonsLabels.HugFr.replace("x", "1") : ButtonsLabels.Hug.replace("x", "1"),
+          label: hugLabels[0],
           style: 1,
-          custom_id: `${compressedPayload}h${userIdSuffix}`,
+          custom_id: `${actionPrefix}h${userIdSuffix}`,
         },
         {
           type: 2,
-          label: fr ? ButtonsLabels.HugFr.replace("x", "4") : ButtonsLabels.Hug.replace("x", "4"),
+          label: hugLabels[1],
           style: 1,
-          custom_id: `${compressedPayload}h4${userIdSuffix}`,
+          custom_id: `${actionPrefix}h4${userIdSuffix}`,
         },
         {
           type: 2,
-          label: fr ? ButtonsLabels.HugFr.replace("x", "10") : ButtonsLabels.Hug.replace("x", "10"),
+          label: hugLabels[2],
           style: 1,
-          custom_id: `${compressedPayload}h10${userIdSuffix}`,
+          custom_id: `${actionPrefix}h10${userIdSuffix}`,
         },
       ],
     },
@@ -102,20 +121,20 @@ export async function buildComponents(
           type: 2,
           label: fr ? ButtonsLabels.DefendFr : ButtonsLabels.Defend,
           style: 3,
-          custom_id: `${compressedPayload}d${userIdSuffix}`,
+          custom_id: `${actionPrefix}d${userIdSuffix}`,
         },
         {
           type: 2,
           label: fr ? ButtonsLabels.HealFr : ButtonsLabels.Heal,
           style: 3,
-          custom_id: `${compressedPayload}s${userIdSuffix}`,
+          custom_id: `${actionPrefix}s${userIdSuffix}`,
           disabled: !showAquaHealButton,
         },
         {
           type: 2,
           label: fr ? ButtonsLabels.SpecialAttackFr : ButtonsLabels.SpecialAttack,
           style: 3,
-          custom_id: `${compressedPayload}p${userIdSuffix}`,
+          custom_id: `${actionPrefix}p${userIdSuffix}`,
           disabled: !team.activePlayer?.specialAttackReady,
         },
       ],
@@ -133,7 +152,7 @@ export async function buildComponents(
           type: 2,
           label: fr ? ButtonsLabels.GiveUpFr : ButtonsLabels.GiveUp,
           style: 2,
-          custom_id: `${compressedPayload}g${userIdSuffix}`,
+          custom_id: `${actionPrefix}g${userIdSuffix}`,
         },
         {
           type: 2,
