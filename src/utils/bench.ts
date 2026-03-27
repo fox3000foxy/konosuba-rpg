@@ -18,7 +18,7 @@
 import { Lang } from '../enums/Lang';
 import processGame from './processGame';
 import processUrl from './processUrl';
-import { getCacheDiagnostics, getLastPerfReport, type PerfReport } from './renderImage';
+import { PerfReport, getCacheDiagnostics, getLastPerfReport, renderOutputCache } from './renderImage';
 
 // ─── Générateur d'URL ─────────────────────────────────────────────────────────
 
@@ -159,7 +159,6 @@ async function runScenario(
   const url = buildUrl(scenario.seed, scenario.moves, scenario.lang, scenario.monster);
 
   for (let i = 0; i < runs + warmup; i++) {
-    // Reconstitue exactement le pipeline serveur — aucun mock
     const [rand, moves, , monster] = processUrl(url);
 
     const t0 = performance.now();
@@ -168,13 +167,15 @@ async function runScenario(
 
     if (i >= warmup) {
       timings.push(elapsed);
-      // game.image est un Uint8Array quand renderingImage=true
       outputSizes.push((game.image as Uint8Array | undefined)?.byteLength ?? 0);
       states.push(game.state);
       const report = getLastPerfReport();
       if (report) reports.push({ ...report, spans: [...report.spans] });
     }
   }
+
+  // Log cache diagnostics for the final render cache
+  console.log('Render Output Cache Size:', renderOutputCache.size);
 
   return { timings, reports, outputSizes, states };
 }
@@ -209,6 +210,10 @@ function printScenarioReport(
   console.log(`  p95      ${fmt(p95)}`);
   console.log(`  p99      ${fmt(p99)}`);
   if (avgSz > 0) console.log(`  output   ${(avgSz / 1024).toFixed(1)} KB WebP`);
+
+  // Include render cache diagnostics
+  console.log('  Render Cache Diagnostics:');
+  console.log(`    Final Render Cache Size: ${renderOutputCache.size}`);
 
   // Distribution visuelle
   if (timings.length >= 3) {
