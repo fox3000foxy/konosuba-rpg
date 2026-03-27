@@ -10,7 +10,7 @@ export function makeid(length: number): string {
     result += characters.charAt(Math.floor(Math.random() * charactersLength));
     counter += 1;
   }
-  return result;
+  return result + "/";
 }
 
 /** Génère l'ID "Recommencer" en effaçant les lettres d'action */
