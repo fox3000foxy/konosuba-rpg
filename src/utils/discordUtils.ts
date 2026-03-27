@@ -3,19 +3,19 @@
 import { verifyKey } from "discord-interactions";
 import { Context } from "vm";
 import { DISCORD_API_URL } from "../config/constants";
+import { Interaction } from "../enums/Interaction";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function followUpTimeout(
-  interaction: any,
-  reponse: { type: number; data?: any },
+  interaction: Interaction,
+  reponse: { type: number; data?: Record<string, unknown> },
   delay: number = 3000,
 ): void {
   setTimeout(() => {
     if (reponse.type === 4) {
       reponse.data = {
-        content: reponse.data.content || " ",
-        embeds: reponse.data.embeds || [],
-        components: reponse.data.components || [],
+        content: reponse.data?.content || " ",
+        embeds: reponse.data?.embeds || [],
+        components: reponse.data?.components || [],
       };
     }
 
