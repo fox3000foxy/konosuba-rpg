@@ -9,10 +9,10 @@
     "sharp": "^0.34.5"
   },
   "scripts": {
-    "generate:image-manifest": "npx ts-node scripts/generate-image-manifest.ts",
+    "generate:image-manifest": "ts-node scripts/generate-image-manifest.ts",
     "tsc:build": "npx tsc",
-    "test": "jest --runInBand",
-    "test:watch": "jest --watch",
+    "test": "npx jest --runInBand",
+    "test:watch": "npx jest --watch",
     "test:perf": "node --expose-gc ./node_modules/jest/bin/jest.js --runInBand --testPathPatterns=tests/perf",
     "test:leaks": "node --expose-gc ./node_modules/jest/bin/jest.js --runInBand --testPathPatterns=tests/perf/leaks.spec.ts",
     "dev": "node scripts/dev.js",
@@ -20,13 +20,13 @@
     "dev:wrangler": "npx wrangler dev",
     "check": "npm run tsc:build && npm run test",
     "lint": "npx eslint src",
-    "vercel": "npm run vercel:build && npm run vercel:deploy",
-    "vercel:dev": "npx vercel dev --listen 8787",
-    "build": "esbuild src/index.ts --bundle --platform=node --target=node18 --outfile=api/index.js --minify --tree-shaking",
-    "build:watch": "esbuild src/index.ts --bundle --platform=node --target=node18 --outfile=api/index.js --watch",
+    "build": "npx esbuild src/index.ts --bundle --platform=node --target=node18 --outfile=api/index.js --minify --tree-shaking",
+    "build:watch": "npx esbuild src/index.ts --bundle --platform=node --target=node18 --outfile=api/index.js --watch",
     "start": "node api/index.js",
+    "vercel:dev": "npx vercel dev --listen 8787",
     "vercel:build": "npx vercel build --prod",
-    "deploy": "pnpm build && npx vercel build --prod && npx vercel deploy --prebuilt --prod"
+    "vercel:deploy": "npx vercel deploy --prebuilt --prod",
+    "deploy": "pnpm build && npm run vercel:build && npm run vercel:deploy"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
