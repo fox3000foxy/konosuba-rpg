@@ -6,7 +6,7 @@ describe('Player mechanics', () => {
     const player = new Kazuma();
 
     expect(player.hp).toEqual(player.hpMax);
-    expect(player.name).toEqual(Kazuma.name);
+    expect(player.name[0]).toEqual(Kazuma.name);
     expect(player.defending).toBe(false);
   });
 

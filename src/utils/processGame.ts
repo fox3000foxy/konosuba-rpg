@@ -167,7 +167,7 @@ function handlePlayerAction({
     case PlayerAction.Hea.toLocaleUpperCase(): {
       if (currentPlayer.name[langIndex] === "Aqua") {
         currentPlayer.performAction(PlayerAction.Hea);
-        (currentPlayer as Aqua).heal(currentPlayer.getTeam());
+        (currentPlayer as Aqua).heal();
         const playerIndex = currentPlayer.playerId;
         const rng = rand.randint(
           0,
