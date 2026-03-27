@@ -84,11 +84,11 @@ export default async function processGame(
   let embedDescription =
     lang === Lang.French
       ? [
-        "Utilisez les boutons pour attaquer, défendre ou faire un câlin à la créature. Essayez de réduire ses points de vie à zéro ou son amour à zéro pour gagner !",
-      ]
+          "Utilisez les boutons pour attaquer, défendre ou faire un câlin à la créature. Essayez de réduire ses points de vie à zéro ou son amour à zéro pour gagner !",
+        ]
       : [
-        "Use the buttons to attack, defend, or hug the creature. Try to reduce its HP to zero or its love to zero to win!",
-      ];
+          "Use the buttons to attack, defend, or hug the creature. Try to reduce its HP to zero or its love to zero to win!",
+        ];
 
   let state: GameState = GameState.Incomplete;
   let playerId;
@@ -284,32 +284,32 @@ export default async function processGame(
       messages.push(
         lang === Lang.French
           ? MessagesTemplates.French_CreatureMisses.replace(
-            "${NAME}",
-            creature.prefix ? creaturePrefix + name : name,
-          )
-            .replace("{DMG}", creatureMove[1].toString())
-            .replace("{PLAYER}", randomPlayer.name[langIndex])
+              "${NAME}",
+              creature.prefix ? creaturePrefix + name : name,
+            )
+              .replace("{DMG}", creatureMove[1].toString())
+              .replace("{PLAYER}", randomPlayer.name[langIndex])
           : MessagesTemplates.English_CreatureMisses.replace(
-            "${NAME}",
-            creature.prefix ? creaturePrefix + name : name,
-          )
-            .replace("{DMG}", creatureMove[1].toString())
-            .replace("{PLAYER}", randomPlayer.name[langIndex]),
+              "${NAME}",
+              creature.prefix ? creaturePrefix + name : name,
+            )
+              .replace("{DMG}", creatureMove[1].toString())
+              .replace("{PLAYER}", randomPlayer.name[langIndex]),
       );
       embedDescription.push(
         lang === Lang.French
           ? MessagesTemplates.French_CreatureMisses.replace(
-            "${NAME}",
-            creature.prefix ? creaturePrefix + name : name,
-          )
-            .replace("{DMG}", creatureMove[1].toString())
-            .replace("{PLAYER}", randomPlayer.name[langIndex])
+              "${NAME}",
+              creature.prefix ? creaturePrefix + name : name,
+            )
+              .replace("{DMG}", creatureMove[1].toString())
+              .replace("{PLAYER}", randomPlayer.name[langIndex])
           : MessagesTemplates.English_CreatureMisses.replace(
-            "${NAME}",
-            creature.prefix ? creaturePrefix + name : name,
-          )
-            .replace("{DMG}", creatureMove[1].toString())
-            .replace("{PLAYER}", randomPlayer.name[langIndex]),
+              "${NAME}",
+              creature.prefix ? creaturePrefix + name : name,
+            )
+              .replace("{DMG}", creatureMove[1].toString())
+              .replace("{PLAYER}", randomPlayer.name[langIndex]),
       );
     } else {
       randomPlayer.hp -= creatureMove[1];
