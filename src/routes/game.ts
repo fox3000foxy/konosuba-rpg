@@ -8,5 +8,39 @@ export async function calculateGame(c: Context) {
   const { lang } = c.req.param() as { lang: Lang };
   const [rand, moves, , monster] = await processUrl(c.req.url);
   const game = await processGame(rand, moves, monster, lang, false);
-  return c.json(game);
+
+  const serializableTeam = {
+    ...game.team,
+    players: game.team.players.map((player) => {
+      const playerWithoutTeam = { ...player } as Record<string, unknown>;
+      delete playerWithoutTeam.team;
+      delete playerWithoutTeam.images;
+      delete playerWithoutTeam.specialAttackReady;
+      delete playerWithoutTeam.specialAttackCurrentRounds;
+      delete playerWithoutTeam.playerId;
+      delete playerWithoutTeam.icon;
+      delete playerWithoutTeam.lore;
+      playerWithoutTeam.name = player.name[lang === Lang.French ? 0 : 1];
+      return playerWithoutTeam;
+    }),
+  } as Record<string, unknown>;
+
+  const strippedCreature = { ...game.creature } as Record<string, unknown>;
+  delete strippedCreature.images;
+  delete strippedCreature.lore;
+  delete strippedCreature.prefix;
+  strippedCreature.name =
+    game.creature.name[lang === Lang.French ? 1 : 0] ||
+    game.creature.constructor.name;
+
+  const serializableGame = {
+    ...game,
+    team: serializableTeam,
+    creature: strippedCreature,
+    training: undefined,
+  };
+
+  delete serializableGame.training;
+
+  return c.json(serializableGame);
 }
