@@ -4,7 +4,7 @@ import processGame from "../utils/processGame";
 import processUrl from "../utils/processUrl";
 
 export async function calculateRPG(c: Context) {
-  console.log("Received request:", c.req.url);
+  // console.log("Received request:", c.req.url);
   const { lang } = c.req.param() as { lang: Lang };
   const [rand, moves, , monster] = await processUrl(c.req.url);
   const { image } = await processGame(rand, moves, monster, lang, true);
