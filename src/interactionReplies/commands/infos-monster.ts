@@ -11,10 +11,12 @@ export async function handleInfosMonsterCommand(c: Context, fr: boolean, options
     // const monsterKey = Object.keys(generateMob()).find((k) => k.toLowerCase() === monsterCandidate);
     const mobs = generateMob();
 
-    const monsterKey = mobs.find(m => m.name.toLowerCase() === monsterCandidate);
+    const langIndex = fr ? 1 : 0;
+
+    const monsterKey = mobs.find(m => m.name[langIndex].toLowerCase() === monsterCandidate);
     if (!monsterKey) {
         // const allMobs = Object.keys(generateMob()).sort();
-        const allMobs = mobs.map(m => m.name || m.constructor.name || pascalCaseToString(m.constructor.name)).sort();
+        const allMobs = mobs.map(m => m.name[langIndex] || m.constructor.name || pascalCaseToString(m.constructor.name)).sort();
         return c.json({
             type: 4,
             data: {
@@ -27,7 +29,7 @@ export async function handleInfosMonsterCommand(c: Context, fr: boolean, options
         });
     }
 
-    const monster = mobs.find(m => m.name.toLowerCase() === monsterCandidate);
+    const monster = mobs.find(m => m.name[langIndex].toLowerCase() === monsterCandidate);
     if (!monster) {
         return c.json({
             type: 4,
@@ -53,8 +55,8 @@ export async function handleInfosMonsterCommand(c: Context, fr: boolean, options
         data: {
             embeds: [{
                 description: fr
-                    ? `# Informations de monstre:\n\n**Nom**: ${monster.name}\n**PV**: ${monster.hp} PV\n**ATK**: ${monster.attack[0]}-${monster.attack[1]} points de dégâts.\n**LP**: ${monster.love !== 100 ? monster.love + ' points d\'amour' : 'Ne peut pas être ami'}`
-                    : `# Monster infos:\n\n**Name**: ${monster.name}\n**HP**: ${monster.hp} HP\n**ATK**: ${monster.attack[0]}-${monster.attack[1]} damage points.\n**LP**: ${monster.love !== 100 ? monster.love + ' love points' : 'Can\'t be friends'}`,
+                    ? `# Informations de monstre:\n\n**Nom**: ${monster.name[langIndex]}\n**PV**: ${monster.hp} PV\n**ATK**: ${monster.attack[0]}-${monster.attack[1]} points de dégâts.\n**LP**: ${monster.love !== 100 ? monster.love + ' points d\'amour' : 'Ne peut pas être ami'}` + `\n\n${monster.lore}`
+                    : `# Monster infos:\n\n**Name**: ${monster.name[langIndex]}\n**HP**: ${monster.hp} HP\n**ATK**: ${monster.attack[0]}-${monster.attack[1]} damage points.\n**LP**: ${monster.love !== 100 ? monster.love + ' love points' : 'Can\'t be friends'}` + `\n\n${monster.lore}`,
                 image: { url: imgUrl },
                 color: 0x2b2d31,
             }],

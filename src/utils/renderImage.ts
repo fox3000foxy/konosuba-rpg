@@ -164,7 +164,7 @@ export async function getImageBytes(key: string): Promise<ArrayBuffer> {
   const url = `${BASE}/${path}`;
 
   if (!url) throw new Error(`Image key not found in manifest: ${key}`);
-  
+
   const resp = await fetch(url);
   if (!resp.ok) throw new Error(`Failed to fetch image "${key}": ${resp.status}`);
 
@@ -460,15 +460,21 @@ async function buildOverlayJsx(
     };
   }
 
+  const langIndex = lang === Lang.French ? 1 : 0;
+  const creatureGender = creature.gender;
+  const name = creature.name[langIndex];
+  const creaturePrefix = creature.prefix ? (lang === Lang.French
+    ? (creatureGender === "female" ? Prefix.French_Determined_Feminine : Prefix.French_Determined_Masculine)
+    : Prefix.English_Determined) : Prefix.None;
   const endMsg = state ? ({
     good: lang === Lang.French
-      ? `${EndMessages.French_Good}${creature.prefix ? Prefix.French_Determined : Prefix.None}${creature.name}${EndMessages.French_ExclamationMark}`
-      : `${EndMessages.English_Good}${creature.prefix ? Prefix.English_Determined : Prefix.None}${creature.name}${EndMessages.English_ExclamationMark}`,
+      ? `${EndMessages.French_Good}${creaturePrefix}${name}${EndMessages.French_ExclamationMark}`
+      : `${EndMessages.English_Good}${creaturePrefix}${name}${EndMessages.English_ExclamationMark}`,
     bad: lang === Lang.French ? EndMessages.French_Bad : EndMessages.English_Bad,
     giveup: lang === Lang.French ? EndMessages.French_Giveup : EndMessages.English_Giveup,
     best: lang === Lang.French
-      ? `${EndMessages.French_Best}${creature.prefix ? Prefix.French_Determined : Prefix.None}${creature.name}${EndMessages.French_ExclamationMark}`
-      : `${EndMessages.English_Best}${creature.prefix ? Prefix.English_Determined : Prefix.None}${creature.name}${EndMessages.English_ExclamationMark}`,
+      ? `${EndMessages.French_Best}${creaturePrefix}${name}${EndMessages.French_ExclamationMark}`
+      : `${EndMessages.English_Best}${creaturePrefix}${name}${EndMessages.English_ExclamationMark}`,
   } as Record<string, string>)[state] : null;
 
   const endMsg2 = state ? ({
@@ -483,7 +489,7 @@ async function buildOverlayJsx(
     : null;
 
   let pid = 0;
-  switch (team.activePlayer?.name) {
+  switch (team.activePlayer?.name[0]) {
     case PlayerName.Kazuma: pid = 0; break;
     case PlayerName.Aqua: pid = 1; break;
     case PlayerName.Megumin: pid = 2; break;
