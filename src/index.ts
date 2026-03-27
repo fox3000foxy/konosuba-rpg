@@ -6,7 +6,12 @@ import { serveKonosubaAssets, serveStaticAssets } from './routes/assets';
 import { calculateGame } from './routes/game';
 import { calculateRPG } from './routes/rpg';
 import { InteractionDataOption } from './types/InteractionDataOption';
-import { buildComponents, buildImageUrl, decompressMoves, extractMonster, followUpTimeout, isTraining, makeid, verifySignature } from './utils/helpers';
+import { buildComponents } from './utils/componentsBuilder';
+import { followUpTimeout, verifySignature } from './utils/discordUtils';
+import { makeid } from './utils/idUtils';
+import { buildImageUrl } from './utils/imageUtils';
+import { decompressMoves } from './utils/movesUtils';
+import { extractMonster, isTraining } from './utils/payloadUtils';
 import processGame, { pascalCaseToString } from './utils/processGame';
 import processUrl from './utils/processUrl';
 
