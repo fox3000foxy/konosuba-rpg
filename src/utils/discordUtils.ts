@@ -37,12 +37,16 @@ export async function verifySignature(c: Context, body: string) {
     if (!signature) console.warn('Missing signature');
     if (!timestamp) console.warn('Missing timestamp');
     if (!PUBLIC_KEY) console.warn('Missing public key');
-    return c.text('invalid request headers', 400);
+    // return c.text('invalid request headers', 400);
+    return false;
   }
 
   const isValid = await verifyKey(body, signature, timestamp, PUBLIC_KEY);
   if (!isValid) {
     console.warn('Invalid request signature');
-    return c.text('invalid request signature', 401);
+    // return c.text('invalid request signature', 401);
+    return false;
   }
+
+  return true;
 }
