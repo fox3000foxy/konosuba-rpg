@@ -49,7 +49,7 @@ export async function handleInfosMonsterCommand(
 
   //   const imgUrl = `${BASE_URL}/konosuba-rpg/assets/${monster.images[0]}`;
   if (monster instanceof GenericCreature) {
-    const rand = new Random(1);
+    const rand = new Random();
     monster.pickColor(rand);
   }
   const imgUrl = `https://raw.githubusercontent.com/fox3000foxy/konosuba-rpg/refs/heads/main/assets/mobs/${monster.images[0]}.webp`;

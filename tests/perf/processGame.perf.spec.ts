@@ -10,7 +10,7 @@ describe('Performance - processGame simulation only', () => {
 
     const t0 = performance.now();
     for (let i = 0; i < iterations; i++) {
-      await processGame(new Random(1000 + i), moves, 'Troll', Lang.English, false);
+      await processGame(new Random(), moves, 'Troll', Lang.English, false);
     }
     const elapsedMs = performance.now() - t0;
 

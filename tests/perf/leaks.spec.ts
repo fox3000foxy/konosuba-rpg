@@ -18,7 +18,7 @@ describe('Leak smoke test - simulation loop', () => {
     const rounds = 1200;
     const moves = ['ATK', 'DEF', 'HUG', 'ATK', 'DEF'];
     for (let i = 0; i < rounds; i++) {
-      await processGame(new Random(7000 + i), moves, 'Dragon', Lang.English, false);
+      await processGame(new Random(), moves, 'Dragon', Lang.English, false);
     }
 
     global.gc();

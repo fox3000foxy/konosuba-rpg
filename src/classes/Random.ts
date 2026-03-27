@@ -1,27 +1,36 @@
 export class Random {
-  private seed: number;
   private S: number[];
   private i: number;
   private j: number;
 
-  constructor(seed: number) {
-    this.seed = seed;
-    this.S = Array.from({ length: 256 }, (_, i) => i);
+  constructor(seed?: number) {
+    this.S = new Array(256);
+    for (let i = 0; i < 256; i += 1) {
+      this.S[i] = i;
+    }
     this.i = 0;
     this.j = 0;
 
-    for (let i = 0, j = 0; i < 256; i++) {
-      j = (j + this.S[i] + (seed & 0xff)) % 256;
-      [this.S[i], this.S[j]] = [this.S[j], this.S[i]];
-      seed >>= 8;
+    let j = 0;
+    let workingSeed = seed || Date.now();
+    for (let i = 0; i < 256; i += 1) {
+      j = (j + this.S[i] + (workingSeed & 0xff)) & 0xff;
+      const tmp = this.S[i];
+      this.S[i] = this.S[j];
+      this.S[j] = tmp;
+      workingSeed >>>= 8;
     }
   }
 
   next(): number {
-    this.i = (this.i + 1) % 256;
-    this.j = (this.j + this.S[this.i]) % 256;
-    [this.S[this.i], this.S[this.j]] = [this.S[this.j], this.S[this.i]];
-    return this.S[(this.S[this.i] + this.S[this.j]) % 256] / 256;
+    this.i = (this.i + 1) & 0xff;
+    this.j = (this.j + this.S[this.i]) & 0xff;
+
+    const tmp = this.S[this.i];
+    this.S[this.i] = this.S[this.j];
+    this.S[this.j] = tmp;
+
+    return this.S[(this.S[this.i] + this.S[this.j]) & 0xff] / 256;
   }
 
   randint(min: number, max: number): number {

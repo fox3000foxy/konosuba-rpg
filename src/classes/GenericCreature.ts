@@ -14,8 +14,5 @@ export abstract class GenericCreature extends Creature {
     }
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  pickColor(rng: Random) {
-    throw new Error(Errors.ABSTRACT_METHOD_ERROR);
-  }
+  abstract pickColor(rng: Random): void;
 }

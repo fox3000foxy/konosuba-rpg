@@ -2,8 +2,8 @@ import { Random } from '../../src/classes/Random';
 
 describe('Random', () => {
   it('produces deterministic sequence for the same seed', () => {
-    const r1 = new Random(1234);
-    const r2 = new Random(1234);
+    const r1 = new Random();
+    const r2 = new Random();
 
     const seq1 = Array.from({ length: 20 }, () => r1.next());
     const seq2 = Array.from({ length: 20 }, () => r2.next());
@@ -12,7 +12,7 @@ describe('Random', () => {
   });
 
   it('randint stays in [min, max)', () => {
-    const r = new Random(42);
+    const r = new Random();
 
     for (let i = 0; i < 200; i++) {
       const n = r.randint(5, 10);
@@ -22,7 +22,7 @@ describe('Random', () => {
   });
 
   it('choice returns an existing item', () => {
-    const r = new Random(99);
+    const r = new Random();
     const pool = ['atk', 'def', 'hug'];
 
     for (let i = 0; i < 50; i++) {
