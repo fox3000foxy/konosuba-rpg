@@ -1,5 +1,5 @@
 import { Context } from "hono";
-import { Aqua, Darkness, Kazuma, Megumin } from "../../classes/Player";
+import { Aqua, Darkness, Kazuma, Megumin, Team } from "../../classes/Player";
 
 export async function handleInfosPlayerCommand(
   c: Context,
@@ -21,19 +21,21 @@ export async function handleInfosPlayerCommand(
     });
   }
 
+  const team = new Team();
+
   let player: Kazuma | Darkness | Megumin | Aqua;
   switch (characterId) {
     case 0:
-      player = new Kazuma();
+      player = team.players[0];
       break;
     case 1:
-      player = new Darkness();
+      player = team.players[1] as Darkness;
       break;
     case 2:
-      player = new Megumin();
+      player = team.players[2] as Megumin;
       break;
     case 3:
-      player = new Aqua();
+      player = team.players[3] as Aqua;
       break;
     default:
       return c.json({
