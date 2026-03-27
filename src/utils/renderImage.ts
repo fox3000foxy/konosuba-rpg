@@ -525,7 +525,7 @@ async function buildOverlayJsx(
           type: 'div',
           props: {
             style: { display: 'flex' as const, position: 'absolute' as const, left: 40 * 2 + 40, top: 42 * 2 - 55, fontSize: 16, fontFamily: '"Ginto Nord Black"' },
-            children: `${team.activePlayer?.name} (${Math.max(team.activePlayer?.hp || 0, 0)} ${hp})`,
+            children: `${team.activePlayer?.name[langIndex]} (${Math.max(team.activePlayer?.hp || 0, 0)} ${hp})`,
           },
         },
         {
@@ -551,7 +551,7 @@ async function buildOverlayJsx(
               type: 'div',
               props: {
                 style: { display: 'flex' as const, position: 'absolute' as const, left: xBase + 32, top: yBase - 16, fontSize: 12, fontFamily: '"Ginto Nord Black"' },
-                children: `${op?.name} (${Math.max(op?.hp || 0, 0)} ${hp})`,
+                children: `${op?.name[langIndex]} (${Math.max(op?.hp || 0, 0)} ${hp})`,
               },
             },
             healthBar(op?.hp || 0, op?.hpMax || 0, xBase, yBase, 173, 8.5),
@@ -563,7 +563,7 @@ async function buildOverlayJsx(
           type: 'div',
           props: {
             style: { display: 'flex' as const, position: 'absolute' as const, left: 288 * 2, top: 148 * 2 + 129, fontSize: 12, fontFamily: '"Ginto Nord Black"' },
-            children: `${creature.name} (${creature.hp} ${hp})`,
+            children: `${creature.name[langIndex]} (${creature.hp} ${hp})`,
           },
         },
         {
