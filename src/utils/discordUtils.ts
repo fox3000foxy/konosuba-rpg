@@ -5,7 +5,7 @@ import { Context } from "vm";
 import { DISCORD_API_URL } from "../config/constants";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function followUpTimeout(interaction: any, reponse: { type: number, data?: any }, delay: number = 3000) {
+export function followUpTimeout(interaction: any, reponse: { type: number, data?: any }, delay: number = 3000): void {
   setTimeout(() => {
     if (reponse.type === 4) {
       reponse.data = {
@@ -26,7 +26,7 @@ export function followUpTimeout(interaction: any, reponse: { type: number, data?
   }, delay);
 }
 
-export async function verifySignature(c: Context, body: string) {
+export async function verifySignature(c: Context, body: string): Promise<boolean> {
   const signature = c.req.header('x-signature-ed25519');
   const timestamp = c.req.header('x-signature-timestamp');
 

@@ -10,7 +10,20 @@ import { extractMonster, isTraining } from "./payloadUtils";
 import processGame from "./processGame";
 import processUrl from "./processUrl";
 
-export async function buildComponents(payload: string, userID: string, lang: Lang, disableChangeMonster = false) {
+interface Button {
+  type: number;
+  label: string;
+  style: number;
+  custom_id: string;
+  disabled?: boolean;
+}
+
+interface RawButton {
+  type: number;
+  components: Button[];
+}
+
+export async function buildComponents(payload: string, userID: string, lang: Lang, disableChangeMonster = false): Promise<{ buttons: RawButton[]; embedDescription: string[] }> {
   const imageUrl = buildImageUrl(payload, lang);
 
   const [rand, moves, , monster] = processUrl(imageUrl);
