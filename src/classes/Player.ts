@@ -1,10 +1,11 @@
 import { Errors } from "../enums/Errors";
+import { Gender } from "../enums/Gender";
 import { AquaImages } from "../enums/player/AquaImages";
 import { DarknessImages } from "../enums/player/DarknessImages";
 import { KazumaImages } from "../enums/player/KazumaImages";
 import { MeguminImages } from "../enums/player/MeguminImages";
 import { PlayerAction } from "../enums/player/PlayerAction";
-import { PlayerName } from "../enums/player/PlayerName";
+import { PlayerLore } from "../enums/player/PlayerLore";
 import { PlayerStats } from "../enums/player/PlayerStats";
 import { PlayerThmb } from "../enums/player/PlayerThmb";
 
@@ -14,14 +15,16 @@ export abstract class Player {
 	public hp: number;
 	public attack: [number, number];
 	public defending: boolean;
-	public name: PlayerName;
+	public name: [string, string]; // [français, anglais]
 	public images: string[];
 	public icon: PlayerThmb.Kazuma | PlayerThmb.Darkness | PlayerThmb.Megumin | PlayerThmb.Aqua;
+	public lore: string;
+	public gender: Gender;
 	protected specialAttackNeededRounds: number = 0;
 	protected specialAttackCurrentRounds: number = 0;
 	public specialAttackReady: boolean = false;
 
-	constructor(name: PlayerName, hpMax: number, attack: [number, number], images: string[], icon: PlayerThmb.Kazuma | PlayerThmb.Darkness | PlayerThmb.Megumin | PlayerThmb.Aqua) {
+	constructor(name: [string, string], hpMax: number, attack: [number, number], images: string[], icon: PlayerThmb.Kazuma | PlayerThmb.Darkness | PlayerThmb.Megumin | PlayerThmb.Aqua, lore: string, gender: Gender) {
 		this.hpMax = hpMax;
 		this.hp = hpMax;
 		this.attack = attack;
@@ -29,6 +32,8 @@ export abstract class Player {
 		this.name = name;
 		this.images = images;
 		this.icon = icon;
+		this.lore = lore;
+		this.gender = gender;
 		this.specialAttackNeededRounds = 0;
 		this.specialAttackCurrentRounds = 0;
 		this.specialAttackReady = false;
@@ -49,7 +54,15 @@ export abstract class Player {
 // HP: 80 | Atk: [3, 12]
 export class Kazuma extends Player {
 	constructor() {
-		super(PlayerName.Kazuma, PlayerStats.KazumaHp, [PlayerStats.KazumaAttackMin, PlayerStats.KazumaAttackMax], [KazumaImages.Idle], PlayerThmb.Kazuma);
+		super(
+			["Kazuma", "Kazuma"],
+			PlayerStats.KazumaHp,
+			[PlayerStats.KazumaAttackMin, PlayerStats.KazumaAttackMax],
+			[KazumaImages.Idle],
+			PlayerThmb.Kazuma,
+			PlayerLore.Kazuma,
+			Gender.Male
+		);
 		this.specialAttackNeededRounds = 3; // Kazuma's special attack is ready after 3 rounds
 	}
 
@@ -85,7 +98,15 @@ export class Kazuma extends Player {
 // HP: 200 | Atk: [0, 8]
 export class Darkness extends Player {
 	constructor() {
-		super(PlayerName.Darkness, PlayerStats.DarknessHp, [PlayerStats.DarknessAttackMin, PlayerStats.DarknessAttackMax], [DarknessImages.Idle], PlayerThmb.Darkness);
+		super(
+			["Lalatina", "Darkness"],
+			PlayerStats.DarknessHp,
+			[PlayerStats.DarknessAttackMin, PlayerStats.DarknessAttackMax],
+			[DarknessImages.Idle],
+			PlayerThmb.Darkness,
+			PlayerLore.Darkness,
+			Gender.Female
+		);
 		this.specialAttackNeededRounds = 5; // Darkness's special attack is ready after 5 rounds
 	}
 
@@ -121,7 +142,15 @@ export class Darkness extends Player {
 // HP: 60 | Atk: [0, 60]
 export class Megumin extends Player {
 	constructor() {
-		super(PlayerName.Megumin, PlayerStats.MeguminHp, [PlayerStats.MeguminAttackMin, PlayerStats.MeguminAttackMax], [MeguminImages.Idle], PlayerThmb.Megumin);
+		super(
+			["Megumin", "Megumin"],
+			PlayerStats.MeguminHp,
+			[PlayerStats.MeguminAttackMin, PlayerStats.MeguminAttackMax],
+			[MeguminImages.Idle],
+			PlayerThmb.Megumin,
+			PlayerLore.Megumin,
+			Gender.Female
+		);
 		this.specialAttackNeededRounds = 4; // Megumin's special attack is ready after 4 rounds
 	}
 
@@ -157,7 +186,15 @@ export class Megumin extends Player {
 // HP: 100 | Atk: [1, 6]
 export class Aqua extends Player {
 	constructor() {
-		super(PlayerName.Aqua, PlayerStats.AquaHp, [PlayerStats.AquaAttackMin, PlayerStats.AquaAttackMax], [AquaImages.Idle], PlayerThmb.Aqua);
+		super(
+			["Aqua", "Aqua"],
+			PlayerStats.AquaHp,
+			[PlayerStats.AquaAttackMin, PlayerStats.AquaAttackMax],
+			[AquaImages.Idle],
+			PlayerThmb.Aqua,
+			PlayerLore.Aqua,
+			Gender.Female
+		);
 		this.specialAttackNeededRounds = 3; // Aqua's special attack is ready after 3 rounds
 	}
 

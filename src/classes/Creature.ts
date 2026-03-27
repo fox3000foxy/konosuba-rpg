@@ -15,10 +15,12 @@ export interface CreatureInterface {
     hp: number;
     attack: number[];
     love: number;
-    name: string;
+    name: string[];
     images: string[];
     color?: string;
     prefix: boolean;
+    lore: string;
+    gender: "male" | "female" | "neutral";
 }
 
 export abstract class Creature implements CreatureInterface {
@@ -26,19 +28,23 @@ export abstract class Creature implements CreatureInterface {
     public hp: number;
     public attack: number[];
     public love: number;
-    public name: string;
+    public name: string[];
     public images: string[];
     public color?: string;
     public prefix: boolean;
+    public lore: string;
+    public gender: "male" | "female" | "neutral";
 
     constructor() {
         this.hpMax = 10;
         this.hp = this.hpMax;
         this.attack = [0, 12];
         this.love = 10;
-        this.name = "Creature";
+        this.name = ["Creature", "Créature"];
         this.images = ["frame"];
         this.prefix = true;
+        this.lore = "";
+        this.gender = "neutral";
 
         if (new.target === Creature) {
             throw new Error(Errors.ABSTRACT_ERROR);
@@ -51,18 +57,24 @@ export abstract class Creature implements CreatureInterface {
 
     turn(options: { lang: string, dmg: number, player: Player }): [string, number] {
         const dmg = options.dmg;
+        const langIndex = options.lang === "fr" ? 1 : 0;
+        const creatureGender = this.gender;
+        const name = this.name[langIndex];
+        const creaturePrefix = this.prefix ? (options.lang === "fr"
+            ? (creatureGender === "female" ? Prefix.French_Determined_Feminine : Prefix.French_Determined_Masculine)
+            : Prefix.English_Determined) : Prefix.None;
         switch (options.lang) {
             case "fr":
                 if (dmg)
-                    return [MessagesTemplates.French_CreatureAttacks.replace("${NAME}", `${this.prefix ? Prefix.French_Determined : Prefix.None}${this.name}`).replace("{DMG}", dmg.toString()).replace("{PLAYER}", options.player.name), dmg];
+                    return [MessagesTemplates.French_CreatureAttacks.replace("${NAME}", `${creaturePrefix}${name}`).replace("{DMG}", dmg.toString()).replace("{PLAYER}", options.player.name[langIndex]), dmg];
                 else
-                    return [MessagesTemplates.French_CreatureMisses.replace("${NAME}", `${this.prefix ? Prefix.French_Determined : Prefix.None}${this.name}`).replace("{DMG}", dmg.toString()).replace("{PLAYER}", options.player.name), dmg];
+                    return [MessagesTemplates.French_CreatureMisses.replace("${NAME}", `${creaturePrefix}${name}`).replace("{DMG}", dmg.toString()).replace("{PLAYER}", options.player.name[langIndex]), dmg];
             case "en":
             default:
                 if (dmg)
-                    return [MessagesTemplates.English_CreatureAttacks.replace("${NAME}", `${this.prefix ? Prefix.English_Determined : Prefix.None}${this.name}`).replace("{DMG}", dmg.toString()).replace("{PLAYER}", options.player.name), dmg];
+                    return [MessagesTemplates.English_CreatureAttacks.replace("${NAME}", `${creaturePrefix}${name}`).replace("{DMG}", dmg.toString()).replace("{PLAYER}", options.player.name[langIndex]), dmg];
                 else
-                    return [MessagesTemplates.English_CreatureMisses.replace("${NAME}", `${this.prefix ? Prefix.English_Determined : Prefix.None}${this.name}`).replace("{DMG}", dmg.toString()).replace("{PLAYER}", options.player.name), dmg];
+                    return [MessagesTemplates.English_CreatureMisses.replace("${NAME}", `${creaturePrefix}${name}`).replace("{DMG}", dmg.toString()).replace("{PLAYER}", options.player.name[langIndex]), dmg];
         }
     }
 

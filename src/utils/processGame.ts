@@ -37,7 +37,7 @@ export default async function processGame(
   let creature: Creature | null = null;
 
   if (monsterName) {
-    const monsterInstance = generateMob().find((MobClass) => MobClass.name.toLowerCase() === monsterName.toLowerCase());
+    const monsterInstance = generateMob().find((MobClass) => MobClass.name[lang === Lang.French ? 1 : 0].toLowerCase() === monsterName.toLowerCase());
     if (monsterInstance) {
       creature = monsterInstance;
     }
@@ -58,11 +58,16 @@ export default async function processGame(
   }
 
   // creature.name = lang === Lang.French ? creature.name : pascalCaseToString(creature.constructor.name);
-
+  const langIndex = lang === Lang.French ? 1 : 0;
+  const creatureGender = creature.gender;
+  const name = creature.name[langIndex];
+  const creaturePrefix = creature.prefix ? (lang === Lang.French
+    ? (creatureGender === "female" ? Prefix.French_Undetermined_Feminine : Prefix.French_Undetermined_Masculine)
+    : Prefix.English_Determined) : Prefix.None;
   const messages = [
     lang === Lang.French
-      ? `Attention, ${creature.prefix ? Prefix.French_Undetermined_Masculine : Prefix.None}${creature.name} !`
-      : `Watch out, ${creature.prefix ? Prefix.English_Undetermined : Prefix.None}${creature.name} !`,
+      ? `Attention, ${creaturePrefix}${name} !`
+      : `Watch out, ${creaturePrefix}${name}!`,
   ];
 
   let embedDescription = lang === Lang.French
@@ -93,10 +98,12 @@ export default async function processGame(
     team.setActivePlayer(currentPlayer);
     currentPlayer.defending = move === PlayerAction.Def.toLocaleUpperCase();
 
-    if (currentPlayer.name === "Kazuma") {
+    const langIndex = lang === Lang.French ? 1 : 0;
+
+    if (currentPlayer.name[langIndex] === "Kazuma") {
       //reset defend status to everyone
       team.players.forEach(p => {
-        if (p.name !== "Kazuma") {
+        if (p.name[langIndex] !== "Kazuma") {
           p.defending = false;
           p.performAction(PlayerAction.Idle);
         }
@@ -107,11 +114,11 @@ export default async function processGame(
       const dmg = rand.randint(currentPlayer.attack[0], currentPlayer.attack[1]);
       const rng = rand.randint(0, linesTyped[lang as Lang].youDefendMsgs[playerId].length - 1);
       const msg = linesTyped[lang as Lang].youDefendMsgs[playerId][rng]
-        .replace("CREATURE", creature.name)
+        .replace("CREATURE", name)
         .replace("DAMAGE", dmg.toString());
 
       const desc = descriptionsTyped[lang as Lang].youDefendMsgs[playerId][rng]
-        .replace("CREATURE", creature.name)
+        .replace("CREATURE",  name)
         .replace("DAMAGE", dmg.toString());
 
       messages.push(msg);
@@ -122,10 +129,10 @@ export default async function processGame(
       creature.dealAttack(dmg);
       const rng = rand.randint(0, linesTyped[lang as Lang].youAttackMsgs[playerId].length - 1);
       const msg = linesTyped[lang as Lang].youAttackMsgs[playerId][rng]
-        .replace("CREATURE", creature.name)
+        .replace("CREATURE", name)
         .replace("DAMAGE", dmg.toString());
       const desc = descriptionsTyped[lang as Lang].youAttackMsgs[playerId][rng]
-        .replace("CREATURE", creature.name)
+        .replace("CREATURE",  name)
         .replace("DAMAGE", dmg.toString());
       embedDescription.push(desc);
       messages.push(msg);
@@ -133,14 +140,14 @@ export default async function processGame(
     } else if (move === PlayerAction.Hug.toLocaleUpperCase()) {
       const rng = rand.randint(0, linesTyped[lang as Lang].youHugMsgs[playerId].length - 1);
       const msg = linesTyped[lang as Lang].youHugMsgs[playerId][rng]
-        .replace("CREATURE", creature.name);
+        .replace("CREATURE", name);
 
-      embedDescription.push(descriptionsTyped[lang as Lang].youHugMsgs[playerId][rng].replace("CREATURE", creature.name));
+      embedDescription.push(descriptionsTyped[lang as Lang].youHugMsgs[playerId][rng].replace("CREATURE", name));
       messages.push(msg);
       const loveDecrease = rand.randint(1, 4);
       creature.giveHug(loveDecrease);
       currentPlayer.performAction(PlayerAction.Hug);
-    } else if (move === PlayerAction.Hea.toLocaleUpperCase() && currentPlayer.name === "Aqua") {
+    } else if (move === PlayerAction.Hea.toLocaleUpperCase() && currentPlayer.name[langIndex] === "Aqua") {
       currentPlayer.performAction(PlayerAction.Hug);
       (currentPlayer as Aqua).heal(team);
       const rng = rand.randint(0, linesTyped[lang as Lang].aquaHealMsgs.length - 1);
@@ -157,10 +164,10 @@ export default async function processGame(
         currentPlayer.performAction(PlayerAction.Spe);
         const rng = rand.randint(0, linesTyped[lang as Lang].youSpecialAttackMsgs[playerId].length - 1);
         const msg = linesTyped[lang as Lang].youSpecialAttackMsgs[playerId][rng]
-          .replace("CREATURE", creature.name)
+          .replace("CREATURE", name)
           .replace("DAMAGE", totalDmg.toString());
         const desc = descriptionsTyped[lang as Lang].youSpecialAttackMsgs[playerId][rng]
-          .replace("CREATURE", creature.name)
+          .replace("CREATURE", name)
           .replace("DAMAGE", totalDmg.toString());
         embedDescription.push(desc);
         messages.push(msg);
@@ -170,10 +177,10 @@ export default async function processGame(
         creature.dealAttack(dmg);
         const rng = rand.randint(0, linesTyped[lang as Lang].youAttackMsgs[playerId].length - 1);
         const msg = linesTyped[lang as Lang].youAttackMsgs[playerId][rng]
-          .replace("CREATURE", creature.name)
+          .replace("CREATURE", name)
           .replace("DAMAGE", dmg.toString());
         const desc = descriptionsTyped[lang as Lang].youAttackMsgs[playerId][rng]
-          .replace("CREATURE", creature.name)
+          .replace("CREATURE", name)
           .replace("DAMAGE", dmg.toString());
         embedDescription.push(desc);
         messages.push(msg);
@@ -193,7 +200,7 @@ export default async function processGame(
 
     // Creature's turn
     // Attacks only after Aqua's 
-    if (currentPlayer.name !== "Aqua") {
+    if (currentPlayer.name[langIndex] !== "Aqua") {
       continue;
     }
 
@@ -201,15 +208,20 @@ export default async function processGame(
     const creatureMove = creature.turn({ lang, dmg: rand.randint(creature.attack[0], creature.attack[1]), player: randomPlayer });
 
     if (randomPlayer.defending) {
+      const creatureGender = creature.gender;
+      const name = creature.name[langIndex];
+      const creaturePrefix = creature.prefix ? (lang === Lang.French
+        ? (creatureGender === "female" ? Prefix.French_Determined_Feminine : Prefix.French_Determined_Masculine)
+        : Prefix.English_Determined) : Prefix.None;
       messages.push(
         lang === Lang.French
-          ? MessagesTemplates.French_CreatureMisses.replace("${NAME}", creature.prefix ? Prefix.French_Determined + creature.name : creature.name).replace("{DMG}", creatureMove[1].toString()).replace("{PLAYER}", randomPlayer.name)
-          : MessagesTemplates.English_CreatureMisses.replace("${NAME}", creature.prefix ? Prefix.English_Determined + creature.name : creature.name).replace("{DMG}", creatureMove[1].toString()).replace("{PLAYER}", randomPlayer.name)
+          ? MessagesTemplates.French_CreatureMisses.replace("${NAME}", creature.prefix ? creaturePrefix + name : name).replace("{DMG}", creatureMove[1].toString()).replace("{PLAYER}", randomPlayer.name[langIndex])
+          : MessagesTemplates.English_CreatureMisses.replace("${NAME}", creature.prefix ? creaturePrefix + name : name).replace("{DMG}", creatureMove[1].toString()).replace("{PLAYER}", randomPlayer.name[langIndex])
       );
       embedDescription.push(
         lang === Lang.French
-          ? MessagesTemplates.French_CreatureMisses.replace("${NAME}", creature.prefix ? Prefix.French_Determined + creature.name : creature.name).replace("{DMG}", creatureMove[1].toString()).replace("{PLAYER}", randomPlayer.name)
-          : MessagesTemplates.English_CreatureMisses.replace("${NAME}", creature.prefix ? Prefix.English_Determined + creature.name : creature.name).replace("{DMG}", creatureMove[1].toString()).replace("{PLAYER}", randomPlayer.name)
+          ? MessagesTemplates.French_CreatureMisses.replace("${NAME}", creature.prefix ? creaturePrefix + name : name).replace("{DMG}", creatureMove[1].toString()).replace("{PLAYER}", randomPlayer.name[langIndex])
+          : MessagesTemplates.English_CreatureMisses.replace("${NAME}", creature.prefix ? creaturePrefix + name : name).replace("{DMG}", creatureMove[1].toString()).replace("{PLAYER}", randomPlayer.name[langIndex])
       );
     } else {
       randomPlayer.hp -= creatureMove[1];
@@ -219,13 +231,13 @@ export default async function processGame(
       } else {
         messages.push(
           lang === Lang.French
-            ? `${creatureMove[0]} ${randomPlayer.name} est à terre...`
-            : `${creatureMove[0]} ${randomPlayer.name} is down...`
+            ? `${creatureMove[0]} ${randomPlayer.name[langIndex]} est à terre...`
+            : `${creatureMove[0]} ${randomPlayer.name[langIndex]} is down...`
         );
         embedDescription.push(
           lang === Lang.French
-            ? `${creatureMove[0]} ${randomPlayer.name} est à terre...`
-            : `${creatureMove[0]} ${randomPlayer.name} is down...`
+            ? `${creatureMove[0]} ${randomPlayer.name[langIndex]} est à terre...`
+            : `${creatureMove[0]} ${randomPlayer.name[langIndex]} is down...`
         );
       }
     }
@@ -252,7 +264,7 @@ export default async function processGame(
   if (state === GameState.Bad) embedDescription.push(lang === Lang.French ? EndMessages.French_Bad : EndMessages.English_Bad);
   if (state === GameState.Best) embedDescription.push(lang === Lang.French ? EndMessages.French_Best : EndMessages.English_Best);
   if (state === GameState.Giveup) embedDescription.push(lang === Lang.French ? EndMessages.French_Giveup : EndMessages.English_Giveup);
-  if (state === GameState.Good || state === GameState.Best) embedDescription[embedDescription.length - 1] += creature.name + (lang === Lang.French ? EndMessages.French_ExclamationMark : EndMessages.English_ExclamationMark);
+  if (state === GameState.Good || state === GameState.Best) embedDescription[embedDescription.length - 1] += name + (lang === Lang.French ? EndMessages.French_ExclamationMark : EndMessages.English_ExclamationMark);
   if (renderingImage) {
     const image = await renderImage(state, messages, team, creature, lang);
     return { image, state, messages, embedDescription, team, creature, training };

@@ -9,8 +9,9 @@ import { pascalCaseToString } from '../../utils/processGame';
 
 export async function handleTrainCommand(c: Context, userID: string, lang: Lang, fr: boolean, options: InteractionDataOption[]) {
   const commandMonster = options.find((o) => o.name === 'monster')?.value;
+  const langIndex = lang === Lang.French ? 1 : 0;
   const monsterCandidate = typeof commandMonster === 'string' ? commandMonster.trim().toLowerCase() : '';
-  const monster = Object.values(generateMob()).find((k) => k.name.toLowerCase() === monsterCandidate);
+  const monster = Object.values(generateMob()).find((k) => k.name[langIndex].toLowerCase() === monsterCandidate);
   if (!monster) {
     const allMobs = Object.values(generateMob()).sort();
     return c.json({
@@ -25,7 +26,7 @@ export async function handleTrainCommand(c: Context, userID: string, lang: Lang,
     });
   }
 
-  const monsterKey = monster.name || monster.constructor.name || pascalCaseToString(monster.constructor.name);
+  const monsterKey = monster.name[langIndex] || monster.constructor.name || pascalCaseToString(monster.constructor.name);
   const id = makeid(10);
   const payload = `train.${monsterKey}.${id}`;
   const imageUrl = buildImageUrl(payload, lang);

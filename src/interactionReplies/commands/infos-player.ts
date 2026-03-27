@@ -41,7 +41,7 @@ export async function handleInfosPlayerCommand(c: Context, fr: boolean, characte
         },
       });
   }
-  const charName = player.name;
+  const charName = player.name[fr ? 1 : 0];
   const hp = player.hp;
   const attackR = player.attack;
   const imgUrl = `https://raw.githubusercontent.com/fox3000foxy/konosuba-rpg/refs/heads/main/assets/player/${player.images[0]}.webp`;
@@ -50,8 +50,8 @@ export async function handleInfosPlayerCommand(c: Context, fr: boolean, characte
     data: {
       embeds: [{
         description: fr
-          ? `# Informations sur ${charName}:\n\n**Nom**: ${charName}\n**PV**: ${hp} PV\n**ATK**: ${attackR[0]}-${attackR[1]} points de dégâts.`
-          : `# Player infos for ${charName}:\n\n**Name**: ${charName}\n**HP**: ${hp} HP\n**ATK**: ${attackR[0]}-${attackR[1]} damage points.`,
+          ? `# Informations sur ${charName}:\n\n**Nom**: ${charName}\n**PV**: ${hp} PV\n**ATK**: ${attackR[0]}-${attackR[1]} points de dégâts.` + `\n\n${player.lore}`
+          : `# Player infos for ${charName}:\n\n**Name**: ${charName}\n**HP**: ${hp} HP\n**ATK**: ${attackR[0]}-${attackR[1]} damage points.` + `\n\n${player.lore}`,
         image: { url: imgUrl },
         color: 0x2b2d31,
       }],
