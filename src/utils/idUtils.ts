@@ -2,8 +2,9 @@
 
 /** Generates a random ID of a given length */
 export function makeid(length: number): string {
-  let result = '';
-  const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZbcefijklmnopqrstuvwxyz0123456789';
+  let result = "";
+  const characters =
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZbcefijklmnopqrstuvwxyz0123456789";
   const charactersLength = characters.length;
   let counter = 0;
   while (counter < length) {
@@ -16,13 +17,22 @@ export function makeid(length: number): string {
 /** Génère l'ID "Recommencer" en effaçant les lettres d'action */
 export function restartId(payload: string): string {
   return payload
-    .split('/').join('')
-    .split('train').join('trqin')
-    .split('a').join('')
-    .split('trqin').join('train')
-    .split('d').join('')
-    .split('g').join('')
-    .split('h').join('')
-    .split('s').join('')
-    .split('p').join('');
+    .split("/")
+    .join("")
+    .split("train")
+    .join("trqin")
+    .split("a")
+    .join("")
+    .split("trqin")
+    .join("train")
+    .split("d")
+    .join("")
+    .split("g")
+    .join("")
+    .split("h")
+    .join("")
+    .split("s")
+    .join("")
+    .split("p")
+    .join("");
 }

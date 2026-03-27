@@ -1,3 +1,3 @@
 export interface Env {
-    resvg: WebAssembly.Module;
+  resvg: WebAssembly.Module;
 }

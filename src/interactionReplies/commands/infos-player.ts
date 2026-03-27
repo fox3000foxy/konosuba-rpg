@@ -1,16 +1,22 @@
-import { Context } from 'hono';
-import { Aqua, Darkness, Kazuma, Megumin } from '../../classes/Player';
+import { Context } from "hono";
+import { Aqua, Darkness, Kazuma, Megumin } from "../../classes/Player";
 
-export async function handleInfosPlayerCommand(c: Context, fr: boolean, characterId: number) {
+export async function handleInfosPlayerCommand(
+  c: Context,
+  fr: boolean,
+  characterId: number,
+) {
   if (!Number.isInteger(characterId) || characterId < 0 || characterId > 3) {
     return c.json({
       type: 4,
       data: {
-        embeds: [{
-          description: fr
-            ? 'Personnage invalide. Choisissez 0-3 (Kazuma, Darkness, Megumin, Aqua).'
-            : 'Invalid character. Choose 0-3 (Kazuma, Darkness, Megumin, Aqua).',
-        }],
+        embeds: [
+          {
+            description: fr
+              ? "Personnage invalide. Choisissez 0-3 (Kazuma, Darkness, Megumin, Aqua)."
+              : "Invalid character. Choose 0-3 (Kazuma, Darkness, Megumin, Aqua).",
+          },
+        ],
       },
     });
   }
@@ -33,11 +39,13 @@ export async function handleInfosPlayerCommand(c: Context, fr: boolean, characte
       return c.json({
         type: 4,
         data: {
-          embeds: [{
-            description: fr
-              ? 'Personnage invalide. Choisissez 0-3 (Kazuma, Darkness, Megumin, Aqua).'
-              : 'Invalid character. Choose 0-3 (Kazuma, Darkness, Megumin, Aqua).',
-          }],
+          embeds: [
+            {
+              description: fr
+                ? "Personnage invalide. Choisissez 0-3 (Kazuma, Darkness, Megumin, Aqua)."
+                : "Invalid character. Choose 0-3 (Kazuma, Darkness, Megumin, Aqua).",
+            },
+          ],
         },
       });
   }
@@ -48,13 +56,17 @@ export async function handleInfosPlayerCommand(c: Context, fr: boolean, characte
   return c.json({
     type: 4,
     data: {
-      embeds: [{
-        description: fr
-          ? `# Informations sur ${charName}:\n\n**Nom**: ${charName}\n**PV**: ${hp} PV\n**ATK**: ${attackR[0]}-${attackR[1]} points de dégâts.` + `\n\n${player.lore}`
-          : `# Player infos for ${charName}:\n\n**Name**: ${charName}\n**HP**: ${hp} HP\n**ATK**: ${attackR[0]}-${attackR[1]} damage points.` + `\n\n${player.lore}`,
-        image: { url: imgUrl },
-        color: 0x2b2d31,
-      }],
+      embeds: [
+        {
+          description: fr
+            ? `# Informations sur ${charName}:\n\n**Nom**: ${charName}\n**PV**: ${hp} PV\n**ATK**: ${attackR[0]}-${attackR[1]} points de dégâts.` +
+              `\n\n${player.lore}`
+            : `# Player infos for ${charName}:\n\n**Name**: ${charName}\n**HP**: ${hp} HP\n**ATK**: ${attackR[0]}-${attackR[1]} damage points.` +
+              `\n\n${player.lore}`,
+          image: { url: imgUrl },
+          color: 0x2b2d31,
+        },
+      ],
     },
   });
 }

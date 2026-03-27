@@ -6,5 +6,5 @@ export enum RetryMessages {
   French_Good = "Arriverez vous a faire mieux ?",
   French_Bad = "Rententez votre chance.",
   French_Giveup = "Peut être une prochaine fois ?",
-  French_Best = "Pourrez vous être ami avec d'autres créatures ?"
+  French_Best = "Pourrez vous être ami avec d'autres créatures ?",
 }

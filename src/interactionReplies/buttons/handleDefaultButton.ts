@@ -1,8 +1,17 @@
-import { Context } from 'hono';
-import { RawButton } from '../../enums/RawButton';
-import { buildImageUrl } from '../../utils/imageUtils';
+import { Context } from "hono";
+import { RawButton } from "../../enums/RawButton";
+import { buildImageUrl } from "../../utils/imageUtils";
 
-export async function handleDefaultButton(c: Context, payload: string, userID: string, lang: string, fr: boolean, monsterName: string, embedDescription: string[], buttons: RawButton[]) {
+export async function handleDefaultButton(
+  c: Context,
+  payload: string,
+  userID: string,
+  lang: string,
+  fr: boolean,
+  monsterName: string,
+  embedDescription: string[],
+  buttons: RawButton[],
+) {
   const imageUrl = buildImageUrl(payload, lang);
 
   return c.json({
@@ -11,7 +20,13 @@ export async function handleDefaultButton(c: Context, payload: string, userID: s
       embeds: [
         {
           image: { url: imageUrl },
-          description: (fr ? `Entraînement contre ${monsterName}` : `Training vs ${monsterName}`) + (embedDescription.length > 0 ? `\n\n${embedDescription.join('\n')}` : ''),
+          description:
+            (fr
+              ? `Entraînement contre ${monsterName}`
+              : `Training vs ${monsterName}`) +
+            (embedDescription.length > 0
+              ? `\n\n${embedDescription.join("\n")}`
+              : ""),
           color: 0x2b2d31,
         },
       ],

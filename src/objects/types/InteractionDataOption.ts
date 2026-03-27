@@ -1,4 +1,4 @@
 export type InteractionDataOption = {
   name: string;
   value: string | number;
-}
+};

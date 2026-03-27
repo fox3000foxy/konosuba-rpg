@@ -7,6 +7,6 @@ import { customIdToPath, extractMonster, isTraining } from "./payloadUtils";
 export function buildImageUrl(payload: string, lang: string): string {
   const path = customIdToPath(payload);
   const training = isTraining(payload);
-  const monsterName = training ? extractMonster(payload) : '';
-  return `${BASE_URL}/konosuba-rpg/${lang}/${path}${training ? `/?training=true&monster=${encodeURIComponent(monsterName)}` : ''}`;
+  const monsterName = training ? extractMonster(payload) : "";
+  return `${BASE_URL}/konosuba-rpg/${lang}/${path}${training ? `/?training=true&monster=${encodeURIComponent(monsterName)}` : ""}`;
 }
