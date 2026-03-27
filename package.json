@@ -26,7 +26,8 @@
     "vercel:dev": "npx vercel dev --listen 8787",
     "vercel:build": "npx vercel build --prod",
     "vercel:deploy": "npx vercel deploy --prebuilt --prod",
-    "deploy": "pnpm build && npm run vercel:build && npm run vercel:deploy"
+    "deploy": "pnpm build && npm run vercel:build && npm run vercel:deploy",
+    "bench": "npx esbuild src/utils/bench.ts --bundle --platform=node --target=node18 --outfile=bench.js && node --expose-gc bench.js && npx rimraf bench.js"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
@@ -41,6 +42,7 @@
     "globals": "^17.4.0",
     "jest": "^30.3.0",
     "jiti": "^2.6.1",
+    "rimraf": "^6.1.3",
     "ts-jest": "^29.4.6",
     "typescript": "^6.0.2",
     "typescript-eslint": "^8.57.2"
