@@ -53,6 +53,7 @@ function compressMoves(moves: string): string {
 }
 
 function decompressMoves(comp: string): string {
+  // eslint-disable-next-line security/detect-unsafe-regex
   return comp.replace(/([a-z])(\d+)?/g, (_, char, num) => {
     return char.repeat(num ? parseInt(num) : 1);
   });
