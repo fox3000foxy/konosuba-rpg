@@ -27,7 +27,6 @@ export async function handleInfosMonsterCommand(c: Context, fr: boolean, options
         });
     }
 
-    console.log(`Monster key `, monsterKey, ` found for candidate "${monsterCandidate}". Retrieving monster data...`);
     const monster = mobs.find(m => m.name.toLowerCase() === monsterCandidate);
     if (!monster) {
         return c.json({
