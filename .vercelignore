@@ -3,7 +3,6 @@ dist/
 scripts/
 src/
 tests/
-assets/
 
 # Configuration files
 eslint.config.mts
