@@ -261,13 +261,13 @@ export default async function processGame(
   let state: GameState = GameState.Incomplete;
   let playerId: number;
   let counter = -1;
-  const playerCount = team.players.length;
 
   // Reset special attack status for all players
   team.players.forEach((player) => player.resetSpecialAttack());
 
   // Precompute reusable values
   const langIndex = lang === Lang.French ? 1 : 0;
+  const activePlayers = team.players.filter((player) => player.hp > 0);
 
   for (const move of moves) {
     if (state !== GameState.Incomplete) break; // Early exit if game state is resolved
@@ -281,20 +281,9 @@ export default async function processGame(
     messages.length = 0;
 
     counter += 1;
-    playerId = counter % playerCount;
+    playerId = counter % activePlayers.length;
 
-    // Skip players with 0 HP
-    while (team.players[playerId].hp <= 0) {
-      playerId = (playerId + 1) % playerCount;
-      if (playerId === counter % playerCount) {
-        state = GameState.Bad; // All players are down
-        break;
-      }
-    }
-
-    if (state === GameState.Bad) break; // Exit if all players are down
-
-    const currentPlayer = team.players[playerId];
+    const currentPlayer = activePlayers[playerId];
     team.setActivePlayer(currentPlayer);
 
     handlePlayerAction({
@@ -326,7 +315,7 @@ export default async function processGame(
     }
 
     // Creature's turn
-    const randomPlayer = rand.choice(team.players.filter((p) => p.hp > 0));
+    const randomPlayer = rand.choice(activePlayers.filter((p) => p.hp > 0));
     const creatureMove = creature.turn({
       lang,
       dmg: rand.randint(creature.attack[0], creature.attack[1]),
@@ -360,8 +349,7 @@ export default async function processGame(
     }
 
     // Check if all players are down
-    const teamHP = team.players.reduce((sum, player) => sum + player.hp, 0);
-    if (teamHP <= 0) {
+    if (activePlayers.length === 0) {
       state = GameState.Bad;
       break;
     }
