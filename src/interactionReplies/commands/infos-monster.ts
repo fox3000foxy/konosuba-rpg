@@ -10,7 +10,7 @@ export async function handleInfosMonsterCommand(c: Context, fr: boolean, options
     const monsterCandidate = typeof commandMonster === 'string' ? commandMonster.trim().toLowerCase() : '';
     // const monsterKey = Object.keys(generateMob()).find((k) => k.toLowerCase() === monsterCandidate);
     const mobs = generateMob();
-    console.log(`Looking for monster key matching candidate "${monsterCandidate}" among ${mobs.length} mobs...`);
+
     const monsterKey = mobs.find(m => m.name.toLowerCase() === monsterCandidate);
     if (!monsterKey) {
         // const allMobs = Object.keys(generateMob()).sort();
