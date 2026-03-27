@@ -15,7 +15,7 @@
     "test:watch": "npx jest --watch",
     "test:perf": "node --expose-gc ./node_modules/jest/bin/jest.js --runInBand --testPathPatterns=tests/perf",
     "test:leaks": "node --expose-gc ./node_modules/jest/bin/jest.js --runInBand --testPathPatterns=tests/perf/leaks.spec.ts",
-    "dev": "node scripts/dev.js",
+    "dev": "node scripts/dev.mjs",
     "dev:node": "npx ts-node-dev --respawn --transpile-only --logger=debug --ignore-watch node_modules src/index.ts",
     "dev:wrangler": "npx wrangler dev",
     "check": "npm run tsc:build && npm run test",
