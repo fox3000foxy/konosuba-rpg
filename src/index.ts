@@ -120,7 +120,7 @@ app.post("/api/interactions", async (c: Context) => {
       lang,
     );
 
-    const special = interaction.data.custom_id.split(":")[0].endsWith("/p");
+    const special = interaction.data.custom_id.split(":")[0].endsWith("p");
     if (special) {
       return handleSpecialButton(
         interaction,
