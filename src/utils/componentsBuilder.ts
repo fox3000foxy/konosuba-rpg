@@ -16,7 +16,11 @@ export async function buildComponents(
   userID: string,
   lang: Lang,
   disableChangeMonster = false,
-): Promise<{ buttons: RawButton[]; embedDescription: string[] }> {
+): Promise<{
+  buttons: RawButton[];
+  embedDescription: string[];
+  activePlayerName: string | null;
+}> {
   const imageUrl = buildImageUrl(payload, lang);
 
   const [rand, moves, , monster] = processUrl(imageUrl);
@@ -29,13 +33,15 @@ export async function buildComponents(
   );
   const training = isTraining(payload);
   const fr = lang === Lang.French;
+  const langIndex = fr ? 1 : 0;
 
   const compressedPayload = compressMoves(payload);
   const restartPayload = restartId(payload);
   const userIdSuffix = `:${userID}`;
+  const activePlayerName = team.activePlayer?.name[langIndex] ?? null;
 
   const showAquaHealButton =
-    team.activePlayer?.name[lang === Lang.French ? 1 : 0] === "Megumin" &&
+    activePlayerName === "Megumin" &&
     state === GameState.Incomplete;
 
   if (state === GameState.Incomplete) {
@@ -142,5 +148,5 @@ export async function buildComponents(
     },
   ];
 
-  return { buttons, embedDescription };
+  return { buttons, embedDescription, activePlayerName };
 }

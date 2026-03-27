@@ -114,7 +114,7 @@ app.post("/api/interactions", async (c: Context) => {
 
     const training = isTraining(payload);
     const monsterName = training ? extractMonster(payload) : "";
-    const { buttons, embedDescription } = await buildComponents(
+    const { buttons, embedDescription, activePlayerName } = await buildComponents(
       payload,
       userID,
       lang,
@@ -130,6 +130,7 @@ app.post("/api/interactions", async (c: Context) => {
         lang,
         fr,
         monsterName,
+        activePlayerName,
         embedDescription,
         buttons,
       );
