@@ -55,9 +55,15 @@ app.get("/player/:playerName", (c: Context) => {
 
 app.get("/monster/:monsterConstructorName", (c: Context) => {
   const fr = getApiLang(c);
+  
   const monsterConstructorName = c.req.param("monsterConstructorName") || "";
+  const infos = generateMonsterInfosByConstructorName(monsterConstructorName, fr);
+  if (!infos.creature) {
+    return c.json({ error: fr ? "Monstre non trouvé." : "Monster not found.", description: infos.command.data.embeds[0].description }, 404);
+  }
+  
   return c.json(
-    generateMonsterInfosByConstructorName(monsterConstructorName, fr).creature,
+    infos.creature,
   );
 });
 
