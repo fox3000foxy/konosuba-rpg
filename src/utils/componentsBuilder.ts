@@ -30,177 +30,117 @@ export async function buildComponents(
   const training = isTraining(payload);
   const fr = lang === Lang.French;
 
-  let showAquaHealButton = false;
+  const compressedPayload = compressMoves(payload);
+  const restartPayload = restartId(payload);
+  const userIdSuffix = `:${userID}`;
 
-  if (
-    team.activePlayer &&
-    team.activePlayer.name[lang === Lang.French ? 1 : 0] === "Megumin" &&
-    state === GameState.Incomplete
-  ) {
-    showAquaHealButton = true;
-  }
+  const showAquaHealButton =
+    team.activePlayer?.name[lang === Lang.French ? 1 : 0] === "Megumin" &&
+    state === GameState.Incomplete;
 
   if (state === GameState.Incomplete) {
     disableChangeMonster = true;
   }
 
-  if (
-    state === GameState.Good ||
-    state === GameState.Bad ||
-    state === GameState.Best ||
-    state === "giveup"
-  ) {
-    return {
-      buttons: [
+  const buttons = [
+    {
+      type: 1,
+      components: [
         {
-          type: 1,
-          components: [
-            {
-              type: 2,
-              label: fr ? ButtonsLabels.RestartFr : ButtonsLabels.Restart,
-              style: 2,
-              custom_id: `${restartId(payload)}:${userID}`,
-            },
-            {
-              type: 2,
-              label: fr ? ButtonsLabels.GiveUpFr : ButtonsLabels.GiveUp,
-              style: 2,
-              custom_id: `${compressMoves(payload)}g:${userID}`,
-            },
-            {
-              type: 2,
-              label: fr
-                ? ButtonsLabels.ChangeMonsterFr
-                : ButtonsLabels.ChangeMonster,
-              style: 2,
-              custom_id: training
-                ? `train.${extractMonster(payload)}.${makeid(10)}:${userID}`
-                : `${makeid(15)}:${userID}`,
-            },
-          ],
+          type: 2,
+          label: fr ? ButtonsLabels.AttackFr.replace("x", "1") : ButtonsLabels.Attack.replace("x", "1"),
+          style: 4,
+          custom_id: `${compressedPayload}a${userIdSuffix}`,
+        },
+        {
+          type: 2,
+          label: fr ? ButtonsLabels.AttackFr.replace("x", "4") : ButtonsLabels.Attack.replace("x", "4"),
+          style: 4,
+          custom_id: `${compressedPayload}a4${userIdSuffix}`,
+        },
+        {
+          type: 2,
+          label: fr ? ButtonsLabels.AttackFr.replace("x", "10") : ButtonsLabels.Attack.replace("x", "10"),
+          style: 4,
+          custom_id: `${compressedPayload}a10${userIdSuffix}`,
         },
       ],
-      embedDescription: embedDescription,
-    };
-  }
+    },
+    {
+      type: 1,
+      components: [
+        {
+          type: 2,
+          label: fr ? ButtonsLabels.HugFr.replace("x", "1") : ButtonsLabels.Hug.replace("x", "1"),
+          style: 1,
+          custom_id: `${compressedPayload}h${userIdSuffix}`,
+        },
+        {
+          type: 2,
+          label: fr ? ButtonsLabels.HugFr.replace("x", "4") : ButtonsLabels.Hug.replace("x", "4"),
+          style: 1,
+          custom_id: `${compressedPayload}h4${userIdSuffix}`,
+        },
+        {
+          type: 2,
+          label: fr ? ButtonsLabels.HugFr.replace("x", "10") : ButtonsLabels.Hug.replace("x", "10"),
+          style: 1,
+          custom_id: `${compressedPayload}h10${userIdSuffix}`,
+        },
+      ],
+    },
+    {
+      type: 1,
+      components: [
+        {
+          type: 2,
+          label: fr ? ButtonsLabels.DefendFr : ButtonsLabels.Defend,
+          style: 3,
+          custom_id: `${compressedPayload}d${userIdSuffix}`,
+        },
+        {
+          type: 2,
+          label: fr ? ButtonsLabels.HealFr : ButtonsLabels.Heal,
+          style: 3,
+          custom_id: `${compressedPayload}s${userIdSuffix}`,
+          disabled: !showAquaHealButton,
+        },
+        {
+          type: 2,
+          label: fr ? ButtonsLabels.SpecialAttackFr : ButtonsLabels.SpecialAttack,
+          style: 3,
+          custom_id: `${compressedPayload}p${userIdSuffix}`,
+          disabled: !team.activePlayer?.specialAttackReady,
+        },
+      ],
+    },
+    {
+      type: 1,
+      components: [
+        {
+          type: 2,
+          label: fr ? ButtonsLabels.RestartFr : ButtonsLabels.Restart,
+          style: 2,
+          custom_id: `${restartPayload}${userIdSuffix}`,
+        },
+        {
+          type: 2,
+          label: fr ? ButtonsLabels.GiveUpFr : ButtonsLabels.GiveUp,
+          style: 2,
+          custom_id: `${compressedPayload}g${userIdSuffix}`,
+        },
+        {
+          type: 2,
+          label: fr ? ButtonsLabels.ChangeMonsterFr : ButtonsLabels.ChangeMonster,
+          style: 2,
+          custom_id: training
+            ? `train.${extractMonster(payload)}.${makeid(10)}${userIdSuffix}`
+            : `${makeid(15)}${userIdSuffix}`,
+          disabled: disableChangeMonster || training,
+        },
+      ],
+    },
+  ];
 
-  return {
-    buttons: [
-      {
-        type: 1,
-        components: [
-          {
-            type: 2,
-            label: fr
-              ? ButtonsLabels.AttackFr.replace("x", "1")
-              : ButtonsLabels.Attack.replace("x", "1"),
-            style: 4,
-            custom_id: `${compressMoves(payload)}a:${userID}`,
-          },
-          {
-            type: 2,
-            label: fr
-              ? ButtonsLabels.AttackFr.replace("x", "4")
-              : ButtonsLabels.Attack.replace("x", "4"),
-            style: 4,
-            custom_id: `${compressMoves(payload)}a4:${userID}`,
-          },
-          {
-            type: 2,
-            label: fr
-              ? ButtonsLabels.AttackFr.replace("x", "10")
-              : ButtonsLabels.Attack.replace("x", "10"),
-            style: 4,
-            custom_id: `${compressMoves(payload)}a10:${userID}`,
-          },
-        ],
-      },
-      {
-        type: 1,
-        components: [
-          {
-            type: 2,
-            label: fr
-              ? ButtonsLabels.HugFr.replace("x", "1")
-              : ButtonsLabels.Hug.replace("x", "1"),
-            style: 1,
-            custom_id: `${compressMoves(payload)}h:${userID}`,
-          },
-          {
-            type: 2,
-            label: fr
-              ? ButtonsLabels.HugFr.replace("x", "4")
-              : ButtonsLabels.Hug.replace("x", "4"),
-            style: 1,
-            custom_id: `${compressMoves(payload)}h4:${userID}`,
-          },
-          {
-            type: 2,
-            label: fr
-              ? ButtonsLabels.HugFr.replace("x", "10")
-              : ButtonsLabels.Hug.replace("x", "10"),
-            style: 1,
-            custom_id: `${compressMoves(payload)}h10:${userID}`,
-          },
-        ],
-      },
-      {
-        type: 1,
-        components: [
-          {
-            type: 2,
-            label: fr ? ButtonsLabels.DefendFr : ButtonsLabels.Defend,
-            style: 3,
-            custom_id: `${compressMoves(payload)}d:${userID}`,
-          },
-          {
-            type: 2,
-            label: fr ? ButtonsLabels.HealFr : ButtonsLabels.Heal,
-            style: 3,
-            custom_id: `${compressMoves(payload)}s:${userID}`,
-            disabled: !showAquaHealButton,
-          },
-          {
-            type: 2,
-            label: fr
-              ? ButtonsLabels.SpecialAttackFr
-              : ButtonsLabels.SpecialAttack,
-            style: 3,
-            custom_id: `${compressMoves(payload)}p:${userID}`,
-            disabled: !team.activePlayer?.specialAttackReady,
-          },
-        ],
-      },
-
-      {
-        type: 1,
-        components: [
-          {
-            type: 2,
-            label: fr ? ButtonsLabels.RestartFr : ButtonsLabels.Restart,
-            style: 2,
-            custom_id: `${restartId(payload)}:${userID}`,
-          },
-          {
-            type: 2,
-            label: fr ? ButtonsLabels.GiveUpFr : ButtonsLabels.GiveUp,
-            style: 2,
-            custom_id: `${compressMoves(payload)}g:${userID}`,
-          },
-          {
-            type: 2,
-            label: fr
-              ? ButtonsLabels.ChangeMonsterFr
-              : ButtonsLabels.ChangeMonster,
-            style: 2,
-            custom_id: training
-              ? `train.${extractMonster(payload)}.${makeid(10)}:${userID}`
-              : `${makeid(15)}:${userID}`,
-            disabled: disableChangeMonster || training,
-          },
-        ],
-      },
-    ],
-    embedDescription: embedDescription,
-  };
+  return { buttons, embedDescription };
 }

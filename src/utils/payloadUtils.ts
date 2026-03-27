@@ -2,19 +2,17 @@
 
 /** Reconstruit l'URL de jeu à partir du customId brut */
 export function customIdToPath(payload: string): string {
-  return payload
-    .split("a")
-    .join("/atk")
-    .split("d")
-    .join("/def")
-    .split("g")
-    .join("/giv")
-    .split("h")
-    .join("/hug")
-    .split("s")
-    .join("/hea")
-    .split("p")
-    .join("/spe");
+  return payload.replace(/[adhgsp]/g, (match) => {
+    switch (match) {
+      case "a": return "/atk";
+      case "d": return "/def";
+      case "g": return "/giv";
+      case "h": return "/hug";
+      case "s": return "/hea";
+      case "p": return "/spe";
+      default: return "";
+    }
+  });
 }
 
 /** Détermine si le payload correspond à une session d'entraînement */
@@ -24,5 +22,6 @@ export function isTraining(payload: string): boolean {
 
 /** Extrait le nom du monstre depuis un payload de training */
 export function extractMonster(payload: string): string {
-  return payload.split(".")[1] || "Troll";
+  const parts = payload.split(".");
+  return parts[1] || "Troll";
 }
