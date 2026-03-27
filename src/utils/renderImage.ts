@@ -23,7 +23,7 @@ class LRUCache<K, V> {
   constructor(
     private maxSize: number,
     private onEvict?: (key: K, val: V) => void,
-  ) { }
+  ) {}
 
   has(key: K): boolean {
     return this.map.has(key);
@@ -403,48 +403,48 @@ async function buildOverlayJsx(
 
   const endMsg = state
     ? (
-      {
-        good:
-          lang === Lang.French
-            ? `${EndMessages.French_Good}${creaturePrefix}${name}${EndMessages.French_ExclamationMark}`
-            : `${EndMessages.English_Good}${creaturePrefix}${name}${EndMessages.English_ExclamationMark}`,
-        bad:
-          lang === Lang.French
-            ? EndMessages.French_Bad
-            : EndMessages.English_Bad,
-        giveup:
-          lang === Lang.French
-            ? EndMessages.French_Giveup
-            : EndMessages.English_Giveup,
-        best:
-          lang === Lang.French
-            ? `${EndMessages.French_Best}${creaturePrefix}${name}${EndMessages.French_ExclamationMark}`
-            : `${EndMessages.English_Best}${creaturePrefix}${name}${EndMessages.English_ExclamationMark}`,
-      } as Record<string, string>
-    )[state]
+        {
+          good:
+            lang === Lang.French
+              ? `${EndMessages.French_Good}${creaturePrefix}${name}${EndMessages.French_ExclamationMark}`
+              : `${EndMessages.English_Good}${creaturePrefix}${name}${EndMessages.English_ExclamationMark}`,
+          bad:
+            lang === Lang.French
+              ? EndMessages.French_Bad
+              : EndMessages.English_Bad,
+          giveup:
+            lang === Lang.French
+              ? EndMessages.French_Giveup
+              : EndMessages.English_Giveup,
+          best:
+            lang === Lang.French
+              ? `${EndMessages.French_Best}${creaturePrefix}${name}${EndMessages.French_ExclamationMark}`
+              : `${EndMessages.English_Best}${creaturePrefix}${name}${EndMessages.English_ExclamationMark}`,
+        } as Record<string, string>
+      )[state]
     : null;
 
   const endMsg2 = state
     ? (
-      {
-        good:
-          lang === Lang.French
-            ? RetryMessages.French_Good
-            : RetryMessages.English_Good,
-        bad:
-          lang === Lang.French
-            ? RetryMessages.French_Bad
-            : RetryMessages.English_Bad,
-        giveup:
-          lang === Lang.French
-            ? RetryMessages.French_Giveup
-            : RetryMessages.English_Giveup,
-        best:
-          lang === Lang.French
-            ? RetryMessages.French_Best
-            : RetryMessages.English_Best,
-      } as Record<string, string>
-    )[state]
+        {
+          good:
+            lang === Lang.French
+              ? RetryMessages.French_Good
+              : RetryMessages.English_Good,
+          bad:
+            lang === Lang.French
+              ? RetryMessages.French_Bad
+              : RetryMessages.English_Bad,
+          giveup:
+            lang === Lang.French
+              ? RetryMessages.French_Giveup
+              : RetryMessages.English_Giveup,
+          best:
+            lang === Lang.French
+              ? RetryMessages.French_Best
+              : RetryMessages.English_Best,
+        } as Record<string, string>
+      )[state]
     : null;
 
   // Résolution synchrone depuis le cache — pas d'await dans la construction JSX
@@ -632,54 +632,54 @@ async function buildOverlayJsx(
         // ── End-state overlay ──────────────────────────────────────────
         ...(endMsg && endImgSrc
           ? [
-            {
-              type: "img",
-              props: {
-                src: endImgSrc,
-                style: {
-                  position: "absolute" as const,
-                  left: 0,
-                  top: 0,
-                  width: "100%",
-                  height: "100%",
+              {
+                type: "img",
+                props: {
+                  src: endImgSrc,
+                  style: {
+                    position: "absolute" as const,
+                    left: 0,
+                    top: 0,
+                    width: "100%",
+                    height: "100%",
+                  },
                 },
               },
-            },
-            {
-              type: "div",
-              props: {
-                style: {
-                  display: "flex" as const,
-                  position: "absolute" as const,
-                  left: W / 2 - endMsg.length * 9,
-                  right: 0,
-                  top: 135 * 2 + 100,
-                  textAlign: "center" as const,
-                  fontSize: 32,
-                  fontFamily: '"Ginto Nord Medium"',
-                  color: "#FFFFFF",
+              {
+                type: "div",
+                props: {
+                  style: {
+                    display: "flex" as const,
+                    position: "absolute" as const,
+                    left: W / 2 - endMsg.length * 9,
+                    right: 0,
+                    top: 135 * 2 + 100,
+                    textAlign: "center" as const,
+                    fontSize: 32,
+                    fontFamily: '"Ginto Nord Medium"',
+                    color: "#FFFFFF",
+                  },
+                  children: endMsg,
                 },
-                children: endMsg,
               },
-            },
-            {
-              type: "div",
-              props: {
-                style: {
-                  display: "flex" as const,
-                  position: "absolute" as const,
-                  left: W / 2 - (endMsg2?.length || 0) * 9,
-                  right: 0,
-                  top: 135 * 2 + 100 + 50,
-                  textAlign: "center" as const,
-                  fontSize: 32,
-                  fontFamily: '"Ginto Nord Medium"',
-                  color: "#FFFFFF",
+              {
+                type: "div",
+                props: {
+                  style: {
+                    display: "flex" as const,
+                    position: "absolute" as const,
+                    left: W / 2 - (endMsg2?.length || 0) * 9,
+                    right: 0,
+                    top: 135 * 2 + 100 + 50,
+                    textAlign: "center" as const,
+                    fontSize: 32,
+                    fontFamily: '"Ginto Nord Medium"',
+                    color: "#FFFFFF",
+                  },
+                  children: endMsg2,
                 },
-                children: endMsg2,
               },
-            },
-          ]
+            ]
           : []),
       ],
     },
