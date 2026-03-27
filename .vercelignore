@@ -1,15 +1,5 @@
-dist/
-scripts/
-src/
-tests/
-jest.config.cjs
-commands.json
-package.json
-tsconfig.json
-tsconfig.test.json
-TESTING.md
-eslint.config.mts
-convert-png-to-webp.ts
-pnpm-lock.yaml
-future.zip
-assets/
+*/          # Ignore all directories
+*           # Ignore all files
+.*          # Ignore all hidden files
+!index.ts   # Exception: Don't ignore index.ts
+!index.js   
