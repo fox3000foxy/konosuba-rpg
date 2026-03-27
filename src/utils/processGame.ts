@@ -57,7 +57,7 @@ export default async function processGame(
     creature.pickColor(rand);
   }
 
-  creature.name = pascalCaseToString(monsterName || creature.constructor.name);
+  // creature.name = lang === Lang.French ? creature.name : pascalCaseToString(creature.constructor.name);
 
   const messages = [
     lang === Lang.French
@@ -248,10 +248,10 @@ export default async function processGame(
 
   const training = !!monsterName;
   if (state === null && moves.length > 0) state = GameState.Incomplete;
-  if (state === GameState.Good) embedDescription.push(lang === Lang.French ? EndMessages.French_Good: EndMessages.English_Good);
-  if (state === GameState.Bad) embedDescription.push(lang === Lang.French ? EndMessages.French_Bad: EndMessages.English_Bad);
-  if (state === GameState.Best) embedDescription.push(lang === Lang.French ? EndMessages.French_Best: EndMessages.English_Best);
-  if (state === GameState.Giveup) embedDescription.push(lang === Lang.French ? EndMessages.French_Giveup: EndMessages.English_Giveup);
+  if (state === GameState.Good) embedDescription.push(lang === Lang.French ? EndMessages.French_Good : EndMessages.English_Good);
+  if (state === GameState.Bad) embedDescription.push(lang === Lang.French ? EndMessages.French_Bad : EndMessages.English_Bad);
+  if (state === GameState.Best) embedDescription.push(lang === Lang.French ? EndMessages.French_Best : EndMessages.English_Best);
+  if (state === GameState.Giveup) embedDescription.push(lang === Lang.French ? EndMessages.French_Giveup : EndMessages.English_Giveup);
   if (state === GameState.Good || state === GameState.Best) embedDescription[embedDescription.length - 1] += creature.name + (lang === Lang.French ? EndMessages.French_ExclamationMark : EndMessages.English_ExclamationMark);
   if (renderingImage) {
     const image = await renderImage(state, messages, team, creature, lang);

@@ -280,7 +280,7 @@ app.get('/game/:lang/*', async (c: Context) => {
   const [rand, moves, , monster] = await processUrl(c.req.url);
   const game = await processGame(rand, moves, monster, lang, false);
   return c.json(game);
-})
+});
 
 app.get('/konosuba-rpg/:lang/*', async (c: Context) => {
   console.log('Received request:', c.req.url);

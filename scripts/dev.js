@@ -18,7 +18,11 @@ async function buildAndStart() {
     target: "node18",
     outfile: "./dist/index.js",
     sourcemap: "inline",
+    treeShaking: true,
+    minify: true,
   });
+
+  // cli equivalent: npx esbuild src/index.ts --bundle --platform=node --target=node18 --outfile=dist/index.js --sourcemap=inline
   startServer();
 }
 
