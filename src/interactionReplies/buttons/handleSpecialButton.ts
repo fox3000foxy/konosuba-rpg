@@ -1,11 +1,17 @@
 import { Context } from "hono";
+import { BASE_URL } from "../../config/constants";
 import { Interaction } from "../../enums/Interaction";
 import { Lang } from "../../enums/Lang";
 import { RawButton } from "../../enums/RawButton";
 import { followUpTimeout } from "../../utils/discordUtils";
 import { buildImageUrl } from "../../utils/imageUtils";
-import processGame from "../../utils/processGame";
-import processUrl from "../../utils/processUrl";
+
+const GIFS_BY_PLAYER: Record<string, string> = {
+  kazuma: "kazuma",
+  aqua: "aqua",
+  megumin: "meg",
+  darkness: "daku",
+};
 
 export async function handleSpecialButton(
   interaction: Interaction,
@@ -15,9 +21,12 @@ export async function handleSpecialButton(
   lang: Lang,
   fr: boolean,
   monsterName: string,
+  activePlayerName: string | null,
   embedDescription: string[],
   buttons: RawButton[],
 ) {
+  const imageUrl = buildImageUrl(payload, lang);
+
   followUpTimeout(
     interaction,
     {
@@ -25,7 +34,7 @@ export async function handleSpecialButton(
       data: {
         embeds: [
           {
-            image: { url: buildImageUrl(payload, lang) },
+            image: { url: imageUrl },
             description:
               (fr
                 ? `Entraînement contre ${monsterName}`
@@ -42,22 +51,9 @@ export async function handleSpecialButton(
     2000,
   );
 
-  const specialAttackLink = buildImageUrl(payload, lang).split(
-    "/konosuba-rpg/",
-  )[0];
-  const [rand, moves, , monster] = processUrl(buildImageUrl(payload, lang));
-  const { team } = await processGame(rand, moves, monster, lang, false);
-  const langIndex = lang === Lang.French ? 1 : 0;
-  const playerName = team.activePlayer?.name[langIndex] || "Kazuma";
+  const playerName = activePlayerName || "Kazuma";
 
-  const gifs: { [key: string]: string } = {
-    kazuma: "kazuma",
-    aqua: "aqua",
-    megumin: "meg",
-    darkness: "daku",
-  };
-
-  const specialAttackUrl = `${specialAttackLink}/assets/player/${gifs[playerName.toLowerCase()] || "kazuma"}.gif`;
+  const specialAttackUrl = `${BASE_URL}/assets/player/${GIFS_BY_PLAYER[playerName.toLowerCase()] || "kazuma"}.gif`;
 
   console.log(
     `Special attack triggered by ${playerName}, using animation from ${specialAttackUrl}`,

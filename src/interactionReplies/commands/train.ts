@@ -14,17 +14,25 @@ export async function handleTrainCommand(
   fr: boolean,
   options: InteractionDataOption[],
 ) {
+  const mobs = generateMob();
   const commandMonster = options.find((o) => o.name === "monster")?.value;
   const langIndex = lang === Lang.French ? 1 : 0;
   const monsterCandidate =
     typeof commandMonster === "string"
       ? commandMonster.trim().toLowerCase()
       : "";
-  const monster = Object.values(generateMob()).find(
+  const monster = mobs.find(
     (k) => k.name[langIndex].toLowerCase() === monsterCandidate,
   );
   if (!monster) {
-    const allMobs = Object.values(generateMob()).sort();
+    const allMobs = mobs
+      .map(
+        (m) =>
+          m.name[langIndex] ||
+          m.constructor.name ||
+          pascalCaseToString(m.constructor.name),
+      )
+      .sort();
     return c.json({
       type: 4,
       data: {

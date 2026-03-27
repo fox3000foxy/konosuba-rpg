@@ -20,10 +20,10 @@ export async function handleInfosMonsterCommand(
 
   const langIndex = fr ? 1 : 0;
 
-  const monsterKey = mobs.find(
+  const monster = mobs.find(
     (m) => m.name[langIndex].toLowerCase() === monsterCandidate,
   );
-  if (!monsterKey) {
+  if (!monster) {
     // const allMobs = Object.keys(generateMob()).sort();
     const allMobs = mobs
       .map(
@@ -41,24 +41,6 @@ export async function handleInfosMonsterCommand(
             description: fr
               ? `Ce monstre est invalide. Voici les monstres valides: ${allMobs.join(", ")}`
               : `Invalid monster. Valid monsters: ${allMobs.join(", ")}`,
-          },
-        ],
-      },
-    });
-  }
-
-  const monster = mobs.find(
-    (m) => m.name[langIndex].toLowerCase() === monsterCandidate,
-  );
-  if (!monster) {
-    return c.json({
-      type: 4,
-      data: {
-        embeds: [
-          {
-            description: fr
-              ? `Erreur lors de la récupération des données du monstre.`
-              : `Error retrieving monster data.`,
           },
         ],
       },
