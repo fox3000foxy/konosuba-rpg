@@ -1,11 +1,11 @@
 import { Context, Hono } from 'hono';
 import { Aqua, Darkness, Kazuma, Megumin } from './classes/Player';
 import { BASE_URL } from './config/constants';
-import { generateMob } from './data/mobMap';
+import { generateMob } from './objects/data/mobMap';
+import { InteractionDataOption } from './objects/types/InteractionDataOption';
 import { serveKonosubaAssets, serveStaticAssets } from './routes/assets';
 import { calculateGame } from './routes/game';
 import { calculateRPG } from './routes/rpg';
-import { InteractionDataOption } from './types/InteractionDataOption';
 import { buildComponents } from './utils/componentsBuilder';
 import { followUpTimeout, verifySignature } from './utils/discordUtils';
 import { makeid } from './utils/idUtils';

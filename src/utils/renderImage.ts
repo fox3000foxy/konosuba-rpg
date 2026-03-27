@@ -3,7 +3,6 @@ import { initWasm, Resvg } from '@resvg/resvg-wasm';
 import satori from 'satori';
 import { Creature } from '../classes/Creature';
 import { Team } from '../classes/Player';
-import { imageManifest } from '../data/imageManifest';
 import { EndMessages } from '../enums/EndMessages';
 import { HealthBarName } from '../enums/HealthBarName';
 import { Lang } from '../enums/Lang';
@@ -14,6 +13,7 @@ import { DarknessImages } from '../enums/player/DarknessImages';
 import { KazumaImages } from '../enums/player/KazumaImages';
 import { MeguminImages } from '../enums/player/MeguminImages';
 import { PlayerName } from '../enums/player/PlayerName';
+import { imageManifest } from '../objects/data/imageManifest';
 
 // ─── Performance instrumentation (no-op in prod) ─────────────────────────────
 
