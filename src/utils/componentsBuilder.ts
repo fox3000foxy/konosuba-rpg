@@ -21,7 +21,7 @@ export async function buildComponents(payload: string, userID: string, lang: Lan
 
   let showAquaHealButton = false;
 
-  if (team.activePlayer && team.activePlayer.name === "Megumin" && state === GameState.Incomplete) {
+  if (team.activePlayer && team.activePlayer.name[lang === Lang.French ? 1 : 0] === "Megumin" && state === GameState.Incomplete) {
     showAquaHealButton = true;
   }
 
