@@ -61,7 +61,7 @@ class LRUCache<K, V> {
   constructor(
     private maxSize: number,
     private onEvict?: (key: K, val: V) => void
-  ) {}
+  ) { }
 
   has(key: K): boolean {
     return this.map.has(key);
@@ -140,28 +140,31 @@ const GLOBAL = globalThis as any;
 
 // Tailles LRU calibrées pour un Worker Cloudflare (128 MB heap typique)
 // PhotonImage 1000×600 RGBA ≈ 2.4 MB → max ~30 images en cache = ~72 MB
-GLOBAL.__imageCache    ??= {} as Record<string, ArrayBuffer>;
-GLOBAL.__base64Cache   ??= {} as Record<string, string>;
-GLOBAL.__fontCache     ??= {} as Record<string, ArrayBuffer>;
-GLOBAL.__photonCache   ??= new LRUCache<string, Photon.PhotonImage>(40, freePhoton);
-GLOBAL.__layerCache    ??= new LRUCache<string, Photon.PhotonImage>(12, freePhoton);
+GLOBAL.__imageCache ??= {} as Record<string, ArrayBuffer>;
+GLOBAL.__base64Cache ??= {} as Record<string, string>;
+GLOBAL.__fontCache ??= {} as Record<string, ArrayBuffer>;
+GLOBAL.__photonCache ??= new LRUCache<string, Photon.PhotonImage>(40, freePhoton);
+GLOBAL.__layerCache ??= new LRUCache<string, Photon.PhotonImage>(12, freePhoton);
 GLOBAL.__uiPhotonCache ??= new LRUCache<string, Photon.PhotonImage>(30, freePhoton);
 
-const imageCache: Record<string, ArrayBuffer>                   = GLOBAL.__imageCache;
-const base64Cache: Record<string, string>                       = GLOBAL.__base64Cache;
-const fontCache: Record<string, ArrayBuffer>                    = GLOBAL.__fontCache;
-const photonCache: LRUCache<string, Photon.PhotonImage>         = GLOBAL.__photonCache;
-const layerCache: LRUCache<string, Photon.PhotonImage>          = GLOBAL.__layerCache;
-const uiPhotonCache: LRUCache<string, Photon.PhotonImage>       = GLOBAL.__uiPhotonCache;
+const imageCache: Record<string, ArrayBuffer> = GLOBAL.__imageCache;
+const base64Cache: Record<string, string> = GLOBAL.__base64Cache;
+const fontCache: Record<string, ArrayBuffer> = GLOBAL.__fontCache;
+const photonCache: LRUCache<string, Photon.PhotonImage> = GLOBAL.__photonCache;
+const layerCache: LRUCache<string, Photon.PhotonImage> = GLOBAL.__layerCache;
+const uiPhotonCache: LRUCache<string, Photon.PhotonImage> = GLOBAL.__uiPhotonCache;
 
 // ─── Image / Font cache ───────────────────────────────────────────────────────
 
 export async function getImageBytes(key: string): Promise<ArrayBuffer> {
   if (imageCache[key]) return imageCache[key];
 
-  const url: string = imageManifest[key];
-  if (!url) throw new Error(`Image key not found in manifest: ${key}`);
+  const BASE = "https://raw.githubusercontent.com/fox3000foxy/konosuba-rpg/refs/heads/main";
+  const path: string = imageManifest[key];
+  const url = `${BASE}/${path}`;
 
+  if (!url) throw new Error(`Image key not found in manifest: ${key}`);
+  
   const resp = await fetch(url);
   if (!resp.ok) throw new Error(`Failed to fetch image "${key}": ${resp.status}`);
 
@@ -256,7 +259,7 @@ function flipX(img: Photon.PhotonImage): Photon.PhotonImage {
     for (let x = 0; x < w; x++) {
       const src = (y * w + x) * 4;
       const dst = (y * w + (w - 1 - x)) * 4;
-      flipped[dst]     = raw[src];
+      flipped[dst] = raw[src];
       flipped[dst + 1] = raw[src + 1];
       flipped[dst + 2] = raw[src + 2];
       flipped[dst + 3] = raw[src + 3];
@@ -399,10 +402,10 @@ async function getCharactersLayer(
   const layer = new Photon.PhotonImage(new Uint8Array(W * H * 4), W, H);
 
   const slots = [
-    { i: 3, x: (W * 2) / 8 - 45,  y: (H / 2 - 52 * 2) - 45 },
-    { i: 2, x: (W * 2) / 8 + 75,  y: (H / 2 - 52 * 2) - 45 },
-    { i: 1, x: (W * 2) / 8 - 75,  y: (H / 2 - 52 * 2) + 45 },
-    { i: 0, x: (W * 2) / 8 + 50,  y: (H / 2 - 52 * 2) + 45 },
+    { i: 3, x: (W * 2) / 8 - 45, y: (H / 2 - 52 * 2) - 45 },
+    { i: 2, x: (W * 2) / 8 + 75, y: (H / 2 - 52 * 2) - 45 },
+    { i: 1, x: (W * 2) / 8 - 75, y: (H / 2 - 52 * 2) + 45 },
+    { i: 0, x: (W * 2) / 8 + 50, y: (H / 2 - 52 * 2) + 45 },
   ];
 
   // FIX #4 — Chargement des sprites en parallèle
@@ -458,21 +461,21 @@ async function buildOverlayJsx(
   }
 
   const endMsg = state ? ({
-    good:   lang === Lang.French
+    good: lang === Lang.French
       ? `${EndMessages.French_Good}${creature.prefix ? Prefix.French_Determined : Prefix.None}${creature.name}${EndMessages.French_ExclamationMark}`
       : `${EndMessages.English_Good}${creature.prefix ? Prefix.English_Determined : Prefix.None}${creature.name}${EndMessages.English_ExclamationMark}`,
-    bad:    lang === Lang.French ? EndMessages.French_Bad    : EndMessages.English_Bad,
+    bad: lang === Lang.French ? EndMessages.French_Bad : EndMessages.English_Bad,
     giveup: lang === Lang.French ? EndMessages.French_Giveup : EndMessages.English_Giveup,
-    best:   lang === Lang.French
+    best: lang === Lang.French
       ? `${EndMessages.French_Best}${creature.prefix ? Prefix.French_Determined : Prefix.None}${creature.name}${EndMessages.French_ExclamationMark}`
       : `${EndMessages.English_Best}${creature.prefix ? Prefix.English_Determined : Prefix.None}${creature.name}${EndMessages.English_ExclamationMark}`,
   } as Record<string, string>)[state] : null;
 
   const endMsg2 = state ? ({
-    good:   lang === Lang.French ? RetryMessages.French_Good   : RetryMessages.English_Good,
-    bad:    lang === Lang.French ? RetryMessages.French_Bad    : RetryMessages.English_Bad,
+    good: lang === Lang.French ? RetryMessages.French_Good : RetryMessages.English_Good,
+    bad: lang === Lang.French ? RetryMessages.French_Bad : RetryMessages.English_Bad,
     giveup: lang === Lang.French ? RetryMessages.French_Giveup : RetryMessages.English_Giveup,
-    best:   lang === Lang.French ? RetryMessages.French_Best   : RetryMessages.English_Best,
+    best: lang === Lang.French ? RetryMessages.French_Best : RetryMessages.English_Best,
   } as Record<string, string>)[state] : null;
 
   const endImgSrc = endMsg
@@ -481,9 +484,9 @@ async function buildOverlayJsx(
 
   let pid = 0;
   switch (team.activePlayer?.name) {
-    case PlayerName.Kazuma:   pid = 0; break;
-    case PlayerName.Aqua:     pid = 1; break;
-    case PlayerName.Megumin:  pid = 2; break;
+    case PlayerName.Kazuma: pid = 0; break;
+    case PlayerName.Aqua: pid = 1; break;
+    case PlayerName.Megumin: pid = 2; break;
     case PlayerName.Darkness: pid = 3; break;
   }
   team.setActivePlayer(team.players[pid]);
@@ -531,11 +534,11 @@ async function buildOverlayJsx(
         // ── Player info (secondary x3) ─────────────────────────────────
         ...[1, 2, 3].flatMap((offset) => {
           const i = (pid + offset) % 4;
-          const xBase  = offset === 2 ? 332 * 2 : 234 * 2;
-          const yBase  = offset === 3 ? 56.25 * 2 - 38 : 36 * 2 - 38 + 3;
-          const thmX   = offset === 2 ? 300 * 1.5 + 10 + 200 : 300 * 1.5 + 10;
-          const thmY   = offset === 3 ? 70 + 10 - 38 : 40 - 38;
-          const op     = team.players[i];
+          const xBase = offset === 2 ? 332 * 2 : 234 * 2;
+          const yBase = offset === 3 ? 56.25 * 2 - 38 : 36 * 2 - 38 + 3;
+          const thmX = offset === 2 ? 300 * 1.5 + 10 + 200 : 300 * 1.5 + 10;
+          const thmY = offset === 3 ? 70 + 10 - 38 : 40 - 38;
+          const op = team.players[i];
           return [
             { type: 'img', props: { src: op?.icon, style: { position: 'absolute' as const, left: thmX, top: thmY, width: 40, height: 40 } } },
             {
@@ -683,7 +686,7 @@ export default async function renderImage(
   perfSpan('fonts', tFonts);
 
   const playerImages = team.players.map((p) => p.images);
-  const teamHp       = team.players.map((p) => p.hp);
+  const teamHp = team.players.map((p) => p.hp);
 
   // FIX #4 — Les trois layers en parallèle, chacun court-circuite son cache
   const tLayers = performance.now();
@@ -710,8 +713,8 @@ export default async function renderImage(
   if (_perfReport) {
     _perfReport.totalMs = performance.now() - renderStart;
     _perfReport.cacheHits['photon_cache_size'] = photonCache.size > 0;
-    _perfReport.cacheHits['layer_cache_size']  = layerCache.size > 0;
-    _perfReport.cacheHits['ui_cache_size']     = uiPhotonCache.size > 0;
+    _perfReport.cacheHits['layer_cache_size'] = layerCache.size > 0;
+    _perfReport.cacheHits['ui_cache_size'] = uiPhotonCache.size > 0;
   }
 
   return outputUint8;
@@ -721,12 +724,12 @@ export default async function renderImage(
 
 export function getCacheDiagnostics(): Record<string, unknown> {
   return {
-    photonCacheSize:   photonCache.size,
-    layerCacheSize:    layerCache.size,
-    uiCacheSize:       uiPhotonCache.size,
-    imageCacheKeys:    Object.keys(imageCache).length,
-    base64CacheKeys:   Object.keys(base64Cache).length,
-    fontCacheKeys:     Object.keys(fontCache).length,
+    photonCacheSize: photonCache.size,
+    layerCacheSize: layerCache.size,
+    uiCacheSize: uiPhotonCache.size,
+    imageCacheKeys: Object.keys(imageCache).length,
+    base64CacheKeys: Object.keys(base64Cache).length,
+    fontCacheKeys: Object.keys(fontCache).length,
     wasmReady,
   };
 }
