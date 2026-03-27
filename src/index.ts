@@ -54,7 +54,7 @@ app.post('/api/interactions', async (c: Context) => {
     // /infos-player
     if (interaction.data?.name === 'infos-player') {
       const characterId = Number(interaction.data.options?.find((o: InteractionDataOption) => o.name === 'character')?.value);
-      return handleInfosPlayerCommand(c, userID, lang, fr, characterId);
+      return handleInfosPlayerCommand(c, fr, characterId);
     }
 
     // /infos-monster
