@@ -50,8 +50,8 @@ function generateMessage(
   replacements: Record<string, string | number>,
 ): string {
   return Object.keys(replacements).reduce(
-    // eslint-disable-next-line security/detect-non-literal-regexp
     (msg, key) =>
+      // eslint-disable-next-line security/detect-non-literal-regexp
       msg.replace(new RegExp(`\\{${key}\\}`, "g"), String(replacements[key])),
     template,
   );
@@ -167,7 +167,7 @@ function handlePlayerAction({
     case PlayerAction.Hea.toLocaleUpperCase(): {
       if (currentPlayer.name[langIndex] === "Aqua") {
         currentPlayer.performAction(PlayerAction.Hea);
-        (currentPlayer as Aqua).heal(currentPlayer.team);
+        (currentPlayer as Aqua).heal(currentPlayer.getTeam());
         const playerIndex = currentPlayer.playerId;
         const rng = rand.randint(
           0,
@@ -226,6 +226,8 @@ export default async function processGame(
 ): Promise<Game> {
   lang = lang === Lang.French ? Lang.French : Lang.English;
   const team = new Team();
+
+  // Precompute monster and team setup
   const creature = monsterName
     ? generateMob().find(
         (MobClass) =>
@@ -243,6 +245,7 @@ export default async function processGame(
     lang,
     creature.gender,
   );
+
   const messages: string[] = [
     lang === Lang.French
       ? `Attention, ${prefix}${name} !`
@@ -260,9 +263,15 @@ export default async function processGame(
   let counter = -1;
   const playerCount = team.players.length;
 
+  // Reset special attack status for all players
   team.players.forEach((player) => player.resetSpecialAttack());
 
+  // Precompute reusable values
+  const langIndex = lang === Lang.French ? 1 : 0;
+
   for (const move of moves) {
+    if (state !== GameState.Incomplete) break; // Early exit if game state is resolved
+
     if (move === "GIV") {
       state = GameState.Giveup;
       break;
@@ -274,9 +283,16 @@ export default async function processGame(
     counter += 1;
     playerId = counter % playerCount;
 
+    // Skip players with 0 HP
     while (team.players[playerId].hp <= 0) {
       playerId = (playerId + 1) % playerCount;
+      if (playerId === counter % playerCount) {
+        state = GameState.Bad; // All players are down
+        break;
+      }
     }
+
+    if (state === GameState.Bad) break; // Exit if all players are down
 
     const currentPlayer = team.players[playerId];
     team.setActivePlayer(currentPlayer);
@@ -293,6 +309,7 @@ export default async function processGame(
       embedDescription,
     });
 
+    // Check if creature is defeated
     if (creature.hp <= 0) {
       state = GameState.Good;
       break;
@@ -303,18 +320,18 @@ export default async function processGame(
       break;
     }
 
-    if (currentPlayer.name[lang === Lang.French ? 1 : 0] !== "Aqua") {
+    // Skip creature's turn if current player is not Aqua
+    if (currentPlayer.name[langIndex] !== "Aqua") {
       continue;
     }
 
+    // Creature's turn
     const randomPlayer = rand.choice(team.players.filter((p) => p.hp > 0));
     const creatureMove = creature.turn({
       lang,
       dmg: rand.randint(creature.attack[0], creature.attack[1]),
       player: randomPlayer,
     });
-
-    const langName = lang === Lang.French ? "French" : "English";
 
     if (randomPlayer.defending) {
       const { name, prefix } = getCreatureNameAndPrefix(
@@ -323,11 +340,11 @@ export default async function processGame(
         creature.gender,
       );
       const msg = generateMessage(
-        MessagesTemplates[`${langName}_CreatureMisses`],
+        MessagesTemplates[`${lang === Lang.French ? "French" : "English"}_CreatureMisses`],
         {
           NAME: prefix + name,
           DMG: creatureMove[1],
-          PLAYER: randomPlayer.name[lang === Lang.French ? 1 : 0],
+          PLAYER: randomPlayer.name[langIndex],
         },
       );
       messages.push(msg);
@@ -337,11 +354,12 @@ export default async function processGame(
       const msg =
         randomPlayer.hp > 0
           ? creatureMove[0]
-          : `${creatureMove[0]} ${randomPlayer.name[lang === Lang.French ? 1 : 0]} is down...`;
+          : `${creatureMove[0]} ${randomPlayer.name[langIndex]} is down...`;
       messages.push(msg);
       embedDescription.push(msg);
     }
 
+    // Check if all players are down
     const teamHP = team.players.reduce((sum, player) => sum + player.hp, 0);
     if (teamHP <= 0) {
       state = GameState.Bad;
@@ -349,6 +367,7 @@ export default async function processGame(
     }
   }
 
+  // Finalize game state
   if (state === GameState.Incomplete && moves.length > 0) {
     state = GameState.Incomplete;
   }
