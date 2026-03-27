@@ -17,13 +17,16 @@ export async function calculateGame(c: Context) {
       delete playerWithoutTeam.images;
       delete playerWithoutTeam.specialAttackReady;
       delete playerWithoutTeam.specialAttackCurrentRounds;
-      delete playerWithoutTeam.playerId;
       delete playerWithoutTeam.icon;
       delete playerWithoutTeam.lore;
       playerWithoutTeam.name = player.name[lang === Lang.French ? 0 : 1];
       return playerWithoutTeam;
     }),
   } as Record<string, unknown>;
+
+  if(game.team.activePlayer) {
+    serializableTeam.activePlayer = game.team.activePlayer.name[lang === Lang.French ? 0 : 1];
+  }
 
   const strippedCreature = { ...game.creature } as Record<string, unknown>;
   delete strippedCreature.images;
