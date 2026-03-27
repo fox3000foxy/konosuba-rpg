@@ -59,10 +59,6 @@ function decompressMoves(comp: string): string {
   });
 }
 
-// const encoded = compressMoves('adddddddddddghspuu');
-// console.log('Compressed:', encoded);
-// console.log('Decompressed:', decompressMoves(encoded));
-
 const app = new Hono();
 
 function makeid(length: number): string {
