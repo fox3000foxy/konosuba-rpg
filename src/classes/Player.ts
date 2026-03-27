@@ -9,6 +9,40 @@ import { PlayerLore } from "../enums/player/PlayerLore";
 import { PlayerStats } from "../enums/player/PlayerStats";
 import { PlayerThmb } from "../enums/player/PlayerThmb";
 
+type ActionImageMap = Partial<Record<PlayerAction, string>>;
+
+const KAZUMA_IMAGE_BY_ACTION: ActionImageMap = {
+  [PlayerAction.Idle]: KazumaImages.Idle,
+  [PlayerAction.Def]: KazumaImages.Def,
+  [PlayerAction.Atk]: KazumaImages.Atk,
+  [PlayerAction.Hug]: KazumaImages.Hug,
+  [PlayerAction.Spe]: KazumaImages.Atk,
+};
+
+const DARKNESS_IMAGE_BY_ACTION: ActionImageMap = {
+  [PlayerAction.Idle]: DarknessImages.Idle,
+  [PlayerAction.Def]: DarknessImages.Def,
+  [PlayerAction.Atk]: DarknessImages.Atk,
+  [PlayerAction.Hug]: DarknessImages.Hug,
+  [PlayerAction.Spe]: DarknessImages.Atk,
+};
+
+const MEGUMIN_IMAGE_BY_ACTION: ActionImageMap = {
+  [PlayerAction.Idle]: MeguminImages.Idle,
+  [PlayerAction.Def]: MeguminImages.Def,
+  [PlayerAction.Atk]: MeguminImages.Atk,
+  [PlayerAction.Hug]: MeguminImages.Hug,
+  [PlayerAction.Spe]: MeguminImages.Atk,
+};
+
+const AQUA_IMAGE_BY_ACTION: ActionImageMap = {
+  [PlayerAction.Idle]: AquaImages.Idle,
+  [PlayerAction.Def]: AquaImages.Def,
+  [PlayerAction.Atk]: AquaImages.Atk,
+  [PlayerAction.Hug]: AquaImages.Hug,
+  [PlayerAction.Spe]: AquaImages.Atk,
+};
+
 // Abstract Player class
 export abstract class Player {
   public hpMax: number;
@@ -62,20 +96,51 @@ export abstract class Player {
   }
 
   abstract performAction(action: PlayerAction): void;
+
   resetSpecialAttack() {
     this.specialAttackReady = false;
     this.specialAttackCurrentRounds = 0;
   }
 
-  getTeam (): Team {
-	if (!this.team) {
-	  throw new Error("Player is not assigned to a team.");
-	}
-	return this.team;
+  protected progressSpecialAttack() {
+    this.specialAttackCurrentRounds += 1;
+    if (
+      !this.specialAttackReady &&
+      this.specialAttackCurrentRounds >= this.specialAttackNeededRounds
+    ) {
+      this.specialAttackReady = true;
+      this.specialAttackCurrentRounds = 0;
+    }
+  }
+
+  protected consumeSpecialAttack() {
+    this.specialAttackReady = false;
+    this.specialAttackCurrentRounds = 0;
+  }
+
+  protected performMappedAction(
+    action: PlayerAction,
+    imageByAction: ActionImageMap,
+  ) {
+    this.progressSpecialAttack();
+    const image = imageByAction[action];
+    if (image) {
+      this.images = [image];
+    }
+    if (action === PlayerAction.Spe) {
+      this.consumeSpecialAttack();
+    }
+  }
+
+  getTeam(): Team {
+    if (!this.team) {
+      throw new Error("Player is not assigned to a team.");
+    }
+    return this.team;
   }
 
   setTeam(team: Team) {
-	this.team = team;
+    this.team = team;
   }
 }
 
@@ -97,33 +162,7 @@ export class Kazuma extends Player {
   }
 
   performAction(action: PlayerAction): void {
-    this.specialAttackCurrentRounds++;
-    if (
-      !this.specialAttackReady &&
-      this.specialAttackCurrentRounds >= this.specialAttackNeededRounds
-    ) {
-      this.specialAttackReady = true;
-      this.specialAttackCurrentRounds = 0;
-    }
-    switch (action) {
-      case PlayerAction.Idle:
-        this.images = [KazumaImages.Idle];
-        break;
-      case PlayerAction.Def:
-        this.images = [KazumaImages.Def];
-        break;
-      case PlayerAction.Atk:
-        this.images = [KazumaImages.Atk];
-        break;
-      case PlayerAction.Hug:
-        this.images = [KazumaImages.Hug];
-        break;
-      case PlayerAction.Spe:
-        this.images = [KazumaImages.Atk];
-        this.specialAttackReady = false;
-        this.specialAttackCurrentRounds = 0;
-        break;
-    }
+    this.performMappedAction(action, KAZUMA_IMAGE_BY_ACTION);
   }
 }
 
@@ -145,33 +184,7 @@ export class Darkness extends Player {
   }
 
   performAction(action: PlayerAction): void {
-    this.specialAttackCurrentRounds++;
-    if (
-      !this.specialAttackReady &&
-      this.specialAttackCurrentRounds >= this.specialAttackNeededRounds
-    ) {
-      this.specialAttackReady = true;
-      this.specialAttackCurrentRounds = 0;
-    }
-    switch (action) {
-      case PlayerAction.Idle:
-        this.images = [DarknessImages.Idle];
-        break;
-      case PlayerAction.Def:
-        this.images = [DarknessImages.Def];
-        break;
-      case PlayerAction.Atk:
-        this.images = [DarknessImages.Atk];
-        break;
-      case PlayerAction.Hug:
-        this.images = [DarknessImages.Hug];
-        break;
-      case PlayerAction.Spe:
-        this.images = [DarknessImages.Atk];
-        this.specialAttackReady = false;
-        this.specialAttackCurrentRounds = 0;
-        break;
-    }
+    this.performMappedAction(action, DARKNESS_IMAGE_BY_ACTION);
   }
 }
 
@@ -193,33 +206,7 @@ export class Megumin extends Player {
   }
 
   performAction(action: PlayerAction): void {
-    this.specialAttackCurrentRounds++;
-    if (
-      !this.specialAttackReady &&
-      this.specialAttackCurrentRounds >= this.specialAttackNeededRounds
-    ) {
-      this.specialAttackReady = true;
-      this.specialAttackCurrentRounds = 0;
-    }
-    switch (action) {
-      case PlayerAction.Idle:
-        this.images = [MeguminImages.Idle];
-        break;
-      case PlayerAction.Def:
-        this.images = [MeguminImages.Def];
-        break;
-      case PlayerAction.Atk:
-        this.images = [MeguminImages.Atk];
-        break;
-      case PlayerAction.Hug:
-        this.images = [MeguminImages.Hug];
-        break;
-      case PlayerAction.Spe:
-        this.images = [MeguminImages.Atk];
-        this.specialAttackReady = false;
-        this.specialAttackCurrentRounds = 0;
-        break;
-    }
+    this.performMappedAction(action, MEGUMIN_IMAGE_BY_ACTION);
   }
 }
 
@@ -241,36 +228,10 @@ export class Aqua extends Player {
   }
 
   performAction(action: PlayerAction): void {
-    this.specialAttackCurrentRounds++;
-    if (
-      !this.specialAttackReady &&
-      this.specialAttackCurrentRounds >= this.specialAttackNeededRounds
-    ) {
-      this.specialAttackReady = true;
-      this.specialAttackCurrentRounds = 0;
-    }
-    switch (action) {
-      case PlayerAction.Idle:
-        this.images = [AquaImages.Idle];
-        break;
-      case PlayerAction.Def:
-        this.images = [AquaImages.Def];
-        break;
-      case PlayerAction.Atk:
-        this.images = [AquaImages.Atk];
-        break;
-      case PlayerAction.Hug:
-        this.images = [AquaImages.Hug];
-        break;
-      case PlayerAction.Spe:
-        this.images = [AquaImages.Atk];
-        this.specialAttackReady = false;
-        this.specialAttackCurrentRounds = 0;
-        break;
-    }
+    this.performMappedAction(action, AQUA_IMAGE_BY_ACTION);
   }
 
-  heal(team: Team) {
+  heal(team: Team = this.getTeam()) {
     team.players.forEach((player) => {
       if (player.hp > 0) {
         player.hp = Math.min(player.hp + 15, player.hpMax);
@@ -293,6 +254,7 @@ export class Team {
     ];
     this.players.forEach((player, index) => {
       player.playerId = index;
+      player.setTeam(this);
     });
   }
 
