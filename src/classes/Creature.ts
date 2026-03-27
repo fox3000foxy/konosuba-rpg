@@ -60,61 +60,32 @@ export abstract class Creature implements CreatureInterface {
     player: Player;
   }): [string, number] {
     const dmg = options.dmg;
-    const langIndex = options.lang === "fr" ? 1 : 0;
+    const isFrench = options.lang === "fr";
+    const langIndex = isFrench ? 1 : 0;
     const creatureGender = this.gender;
     const name = this.name[langIndex];
     const creaturePrefix = this.prefix
-      ? options.lang === "fr"
+      ? isFrench
         ? creatureGender === "female"
           ? Prefix.French_Determined_Feminine
           : Prefix.French_Determined_Masculine
         : Prefix.English_Determined
       : Prefix.None;
-    switch (options.lang) {
-      case "fr":
-        if (dmg)
-          return [
-            MessagesTemplates.French_CreatureAttacks.replace(
-              "${NAME}",
-              `${creaturePrefix}${name}`,
-            )
-              .replace("{DMG}", dmg.toString())
-              .replace("{PLAYER}", options.player.name[langIndex]),
-            dmg,
-          ];
-        else
-          return [
-            MessagesTemplates.French_CreatureMisses.replace(
-              "${NAME}",
-              `${creaturePrefix}${name}`,
-            )
-              .replace("{DMG}", dmg.toString())
-              .replace("{PLAYER}", options.player.name[langIndex]),
-            dmg,
-          ];
-      case "en":
-      default:
-        if (dmg)
-          return [
-            MessagesTemplates.English_CreatureAttacks.replace(
-              "${NAME}",
-              `${creaturePrefix}${name}`,
-            )
-              .replace("{DMG}", dmg.toString())
-              .replace("{PLAYER}", options.player.name[langIndex]),
-            dmg,
-          ];
-        else
-          return [
-            MessagesTemplates.English_CreatureMisses.replace(
-              "${NAME}",
-              `${creaturePrefix}${name}`,
-            )
-              .replace("{DMG}", dmg.toString())
-              .replace("{PLAYER}", options.player.name[langIndex]),
-            dmg,
-          ];
-    }
+
+    const template = isFrench
+      ? dmg
+        ? MessagesTemplates.French_CreatureAttacks
+        : MessagesTemplates.French_CreatureMisses
+      : dmg
+        ? MessagesTemplates.English_CreatureAttacks
+        : MessagesTemplates.English_CreatureMisses;
+
+    const message = template
+      .replace("${NAME}", `${creaturePrefix}${name}`)
+      .replace("{DMG}", dmg.toString())
+      .replace("{PLAYER}", options.player.name[langIndex]);
+
+    return [message, dmg];
   }
 
   dealAttack(dmg: number) {
