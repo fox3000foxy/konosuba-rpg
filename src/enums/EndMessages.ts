@@ -8,5 +8,5 @@ export enum EndMessages {
   French_Giveup = "Vous avez déclaré forfait.",
   French_Best = "Vous avez réussi à être ami avec ",
   English_ExclamationMark = "!",
-  French_ExclamationMark = " !"
+  French_ExclamationMark = " !",
 }

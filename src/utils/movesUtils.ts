@@ -2,14 +2,14 @@
 
 /** Compresses a string of moves */
 export function compressMoves(moves: string): string {
-  let result = '';
+  let result = "";
   let count = 1;
 
   for (let i = 1; i <= moves.length; i++) {
     if (moves[i] === moves[i - 1]) {
       count++;
     } else {
-      result += moves[i - 1] + (count > 1 ? count : '');
+      result += moves[i - 1] + (count > 1 ? count : "");
       count = 1;
     }
   }

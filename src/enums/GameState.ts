@@ -3,5 +3,5 @@ export enum GameState {
   Bad = "bad",
   Best = "best",
   Incomplete = "incomplete",
-  Giveup = "giveup"
+  Giveup = "giveup",
 }
