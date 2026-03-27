@@ -3,25 +3,13 @@
 import { ButtonsLabels } from "../enums/ButtonsLabels";
 import { GameState } from "../enums/GameState";
 import { Lang } from "../enums/Lang";
+import { RawButton } from "../enums/RawButton";
 import { makeid, restartId } from "./idUtils";
 import { buildImageUrl } from "./imageUtils";
 import { compressMoves } from "./movesUtils";
 import { extractMonster, isTraining } from "./payloadUtils";
 import processGame from "./processGame";
 import processUrl from "./processUrl";
-
-interface Button {
-  type: number;
-  label: string;
-  style: number;
-  custom_id: string;
-  disabled?: boolean;
-}
-
-interface RawButton {
-  type: number;
-  components: Button[];
-}
 
 export async function buildComponents(payload: string, userID: string, lang: Lang, disableChangeMonster = false): Promise<{ buttons: RawButton[]; embedDescription: string[] }> {
   const imageUrl = buildImageUrl(payload, lang);
