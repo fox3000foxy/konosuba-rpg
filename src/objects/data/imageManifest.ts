@@ -1,6 +1,6 @@
 // Auto-generated file. Regenerate with: pnpm ts-node scripts/generate-image-manifest.ts
 
-import { BASE_URL } from "../config/constants";
+import { BASE_URL } from "../../config/constants";
 
 export const imageManifest: Record<string, string> = {
   "enemy_image_10001": BASE_URL + "assets/mobs/enemy_image_10001.webp",

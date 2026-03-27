@@ -1,5 +1,5 @@
 import { serveStatic } from 'hono/serve-static';
-import { imageManifest } from '../data/imageManifest';
+import { imageManifest } from '../objects/data/imageManifest';
 
 export const serveStaticAssets = serveStatic({
     root: process.cwd() + '/assets',
