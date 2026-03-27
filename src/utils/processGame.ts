@@ -329,7 +329,9 @@ export default async function processGame(
         creature.gender,
       );
       const msg = generateMessage(
-        MessagesTemplates[`${lang === Lang.French ? "French" : "English"}_CreatureMisses`],
+        MessagesTemplates[
+          `${lang === Lang.French ? "French" : "English"}_CreatureMisses`
+        ],
         {
           NAME: prefix + name,
           DMG: creatureMove[1],

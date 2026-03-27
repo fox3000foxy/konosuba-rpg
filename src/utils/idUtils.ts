@@ -8,7 +8,9 @@ const ID_CHARACTERS_LENGTH = ID_CHARACTERS.length;
 export function makeid(length: number): string {
   let result = "";
   for (let i = 0; i < length; i += 1) {
-    result += ID_CHARACTERS.charAt(Math.floor(Math.random() * ID_CHARACTERS_LENGTH));
+    result += ID_CHARACTERS.charAt(
+      Math.floor(Math.random() * ID_CHARACTERS_LENGTH),
+    );
   }
   return result + "/";
 }
