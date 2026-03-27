@@ -1,5 +1,26 @@
-*/          # Ignore all directories
-*           # Ignore all files
-.*          # Ignore all hidden files
-!index.ts   # Exception: Don't ignore index.ts
-!index.js   
+# Directories
+dist/
+scripts/
+src/
+tests/
+assets/
+
+# Configuration files
+eslint.config.mts
+jest.config.cjs
+tsconfig.json
+tsconfig.test.json
+commands.json
+
+# Package management
+package.json
+pnpm-lock.yaml
+
+# Documentation
+TESTING.md
+
+# Source files
+convert-png-to-webp.ts
+
+# Archives
+future.zip
