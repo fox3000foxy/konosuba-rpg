@@ -3,8 +3,14 @@ import { Interaction } from "./enums/Interaction";
 import { Lang } from "./enums/Lang";
 import { handleDefaultButton } from "./interactionReplies/buttons/handleDefaultButton";
 import { handleSpecialButton } from "./interactionReplies/buttons/handleSpecialButton";
-import { handleInfosMonsterCommand } from "./interactionReplies/commands/infos-monster";
-import { handleInfosPlayerCommand } from "./interactionReplies/commands/infos-player";
+import {
+  generateMonsterInfosByConstructorName,
+  handleInfosMonsterCommand,
+} from "./interactionReplies/commands/infos-monster";
+import {
+  generatePlayerInfos,
+  handleInfosPlayerCommand,
+} from "./interactionReplies/commands/infos-player";
 import { handleStartCommand } from "./interactionReplies/commands/start";
 import { handleTrainCommand } from "./interactionReplies/commands/train";
 import { InteractionDataOption } from "./objects/types/InteractionDataOption";
@@ -16,6 +22,44 @@ import { decompressMoves } from "./utils/movesUtils";
 import { extractMonster, isTraining } from "./utils/payloadUtils";
 
 const app = new Hono();
+
+const PLAYER_ID_BY_NAME: Record<string, number> = {
+  kazuma: 0,
+  darkness: 1,
+  megumin: 2,
+  aqua: 3,
+};
+
+function getApiLang(c: Context) {
+  return c.req.query("lang") === "fr";
+}
+
+app.get("/player/:playerName", (c: Context) => {
+  const fr = getApiLang(c);
+  const playerName = (c.req.param("playerName") || "").trim().toLowerCase();
+  const characterId = PLAYER_ID_BY_NAME[playerName];
+
+  if (characterId === undefined) {
+    return c.json(
+      {
+        error: fr
+          ? "Personnage invalide. Utilisez Kazuma, Darkness, Megumin ou Aqua."
+          : "Invalid player. Use Kazuma, Darkness, Megumin, or Aqua.",
+      },
+      400,
+    );
+  }
+
+  return c.json(generatePlayerInfos(fr, characterId).player);
+});
+
+app.get("/monster/:monsterConstructorName", (c: Context) => {
+  const fr = getApiLang(c);
+  const monsterConstructorName = c.req.param("monsterConstructorName") || "";
+  return c.json(
+    generateMonsterInfosByConstructorName(monsterConstructorName, fr).creature,
+  );
+});
 
 app.get("/game/:lang/*", calculateGame);
 app.get("/konosuba-rpg/:lang/*", calculateRPG);
@@ -114,11 +158,8 @@ app.post("/api/interactions", async (c: Context) => {
 
     const training = isTraining(payload);
     const monsterName = training ? extractMonster(payload) : "";
-    const { buttons, embedDescription, activePlayerName } = await buildComponents(
-      payload,
-      userID,
-      lang,
-    );
+    const { buttons, embedDescription, activePlayerName } =
+      await buildComponents(payload, userID, lang);
 
     const special = interaction.data.custom_id.split(":")[0].endsWith("p");
     if (special) {

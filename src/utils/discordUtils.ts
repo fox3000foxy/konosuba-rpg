@@ -36,7 +36,9 @@ export async function verifySignature(
 ): Promise<boolean> {
   const signature = c.req.header("x-signature-ed25519");
   const timestamp = c.req.header("x-signature-timestamp");
-  const PUBLIC_KEY = c.env?.PUBLIC_KEY || "8d61a524ccac360a3fd47de09c8df98487e7bec67884e4004feee5b1eb81062d";
+  const PUBLIC_KEY =
+    c.env?.PUBLIC_KEY ||
+    "8d61a524ccac360a3fd47de09c8df98487e7bec67884e4004feee5b1eb81062d";
 
   if (!signature || !timestamp || !PUBLIC_KEY) {
     console.warn("Missing required headers or public key");

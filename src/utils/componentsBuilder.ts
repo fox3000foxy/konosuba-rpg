@@ -60,8 +60,7 @@ export async function buildComponents(
   const hugLabels = fr ? HUG_LABELS_FR : HUG_LABELS_EN;
 
   const showAquaHealButton =
-    activePlayerName === "Megumin" &&
-    state === GameState.Incomplete;
+    activePlayerName === "Megumin" && state === GameState.Incomplete;
 
   if (state === GameState.Incomplete) {
     disableChangeMonster = true;
@@ -132,7 +131,9 @@ export async function buildComponents(
         },
         {
           type: 2,
-          label: fr ? ButtonsLabels.SpecialAttackFr : ButtonsLabels.SpecialAttack,
+          label: fr
+            ? ButtonsLabels.SpecialAttackFr
+            : ButtonsLabels.SpecialAttack,
           style: 3,
           custom_id: `${actionPrefix}p${userIdSuffix}`,
           disabled: !team.activePlayer?.specialAttackReady,
@@ -156,7 +157,9 @@ export async function buildComponents(
         },
         {
           type: 2,
-          label: fr ? ButtonsLabels.ChangeMonsterFr : ButtonsLabels.ChangeMonster,
+          label: fr
+            ? ButtonsLabels.ChangeMonsterFr
+            : ButtonsLabels.ChangeMonster,
           style: 2,
           custom_id: training
             ? `train.${extractMonster(payload)}.${makeid(10)}${userIdSuffix}`

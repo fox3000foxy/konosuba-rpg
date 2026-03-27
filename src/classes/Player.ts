@@ -75,7 +75,7 @@ export abstract class Player {
       | PlayerThmb.Megumin
       | PlayerThmb.Aqua,
     lore: string,
-    gender: Gender
+    gender: Gender,
   ) {
     this.hpMax = hpMax;
     this.hp = hpMax;
@@ -155,7 +155,7 @@ export class Kazuma extends Player {
       [KazumaImages.Idle],
       PlayerThmb.Kazuma,
       PlayerLore.Kazuma,
-      Gender.Male
+      Gender.Male,
     );
     this.specialAttackNeededRounds = 3; // Kazuma's special attack is ready after 3 rounds
     this.playerId = 0;
@@ -177,7 +177,7 @@ export class Darkness extends Player {
       [DarknessImages.Idle],
       PlayerThmb.Darkness,
       PlayerLore.Darkness,
-      Gender.Female
+      Gender.Female,
     );
     this.specialAttackNeededRounds = 5; // Darkness's special attack is ready after 5 rounds
     this.playerId = 1;
@@ -199,7 +199,7 @@ export class Megumin extends Player {
       [MeguminImages.Idle],
       PlayerThmb.Megumin,
       PlayerLore.Megumin,
-      Gender.Female
+      Gender.Female,
     );
     this.specialAttackNeededRounds = 4; // Megumin's special attack is ready after 4 rounds
     this.playerId = 2;
@@ -221,7 +221,7 @@ export class Aqua extends Player {
       [AquaImages.Idle],
       PlayerThmb.Aqua,
       PlayerLore.Aqua,
-      Gender.Female
+      Gender.Female,
     );
     this.specialAttackNeededRounds = 3; // Aqua's special attack is ready after 3 rounds
     this.playerId = 3;
@@ -246,12 +246,7 @@ export class Team {
   activePlayer: Player | null = null;
 
   constructor() {
-    this.players = [
-      new Kazuma(),
-      new Darkness(),
-      new Megumin(),
-      new Aqua(),
-    ];
+    this.players = [new Kazuma(), new Darkness(), new Megumin(), new Aqua()];
     this.players.forEach((player, index) => {
       player.playerId = index;
       player.setTeam(this);
