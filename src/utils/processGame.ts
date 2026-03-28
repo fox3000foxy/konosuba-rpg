@@ -168,13 +168,12 @@ function handlePlayerAction({
       if (currentPlayer.name[langIndex] === "Aqua") {
         currentPlayer.performAction(PlayerAction.Hea);
         (currentPlayer as Aqua).heal();
-        const playerIndex = currentPlayer.playerId;
         const rng = rand.randint(
           0,
-          linesTyped[lang].aquaHealMsgs[playerIndex].length - 1,
+          linesTyped[lang].aquaHealMsgs.length - 1,
         );
-        const msg = linesTyped[lang].aquaHealMsgs[playerIndex][rng];
-        const desc = descriptionsTyped[lang].aquaHealMsgs[playerIndex][rng];
+        const msg = linesTyped[lang].aquaHealMsgs[rng];
+        const desc = descriptionsTyped[lang].aquaHealMsgs[rng];
         messages.push(msg);
         embedDescription.push(desc);
       }
