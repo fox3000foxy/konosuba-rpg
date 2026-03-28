@@ -51,7 +51,6 @@ function generateMessage(
 ): string {
   return Object.keys(replacements).reduce(
     (msg, key) =>
-      // eslint-disable-next-line security/detect-non-literal-regexp
       msg.replace(String(key), String(replacements[key])),
     template,
   );
