@@ -62,12 +62,11 @@ export async function buildComponents(
   const showAquaHealButton =
     activePlayerName === "Megumin" && state === GameState.Incomplete;
 
+  let buttons: RawButton[] = [];
   if (state === GameState.Incomplete) {
     disableChangeMonster = true;
-  }
-
-  const buttons = [
-    {
+  } else {
+    buttons = [    {
       type: 1,
       components: [
         {
@@ -139,7 +138,10 @@ export async function buildComponents(
           disabled: !team.activePlayer?.specialAttackReady,
         },
       ],
-    },
+    }]
+  }
+
+  buttons = [...buttons,
     {
       type: 1,
       components: [
