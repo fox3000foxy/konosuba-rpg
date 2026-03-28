@@ -266,9 +266,9 @@ export default async function processGame(
 
   // Precompute reusable values
   const langIndex = lang === Lang.French ? 1 : 0;
-  const activePlayers = team.players.filter((player) => player.hp > 0);
-
+  let activePlayers: Player[];
   for (const move of moves) {
+    activePlayers = team.players.filter((player) => player.hp > 0);
     if (state !== GameState.Incomplete) break; // Early exit if game state is resolved
 
     if (move === "GIV") {
@@ -309,7 +309,7 @@ export default async function processGame(
     }
 
     // Skip creature's turn if current player is not Aqua
-    if (currentPlayer.name[langIndex] !== "Aqua") {
+    if (currentPlayer !== activePlayers[activePlayers.length - 1]) {
       continue;
     }
 
@@ -348,6 +348,8 @@ export default async function processGame(
       messages.push(msg);
       embedDescription.push(msg);
     }
+
+    activePlayers = team.players.filter((player) => player.hp > 0);
 
     // Check if all players are down
     if (activePlayers.length === 0) {
