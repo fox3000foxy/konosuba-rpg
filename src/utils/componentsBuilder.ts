@@ -65,7 +65,6 @@ export async function buildComponents(
   let buttons: RawButton[] = [];
   if (state === GameState.Incomplete) {
     disableChangeMonster = true;
-  } else {
     buttons = [
       {
         type: 1,
