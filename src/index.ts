@@ -20,8 +20,6 @@ import { buildComponents } from "./utils/componentsBuilder";
 import { verifySignature } from "./utils/discordUtils";
 import { decompressMoves } from "./utils/movesUtils";
 import { extractMonster, isTraining } from "./utils/payloadUtils";
-import { imageManifest } from "./objects/data/imageManifest";
-import { BASE_URL } from "./config/constants";
 
 const app = new Hono();
 
