@@ -63,7 +63,7 @@ export function generateMonsterInfos(
     const rand = new Random();
     monster.pickColor(rand);
   }
-  const imgUrl = `https://raw.githubusercontent.com/fox3000foxy/konosuba-rpg/refs/heads/main/assets/mobs/${monster.images[0]}.webp`;
+  const imgUrl = `https://fox3000foxy.com/konosuba-rpg/assets/mobs/${monster.images[0]}.webp`;
 
   return {
     command: {
