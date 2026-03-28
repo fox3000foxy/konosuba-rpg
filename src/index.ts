@@ -20,6 +20,8 @@ import { buildComponents } from "./utils/componentsBuilder";
 import { verifySignature } from "./utils/discordUtils";
 import { decompressMoves } from "./utils/movesUtils";
 import { extractMonster, isTraining } from "./utils/payloadUtils";
+import { imageManifest } from "./objects/data/imageManifest";
+import { BASE_URL } from "./config/constants";
 
 const app = new Hono();
 
@@ -33,6 +35,10 @@ const PLAYER_ID_BY_NAME: Record<string, number> = {
 function getApiLang(c: Context) {
   return c.req.query("lang") === "fr";
 }
+app.get('/assets/*', (c: Context) => {
+  const basePath = 'https://raw.githubusercontent.com/fox3000foxy/konosuba-rpg/refs/heads/main/';
+  return c.redirect(`${basePath}${c.req.path}`);
+});
 
 app.get("/player/:playerName", (c: Context) => {
   const fr = getApiLang(c);
