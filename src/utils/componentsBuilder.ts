@@ -66,82 +66,85 @@ export async function buildComponents(
   if (state === GameState.Incomplete) {
     disableChangeMonster = true;
   } else {
-    buttons = [    {
-      type: 1,
-      components: [
-        {
-          type: 2,
-          label: attackLabels[0],
-          style: 4,
-          custom_id: `${actionPrefix}a${userIdSuffix}`,
-        },
-        {
-          type: 2,
-          label: attackLabels[1],
-          style: 4,
-          custom_id: `${actionPrefix}a4${userIdSuffix}`,
-        },
-        {
-          type: 2,
-          label: attackLabels[2],
-          style: 4,
-          custom_id: `${actionPrefix}a10${userIdSuffix}`,
-        },
-      ],
-    },
-    {
-      type: 1,
-      components: [
-        {
-          type: 2,
-          label: hugLabels[0],
-          style: 1,
-          custom_id: `${actionPrefix}h${userIdSuffix}`,
-        },
-        {
-          type: 2,
-          label: hugLabels[1],
-          style: 1,
-          custom_id: `${actionPrefix}h4${userIdSuffix}`,
-        },
-        {
-          type: 2,
-          label: hugLabels[2],
-          style: 1,
-          custom_id: `${actionPrefix}h10${userIdSuffix}`,
-        },
-      ],
-    },
-    {
-      type: 1,
-      components: [
-        {
-          type: 2,
-          label: fr ? ButtonsLabels.DefendFr : ButtonsLabels.Defend,
-          style: 3,
-          custom_id: `${actionPrefix}d${userIdSuffix}`,
-        },
-        {
-          type: 2,
-          label: fr ? ButtonsLabels.HealFr : ButtonsLabels.Heal,
-          style: 3,
-          custom_id: `${actionPrefix}s${userIdSuffix}`,
-          disabled: !showAquaHealButton,
-        },
-        {
-          type: 2,
-          label: fr
-            ? ButtonsLabels.SpecialAttackFr
-            : ButtonsLabels.SpecialAttack,
-          style: 3,
-          custom_id: `${actionPrefix}p${userIdSuffix}`,
-          disabled: !team.activePlayer?.specialAttackReady,
-        },
-      ],
-    }]
+    buttons = [
+      {
+        type: 1,
+        components: [
+          {
+            type: 2,
+            label: attackLabels[0],
+            style: 4,
+            custom_id: `${actionPrefix}a${userIdSuffix}`,
+          },
+          {
+            type: 2,
+            label: attackLabels[1],
+            style: 4,
+            custom_id: `${actionPrefix}a4${userIdSuffix}`,
+          },
+          {
+            type: 2,
+            label: attackLabels[2],
+            style: 4,
+            custom_id: `${actionPrefix}a10${userIdSuffix}`,
+          },
+        ],
+      },
+      {
+        type: 1,
+        components: [
+          {
+            type: 2,
+            label: hugLabels[0],
+            style: 1,
+            custom_id: `${actionPrefix}h${userIdSuffix}`,
+          },
+          {
+            type: 2,
+            label: hugLabels[1],
+            style: 1,
+            custom_id: `${actionPrefix}h4${userIdSuffix}`,
+          },
+          {
+            type: 2,
+            label: hugLabels[2],
+            style: 1,
+            custom_id: `${actionPrefix}h10${userIdSuffix}`,
+          },
+        ],
+      },
+      {
+        type: 1,
+        components: [
+          {
+            type: 2,
+            label: fr ? ButtonsLabels.DefendFr : ButtonsLabels.Defend,
+            style: 3,
+            custom_id: `${actionPrefix}d${userIdSuffix}`,
+          },
+          {
+            type: 2,
+            label: fr ? ButtonsLabels.HealFr : ButtonsLabels.Heal,
+            style: 3,
+            custom_id: `${actionPrefix}s${userIdSuffix}`,
+            disabled: !showAquaHealButton,
+          },
+          {
+            type: 2,
+            label: fr
+              ? ButtonsLabels.SpecialAttackFr
+              : ButtonsLabels.SpecialAttack,
+            style: 3,
+            custom_id: `${actionPrefix}p${userIdSuffix}`,
+            disabled: !team.activePlayer?.specialAttackReady,
+          },
+        ],
+      },
+    ];
   }
 
-  buttons = [...buttons,
+  buttons = [
+    ...buttons,
     {
       type: 1,
       components: [
