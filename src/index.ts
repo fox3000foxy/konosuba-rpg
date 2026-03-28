@@ -34,7 +34,7 @@ function getApiLang(c: Context) {
   return c.req.query("lang") === "fr";
 }
 app.get('/assets/*', (c: Context) => {
-  const basePath = 'https://raw.githubusercontent.com/fox3000foxy/konosuba-rpg/refs/heads/main/';
+  const basePath = 'https://fox3000foxy.com/konosuba-rpg/';
   return c.redirect(`${basePath}${c.req.path}`);
 });
 

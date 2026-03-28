@@ -100,7 +100,7 @@ export function generatePlayerInfos(
   const hp = player.hp;
   const attackR = player.attack;
 
-  const imgUrl = `https://raw.githubusercontent.com/fox3000foxy/konosuba-rpg/refs/heads/main/assets/player/${player.images[0]}.webp`;
+  const imgUrl = `https://fox3000foxy.com/konosuba-rpg/assets/player/${player.images[0]}.webp`;
 
   return {
     command: {

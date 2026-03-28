@@ -71,7 +71,7 @@ for (const dir of ASSET_DIRS) {
     //   posixPath(fromAssetSubpath),
     //   `${key}.ts`
     // );
-    const basePath = 'https://raw.githubusercontent.com/fox3000foxy/konosuba-rpg/refs/heads/main/';
+    const basePath = 'https://fox3000foxy.com/konosuba-rpg/';
     const modulePath = basePath + posixPath(file);
     loaders.push({ key, modulePath });
   }
