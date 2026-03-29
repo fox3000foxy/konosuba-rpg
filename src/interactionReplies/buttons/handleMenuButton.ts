@@ -112,7 +112,11 @@ function playerMenuComponents(userID: string, fr: boolean): RawButton[] {
   ];
 }
 
-function monsterMenuComponents(userID: string, fr: boolean, page: number): RawButton[] {
+function monsterMenuComponents(
+  userID: string,
+  fr: boolean,
+  page: number
+): RawButton[] {
   const owner = `:${userID}`;
   const catalog = getMonsterCatalog(fr).map(item => ({
     ...item,
@@ -121,17 +125,22 @@ function monsterMenuComponents(userID: string, fr: boolean, page: number): RawBu
         ? item.name.trim()
         : item.id,
   }));
-  const totalPages = Math.max(1, Math.ceil(catalog.length / MONSTERS_PAGE_SIZE));
+  const totalPages = Math.max(
+    1,
+    Math.ceil(catalog.length / MONSTERS_PAGE_SIZE)
+  );
   const safePage = Math.min(Math.max(page, 0), totalPages - 1);
   const start = safePage * MONSTERS_PAGE_SIZE;
   const pageItems = catalog.slice(start, start + MONSTERS_PAGE_SIZE);
-  console.log(`Displaying monsters page ${safePage + 1}/${totalPages} (items ${start + 1}-${start + pageItems.length} of ${catalog.length})`);
+  console.log(
+    `Displaying monsters page ${safePage + 1}/${totalPages} (items ${start + 1}-${start + pageItems.length} of ${catalog.length})`
+  );
 
   const monsterRows: RawButton[] = [];
   for (let i = 0; i < pageItems.length; i += 5) {
     monsterRows.push({
       type: 1,
-        components: pageItems.slice(i, i + 5).map(item => ({
+      components: pageItems.slice(i, i + 5).map(item => ({
         type: 2,
         style: 2,
         label: item.name.slice(0, 80),
@@ -212,7 +221,9 @@ async function buildStartData(userID: string, lang: Lang, fr: boolean) {
         image: { url: imageUrl },
         description:
           (fr ? `**Partie de <@${userID}>**` : `**<@${userID}> game**`) +
-          (embedDescription.length > 0 ? `\n\n${embedDescription.join('\n')}` : ''),
+          (embedDescription.length > 0
+            ? `\n\n${embedDescription.join('\n')}`
+            : ''),
         color: 0x2b2d31,
       },
     ],
@@ -229,7 +240,11 @@ async function buildTrainData(
   const monsterName = resolveMonsterName(monsterIdentifier, fr);
   const payload = `train.${monsterName}.${makeid(10)}`;
   const imageUrl = buildImageUrl(payload, lang);
-  const { embedDescription, buttons } = await buildComponents(payload, userID, lang);
+  const { embedDescription, buttons } = await buildComponents(
+    payload,
+    userID,
+    lang
+  );
 
   return {
     embeds: [
@@ -239,7 +254,9 @@ async function buildTrainData(
           (fr
             ? `**Entrainement contre ${monsterName} (joueur <@${userID}>)**`
             : `**Training vs ${monsterName} (player <@${userID}>)**`) +
-          (embedDescription.length > 0 ? `\n\n${embedDescription.join('\n')}` : ''),
+          (embedDescription.length > 0
+            ? `\n\n${embedDescription.join('\n')}`
+            : ''),
         color: 0x2b2d31,
       },
     ],

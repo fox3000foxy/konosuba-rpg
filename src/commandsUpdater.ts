@@ -201,7 +201,9 @@ export async function patchCommands(): Promise<void> {
   const existing = await discordApi<DiscordCommand[]>(baseUrl, token, {
     method: 'GET',
   });
-  const existingByName = new Map(existing.map(command => [command.name, command]));
+  const existingByName = new Map(
+    existing.map(command => [command.name, command])
+  );
 
   let created = 0;
   let updated = 0;
@@ -209,7 +211,9 @@ export async function patchCommands(): Promise<void> {
   for (const command of commands) {
     const name = typeof command.name === 'string' ? command.name : '';
     if (!name) {
-      throw new Error('Each command in commands.json must have a non-empty name');
+      throw new Error(
+        'Each command in commands.json must have a non-empty name'
+      );
     }
 
     const previous = existingByName.get(name);

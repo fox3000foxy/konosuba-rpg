@@ -205,7 +205,7 @@ export async function recordRunResult(input: RecordRunInput): Promise<void> {
 
   for (const quest of QUESTS) {
     const shouldIncrement =
-      (quest.conditionKey === 'play') ||
+      quest.conditionKey === 'play' ||
       (quest.conditionKey === 'win' && isWin) ||
       (quest.conditionKey === 'level-up' && leveledUp);
 
@@ -239,7 +239,10 @@ export async function recordRunResult(input: RecordRunInput): Promise<void> {
         });
 
       if (questInsertError) {
-        console.error('[db] create quest progress failed:', questInsertError.message);
+        console.error(
+          '[db] create quest progress failed:',
+          questInsertError.message
+        );
       }
       continue;
     }
@@ -261,7 +264,10 @@ export async function recordRunResult(input: RecordRunInput): Promise<void> {
       .eq('quest_key', quest.key);
 
     if (questUpdateError) {
-      console.error('[db] update quest progress failed:', questUpdateError.message);
+      console.error(
+        '[db] update quest progress failed:',
+        questUpdateError.message
+      );
     }
   }
 }

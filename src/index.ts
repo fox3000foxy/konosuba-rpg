@@ -216,7 +216,7 @@ app.post('/api/interactions', async (c: Context) => {
           type: 4,
           data: {
             content: fr
-              ? "Erreur du menu. Reessayez dans quelques secondes."
+              ? 'Erreur du menu. Reessayez dans quelques secondes.'
               : 'Menu error. Please try again in a few seconds.',
             flags: 1 << 6,
           },

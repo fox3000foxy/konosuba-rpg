@@ -1,7 +1,14 @@
 import { Context } from 'hono';
-import { ensurePlayerProfile, getPlayerProfile } from '../../services/progressionService';
+import {
+  ensurePlayerProfile,
+  getPlayerProfile,
+} from '../../services/progressionService';
 
-export async function handleProfileCommand(c: Context, userID: string, fr: boolean) {
+export async function handleProfileCommand(
+  c: Context,
+  userID: string,
+  fr: boolean
+) {
   await ensurePlayerProfile(userID);
   const profile = await getPlayerProfile(userID);
 
