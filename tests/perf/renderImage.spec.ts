@@ -1,6 +1,6 @@
 import { performance } from 'node:perf_hooks';
 import { Random } from '../../src/classes/Random';
-import { Lang } from '../../src/enums/Lang';
+import { Lang } from '../../src/objects/enums/Lang';
 import processGame from '../../src/utils/processGame';
 
 

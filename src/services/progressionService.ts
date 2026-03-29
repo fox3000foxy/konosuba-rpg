@@ -1,12 +1,23 @@
+import { CharacterKey } from '../objects/enums/CharacterKey';
 import { GameState } from '../objects/enums/GameState';
 import { QuestConditionKey } from '../objects/enums/QuestConditionKey';
 import { RecordRunInput } from '../objects/types/RecordRunInput';
 import { getSupabaseAdminClient } from '../utils/supabaseClient';
 import { syncAchievements } from './achievementService';
+import {
+  addCharacterXp,
+  ensureCharacterProgress
+} from './characterService';
 import { ensurePlayerProfile } from './playerService';
 import { QUESTS } from './questService';
 
 export { ACHIEVEMENTS, getAchievementsOverview } from './achievementService';
+export {
+  addCharacterXp, computeLevelFromXp, ensureCharacterProgress,
+  getCharacterProgress,
+  getCharacterProgresses,
+  getCharacterStatsSnapshot, getLevelFactor
+} from './characterService';
 export {
   ensurePlayerProfile,
   getLeaderboard,
@@ -68,6 +79,7 @@ export async function recordRunResult(input: RecordRunInput): Promise<void> {
 
   // Ensure player exists before recording run (foreign key constraint)
   await ensurePlayerProfile(input.userId);
+  await ensureCharacterProgress(input.userId);
 
   const supabase = getSupabaseAdminClient();
   if (!supabase) {
@@ -144,6 +156,12 @@ export async function recordRunResult(input: RecordRunInput): Promise<void> {
   } else {
     console.log(`[db] xp updated successfully for user=${input.userId}`);
   }
+
+  await Promise.all([
+    addCharacterXp(input.userId, CharacterKey.Darkness, gainedXp),
+    addCharacterXp(input.userId, CharacterKey.Megumin, gainedXp),
+    addCharacterXp(input.userId, CharacterKey.Aqua, gainedXp),
+  ]);
 
   const questDay = currentQuestDay();
   const isWin = isWinningState(input.state);

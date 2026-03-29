@@ -4,6 +4,7 @@ import { ButtonsLabels } from '../objects/enums/ButtonsLabels';
 import { GameState } from '../objects/enums/GameState';
 import { Lang } from '../objects/enums/Lang';
 import { RawButton } from '../objects/enums/RawButton';
+import { getCharacterStatsSnapshot } from '../services/progressionService';
 import { makeid, restartId } from './idUtils';
 import { buildImageUrl } from './imageUtils';
 import { compressMoves } from './movesUtils';
@@ -41,12 +42,18 @@ export async function buildComponents(
   const imageUrl = buildImageUrl(payload, lang);
 
   const [rand, moves, , monster] = processUrl(imageUrl);
+  const characterStatsSnapshot = await getCharacterStatsSnapshot(userID);
+  const characterFactors = characterStatsSnapshot
+    ? characterStatsSnapshot.map(snapshot => snapshot.factor)
+    : undefined;
+
   const { state, team, embedDescription } = await processGame(
     rand,
     moves,
     monster,
     lang,
-    false
+    false,
+    characterFactors
   );
   const training = isTraining(payload);
   const fr = lang === Lang.French;
