@@ -1,9 +1,9 @@
 export enum PlayerAction {
-  Def = "Def",
-  Atk = "Atk",
-  Hug = "Hug",
-  Idle = "Idle",
-  Giv = "Giv",
-  Hea = "Hea",
-  Spe = "Spe",
+  Def = 'Def',
+  Atk = 'Atk',
+  Hug = 'Hug',
+  Idle = 'Idle',
+  Giv = 'Giv',
+  Hea = 'Hea',
+  Spe = 'Spe',
 }

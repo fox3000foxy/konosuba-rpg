@@ -1,6 +1,6 @@
-import { Errors } from "../enums/Errors";
-import { Creature, CreatureInterface } from "./Creature";
-import { Random } from "./Random";
+import { Errors } from '../enums/Errors';
+import { Creature, CreatureInterface } from './Creature';
+import { Random } from './Random';
 
 export interface GenericCreatureInterface extends CreatureInterface {
   pickColor(rng: Random): void;

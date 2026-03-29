@@ -1,29 +1,20 @@
-import { Random } from "../classes/Random";
-import { PlayerAction } from "../enums/player/PlayerAction";
+import { Random } from '../classes/Random';
+import { PlayerAction } from '../enums/player/PlayerAction';
 
 // Precompute valid moves set outside the function to avoid recreating it on every call
-const VALID_MOVES_SET = new Set([
-  PlayerAction.Atk.toLocaleUpperCase(),
-  PlayerAction.Def.toLocaleUpperCase(),
-  PlayerAction.Hug.toLocaleUpperCase(),
-  PlayerAction.Hea.toLocaleUpperCase(),
-  PlayerAction.Giv.toLocaleUpperCase(),
-  PlayerAction.Spe.toLocaleUpperCase(),
-]);
+const VALID_MOVES_SET = new Set([PlayerAction.Atk.toLocaleUpperCase(), PlayerAction.Def.toLocaleUpperCase(), PlayerAction.Hug.toLocaleUpperCase(), PlayerAction.Hea.toLocaleUpperCase(), PlayerAction.Giv.toLocaleUpperCase(), PlayerAction.Spe.toLocaleUpperCase()]);
 
-export default function processUrl(
-  url: string,
-): [Random, string[], string, string | null] {
-  const monsterIdx = url.indexOf("monster=");
+export default function processUrl(url: string): [Random, string[], string, string | null] {
+  const monsterIdx = url.indexOf('monster=');
   let monster: string | null = null;
   if (monsterIdx !== -1) {
     const raw = url.slice(monsterIdx + 8);
-    const ampIdx = raw.indexOf("&");
+    const ampIdx = raw.indexOf('&');
     monster = ampIdx === -1 ? raw || null : raw.slice(0, ampIdx) || null;
   }
 
-  const urlParts = url.split("/");
-  const seedStr = (urlParts[5] || "").toLowerCase();
+  const urlParts = url.split('/');
+  const seedStr = (urlParts[5] || '').toLowerCase();
 
   const moves: string[] = [];
   for (let i = 0; i < urlParts.length; i += 1) {

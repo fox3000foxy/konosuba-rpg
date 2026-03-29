@@ -1,37 +1,29 @@
 /** Function to build Discord components */
 
-import { ButtonsLabels } from "../enums/ButtonsLabels";
-import { GameState } from "../enums/GameState";
-import { Lang } from "../enums/Lang";
-import { RawButton } from "../enums/RawButton";
-import { makeid, restartId } from "./idUtils";
-import { buildImageUrl } from "./imageUtils";
-import { compressMoves } from "./movesUtils";
-import { extractMonster, isTraining } from "./payloadUtils";
-import processGame from "./processGame";
-import processUrl from "./processUrl";
+import { ButtonsLabels } from '../enums/ButtonsLabels';
+import { GameState } from '../enums/GameState';
+import { Lang } from '../enums/Lang';
+import { RawButton } from '../enums/RawButton';
+import { makeid, restartId } from './idUtils';
+import { buildImageUrl } from './imageUtils';
+import { compressMoves } from './movesUtils';
+import { extractMonster, isTraining } from './payloadUtils';
+import processGame from './processGame';
+import processUrl from './processUrl';
 
-const ATTACK_LABELS = ["1", "4", "10"];
-const HUG_LABELS = ["1", "4", "10"];
+const ATTACK_LABELS = ['1', '4', '10'];
+const HUG_LABELS = ['1', '4', '10'];
 
-const ATTACK_LABELS_FR = ATTACK_LABELS.map((value) =>
-  ButtonsLabels.AttackFr.replace("x", value),
-);
-const ATTACK_LABELS_EN = ATTACK_LABELS.map((value) =>
-  ButtonsLabels.Attack.replace("x", value),
-);
-const HUG_LABELS_FR = HUG_LABELS.map((value) =>
-  ButtonsLabels.HugFr.replace("x", value),
-);
-const HUG_LABELS_EN = HUG_LABELS.map((value) =>
-  ButtonsLabels.Hug.replace("x", value),
-);
+const ATTACK_LABELS_FR = ATTACK_LABELS.map(value => ButtonsLabels.AttackFr.replace('x', value));
+const ATTACK_LABELS_EN = ATTACK_LABELS.map(value => ButtonsLabels.Attack.replace('x', value));
+const HUG_LABELS_FR = HUG_LABELS.map(value => ButtonsLabels.HugFr.replace('x', value));
+const HUG_LABELS_EN = HUG_LABELS.map(value => ButtonsLabels.Hug.replace('x', value));
 
 export async function buildComponents(
   payload: string,
   userID: string,
   lang: Lang,
-  disableChangeMonster = false,
+  disableChangeMonster = false
 ): Promise<{
   buttons: RawButton[];
   embedDescription: string[];
@@ -40,13 +32,7 @@ export async function buildComponents(
   const imageUrl = buildImageUrl(payload, lang);
 
   const [rand, moves, , monster] = processUrl(imageUrl);
-  const { state, team, embedDescription } = await processGame(
-    rand,
-    moves,
-    monster,
-    lang,
-    false,
-  );
+  const { state, team, embedDescription } = await processGame(rand, moves, monster, lang, false);
   const training = isTraining(payload);
   const fr = lang === Lang.French;
   const langIndex = fr ? 1 : 0;
@@ -59,8 +45,7 @@ export async function buildComponents(
   const attackLabels = fr ? ATTACK_LABELS_FR : ATTACK_LABELS_EN;
   const hugLabels = fr ? HUG_LABELS_FR : HUG_LABELS_EN;
 
-  const showAquaHealButton =
-    activePlayerName === "Megumin" && state === GameState.Incomplete;
+  const showAquaHealButton = activePlayerName === 'Megumin' && state === GameState.Incomplete;
 
   let buttons: RawButton[] = [];
   if (state === GameState.Incomplete) {
@@ -130,9 +115,7 @@ export async function buildComponents(
           },
           {
             type: 2,
-            label: fr
-              ? ButtonsLabels.SpecialAttackFr
-              : ButtonsLabels.SpecialAttack,
+            label: fr ? ButtonsLabels.SpecialAttackFr : ButtonsLabels.SpecialAttack,
             style: 3,
             custom_id: `${actionPrefix}p${userIdSuffix}`,
             disabled: !team.activePlayer?.specialAttackReady,
@@ -161,13 +144,9 @@ export async function buildComponents(
         },
         {
           type: 2,
-          label: fr
-            ? ButtonsLabels.ChangeMonsterFr
-            : ButtonsLabels.ChangeMonster,
+          label: fr ? ButtonsLabels.ChangeMonsterFr : ButtonsLabels.ChangeMonster,
           style: 2,
-          custom_id: training
-            ? `train.${extractMonster(payload)}.${makeid(10)}${userIdSuffix}`
-            : `${makeid(15)}${userIdSuffix}`,
+          custom_id: training ? `train.${extractMonster(payload)}.${makeid(10)}${userIdSuffix}` : `${makeid(15)}${userIdSuffix}`,
           disabled: disableChangeMonster || training,
         },
       ],

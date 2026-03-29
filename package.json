@@ -19,6 +19,8 @@
     "dev:node": "npx ts-node-dev --respawn --transpile-only --logger=debug --ignore-watch node_modules src/index.ts",
     "dev:wrangler": "npx wrangler dev",
     "check": "npm run tsc:build && npm run test",
+    "format": "npx prettier --config prettier.json --write src",
+    "format:check": "npx prettier --config prettier.json --check src",
     "lint": "npx eslint src",
     "build": "npx esbuild src/index.ts --bundle --platform=node --target=node18 --outfile=api/index.js --minify --tree-shaking",
     "build:watch": "npx esbuild src/index.ts --bundle --platform=node --target=node18 --outfile=api/index.js --watch",

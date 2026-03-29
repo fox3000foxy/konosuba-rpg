@@ -6,14 +6,14 @@ export function compressMoves(moves: string): string {
     return moves;
   }
 
-  let result = "";
+  let result = '';
   let count = 1;
 
   for (let i = 1; i <= moves.length; i += 1) {
     if (moves[i] === moves[i - 1]) {
       count += 1;
     } else {
-      result += moves[i - 1] + (count > 1 ? String(count) : "");
+      result += moves[i - 1] + (count > 1 ? String(count) : '');
       count = 1;
     }
   }
@@ -23,7 +23,7 @@ export function compressMoves(moves: string): string {
 
 /** Decompresses a compressed string of moves */
 export function decompressMoves(comp: string): string {
-  let result = "";
+  let result = '';
   let i = 0;
 
   while (i < comp.length) {
@@ -31,7 +31,7 @@ export function decompressMoves(comp: string): string {
     i += 1;
 
     let count = 0;
-    while (i < comp.length && comp[i] >= "0" && comp[i] <= "9") {
+    while (i < comp.length && comp[i] >= '0' && comp[i] <= '9') {
       count = count * 10 + (comp.charCodeAt(i) - 48);
       i += 1;
     }
