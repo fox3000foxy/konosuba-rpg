@@ -10,6 +10,12 @@ type DiscordCommand = {
   name: string;
 };
 
+type DiscordRateLimitBody = {
+  retry_after?: number;
+  message?: string;
+  global?: boolean;
+};
+
 const OPTION_TYPE_MAP: Record<string, number> = {
   SUB_COMMAND: 1,
   SUB_COMMAND_GROUP: 2,
@@ -103,25 +109,66 @@ async function discordApi<T>(
   token: string,
   init?: RequestInit
 ): Promise<T> {
-  const response = await fetch(url, {
-    ...init,
-    headers: {
-      Authorization: `Bot ${token}`,
-      'Content-Type': 'application/json',
-      ...(init?.headers || {}),
-    },
-  });
+  const maxAttempts = 6;
 
-  if (!response.ok) {
-    const body = await response.text();
-    throw new Error(`Discord API ${response.status}: ${body}`);
+  for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+    const response = await fetch(url, {
+      ...init,
+      headers: {
+        Authorization: `Bot ${token}`,
+        'Content-Type': 'application/json',
+        ...(init?.headers || {}),
+      },
+    });
+
+    if (response.status === 429 && attempt < maxAttempts) {
+      let waitMs = 1000;
+      const retryAfterHeader = response.headers.get('retry-after');
+      if (retryAfterHeader) {
+        const seconds = Number.parseFloat(retryAfterHeader);
+        if (Number.isFinite(seconds) && seconds > 0) {
+          waitMs = Math.ceil(seconds * 1000);
+        }
+      }
+
+      const bodyText = await response.text();
+      if (bodyText) {
+        try {
+          const parsed = JSON.parse(bodyText) as DiscordRateLimitBody;
+          if (
+            typeof parsed.retry_after === 'number' &&
+            Number.isFinite(parsed.retry_after) &&
+            parsed.retry_after > 0
+          ) {
+            waitMs = Math.ceil(parsed.retry_after * 1000);
+          }
+        } catch {
+          // Keep wait time from header/default when body is not JSON.
+        }
+      }
+
+      // Add a small safety buffer to reduce chance of immediate re-limit.
+      waitMs += 250;
+      console.warn(
+        `[commandsUpdater] Rate limited on ${init?.method || 'GET'} ${url}. Retrying in ${waitMs}ms (attempt ${attempt}/${maxAttempts}).`
+      );
+      await new Promise(resolve => setTimeout(resolve, waitMs));
+      continue;
+    }
+
+    if (!response.ok) {
+      const body = await response.text();
+      throw new Error(`Discord API ${response.status}: ${body}`);
+    }
+
+    if (response.status === 204) {
+      return undefined as T;
+    }
+
+    return (await response.json()) as T;
   }
 
-  if (response.status === 204) {
-    return undefined as T;
-  }
-
-  return (await response.json()) as T;
+  throw new Error('Discord API request failed after retries');
 }
 
 function getCommandsBaseUrl(applicationId: string): string {
