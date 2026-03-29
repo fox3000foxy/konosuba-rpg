@@ -7,7 +7,6 @@
         ".vercelignore": true,
         "tsconfig.test.json": true,
         "TESTING.md": true,
-        "convert-png-to-webp.ts": true,
         "tsconfig.tsbuildinfo": true,
         "future.zip": true
     }
