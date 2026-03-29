@@ -1,6 +1,6 @@
 export enum PlayerName {
-  Kazuma = "Kazuma",
-  Darkness = "Darkness",
-  Megumin = "Megumin",
-  Aqua = "Aqua",
+  Kazuma = 'Kazuma',
+  Darkness = 'Darkness',
+  Megumin = 'Megumin',
+  Aqua = 'Aqua',
 }
