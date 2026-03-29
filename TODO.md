@@ -148,10 +148,10 @@ Mettre en place une progression RPG multi-personnages (Kazuma, Darkness, Aqua, M
 
 ### `/profile`
 - Afficher:
-  - niveau joueur (Kazuma scaling)
-  - progression Darkness/Aqua/Megumin
+  - ~~niveau joueur (Kazuma scaling)~~
+  - ~~progression Darkness/Aqua/Megumin~~
   - affinite par perso (quand utile)
-  - monstres tues stackes (deja fait)
+  - ~~monstres tues stackes~~
 
 ### Commandes futures
 - `/character` (inspect personnage)
@@ -166,13 +166,13 @@ Mettre en place une progression RPG multi-personnages (Kazuma, Darkness, Aqua, M
 - Recompenses PVP (XP/drops cosmetiques)
 
 ## Checklist implementation immediate
-- [ ] Creer migration SQL `character_progress`
-- [ ] Ajouter enum/type `CharacterKey` + types associes
-- [ ] Creer `characterService.ts`
-- [ ] Brancher scaling des stats par niveau
-- [ ] Brancher XP perso dans `recordRunResult`
-- [ ] Ajouter lecture progression perso dans `/profile`
-- [ ] Ajouter tests unitaires `characterService`
+- [x] ~~Creer migration SQL `character_progress`~~
+- [x] ~~Ajouter enum/type `CharacterKey` + types associes~~
+- [x] ~~Creer `characterService.ts`~~
+- [x] ~~Brancher scaling des stats par niveau~~
+- [x] ~~Brancher XP perso dans `recordRunResult`~~
+- [x] ~~Ajouter lecture progression perso dans `/profile`~~
+- [x] ~~Ajouter tests unitaires `characterService`~~
 - [ ] Ajouter tests integration run->xp perso
 
 ## Questions ouvertes
