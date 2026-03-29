@@ -1,3 +1,4 @@
+import { AchievementKey } from '../objects/enums/AchievementKey';
 import { GameState } from '../objects/enums/GameState';
 import { AchievementDefinition } from '../objects/types/AchievementDefinition';
 import { AchievementOverviewItem } from '../objects/types/AchievementOverviewItem';
@@ -7,28 +8,28 @@ import { getSupabaseAdminClient } from '../utils/supabaseClient';
 
 export const ACHIEVEMENTS: AchievementDefinition[] = [
   {
-    key: 'first_win',
+    key: AchievementKey.FirstWin,
     titleFr: 'Premiere victoire',
     titleEn: 'First victory',
     descriptionFr: 'Gagner 1 combat',
     descriptionEn: 'Win 1 battle',
   },
   {
-    key: 'ten_wins',
+    key: AchievementKey.TenWins,
     titleFr: 'Chasseur confirme',
     titleEn: 'Seasoned hunter',
     descriptionFr: 'Gagner 10 combats',
     descriptionEn: 'Win 10 battles',
   },
   {
-    key: 'xp_100',
+    key: AchievementKey.Xp100,
     titleFr: 'Aventurier niveau 2',
     titleEn: 'Adventurer level 2',
     descriptionFr: 'Atteindre 100 XP',
     descriptionEn: 'Reach 100 XP',
   },
   {
-    key: 'gold_250',
+    key: AchievementKey.Gold250,
     titleFr: 'Bourse pleine',
     titleEn: 'Heavy purse',
     descriptionFr: 'Atteindre 250 or',
@@ -87,11 +88,11 @@ export async function syncAchievements(userId: string): Promise<void> {
   const xp = Number(profile.xp || 0);
   const gold = Number(profile.gold || 0);
 
-  const toUnlock: string[] = [];
-  if (stats.winRuns >= 1) toUnlock.push('first_win');
-  if (stats.winRuns >= 10) toUnlock.push('ten_wins');
-  if (xp >= 100) toUnlock.push('xp_100');
-  if (gold >= 250) toUnlock.push('gold_250');
+  const toUnlock: AchievementKey[] = [];
+  if (stats.winRuns >= 1) toUnlock.push(AchievementKey.FirstWin);
+  if (stats.winRuns >= 10) toUnlock.push(AchievementKey.TenWins);
+  if (xp >= 100) toUnlock.push(AchievementKey.Xp100);
+  if (gold >= 250) toUnlock.push(AchievementKey.Gold250);
 
   if (toUnlock.length === 0) {
     return;

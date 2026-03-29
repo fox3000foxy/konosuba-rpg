@@ -1,4 +1,5 @@
 import { Context } from 'hono';
+import { QuestKey } from '../../objects/enums/QuestKey';
 import { InteractionDataOption } from '../../objects/types/InteractionDataOption';
 import {
   claimDailyQuestReward,
@@ -80,18 +81,18 @@ export async function handleQuestCommand(
           : `${'█'.repeat(Math.max(0, status.progress))}${'░'.repeat(Math.max(0, status.target - status.progress))} [${status.progress}/${status.target}]`;
 
       const questName = fr
-        ? status.questKey === 'win_1_run'
+        ? status.questKey === QuestKey.Win1Run
           ? 'Gagner 1 Victoire'
-          : status.questKey === 'play_3_runs'
+          : status.questKey === QuestKey.Play3Runs
             ? 'Jouer 3 Combats'
-            : status.questKey === 'level_up_once'
+            : status.questKey === QuestKey.LevelUpOnce
               ? 'Monter de Niveau'
               : status.questKey
-        : status.questKey === 'win_1_run'
+        : status.questKey === QuestKey.Win1Run
           ? 'Win 1 Battle'
-          : status.questKey === 'play_3_runs'
+          : status.questKey === QuestKey.Play3Runs
             ? 'Play 3 Battles'
-            : status.questKey === 'level_up_once'
+            : status.questKey === QuestKey.LevelUpOnce
               ? 'Level Up'
               : status.questKey;
 

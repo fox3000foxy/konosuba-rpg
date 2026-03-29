@@ -1,5 +1,7 @@
+import { QuestKey } from '../enums/QuestKey';
+
 export type DailyQuestStatus = {
-  questKey: string;
+  questKey: QuestKey | string;
   questDay: string;
   progress: number;
   target: number;
