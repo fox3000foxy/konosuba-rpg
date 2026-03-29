@@ -1,4 +1,6 @@
 import { Context } from 'hono';
+import { QuestAction } from '../../objects/enums/QuestAction';
+import { QuestClaimStatus } from '../../objects/enums/QuestClaimStatus';
 import { QuestKey } from '../../objects/enums/QuestKey';
 import { InteractionDataOption } from '../../objects/types/InteractionDataOption';
 import {
@@ -8,8 +10,8 @@ import {
   QUESTS,
 } from '../../services/progressionService';
 
-const QUEST_ACTION_VIEW = 'view';
-const QUEST_ACTION_CLAIM = 'claim';
+const QUEST_ACTION_VIEW = QuestAction.View;
+const QUEST_ACTION_CLAIM = QuestAction.Claim;
 
 function resolveAction(options: InteractionDataOption[] | undefined): string {
   const action = options?.find(o => o.name === 'action')?.value;
@@ -17,7 +19,7 @@ function resolveAction(options: InteractionDataOption[] | undefined): string {
     return QUEST_ACTION_VIEW;
   }
 
-  return action.toLowerCase() === QUEST_ACTION_CLAIM
+  return action.toLowerCase() === QuestAction.Claim
     ? QUEST_ACTION_CLAIM
     : QUEST_ACTION_VIEW;
 }
@@ -46,15 +48,15 @@ export async function handleQuestCommand(
 
   if (action === QUEST_ACTION_CLAIM) {
     const claimResult = await claimDailyQuestReward(userID, questId);
-    if (claimResult.status === 'claimed') {
+    if (claimResult.status === QuestClaimStatus.Claimed) {
       claimMessage = fr
         ? `\n\n✅ Recompense recuperee: +${claimResult.rewardGold} or.`
         : `\n\n✅ Reward claimed: +${claimResult.rewardGold} gold.`;
-    } else if (claimResult.status === 'already-claimed') {
+    } else if (claimResult.status === QuestClaimStatus.AlreadyClaimed) {
       claimMessage = fr
         ? "\n\n⚠️ Recompense deja recuperee aujourd'hui."
         : '\n\n⚠️ Reward already claimed today.';
-    } else if (claimResult.status === 'not-completed') {
+    } else if (claimResult.status === QuestClaimStatus.NotCompleted) {
       claimMessage = fr
         ? '\n\n❌ Quete non terminee, impossible de recuperer la recompense.'
         : '\n\n❌ Quest not completed yet, reward cannot be claimed.';
