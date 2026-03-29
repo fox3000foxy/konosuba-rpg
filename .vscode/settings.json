@@ -5,7 +5,6 @@
         "**/.vercel": true,
         "**/api": true,
         ".vercelignore": true,
-        "commands.json": true,
         "tsconfig.test.json": true,
         "TESTING.md": true,
         "convert-png-to-webp.ts": true,
