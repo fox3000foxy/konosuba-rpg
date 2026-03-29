@@ -3,8 +3,14 @@ import { Interaction } from './enums/Interaction';
 import { Lang } from './enums/Lang';
 import { handleDefaultButton } from './interactionReplies/buttons/handleDefaultButton';
 import { handleSpecialButton } from './interactionReplies/buttons/handleSpecialButton';
-import { generateMonsterInfosByConstructorName, handleInfosMonsterCommand } from './interactionReplies/commands/infos-monster';
-import { generatePlayerInfos, handleInfosPlayerCommand } from './interactionReplies/commands/infos-player';
+import {
+  generateMonsterInfosByConstructorName,
+  handleInfosMonsterCommand,
+} from './interactionReplies/commands/infos-monster';
+import {
+  generatePlayerInfos,
+  handleInfosPlayerCommand,
+} from './interactionReplies/commands/infos-player';
 import { handleStartCommand } from './interactionReplies/commands/start';
 import { handleTrainCommand } from './interactionReplies/commands/train';
 import { InteractionDataOption } from './objects/types/InteractionDataOption';
@@ -40,7 +46,9 @@ app.get('/player/:playerName', (c: Context) => {
   if (characterId === undefined) {
     return c.json(
       {
-        error: fr ? 'Personnage invalide. Utilisez Kazuma, Darkness, Megumin ou Aqua.' : 'Invalid player. Use Kazuma, Darkness, Megumin, or Aqua.',
+        error: fr
+          ? 'Personnage invalide. Utilisez Kazuma, Darkness, Megumin ou Aqua.'
+          : 'Invalid player. Use Kazuma, Darkness, Megumin, or Aqua.',
       },
       400
     );
@@ -53,7 +61,10 @@ app.get('/monster/:monsterConstructorName', (c: Context) => {
   const fr = getApiLang(c);
 
   const monsterConstructorName = c.req.param('monsterConstructorName') || '';
-  const infos = generateMonsterInfosByConstructorName(monsterConstructorName, fr);
+  const infos = generateMonsterInfosByConstructorName(
+    monsterConstructorName,
+    fr
+  );
   if (!infos.creature) {
     return c.json(
       {
@@ -77,8 +88,12 @@ app.post('/api/interactions', async (c: Context) => {
   }
 
   const interaction: Interaction = JSON.parse(body);
-  const langString = interaction?.guild?.features?.includes('COMMUNITY') ? interaction?.guild_locale : interaction?.locale;
-  const lang = Object.values(Lang).includes(langString) ? (langString as Lang) : Lang.English;
+  const langString = interaction?.guild?.features?.includes('COMMUNITY')
+    ? interaction?.guild_locale
+    : interaction?.locale;
+  const lang = Object.values(Lang).includes(langString)
+    ? (langString as Lang)
+    : Lang.English;
   const userID = interaction?.member?.user?.id || interaction.user.id;
   const fr = lang === Lang.French;
 
@@ -100,7 +115,9 @@ app.post('/api/interactions', async (c: Context) => {
         return c.json({
           type: 4,
           data: {
-            content: fr ? 'Veuillez spécifier un monstre. Exemple: /train goblin' : 'Please specify a monster. Example: /train goblin',
+            content: fr
+              ? 'Veuillez spécifier un monstre. Exemple: /train goblin'
+              : 'Please specify a monster. Example: /train goblin',
           },
         });
       }
@@ -109,7 +126,11 @@ app.post('/api/interactions', async (c: Context) => {
 
     // /infos-player
     if (interaction.data?.name === 'infos-player') {
-      const characterId = Number(interaction.data.options?.find((o: InteractionDataOption) => o.name === 'character')?.value);
+      const characterId = Number(
+        interaction.data.options?.find(
+          (o: InteractionDataOption) => o.name === 'character'
+        )?.value
+      );
       return handleInfosPlayerCommand(c, fr, characterId);
     }
 
@@ -119,7 +140,9 @@ app.post('/api/interactions', async (c: Context) => {
         return c.json({
           type: 4,
           data: {
-            content: fr ? 'Veuillez spécifier un monstre. Exemple: /infos-monster goblin' : 'Please specify a monster. Example: /infos-monster goblin',
+            content: fr
+              ? 'Veuillez spécifier un monstre. Exemple: /infos-monster goblin'
+              : 'Please specify a monster. Example: /infos-monster goblin',
           },
         });
       }
@@ -134,7 +157,8 @@ app.post('/api/interactions', async (c: Context) => {
   if (interaction.type === 3 && interaction.data?.custom_id) {
     const customId: string = interaction.data.custom_id;
     const colonIdx = customId.lastIndexOf(':');
-    const encodedPayload = colonIdx !== -1 ? customId.slice(0, colonIdx) : customId;
+    const encodedPayload =
+      colonIdx !== -1 ? customId.slice(0, colonIdx) : customId;
     const payload = decompressMoves(encodedPayload);
     const owner = colonIdx !== -1 ? customId.slice(colonIdx + 1) : '';
 
@@ -151,13 +175,34 @@ app.post('/api/interactions', async (c: Context) => {
 
     const training = isTraining(payload);
     const monsterName = training ? extractMonster(payload) : '';
-    const { buttons, embedDescription, activePlayerName } = await buildComponents(payload, userID, lang);
+    const { buttons, embedDescription, activePlayerName } =
+      await buildComponents(payload, userID, lang);
 
     const special = interaction.data.custom_id.split(':')[0].endsWith('p');
     if (special) {
-      return handleSpecialButton(interaction, c, payload, userID, lang, fr, monsterName, activePlayerName, embedDescription, buttons);
+      return handleSpecialButton(
+        interaction,
+        c,
+        payload,
+        userID,
+        lang,
+        fr,
+        monsterName,
+        activePlayerName,
+        embedDescription,
+        buttons
+      );
     } else {
-      return handleDefaultButton(c, payload, userID, lang, fr, monsterName, embedDescription, buttons);
+      return handleDefaultButton(
+        c,
+        payload,
+        userID,
+        lang,
+        fr,
+        monsterName,
+        embedDescription,
+        buttons
+      );
     }
   }
   return c.json({ error: 'Unknown interaction' }, 400);

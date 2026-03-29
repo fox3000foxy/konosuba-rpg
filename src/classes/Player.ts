@@ -51,7 +51,11 @@ export abstract class Player {
   public defending: boolean;
   public name: [string, string]; // [français, anglais]
   public images: string[];
-  public icon: PlayerThmb.Kazuma | PlayerThmb.Darkness | PlayerThmb.Megumin | PlayerThmb.Aqua;
+  public icon:
+    | PlayerThmb.Kazuma
+    | PlayerThmb.Darkness
+    | PlayerThmb.Megumin
+    | PlayerThmb.Aqua;
   public lore: string;
   public gender: Gender;
   protected specialAttackNeededRounds: number = 0;
@@ -60,7 +64,19 @@ export abstract class Player {
   public playerId: number = 0;
   public team: Team | null = null;
 
-  constructor(name: [string, string], hpMax: number, attack: [number, number], images: string[], icon: PlayerThmb.Kazuma | PlayerThmb.Darkness | PlayerThmb.Megumin | PlayerThmb.Aqua, lore: string, gender: Gender) {
+  constructor(
+    name: [string, string],
+    hpMax: number,
+    attack: [number, number],
+    images: string[],
+    icon:
+      | PlayerThmb.Kazuma
+      | PlayerThmb.Darkness
+      | PlayerThmb.Megumin
+      | PlayerThmb.Aqua,
+    lore: string,
+    gender: Gender
+  ) {
     this.hpMax = hpMax;
     this.hp = hpMax;
     this.attack = attack;
@@ -88,7 +104,10 @@ export abstract class Player {
 
   protected progressSpecialAttack() {
     this.specialAttackCurrentRounds += 1;
-    if (!this.specialAttackReady && this.specialAttackCurrentRounds >= this.specialAttackNeededRounds) {
+    if (
+      !this.specialAttackReady &&
+      this.specialAttackCurrentRounds >= this.specialAttackNeededRounds
+    ) {
       this.specialAttackReady = true;
       this.specialAttackCurrentRounds = 0;
     }
@@ -99,7 +118,10 @@ export abstract class Player {
     this.specialAttackCurrentRounds = 0;
   }
 
-  protected performMappedAction(action: PlayerAction, imageByAction: ActionImageMap) {
+  protected performMappedAction(
+    action: PlayerAction,
+    imageByAction: ActionImageMap
+  ) {
     this.progressSpecialAttack();
     const image = imageByAction[action];
     if (image) {
@@ -126,7 +148,15 @@ export abstract class Player {
 // HP: 80 | Atk: [3, 12]
 export class Kazuma extends Player {
   constructor() {
-    super(['Kazuma', 'Kazuma'], PlayerStats.KazumaHp, [PlayerStats.KazumaAttackMin, PlayerStats.KazumaAttackMax], [KazumaImages.Idle], PlayerThmb.Kazuma, PlayerLore.Kazuma, Gender.Male);
+    super(
+      ['Kazuma', 'Kazuma'],
+      PlayerStats.KazumaHp,
+      [PlayerStats.KazumaAttackMin, PlayerStats.KazumaAttackMax],
+      [KazumaImages.Idle],
+      PlayerThmb.Kazuma,
+      PlayerLore.Kazuma,
+      Gender.Male
+    );
     this.specialAttackNeededRounds = 3; // Kazuma's special attack is ready after 3 rounds
     this.playerId = 0;
   }
@@ -140,7 +170,15 @@ export class Kazuma extends Player {
 // HP: 200 | Atk: [0, 8]
 export class Darkness extends Player {
   constructor() {
-    super(['Lalatina', 'Darkness'], PlayerStats.DarknessHp, [PlayerStats.DarknessAttackMin, PlayerStats.DarknessAttackMax], [DarknessImages.Idle], PlayerThmb.Darkness, PlayerLore.Darkness, Gender.Female);
+    super(
+      ['Lalatina', 'Darkness'],
+      PlayerStats.DarknessHp,
+      [PlayerStats.DarknessAttackMin, PlayerStats.DarknessAttackMax],
+      [DarknessImages.Idle],
+      PlayerThmb.Darkness,
+      PlayerLore.Darkness,
+      Gender.Female
+    );
     this.specialAttackNeededRounds = 5; // Darkness's special attack is ready after 5 rounds
     this.playerId = 1;
   }
@@ -154,7 +192,15 @@ export class Darkness extends Player {
 // HP: 60 | Atk: [0, 60]
 export class Megumin extends Player {
   constructor() {
-    super(['Megumin', 'Megumin'], PlayerStats.MeguminHp, [PlayerStats.MeguminAttackMin, PlayerStats.MeguminAttackMax], [MeguminImages.Idle], PlayerThmb.Megumin, PlayerLore.Megumin, Gender.Female);
+    super(
+      ['Megumin', 'Megumin'],
+      PlayerStats.MeguminHp,
+      [PlayerStats.MeguminAttackMin, PlayerStats.MeguminAttackMax],
+      [MeguminImages.Idle],
+      PlayerThmb.Megumin,
+      PlayerLore.Megumin,
+      Gender.Female
+    );
     this.specialAttackNeededRounds = 4; // Megumin's special attack is ready after 4 rounds
     this.playerId = 2;
   }
@@ -168,7 +214,15 @@ export class Megumin extends Player {
 // HP: 100 | Atk: [1, 6]
 export class Aqua extends Player {
   constructor() {
-    super(['Aqua', 'Aqua'], PlayerStats.AquaHp, [PlayerStats.AquaAttackMin, PlayerStats.AquaAttackMax], [AquaImages.Idle], PlayerThmb.Aqua, PlayerLore.Aqua, Gender.Female);
+    super(
+      ['Aqua', 'Aqua'],
+      PlayerStats.AquaHp,
+      [PlayerStats.AquaAttackMin, PlayerStats.AquaAttackMax],
+      [AquaImages.Idle],
+      PlayerThmb.Aqua,
+      PlayerLore.Aqua,
+      Gender.Female
+    );
     this.specialAttackNeededRounds = 3; // Aqua's special attack is ready after 3 rounds
     this.playerId = 3;
   }

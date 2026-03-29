@@ -1,13 +1,16 @@
 /** Utility functions for ID generation and manipulation */
 
-const ID_CHARACTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZbcefijklmnopqrstuvwxyz0123456789';
+const ID_CHARACTERS =
+  'ABCDEFGHIJKLMNOPQRSTUVWXYZbcefijklmnopqrstuvwxyz0123456789';
 const ID_CHARACTERS_LENGTH = ID_CHARACTERS.length;
 
 /** Generates a random ID of a given length */
 export function makeid(length: number): string {
   let result = '';
   for (let i = 0; i < length; i += 1) {
-    result += ID_CHARACTERS.charAt(Math.floor(Math.random() * ID_CHARACTERS_LENGTH));
+    result += ID_CHARACTERS.charAt(
+      Math.floor(Math.random() * ID_CHARACTERS_LENGTH)
+    );
   }
   return result + '/';
 }
