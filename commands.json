@@ -45,6 +45,39 @@
 		"global_popularity_rank": 3
 	},
 	{
+		"name": "quest",
+		"description": "Affiche la quete du jour ou recupere la recompense",
+		"options": [
+			{
+				"name": "action",
+				"description": "Action sur la quete",
+				"type": "STRING",
+				"required": false,
+				"choices": [
+					{
+						"name": "view",
+						"value": "view"
+					},
+					{
+						"name": "claim",
+						"value": "claim"
+					}
+				]
+			}
+		],
+		"dm_permission": true,
+		"contexts": [
+			0,
+			1,
+			2
+		],
+		"integration_types": [
+			0,
+			1
+		],
+		"global_popularity_rank": 4
+	},
+	{
 		"name": "start",
 		"description": "Commencer une partie",
 		"dm_permission": true,
@@ -57,7 +90,7 @@
 			0,
 			1
 		],
-		"global_popularity_rank": 4
+		"global_popularity_rank": 5
 	},
 	{
 		"name": "train",
@@ -80,7 +113,7 @@
 			0,
 			1
 		],
-		"global_popularity_rank": 5
+		"global_popularity_rank": 6
 	},
 	{
 		"name": "infos-monster",
@@ -103,7 +136,7 @@
 			0,
 			1
 		],
-		"global_popularity_rank": 6
+		"global_popularity_rank": 7
 	},
 	{
 		"name": "infos-player",
@@ -144,7 +177,7 @@
 			0,
 			1
 		],
-		"global_popularity_rank": 7
+		"global_popularity_rank": 8
 
 	}
 ]
