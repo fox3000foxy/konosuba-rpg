@@ -3,6 +3,7 @@ import { Context, Hono } from 'hono';
 import { handleDefaultButton } from './interactionReplies/buttons/handleDefaultButton';
 import { handleMenuButton } from './interactionReplies/buttons/handleMenuButton';
 import { handleSpecialButton } from './interactionReplies/buttons/handleSpecialButton';
+import { handleAchievementsCommand } from './interactionReplies/commands/achievements';
 import {
   generateMonsterInfosByConstructorName,
   handleInfosMonsterCommand,
@@ -141,6 +142,11 @@ app.post('/api/interactions', async (c: Context) => {
     // /quest
     if (interaction.data?.name === 'quest') {
       return handleQuestCommand(c, userID, fr, interaction.data.options);
+    }
+
+    // /achievements
+    if (interaction.data?.name === 'achievements') {
+      return handleAchievementsCommand(c, userID, fr);
     }
 
     // /train

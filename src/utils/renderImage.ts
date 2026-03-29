@@ -110,13 +110,13 @@ async function ensureWasm(): Promise<void> {
 // ─── Image / Font helpers ────────────────────────────────────────────────────
 
 const BASE_URL =
-  'https://raw.githubusercontent.com/fox3000foxy/konosuba-rpg/refs/heads/main';
+  'https://fox3000foxy.com/konosuba-rpg'; /* Should match the base path used in src/index.ts for /assets/ */
 
 export async function getImageBytes(key: string): Promise<ArrayBuffer> {
   if (imageCache[key]) return imageCache[key];
   const path: string = imageManifest[key];
   if (!path) throw new Error(`Image key not found in manifest: ${key}`);
-  const r = await fetch(`${BASE_URL}/${path}`);
+  const r = await fetch(`${BASE_URL}${path}`);
   if (!r.ok) throw new Error(`Failed to fetch image "${key}": ${r.status}`);
   const buf = await r.arrayBuffer();
   imageCache[key] = buf;

@@ -98,6 +98,21 @@
 		"global_popularity_rank": 4
 	},
 	{
+		"name": "achievements",
+		"description": "Affiche tes achievements debloques",
+		"dm_permission": true,
+		"contexts": [
+			0,
+			1,
+			2
+		],
+		"integration_types": [
+			0,
+			1
+		],
+		"global_popularity_rank": 5
+	},
+	{
 		"name": "start",
 		"description": "Commencer une partie",
 		"dm_permission": true,
@@ -110,7 +125,7 @@
 			0,
 			1
 		],
-		"global_popularity_rank": 5
+		"global_popularity_rank": 6
 	},
 	{
 		"name": "train",
@@ -133,7 +148,7 @@
 			0,
 			1
 		],
-		"global_popularity_rank": 6
+		"global_popularity_rank": 7
 	},
 	{
 		"name": "infos-monster",
@@ -156,7 +171,7 @@
 			0,
 			1
 		],
-		"global_popularity_rank": 7
+		"global_popularity_rank": 8
 	},
 	{
 		"name": "infos-player",
@@ -197,7 +212,7 @@
 			0,
 			1
 		],
-		"global_popularity_rank": 8
+		"global_popularity_rank": 9
 
 	}
 ]
