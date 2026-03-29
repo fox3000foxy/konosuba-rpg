@@ -53,36 +53,14 @@
 				"description": "Action sur la quete",
 				"type": "STRING",
 				"required": false,
-				"choices": [
-					{
-						"name": "view",
-						"value": "view"
-					},
-					{
-						"name": "claim",
-						"value": "claim"
-					}
-				]
+				"autocomplete": true
 			},
 			{
 				"name": "quest_id",
 				"description": "ID de la quete (pour claim)",
 				"type": "STRING",
 				"required": false,
-				"choices": [
-					{
-						"name": "win_1_run",
-						"value": "win_1_run"
-					},
-					{
-						"name": "play_3_runs",
-						"value": "play_3_runs"
-					},
-					{
-						"name": "level_up_once",
-						"value": "level_up_once"
-					}
-				]
+				"autocomplete": true
 			}
 		],
 		"dm_permission": true,
@@ -158,7 +136,8 @@
 				"name": "monster",
 				"description": "Le monstre que vous voulez afficher",
 				"type": "STRING",
-				"required": true
+				"required": true,
+				"autocomplete": true
 			}
 		],
 		"dm_permission": true,
@@ -182,24 +161,7 @@
 				"description": "Le monstre que vous voulez afficher",
 				"type": "INTEGER",
 				"required": true,
-				"choices": [
-					{
-						"name": "Kazuma",
-						"value": 0
-					},
-					{
-						"name": "Darkness",
-						"value": 1
-					},
-					{
-						"name": "Megumin",
-						"value": 2
-					},
-					{
-						"name": "Aqua",
-						"value": 3
-					}
-				]
+				"autocomplete": true
 			}
 		],
 		"dm_permission": true,
