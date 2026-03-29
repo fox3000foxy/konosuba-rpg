@@ -134,16 +134,27 @@ export async function ensurePlayerProfile(userId: string): Promise<void> {
 
 export async function recordRunResult(input: RecordRunInput): Promise<void> {
   if (!shouldPersistRun(input.state)) {
+    console.log(`[db] skipping run: state=${input.state} for user=${input.userId}`);
     return;
   }
 
+  console.log(
+    `[db] recording run: user=${input.userId} state=${input.state} training=${input.training} monster=${input.monsterName}`
+  );
+
+  // Ensure player exists before recording run (foreign key constraint)
+  await ensurePlayerProfile(input.userId);
+
   const supabase = getSupabaseAdminClient();
   if (!supabase) {
+    console.warn('[db] Supabase client unavailable, run not recorded');
     return;
   }
 
   const actionCount = countActions(input.payload);
   const runKey = `${input.userId}:${input.payload}`;
+
+  console.log(`[db] upserting run: runKey=${runKey} actions=${actionCount}`);
 
   const { error: runError } = await supabase.from('runs').upsert(
     {
@@ -163,10 +174,15 @@ export async function recordRunResult(input: RecordRunInput): Promise<void> {
     return;
   }
 
+  console.log(`[db] run recorded successfully for user=${input.userId} state=${input.state}`);
+
   const gainedXp = xpFromState(input.state);
   if (gainedXp <= 0) {
+    console.log(`[db] no xp gained for state=${input.state}`);
     return;
   }
+
+  console.log(`[db] loading player profile for xp update: user=${input.userId}`);
 
   const { data: player, error: playerError } = await supabase
     .from('players')
@@ -186,6 +202,10 @@ export async function recordRunResult(input: RecordRunInput): Promise<void> {
   const oldLevel = Math.floor(Number(player.xp || 0) / 100) + 1;
   const nextLevel = Math.floor(nextXp / 100) + 1;
 
+  console.log(
+    `[db] xp update: user=${input.userId} oldXp=${player.xp} newXp=${nextXp} oldLevel=${oldLevel} newLevel=${nextLevel}`
+  );
+
   const { error: updateError } = await supabase
     .from('players')
     .update({
@@ -197,11 +217,17 @@ export async function recordRunResult(input: RecordRunInput): Promise<void> {
 
   if (updateError) {
     console.error('[db] xp update failed:', updateError.message);
+  } else {
+    console.log(`[db] xp updated successfully for user=${input.userId}`);
   }
 
   const questDay = currentQuestDay();
   const isWin = isWinningState(input.state);
   const leveledUp = nextLevel > oldLevel;
+
+  console.log(
+    `[db] quest processing: user=${input.userId} questDay=${questDay} isWin=${isWin} leveledUp=${leveledUp}`
+  );
 
   for (const quest of QUESTS) {
     const shouldIncrement =
@@ -212,6 +238,8 @@ export async function recordRunResult(input: RecordRunInput): Promise<void> {
     if (!shouldIncrement) {
       continue;
     }
+
+    console.log(`[db] incrementing quest: key=${quest.key} for user=${input.userId}`);
 
     const { data: questRow, error: questLoadError } = await supabase
       .from('daily_quests_progress')
@@ -227,6 +255,10 @@ export async function recordRunResult(input: RecordRunInput): Promise<void> {
     }
 
     if (!questRow) {
+      console.log(
+        `[db] creating new quest progress: key=${quest.key} user=${input.userId}`
+      );
+
       const { error: questInsertError } = await supabase
         .from('daily_quests_progress')
         .insert({
@@ -243,17 +275,26 @@ export async function recordRunResult(input: RecordRunInput): Promise<void> {
           '[db] create quest progress failed:',
           questInsertError.message
         );
+      } else {
+        console.log(
+          `[db] quest progress created: key=${quest.key} user=${input.userId}`
+        );
       }
       continue;
     }
 
     if (questRow.claimed) {
+      console.log(`[db] quest already claimed: key=${quest.key} user=${input.userId}`);
       continue;
     }
 
     const nextProgress = Math.min(
       quest.targetProgress,
       Number(questRow.progress || 0) + 1
+    );
+
+    console.log(
+      `[db] updating quest progress: key=${quest.key} user=${input.userId} from=${questRow.progress} to=${nextProgress}`
     );
 
     const { error: questUpdateError } = await supabase
@@ -268,8 +309,14 @@ export async function recordRunResult(input: RecordRunInput): Promise<void> {
         '[db] update quest progress failed:',
         questUpdateError.message
       );
+    } else {
+      console.log(
+        `[db] quest progress updated: key=${quest.key} user=${input.userId} progress=${nextProgress}`
+      );
     }
   }
+
+  console.log(`[db] run processing complete for user=${input.userId} state=${input.state}`);
 }
 
 export async function getPlayerProfile(

@@ -1,3 +1,4 @@
+import { config } from 'dotenv';
 import { Context, Hono } from 'hono';
 import { handleDefaultButton } from './interactionReplies/buttons/handleDefaultButton';
 import { handleMenuButton } from './interactionReplies/buttons/handleMenuButton';
@@ -29,6 +30,8 @@ import { buildComponents } from './utils/componentsBuilder';
 import { verifySignature } from './utils/discordUtils';
 import { decompressMoves } from './utils/movesUtils';
 import { extractMonster, isTraining } from './utils/payloadUtils';
+
+config();
 
 const app = new Hono();
 
@@ -267,9 +270,41 @@ app.post('/api/interactions', async (c: Context) => {
   return c.json({ error: 'Unknown interaction' }, 400);
 });
 
+function logEnvironmentStatus(): void {
+  const supabaseUrl = process.env.SUPABASE_URL;
+  const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  const discordToken = process.env.DISCORD_TOKEN;
+  const discordAppId = process.env.DISCORD_APPLICATION_ID;
+
+  console.log('[startup] Environment variables status:');
+  console.log(
+    `  SUPABASE_URL: ${supabaseUrl ? '✅ set' : '❌ MISSING'}`
+  );
+  console.log(
+    `  SUPABASE_SERVICE_ROLE_KEY: ${supabaseKey ? '✅ set' : '❌ MISSING'}`
+  );
+  console.log(
+    `  DISCORD_TOKEN: ${discordToken ? '✅ set' : '❌ MISSING'}`
+  );
+  console.log(
+    `  DISCORD_APPLICATION_ID: ${discordAppId ? '✅ set' : '❌ MISSING'}`
+  );
+
+  if (!supabaseUrl || !supabaseKey) {
+    console.warn(
+      '[startup] ⚠️  Database progression (quests, profile, leaderboard) will NOT work without SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY'
+    );
+  }
+
+  if (!discordToken || !discordAppId) {
+    console.error('[startup] ❌ Discord bot requires DISCORD_TOKEN and DISCORD_APPLICATION_ID');
+  }
+}
+
 export default app;
 
 async function start() {
+  logEnvironmentStatus();
   // if (navigator.userAgent !== 'Cloudflare-Workers') {
   const serve = (await import('@hono/node-server')).serve;
   serve({ fetch: app.fetch, port: 8787 });

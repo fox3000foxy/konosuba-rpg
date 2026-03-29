@@ -1,4 +1,4 @@
-import { InteractionDataOption } from '../objects/types/InteractionDataOption';
+import { InteractionDataOption } from '../types/InteractionDataOption';
 import { Lang } from './Lang';
 
 export interface Interaction {
