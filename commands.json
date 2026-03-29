@@ -15,6 +15,36 @@
 		"global_popularity_rank": 1
 	},
 	{
+		"name": "profile",
+		"description": "Affiche ton profil RPG",
+		"dm_permission": true,
+		"contexts": [
+			0,
+			1,
+			2
+		],
+		"integration_types": [
+			0,
+			1
+		],
+		"global_popularity_rank": 2
+	},
+	{
+		"name": "leaderboard",
+		"description": "Affiche le classement RPG",
+		"dm_permission": true,
+		"contexts": [
+			0,
+			1,
+			2
+		],
+		"integration_types": [
+			0,
+			1
+		],
+		"global_popularity_rank": 3
+	},
+	{
 		"name": "start",
 		"description": "Commencer une partie",
 		"dm_permission": true,
@@ -27,7 +57,7 @@
 			0,
 			1
 		],
-		"global_popularity_rank": 2
+		"global_popularity_rank": 4
 	},
 	{
 		"name": "train",
@@ -50,7 +80,7 @@
 			0,
 			1
 		],
-		"global_popularity_rank": 3
+		"global_popularity_rank": 5
 	},
 	{
 		"name": "infos-monster",
@@ -73,7 +103,7 @@
 			0,
 			1
 		],
-		"global_popularity_rank": 4
+		"global_popularity_rank": 6
 	},
 	{
 		"name": "infos-player",
@@ -114,7 +144,7 @@
 			0,
 			1
 		],
-		"global_popularity_rank": 5
+		"global_popularity_rank": 7
 
 	}
 ]

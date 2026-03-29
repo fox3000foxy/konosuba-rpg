@@ -12,12 +12,18 @@ import {
   generatePlayerInfos,
   handleInfosPlayerCommand,
 } from './interactionReplies/commands/infos-player';
+import { handleLeaderboardCommand } from './interactionReplies/commands/leaderboard';
 import { handleMenuCommand } from './interactionReplies/commands/menu';
+import { handleProfileCommand } from './interactionReplies/commands/profile';
 import { handleStartCommand } from './interactionReplies/commands/start';
 import { handleTrainCommand } from './interactionReplies/commands/train';
 import { InteractionDataOption } from './objects/types/InteractionDataOption';
 import { calculateGame } from './routes/game';
 import { calculateRPG } from './routes/rpg';
+import {
+  ensurePlayerProfile,
+  recordRunResult,
+} from './services/progressionService';
 import { buildComponents } from './utils/componentsBuilder';
 import { verifySignature } from './utils/discordUtils';
 import { decompressMoves } from './utils/movesUtils';
@@ -106,6 +112,8 @@ app.post('/api/interactions', async (c: Context) => {
 
   // ── Commandes slash ────────────────────────────────────────────────────────
   if (interaction.type === 2) {
+    void ensurePlayerProfile(userID);
+
     // /start
     if (interaction.data?.name === 'start') {
       return handleStartCommand(c, userID, lang, fr);
@@ -114,6 +122,16 @@ app.post('/api/interactions', async (c: Context) => {
     // /menu
     if (interaction.data?.name === 'menu') {
       return handleMenuCommand(c, userID, fr);
+    }
+
+    // /profile
+    if (interaction.data?.name === 'profile') {
+      return handleProfileCommand(c, userID, fr);
+    }
+
+    // /leaderboard
+    if (interaction.data?.name === 'leaderboard') {
+      return handleLeaderboardCommand(c, fr);
     }
 
     // /train
@@ -202,8 +220,16 @@ app.post('/api/interactions', async (c: Context) => {
 
     const training = isTraining(payload);
     const monsterName = training ? extractMonster(payload) : '';
-    const { buttons, embedDescription, activePlayerName } =
+    const { buttons, embedDescription, activePlayerName, gameState } =
       await buildComponents(payload, userID, lang);
+
+    void recordRunResult({
+      userId: userID,
+      payload,
+      state: gameState,
+      training,
+      monsterName: monsterName || null,
+    });
 
     const special = interaction.data.custom_id.split(':')[0].endsWith('p');
     if (special) {

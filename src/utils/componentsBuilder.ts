@@ -36,6 +36,7 @@ export async function buildComponents(
   buttons: RawButton[];
   embedDescription: string[];
   activePlayerName: string | null;
+  gameState: GameState;
 }> {
   const imageUrl = buildImageUrl(payload, lang);
 
@@ -174,5 +175,5 @@ export async function buildComponents(
     },
   ];
 
-  return { buttons, embedDescription, activePlayerName };
+  return { buttons, embedDescription, activePlayerName, gameState: state };
 }
