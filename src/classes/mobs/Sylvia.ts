@@ -15,7 +15,8 @@ export default class Sylvia extends Creature {
   dealAttack(dmg: number) {
     this.hp -= dmg;
     if (this.hp <= 20) this.images = [`enemy_image_14501`];
-    this.lore = "Sylvia est un Général du Roi Démon d'une beauté frappante cachant une nature hybride extrêmement dangereuse, capable d'absorber d'autres êtres pour intégrer leurs pouvoirs. Séductrice et cruelle, elle manipule ses adversaires en jouant sur leur confusion avant de frapper au moment le plus inattendu. Sa capacité d'absorption en fait une menace polymorphe dont les aptitudes évoluent au cours du combat, rendant toute préparation préalable partiellement obsolète. Sa défaite a nécessité une des stratégies les plus désespérées et improbables que Kazuma ait jamais conçues.";
+    this.lore =
+      "Sylvia est un Général du Roi Démon d'une beauté frappante cachant une nature hybride extrêmement dangereuse, capable d'absorber d'autres êtres pour intégrer leurs pouvoirs. Séductrice et cruelle, elle manipule ses adversaires en jouant sur leur confusion avant de frapper au moment le plus inattendu. Sa capacité d'absorption en fait une menace polymorphe dont les aptitudes évoluent au cours du combat, rendant toute préparation préalable partiellement obsolète. Sa défaite a nécessité une des stratégies les plus désespérées et improbables que Kazuma ait jamais conçues.";
     this.gender = 'female';
   }
 }

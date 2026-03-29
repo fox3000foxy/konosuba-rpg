@@ -14,14 +14,22 @@ export async function calculateRPG(c: Context) {
   }
 
   c.header('Content-Type', 'image/webp');
-  const responseBody = image instanceof Uint8Array ? image.buffer.slice(image.byteOffset, image.byteOffset + image.byteLength) : image;
+  const responseBody =
+    image instanceof Uint8Array
+      ? image.buffer.slice(
+          image.byteOffset,
+          image.byteOffset + image.byteLength
+        )
+      : image;
 
   return new Response(responseBody as ArrayBuffer, {
     headers: {
       'Content-Type': 'image/webp',
-      'Cache-Control': 'public, max-age=0, s-maxage=15, stale-while-revalidate=60',
+      'Cache-Control':
+        'public, max-age=0, s-maxage=15, stale-while-revalidate=60',
       'CDN-Cache-Control': 'public, s-maxage=15, stale-while-revalidate=60',
-      'Vercel-CDN-Cache-Control': 'public, s-maxage=15, stale-while-revalidate=60',
+      'Vercel-CDN-Cache-Control':
+        'public, s-maxage=15, stale-while-revalidate=60',
     },
   });
 }

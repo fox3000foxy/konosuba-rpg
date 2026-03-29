@@ -18,7 +18,12 @@
 import { Lang } from '../enums/Lang';
 import processGame from './processGame';
 import processUrl from './processUrl';
-import { PerfReport, getCacheDiagnostics, getLastPerfReport, renderOutputCache } from './renderImage';
+import {
+  PerfReport,
+  getCacheDiagnostics,
+  getLastPerfReport,
+  renderOutputCache,
+} from './renderImage';
 
 // ─── Générateur d'URL ─────────────────────────────────────────────────────────
 
@@ -28,7 +33,12 @@ const BASE_URL = 'https://konosuba-rpg.vercel.app';
  * Construit une URL de jeu valide, identique à celles produites par index.ts.
  * Format : https://.../konosuba-rpg/:lang/:seed[/action]*[?monster=X]
  */
-function buildUrl(seed: string, moves: string[], lang: Lang | undefined, monster?: string): string {
+function buildUrl(
+  seed: string,
+  moves: string[],
+  lang: Lang | undefined,
+  monster?: string
+): string {
   const path = [seed, ...moves].join('/');
   const query = monster ? `?monster=${encodeURIComponent(monster)}` : '';
   return `${BASE_URL}/konosuba-rpg/${lang}/${path}${query}`;
@@ -37,7 +47,10 @@ function buildUrl(seed: string, moves: string[], lang: Lang | undefined, monster
 /** Génère un seed alphanumérique aléatoire, même charset que makeid() dans index.ts */
 function makeSeed(len = 15): string {
   const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZbcefijklmnopqrstuvwxyz0123456789';
-  return Array.from({ length: len }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
+  return Array.from(
+    { length: len },
+    () => chars[Math.floor(Math.random() * chars.length)]
+  ).join('');
 }
 
 // ─── Scénarios réalistes ──────────────────────────────────────────────────────
@@ -76,7 +89,18 @@ function buildScenarios(fixedSeed: string, fixedMonster?: string): Scenario[] {
     {
       name: '🥊  Partie longue — 10 coups mixtes',
       seed: fixedSeed,
-      moves: ['atk', 'atk', 'def', 'hug', 'atk', 'def', 'atk', 'atk', 'hug', 'atk'],
+      moves: [
+        'atk',
+        'atk',
+        'def',
+        'hug',
+        'atk',
+        'def',
+        'atk',
+        'atk',
+        'hug',
+        'atk',
+      ],
       lang: Lang.French,
       monster: fixedMonster,
     },
@@ -125,7 +149,9 @@ function percentile(arr: number[], p: number): number {
 }
 
 function stddev(arr: number[], mean: number): number {
-  return Math.sqrt(arr.reduce((acc, v) => acc + (v - mean) ** 2, 0) / arr.length);
+  return Math.sqrt(
+    arr.reduce((acc, v) => acc + (v - mean) ** 2, 0) / arr.length
+  );
 }
 
 function fmt(ms: number): string {
@@ -146,19 +172,34 @@ interface RunResult {
   states: (string | null)[];
 }
 
-async function runScenario(scenario: Scenario, runs: number, warmup: number): Promise<RunResult> {
+async function runScenario(
+  scenario: Scenario,
+  runs: number,
+  warmup: number
+): Promise<RunResult> {
   const timings: number[] = [];
   const reports: PerfReport[] = [];
   const outputSizes: number[] = [];
   const states: (string | null)[] = [];
 
-  const url = buildUrl(scenario.seed, scenario.moves, scenario.lang, scenario.monster);
+  const url = buildUrl(
+    scenario.seed,
+    scenario.moves,
+    scenario.lang,
+    scenario.monster
+  );
 
   for (let i = 0; i < runs + warmup; i++) {
     const [rand, moves, , monster] = processUrl(url);
 
     const t0 = performance.now();
-    const game = await processGame(rand, moves, monster, scenario.lang, true /* renderingImage */);
+    const game = await processGame(
+      rand,
+      moves,
+      monster,
+      scenario.lang,
+      true /* renderingImage */
+    );
     const elapsed = performance.now() - t0;
 
     if (i >= warmup) {
@@ -178,7 +219,11 @@ async function runScenario(scenario: Scenario, runs: number, warmup: number): Pr
 
 // ─── Report printer ───────────────────────────────────────────────────────────
 
-function printScenarioReport(scenario: Scenario, url: string, result: RunResult): void {
+function printScenarioReport(
+  scenario: Scenario,
+  url: string,
+  result: RunResult
+): void {
   const { timings, reports, outputSizes, states } = result;
   const mean = timings.reduce((a, b) => a + b, 0) / timings.length;
   const sd = stddev(timings, mean);
@@ -192,7 +237,9 @@ function printScenarioReport(scenario: Scenario, url: string, result: RunResult)
 
   console.log('\n' + '─'.repeat(72));
   console.log(`📊  ${scenario.name}`);
-  console.log(`    URL   : .../${scenario.lang}/${scenario.seed}${scenario.moves.length ? '/' + scenario.moves.join('/') : ''}${scenario.monster ? '?monster=' + scenario.monster : ''}`);
+  console.log(
+    `    URL   : .../${scenario.lang}/${scenario.seed}${scenario.moves.length ? '/' + scenario.moves.join('/') : ''}${scenario.monster ? '?monster=' + scenario.monster : ''}`
+  );
   console.log(`    State : ${lastState}`);
   console.log('─'.repeat(72));
   console.log(`  min      ${fmt(min)}`);
@@ -210,15 +257,21 @@ function printScenarioReport(scenario: Scenario, url: string, result: RunResult)
   // Distribution visuelle
   if (timings.length >= 3) {
     const range = max - min;
-    const bucketSize = Math.max(5, Math.round(range / Math.min(10, timings.length)));
+    const bucketSize = Math.max(
+      5,
+      Math.round(range / Math.min(10, timings.length))
+    );
     const buckets = new Map<number, number>();
     for (const t of timings) {
-      const b = Math.floor((t - min) / bucketSize) * bucketSize + Math.ceil(min);
+      const b =
+        Math.floor((t - min) / bucketSize) * bucketSize + Math.ceil(min);
       buckets.set(b, (buckets.get(b) ?? 0) + 1);
     }
     const maxCount = Math.max(...buckets.values());
     console.log('\n  Distribution :');
-    for (const [bucket, count] of [...buckets.entries()].sort((a, b) => a[0] - b[0])) {
+    for (const [bucket, count] of [...buckets.entries()].sort(
+      (a, b) => a[0] - b[0]
+    )) {
       const label = `${bucket.toFixed(0).padStart(7)}-${(bucket + bucketSize).toFixed(0).padStart(7)} ms`;
       console.log(`    ${label}  ${bar(count / maxCount)}  ${count}`);
     }
@@ -244,12 +297,16 @@ function printScenarioReport(scenario: Scenario, url: string, result: RunResult)
     console.log('\n  Spans internes (moyenne) :');
     for (const { label, avg } of sorted) {
       const pct = total > 0 ? avg / total : 0;
-      console.log(`    ${label.padEnd(24)} ${fmt(avg)}  ${bar(pct, 22)}  ${(pct * 100).toFixed(1)}%`);
+      console.log(
+        `    ${label.padEnd(24)} ${fmt(avg)}  ${bar(pct, 22)}  ${(pct * 100).toFixed(1)}%`
+      );
     }
 
     // Cache hits du dernier run
     const lastReport = reports[reports.length - 1];
-    const hits = Object.entries(lastReport.cacheHits).filter(([, v]) => typeof v === 'boolean');
+    const hits = Object.entries(lastReport.cacheHits).filter(
+      ([, v]) => typeof v === 'boolean'
+    );
     if (hits.length > 0) {
       console.log('\n  Cache hits (dernier run) :');
       for (const [key, hit] of hits) {
@@ -268,7 +325,9 @@ function printThroughput(allTimings: number[]): void {
   const p95 = percentile(allTimings, 95);
 
   console.log('\n' + '═'.repeat(72));
-  console.log('🚀  Estimation de scalabilité (pipeline complet processGame + render)');
+  console.log(
+    '🚀  Estimation de scalabilité (pipeline complet processGame + render)'
+  );
   console.log('═'.repeat(72));
   console.log('');
 
@@ -278,14 +337,25 @@ function printThroughput(allTimings: number[]): void {
     ['p95', p95],
   ] as [string, number][]) {
     const rps = 1000 / ms;
-    console.log(`  ${label.padEnd(8)} ${ms.toFixed(1).padStart(7)} ms/render` + `  →  ${rps.toFixed(1).padStart(6)} req/s` + `  ${(rps * 60).toFixed(0).padStart(6)} req/min` + `  ${((rps * 3600) / 1000).toFixed(0).padStart(5)}K req/h`);
+    console.log(
+      `  ${label.padEnd(8)} ${ms.toFixed(1).padStart(7)} ms/render` +
+        `  →  ${rps.toFixed(1).padStart(6)} req/s` +
+        `  ${(rps * 60).toFixed(0).padStart(6)} req/min` +
+        `  ${((rps * 3600) / 1000).toFixed(0).padStart(5)}K req/h`
+    );
   }
 
   console.log('');
   console.log('  💡 Cache chaud vs cold :');
-  console.log('     • Scénario "cache chaud" (même URL) : devrait être ~5-20× plus rapide.');
-  console.log('     • Scénarios "seed aléatoire" : cold cache — représente le pire cas réel.');
-  console.log('     • Pour scaler : Workers CF en parallèle + KV pour cache cross-isolat.');
+  console.log(
+    '     • Scénario "cache chaud" (même URL) : devrait être ~5-20× plus rapide.'
+  );
+  console.log(
+    '     • Scénarios "seed aléatoire" : cold cache — représente le pire cas réel.'
+  );
+  console.log(
+    '     • Pour scaler : Workers CF en parallèle + KV pour cache cross-isolat.'
+  );
 }
 
 // ─── Main ─────────────────────────────────────────────────────────────────────
@@ -298,7 +368,8 @@ async function main(): Promise<void> {
       ?.split('=')
       .slice(1)
       .join('=') ?? def;
-  const getInt = (prefix: string, envKey: string, def: number) => parseInt(getStr(prefix, process.env[envKey] ?? String(def)), 10);
+  const getInt = (prefix: string, envKey: string, def: number) =>
+    parseInt(getStr(prefix, process.env[envKey] ?? String(def)), 10);
 
   const RUNS = getInt('--runs=', 'BENCH_RUNS', 10);
   const WARMUP = getInt('--warmup=', 'BENCH_WARMUP', 2);
@@ -312,14 +383,21 @@ async function main(): Promise<void> {
   console.log(`  Runs      : ${RUNS} mesurés + ${WARMUP} warmup ignorés`);
   console.log(`  Seed fixe : ${SEED}`);
   console.log(`  Monster   : ${MONSTER ?? '(aléatoire selon seed)'}`);
-  console.log(`  Spans     : ${process.env.RENDER_PERF === '1' ? '✅ activés' : '❌ désactivés — lancez avec RENDER_PERF=1'}`);
+  console.log(
+    `  Spans     : ${process.env.RENDER_PERF === '1' ? '✅ activés' : '❌ désactivés — lancez avec RENDER_PERF=1'}`
+  );
   console.log(`  Date      : ${new Date().toISOString()}`);
 
   const scenarios = buildScenarios(SEED, MONSTER);
   const allTimings: number[] = [];
 
   for (const scenario of scenarios) {
-    const url = buildUrl(scenario.seed, scenario.moves, scenario.lang, scenario.monster);
+    const url = buildUrl(
+      scenario.seed,
+      scenario.moves,
+      scenario.lang,
+      scenario.monster
+    );
     process.stdout.write(`\n⏳  ${scenario.name} ...`);
     try {
       const result = await runScenario(scenario, RUNS, WARMUP);

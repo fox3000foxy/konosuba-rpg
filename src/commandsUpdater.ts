@@ -21,7 +21,8 @@ export const applicationCommandIndex = {
     {
       id: '1228368274488819792',
       name: 'KonosubaRPG',
-      description: 'This is a pocket interaction game themed on Konosuba.\nType /start to play a game. /infos-player and /infos-monster are availiable too.\nBy **fox3000foxy**.',
+      description:
+        'This is a pocket interaction game themed on Konosuba.\nType /start to play a game. /infos-player and /infos-monster are availiable too.\nBy **fox3000foxy**.',
       icon: '056324dadd8630bd56e85dc922c35215',
       bot_id: '1228368274488819792',
       flags: '8388608',

@@ -25,14 +25,17 @@ export async function calculateGame(c: Context) {
   } as Record<string, unknown>;
 
   if (game.team.activePlayer) {
-    serializableTeam.activePlayer = game.team.activePlayer.name[lang === Lang.French ? 0 : 1];
+    serializableTeam.activePlayer =
+      game.team.activePlayer.name[lang === Lang.French ? 0 : 1];
   }
 
   const strippedCreature = { ...game.creature } as Record<string, unknown>;
   delete strippedCreature.images;
   delete strippedCreature.lore;
   delete strippedCreature.prefix;
-  strippedCreature.name = game.creature.name[lang === Lang.French ? 1 : 0] || game.creature.constructor.name;
+  strippedCreature.name =
+    game.creature.name[lang === Lang.French ? 1 : 0] ||
+    game.creature.constructor.name;
 
   const serializableGame = {
     ...game,

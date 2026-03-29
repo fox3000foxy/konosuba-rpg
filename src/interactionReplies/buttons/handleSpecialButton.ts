@@ -13,10 +13,26 @@ const GIFS_BY_PLAYER: Record<string, string> = {
   darkness: 'daku',
 };
 
-export async function handleSpecialButton(interaction: Interaction, c: Context, payload: string, userID: string, lang: Lang, fr: boolean, monsterName: string, activePlayerName: string | null, embedDescription: string[], buttons: RawButton[]) {
+export async function handleSpecialButton(
+  interaction: Interaction,
+  c: Context,
+  payload: string,
+  userID: string,
+  lang: Lang,
+  fr: boolean,
+  monsterName: string,
+  activePlayerName: string | null,
+  embedDescription: string[],
+  buttons: RawButton[]
+) {
   const imageUrl = buildImageUrl(payload, lang);
-  const title = fr ? `Entraînement contre ${monsterName}` : `Training vs ${monsterName}`;
-  const description = embedDescription.length > 0 ? `${title}\n\n${embedDescription.join('\n')}` : title;
+  const title = fr
+    ? `Entraînement contre ${monsterName}`
+    : `Training vs ${monsterName}`;
+  const description =
+    embedDescription.length > 0
+      ? `${title}\n\n${embedDescription.join('\n')}`
+      : title;
 
   followUpTimeout(
     interaction,
@@ -40,7 +56,9 @@ export async function handleSpecialButton(interaction: Interaction, c: Context, 
 
   const specialAttackUrl = `${BASE_URL}/assets/player/${GIFS_BY_PLAYER[playerName.toLowerCase()] || 'kazuma'}.gif`;
 
-  console.log(`Special attack triggered by ${playerName}, using animation from ${specialAttackUrl}`);
+  console.log(
+    `Special attack triggered by ${playerName}, using animation from ${specialAttackUrl}`
+  );
   return c.json({
     type: 7,
     data: {
