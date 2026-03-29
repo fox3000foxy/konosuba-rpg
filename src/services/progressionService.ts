@@ -36,9 +36,46 @@ type ClaimDailyQuestResult = {
   rewardGold: number;
 };
 
-const DAILY_QUEST_KEY = 'win_1_run';
-const DAILY_QUEST_TARGET = 1;
-const DAILY_QUEST_REWARD_GOLD = 50;
+type QuestDefinition = {
+  key: string;
+  targetProgress: number;
+  rewardGold: number;
+  conditionKey: 'win' | 'play' | 'level-up';
+};
+
+export const QUESTS: QuestDefinition[] = [
+  {
+    key: 'win_1_run',
+    targetProgress: 1,
+    rewardGold: 50,
+    conditionKey: 'win',
+  },
+  {
+    key: 'play_3_runs',
+    targetProgress: 3,
+    rewardGold: 30,
+    conditionKey: 'play',
+  },
+  {
+    key: 'level_up_once',
+    targetProgress: 1,
+    rewardGold: 75,
+    conditionKey: 'level-up',
+  },
+];
+
+// Backward compat constant for first quest
+const DAILY_QUEST_KEY = QUESTS[0].key;
+
+function getQuestDefinition(questKey: string): QuestDefinition | null {
+  return QUESTS.find(q => q.key === questKey) ?? null;
+}
+
+export function getAllQuestStatuses(
+  userID: string
+): Promise<DailyQuestStatus[]> {
+  return Promise.all(QUESTS.map(q => getDailyQuestStatus(userID, q.key)));
+}
 
 function currentQuestDay(): string {
   return new Date().toISOString().slice(0, 10);
@@ -146,6 +183,7 @@ export async function recordRunResult(input: RecordRunInput): Promise<void> {
   }
 
   const nextXp = Number(player.xp || 0) + gainedXp;
+  const oldLevel = Math.floor(Number(player.xp || 0) / 100) + 1;
   const nextLevel = Math.floor(nextXp / 100) + 1;
 
   const { error: updateError } = await supabase
@@ -161,60 +199,70 @@ export async function recordRunResult(input: RecordRunInput): Promise<void> {
     console.error('[db] xp update failed:', updateError.message);
   }
 
-  if (!isWinningState(input.state)) {
-    return;
-  }
-
   const questDay = currentQuestDay();
-  const { data: questRow, error: questLoadError } = await supabase
-    .from('daily_quests_progress')
-    .select('progress, claimed')
-    .eq('user_id', input.userId)
-    .eq('quest_day', questDay)
-    .eq('quest_key', DAILY_QUEST_KEY)
-    .maybeSingle();
+  const isWin = isWinningState(input.state);
+  const leveledUp = nextLevel > oldLevel;
 
-  if (questLoadError) {
-    console.error('[db] load quest progress failed:', questLoadError.message);
-    return;
-  }
+  for (const quest of QUESTS) {
+    const shouldIncrement =
+      (quest.conditionKey === 'play') ||
+      (quest.conditionKey === 'win' && isWin) ||
+      (quest.conditionKey === 'level-up' && leveledUp);
 
-  if (!questRow) {
-    const { error: questInsertError } = await supabase
-      .from('daily_quests_progress')
-      .insert({
-        user_id: input.userId,
-        quest_day: questDay,
-        quest_key: DAILY_QUEST_KEY,
-        progress: 1,
-        claimed: false,
-        updated_at: new Date().toISOString(),
-      });
-
-    if (questInsertError) {
-      console.error('[db] create quest progress failed:', questInsertError.message);
+    if (!shouldIncrement) {
+      continue;
     }
-    return;
-  }
 
-  if (questRow.claimed) {
-    return;
-  }
+    const { data: questRow, error: questLoadError } = await supabase
+      .from('daily_quests_progress')
+      .select('progress, claimed')
+      .eq('user_id', input.userId)
+      .eq('quest_day', questDay)
+      .eq('quest_key', quest.key)
+      .maybeSingle();
 
-  const nextProgress = Math.min(
-    DAILY_QUEST_TARGET,
-    Number(questRow.progress || 0) + 1
-  );
+    if (questLoadError) {
+      console.error('[db] load quest progress failed:', questLoadError.message);
+      continue;
+    }
 
-  const { error: questUpdateError } = await supabase
-    .from('daily_quests_progress')
-    .update({ progress: nextProgress, updated_at: new Date().toISOString() })
-    .eq('user_id', input.userId)
-    .eq('quest_day', questDay)
-    .eq('quest_key', DAILY_QUEST_KEY);
+    if (!questRow) {
+      const { error: questInsertError } = await supabase
+        .from('daily_quests_progress')
+        .insert({
+          user_id: input.userId,
+          quest_day: questDay,
+          quest_key: quest.key,
+          progress: 1,
+          claimed: false,
+          updated_at: new Date().toISOString(),
+        });
 
-  if (questUpdateError) {
-    console.error('[db] update quest progress failed:', questUpdateError.message);
+      if (questInsertError) {
+        console.error('[db] create quest progress failed:', questInsertError.message);
+      }
+      continue;
+    }
+
+    if (questRow.claimed) {
+      continue;
+    }
+
+    const nextProgress = Math.min(
+      quest.targetProgress,
+      Number(questRow.progress || 0) + 1
+    );
+
+    const { error: questUpdateError } = await supabase
+      .from('daily_quests_progress')
+      .update({ progress: nextProgress, updated_at: new Date().toISOString() })
+      .eq('user_id', input.userId)
+      .eq('quest_day', questDay)
+      .eq('quest_key', quest.key);
+
+    if (questUpdateError) {
+      console.error('[db] update quest progress failed:', questUpdateError.message);
+    }
   }
 }
 
@@ -278,11 +326,34 @@ export async function getLeaderboard(
 }
 
 export async function getDailyQuestStatus(
-  userId: string
-): Promise<DailyQuestStatus | null> {
+  userId: string,
+  questKey: string = DAILY_QUEST_KEY
+): Promise<DailyQuestStatus> {
   const supabase = getSupabaseAdminClient();
+  const questDef = getQuestDefinition(questKey);
+
+  if (!questDef) {
+    // Return safe defaults for unknown quest key
+    return {
+      questKey,
+      questDay: currentQuestDay(),
+      progress: 0,
+      target: 1,
+      claimed: false,
+      rewardGold: 0,
+    };
+  }
+
   if (!supabase) {
-    return null;
+    // Return defaults when DB unavailable
+    return {
+      questKey,
+      questDay: currentQuestDay(),
+      progress: 0,
+      target: questDef.targetProgress,
+      claimed: false,
+      rewardGold: questDef.rewardGold,
+    };
   }
 
   const questDay = currentQuestDay();
@@ -291,36 +362,39 @@ export async function getDailyQuestStatus(
     .select('progress, claimed')
     .eq('user_id', userId)
     .eq('quest_day', questDay)
-    .eq('quest_key', DAILY_QUEST_KEY)
+    .eq('quest_key', questKey)
     .maybeSingle();
 
   if (error) {
     console.error('[db] getDailyQuestStatus failed:', error.message);
-    return null;
   }
 
   return {
-    questKey: DAILY_QUEST_KEY,
+    questKey,
     questDay,
     progress: Number(data?.progress || 0),
-    target: DAILY_QUEST_TARGET,
+    target: questDef.targetProgress,
     claimed: Boolean(data?.claimed || false),
-    rewardGold: DAILY_QUEST_REWARD_GOLD,
+    rewardGold: questDef.rewardGold,
   };
 }
 
 export async function claimDailyQuestReward(
-  userId: string
+  userId: string,
+  questKey: string = DAILY_QUEST_KEY
 ): Promise<ClaimDailyQuestResult> {
   const supabase = getSupabaseAdminClient();
+  const questDef = getQuestDefinition(questKey);
+
+  if (!questDef) {
+    return { status: 'unavailable', rewardGold: 0 };
+  }
+
   if (!supabase) {
     return { status: 'unavailable', rewardGold: 0 };
   }
 
-  const questStatus = await getDailyQuestStatus(userId);
-  if (!questStatus) {
-    return { status: 'unavailable', rewardGold: 0 };
-  }
+  const questStatus = await getDailyQuestStatus(userId, questKey);
 
   if (questStatus.claimed) {
     return { status: 'already-claimed', rewardGold: 0 };
@@ -335,7 +409,7 @@ export async function claimDailyQuestReward(
     .update({ claimed: true, updated_at: new Date().toISOString() })
     .eq('user_id', userId)
     .eq('quest_day', questStatus.questDay)
-    .eq('quest_key', questStatus.questKey)
+    .eq('quest_key', questKey)
     .eq('claimed', false);
 
   if (markClaimedError) {
@@ -357,7 +431,7 @@ export async function claimDailyQuestReward(
     return { status: 'unavailable', rewardGold: 0 };
   }
 
-  const nextGold = Number(player.gold || 0) + DAILY_QUEST_REWARD_GOLD;
+  const nextGold = Number(player.gold || 0) + questDef.rewardGold;
   const { error: goldError } = await supabase
     .from('players')
     .update({ gold: nextGold, updated_at: new Date().toISOString() })
@@ -368,5 +442,5 @@ export async function claimDailyQuestReward(
     return { status: 'unavailable', rewardGold: 0 };
   }
 
-  return { status: 'claimed', rewardGold: DAILY_QUEST_REWARD_GOLD };
+  return { status: 'claimed', rewardGold: questDef.rewardGold };
 }

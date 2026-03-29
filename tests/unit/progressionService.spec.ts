@@ -1,8 +1,9 @@
 import { GameState } from '../../src/enums/GameState';
 import {
-    claimDailyQuestReward,
-    getDailyQuestStatus,
-    getLeaderboard,
+  claimDailyQuestReward,
+  getAllQuestStatuses,
+  getDailyQuestStatus,
+  getLeaderboard,
 } from '../../src/services/progressionService';
 import { getSupabaseAdminClient } from '../../src/utils/supabaseClient';
 
@@ -288,5 +289,98 @@ describe('progressionService with Supabase interactions', () => {
   it('keeps enum coverage sanity for winning quest states', () => {
     expect(GameState.Good).toBe('good');
     expect(GameState.Best).toBe('best');
+  });
+
+  it('getAllQuestStatuses fetches all three quests for a user', async () => {
+    const client = new SupabaseMockClient([
+      {
+        table: 'daily_quests_progress',
+        op: 'select',
+        data: { progress: 1, claimed: false },
+      },
+      {
+        table: 'daily_quests_progress',
+        op: 'select',
+        data: { progress: 2, claimed: false },
+      },
+      {
+        table: 'daily_quests_progress',
+        op: 'select',
+        data: null,
+      },
+    ]);
+
+    mockedGetSupabaseAdminClient.mockReturnValue(client as never);
+
+    const statuses = await getAllQuestStatuses('user-1');
+
+    expect(statuses).toHaveLength(3);
+    expect(statuses[0]).toMatchObject({ questKey: 'win_1_run', progress: 1 });
+    expect(statuses[1]).toMatchObject({ questKey: 'play_3_runs', progress: 2 });
+    expect(statuses[2]).toMatchObject({ questKey: 'level_up_once', progress: 0 });
+  });
+
+  it('getDailyQuestStatus with quest_id parameter returns specific quest', async () => {
+    const client = new SupabaseMockClient([
+      {
+        table: 'daily_quests_progress',
+        op: 'select',
+        data: { progress: 3, claimed: true },
+      },
+    ]);
+
+    mockedGetSupabaseAdminClient.mockReturnValue(client as never);
+
+    const status = await getDailyQuestStatus('user-1', 'play_3_runs');
+
+    expect(status.questKey).toBe('play_3_runs');
+    expect(status.progress).toBe(3);
+    expect(status.claimed).toBe(true);
+    expect(status.target).toBe(3);
+    expect(status.rewardGold).toBe(30);
+  });
+
+  it('getDailyQuestStatus never returns null but always defaults', async () => {
+    mockedGetSupabaseAdminClient.mockReturnValue(null);
+
+    const status = await getDailyQuestStatus('user-1', 'unknown_quest');
+
+    expect(status).not.toBeNull();
+    expect(status.progress).toBe(0);
+    expect(status.claimed).toBe(false);
+  });
+
+  it('claimDailyQuestReward works with specific quest_id parameter', async () => {
+    const client = new SupabaseMockClient([
+      {
+        table: 'daily_quests_progress',
+        op: 'select',
+        data: { progress: 30, claimed: false },
+      },
+      {
+        table: 'daily_quests_progress',
+        op: 'update',
+        data: null,
+      },
+      {
+        table: 'players',
+        op: 'select',
+        data: { gold: 100 },
+      },
+      {
+        table: 'players',
+        op: 'update',
+        data: null,
+      },
+    ]);
+
+    mockedGetSupabaseAdminClient.mockReturnValue(client as never);
+
+    const result = await claimDailyQuestReward('user-1', 'level_up_once');
+
+    expect(result).toEqual({ status: 'claimed', rewardGold: 75 });
+    expect(client.queries[1].filters).toEqual(
+      expect.arrayContaining([{ column: 'quest_key', value: 'level_up_once' }])
+    );
   });
 });

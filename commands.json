@@ -46,7 +46,7 @@
 	},
 	{
 		"name": "quest",
-		"description": "Affiche la quete du jour ou recupere la recompense",
+		"description": "Affiche les quetes du jour ou recupere la recompense",
 		"options": [
 			{
 				"name": "action",
@@ -61,6 +61,26 @@
 					{
 						"name": "claim",
 						"value": "claim"
+					}
+				]
+			},
+			{
+				"name": "quest_id",
+				"description": "ID de la quete (pour claim)",
+				"type": "STRING",
+				"required": false,
+				"choices": [
+					{
+						"name": "win_1_run",
+						"value": "win_1_run"
+					},
+					{
+						"name": "play_3_runs",
+						"value": "play_3_runs"
+					},
+					{
+						"name": "level_up_once",
+						"value": "level_up_once"
 					}
 				]
 			}
