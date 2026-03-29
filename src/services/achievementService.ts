@@ -5,6 +5,7 @@ import { AchievementDefinition } from '../objects/types/AchievementDefinition';
 import { AchievementOverviewItem } from '../objects/types/AchievementOverviewItem';
 import { AchievementUnlockRow } from '../objects/types/AchievementUnlockRow';
 import { UserRunStats } from '../objects/types/UserRunStats';
+import { inferMonsterFromRunKey } from '../utils/runMonsterUtils';
 import { getSupabaseAdminClient } from '../utils/supabaseClient';
 
 export const ACHIEVEMENTS: AchievementDefinition[] = ACHIEVEMENT_DEFINITIONS;
@@ -70,7 +71,7 @@ async function getUserRunStats(userId: string): Promise<UserRunStats> {
 
   const { data, error } = await supabase
     .from('runs')
-    .select('state, monster_name')
+    .select('state, monster_name, run_key')
     .eq('user_id', userId);
 
   if (error) {
@@ -84,14 +85,38 @@ async function getUserRunStats(userId: string): Promise<UserRunStats> {
   ).length;
 
   const winsByMonster: Record<string, number> = {};
+  const updates: Array<{ runKey: string; monsterName: string }> = [];
+
   for (const row of rows) {
     const didWin = row.state === GameState.Good || row.state === GameState.Best;
-    if (!didWin || !row.monster_name) {
+    const existingMonster = row.monster_name ? String(row.monster_name) : '';
+    const inferredMonster = existingMonster || inferMonsterFromRunKey(String(row.run_key || ''));
+
+    if (!existingMonster && inferredMonster && row.run_key) {
+      updates.push({ runKey: String(row.run_key), monsterName: inferredMonster });
+    }
+
+    if (!didWin || !inferredMonster) {
       continue;
     }
 
-    const key = normalizeMonsterName(String(row.monster_name));
+    const key = normalizeMonsterName(inferredMonster);
     winsByMonster[key] = (winsByMonster[key] ?? 0) + 1;
+  }
+
+  for (const update of updates) {
+    const { error: updateError } = await supabase
+      .from('runs')
+      .update({
+        monster_name: update.monsterName,
+      })
+      .eq('run_key', update.runKey)
+      .eq('user_id', userId)
+      .is('monster_name', null);
+
+    if (updateError) {
+      console.error('[db] getUserRunStats backfill failed:', updateError.message);
+    }
   }
 
   return {

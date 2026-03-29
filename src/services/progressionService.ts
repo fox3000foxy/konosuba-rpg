@@ -10,7 +10,8 @@ export { ACHIEVEMENTS, getAchievementsOverview } from './achievementService';
 export {
   ensurePlayerProfile,
   getLeaderboard,
-  getPlayerProfile
+  getPlayerProfile,
+  getPlayerRunSummary
 } from './playerService';
 export {
   claimDailyQuestReward,

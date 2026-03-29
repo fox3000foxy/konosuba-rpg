@@ -17,6 +17,14 @@
 	{
 		"name": "profile",
 		"description": "Affiche ton profil RPG",
+		"options": [
+			{
+				"name": "mention",
+				"description": "Mention d'un joueur pour afficher son profil",
+				"type": "USER",
+				"required": false
+			}
+		],
 		"dm_permission": true,
 		"contexts": [
 			0,
