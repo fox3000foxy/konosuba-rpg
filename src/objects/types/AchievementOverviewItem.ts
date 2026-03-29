@@ -1,5 +1,7 @@
+import { AchievementKey } from '../enums/AchievementKey';
+
 export type AchievementOverviewItem = {
-  key: string;
+  key: AchievementKey;
   title: string;
   description: string;
   unlocked: boolean;

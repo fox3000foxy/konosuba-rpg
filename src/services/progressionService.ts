@@ -1,4 +1,5 @@
 import { GameState } from '../objects/enums/GameState';
+import { QuestConditionKey } from '../objects/enums/QuestConditionKey';
 import { RecordRunInput } from '../objects/types/RecordRunInput';
 import { getSupabaseAdminClient } from '../utils/supabaseClient';
 import { syncAchievements } from './achievementService';
@@ -153,9 +154,9 @@ export async function recordRunResult(input: RecordRunInput): Promise<void> {
 
   for (const quest of QUESTS) {
     const shouldIncrement =
-      quest.conditionKey === 'play' ||
-      (quest.conditionKey === 'win' && isWin) ||
-      (quest.conditionKey === 'level-up' && leveledUp);
+      quest.conditionKey === QuestConditionKey.Play ||
+      (quest.conditionKey === QuestConditionKey.Win && isWin) ||
+      (quest.conditionKey === QuestConditionKey.LevelUp && leveledUp);
 
     if (!shouldIncrement) {
       continue;

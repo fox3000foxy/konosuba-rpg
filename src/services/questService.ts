@@ -1,3 +1,5 @@
+import { QuestConditionKey } from '../objects/enums/QuestConditionKey';
+import { QuestKey } from '../objects/enums/QuestKey';
 import { ClaimDailyQuestResult } from '../objects/types/ClaimDailyQuestResult';
 import { DailyQuestStatus } from '../objects/types/DailyQuestStatus';
 import { QuestDefinition } from '../objects/types/QuestDefinition';
@@ -7,28 +9,28 @@ import { ensurePlayerProfile } from './playerService';
 
 export const QUESTS: QuestDefinition[] = [
   {
-    key: 'win_1_run',
+    key: QuestKey.Win1Run,
     targetProgress: 1,
     rewardGold: 50,
-    conditionKey: 'win',
+    conditionKey: QuestConditionKey.Win,
   },
   {
-    key: 'play_3_runs',
+    key: QuestKey.Play3Runs,
     targetProgress: 3,
     rewardGold: 30,
-    conditionKey: 'play',
+    conditionKey: QuestConditionKey.Play,
   },
   {
-    key: 'level_up_once',
+    key: QuestKey.LevelUpOnce,
     targetProgress: 1,
     rewardGold: 75,
-    conditionKey: 'level-up',
+    conditionKey: QuestConditionKey.LevelUp,
   },
 ];
 
 const DAILY_QUEST_KEY = QUESTS[0].key;
 
-function getQuestDefinition(questKey: string): QuestDefinition | null {
+function getQuestDefinition(questKey: QuestKey | string): QuestDefinition | null {
   return QUESTS.find(q => q.key === questKey) ?? null;
 }
 
@@ -44,7 +46,7 @@ export function getAllQuestStatuses(
 
 export async function getDailyQuestStatus(
   userId: string,
-  questKey: string = DAILY_QUEST_KEY
+  questKey: QuestKey | string = DAILY_QUEST_KEY
 ): Promise<DailyQuestStatus> {
   const supabase = getSupabaseAdminClient();
   const questDef = getQuestDefinition(questKey);
@@ -96,7 +98,7 @@ export async function getDailyQuestStatus(
 
 export async function claimDailyQuestReward(
   userId: string,
-  questKey: string = DAILY_QUEST_KEY
+  questKey: QuestKey | string = DAILY_QUEST_KEY
 ): Promise<ClaimDailyQuestResult> {
   await ensurePlayerProfile(userId);
 

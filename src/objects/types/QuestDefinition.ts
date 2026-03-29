@@ -1,6 +1,9 @@
+import { QuestConditionKey } from '../enums/QuestConditionKey';
+import { QuestKey } from '../enums/QuestKey';
+
 export type QuestDefinition = {
-  key: string;
+  key: QuestKey;
   targetProgress: number;
   rewardGold: number;
-  conditionKey: 'win' | 'play' | 'level-up';
+  conditionKey: QuestConditionKey;
 };
