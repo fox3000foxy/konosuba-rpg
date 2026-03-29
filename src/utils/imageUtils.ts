@@ -1,6 +1,6 @@
 /** Utility functions for image URL generation */
 
-import { BASE_URL } from '../config/constants';
+import { BASE_URL } from '../objects/config/constants';
 import { customIdToPath, extractMonster, isTraining } from './payloadUtils';
 
 /** Construit l'URL d'image pour un payload donné */

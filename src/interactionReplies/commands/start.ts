@@ -1,5 +1,5 @@
 import { Context } from 'hono';
-import { Lang } from '../../enums/Lang';
+import { Lang } from '../../objects/enums/Lang';
 import { buildComponents } from '../../utils/componentsBuilder';
 import { makeid } from '../../utils/idUtils';
 import { buildImageUrl } from '../../utils/imageUtils';

@@ -3,17 +3,17 @@ import { initWasm, Resvg } from '@resvg/resvg-wasm';
 import satori from 'satori';
 import { Creature } from '../classes/Creature';
 import { Team } from '../classes/Player';
-import { EndMessages } from '../enums/EndMessages';
-import { HealthBarName } from '../enums/HealthBarName';
-import { Lang } from '../enums/Lang';
-import { Prefix } from '../enums/Prefix';
-import { RetryMessages } from '../enums/RetryMessages';
-import { AquaImages } from '../enums/player/AquaImages';
-import { DarknessImages } from '../enums/player/DarknessImages';
-import { KazumaImages } from '../enums/player/KazumaImages';
-import { MeguminImages } from '../enums/player/MeguminImages';
-import { PlayerName } from '../enums/player/PlayerName';
 import { imageManifest } from '../objects/data/imageManifest';
+import { EndMessages } from '../objects/enums/EndMessages';
+import { HealthBarName } from '../objects/enums/HealthBarName';
+import { Lang } from '../objects/enums/Lang';
+import { Prefix } from '../objects/enums/Prefix';
+import { RetryMessages } from '../objects/enums/RetryMessages';
+import { AquaImages } from '../objects/enums/player/AquaImages';
+import { DarknessImages } from '../objects/enums/player/DarknessImages';
+import { KazumaImages } from '../objects/enums/player/KazumaImages';
+import { MeguminImages } from '../objects/enums/player/MeguminImages';
+import { PlayerName } from '../objects/enums/player/PlayerName';
 
 // ─── LRU Cache ───────────────────────────────────────────────────────────────
 

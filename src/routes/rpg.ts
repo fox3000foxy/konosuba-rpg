@@ -1,5 +1,5 @@
 import { Context } from 'vm';
-import { Lang } from '../enums/Lang';
+import { Lang } from '../objects/enums/Lang';
 import processGame from '../utils/processGame';
 import processUrl from '../utils/processUrl';
 

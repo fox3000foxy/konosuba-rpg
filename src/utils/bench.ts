@@ -15,14 +15,14 @@
  *   BENCH_WARMUP=N   Warm-up ignorés dans les stats (défaut : 2)
  */
 
-import { Lang } from '../enums/Lang';
+import { Lang } from '../objects/enums/Lang';
 import processGame from './processGame';
 import processUrl from './processUrl';
 import {
-  PerfReport,
-  getCacheDiagnostics,
-  getLastPerfReport,
-  renderOutputCache,
+    PerfReport,
+    getCacheDiagnostics,
+    getLastPerfReport,
+    renderOutputCache,
 } from './renderImage';
 
 // ─── Générateur d'URL ─────────────────────────────────────────────────────────

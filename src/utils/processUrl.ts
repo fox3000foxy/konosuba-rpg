@@ -1,5 +1,5 @@
 import { Random } from '../classes/Random';
-import { PlayerAction } from '../enums/player/PlayerAction';
+import { PlayerAction } from '../objects/enums/player/PlayerAction';
 
 // Precompute valid moves set outside the function to avoid recreating it on every call
 const VALID_MOVES_SET = new Set([

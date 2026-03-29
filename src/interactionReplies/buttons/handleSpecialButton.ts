@@ -1,8 +1,8 @@
 import { Context } from 'hono';
-import { BASE_URL } from '../../config/constants';
-import { Interaction } from '../../enums/Interaction';
-import { Lang } from '../../enums/Lang';
-import { RawButton } from '../../enums/RawButton';
+import { BASE_URL } from '../../objects/config/constants';
+import { Interaction } from '../../objects/enums/Interaction';
+import { Lang } from '../../objects/enums/Lang';
+import { RawButton } from '../../objects/enums/RawButton';
 import { followUpTimeout } from '../../utils/discordUtils';
 import { buildImageUrl } from '../../utils/imageUtils';
 

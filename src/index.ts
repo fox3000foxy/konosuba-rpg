@@ -1,6 +1,4 @@
 import { Context, Hono } from 'hono';
-import { Interaction } from './enums/Interaction';
-import { Lang } from './enums/Lang';
 import { handleDefaultButton } from './interactionReplies/buttons/handleDefaultButton';
 import { handleMenuButton } from './interactionReplies/buttons/handleMenuButton';
 import { handleSpecialButton } from './interactionReplies/buttons/handleSpecialButton';
@@ -18,6 +16,8 @@ import { handleProfileCommand } from './interactionReplies/commands/profile';
 import { handleQuestCommand } from './interactionReplies/commands/quest';
 import { handleStartCommand } from './interactionReplies/commands/start';
 import { handleTrainCommand } from './interactionReplies/commands/train';
+import { Interaction } from './objects/enums/Interaction';
+import { Lang } from './objects/enums/Lang';
 import { InteractionDataOption } from './objects/types/InteractionDataOption';
 import { calculateGame } from './routes/game';
 import { calculateRPG } from './routes/rpg';

@@ -1,5 +1,5 @@
-import { Errors } from '../enums/Errors';
-import { Prefix } from '../enums/Prefix';
+import { Errors } from '../objects/enums/Errors';
+import { Prefix } from '../objects/enums/Prefix';
 import { Player } from './Player';
 
 export enum MessagesTemplates {
