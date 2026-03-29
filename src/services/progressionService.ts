@@ -1,73 +1,15 @@
 import { GameState } from '../objects/enums/GameState';
+import { AchievementDefinition } from '../objects/types/AchievementDefinition';
+import { AchievementOverviewItem } from '../objects/types/AchievementOverviewItem';
+import { AchievementUnlockRow } from '../objects/types/AchievementUnlockRow';
+import { ClaimDailyQuestResult } from '../objects/types/ClaimDailyQuestResult';
+import { DailyQuestStatus } from '../objects/types/DailyQuestStatus';
+import { LeaderboardEntry } from '../objects/types/LeaderboardEntry';
+import { PlayerProfile } from '../objects/types/PlayerProfile';
+import { QuestDefinition } from '../objects/types/QuestDefinition';
+import { RecordRunInput } from '../objects/types/RecordRunInput';
+import { UserRunStats } from '../objects/types/UserRunStats';
 import { getSupabaseAdminClient } from '../utils/supabaseClient';
-
-type RecordRunInput = {
-  userId: string;
-  payload: string;
-  state: GameState;
-  training: boolean;
-  monsterName: string | null;
-};
-
-type PlayerProfile = {
-  userId: string;
-  level: number;
-  xp: number;
-  gold: number;
-};
-
-type LeaderboardEntry = {
-  userId: string;
-  level: number;
-  xp: number;
-};
-
-type DailyQuestStatus = {
-  questKey: string;
-  questDay: string;
-  progress: number;
-  target: number;
-  claimed: boolean;
-  rewardGold: number;
-};
-
-type ClaimDailyQuestResult = {
-  status: 'claimed' | 'already-claimed' | 'not-completed' | 'unavailable';
-  rewardGold: number;
-};
-
-type AchievementDefinition = {
-  key: string;
-  titleFr: string;
-  titleEn: string;
-  descriptionFr: string;
-  descriptionEn: string;
-};
-
-type AchievementUnlockRow = {
-  achievement_key: string;
-  unlocked_at: string;
-};
-
-type UserRunStats = {
-  totalRuns: number;
-  winRuns: number;
-};
-
-type AchievementOverviewItem = {
-  key: string;
-  title: string;
-  description: string;
-  unlocked: boolean;
-  unlockedAt: string | null;
-};
-
-type QuestDefinition = {
-  key: string;
-  targetProgress: number;
-  rewardGold: number;
-  conditionKey: 'win' | 'play' | 'level-up';
-};
 
 export const QUESTS: QuestDefinition[] = [
   {
