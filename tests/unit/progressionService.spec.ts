@@ -207,6 +207,11 @@ describe('progressionService with Supabase interactions', () => {
   it('claims quest reward and updates player gold', async () => {
     const client = new SupabaseMockClient([
       {
+        table: 'players',
+        op: 'upsert',
+        data: null,
+      },
+      {
         table: 'daily_quests_progress',
         op: 'select',
         data: { progress: 1, claimed: false },
@@ -233,9 +238,9 @@ describe('progressionService with Supabase interactions', () => {
     const result = await claimDailyQuestReward('user-1');
 
     expect(result).toEqual({ status: 'claimed', rewardGold: 50 });
-    expect(client.queries).toHaveLength(4);
+    expect(client.queries).toHaveLength(5);
 
-    const markClaimedQuery = client.queries[1];
+    const markClaimedQuery = client.queries[2];
     expect(markClaimedQuery.table).toBe('daily_quests_progress');
     expect(markClaimedQuery.op).toBe('update');
     expect(markClaimedQuery.filters).toEqual(
@@ -245,7 +250,7 @@ describe('progressionService with Supabase interactions', () => {
       ])
     );
 
-    const goldUpdateQuery = client.queries[3];
+    const goldUpdateQuery = client.queries[4];
     expect(goldUpdateQuery.table).toBe('players');
     expect(goldUpdateQuery.op).toBe('update');
     expect(goldUpdateQuery.payload).toEqual(
@@ -255,6 +260,11 @@ describe('progressionService with Supabase interactions', () => {
 
   it('does not claim quest when progress is below target', async () => {
     const client = new SupabaseMockClient([
+      {
+        table: 'players',
+        op: 'upsert',
+        data: null,
+      },
       {
         table: 'daily_quests_progress',
         op: 'select',
@@ -267,7 +277,7 @@ describe('progressionService with Supabase interactions', () => {
     const result = await claimDailyQuestReward('user-1');
 
     expect(result).toEqual({ status: 'not-completed', rewardGold: 0 });
-    expect(client.queries).toHaveLength(1);
+    expect(client.queries).toHaveLength(2);
   });
 
   it('handles leaderboard DB errors by returning null', async () => {
@@ -353,6 +363,11 @@ describe('progressionService with Supabase interactions', () => {
   it('claimDailyQuestReward works with specific quest_id parameter', async () => {
     const client = new SupabaseMockClient([
       {
+        table: 'players',
+        op: 'upsert',
+        data: null,
+      },
+      {
         table: 'daily_quests_progress',
         op: 'select',
         data: { progress: 30, claimed: false },
@@ -379,8 +394,57 @@ describe('progressionService with Supabase interactions', () => {
     const result = await claimDailyQuestReward('user-1', 'level_up_once');
 
     expect(result).toEqual({ status: 'claimed', rewardGold: 75 });
-    expect(client.queries[1].filters).toEqual(
+    expect(client.queries[2].filters).toEqual(
       expect.arrayContaining([{ column: 'quest_key', value: 'level_up_once' }])
+    );
+  });
+
+  it('rolls back claimed flag when gold update fails', async () => {
+    const client = new SupabaseMockClient([
+      {
+        table: 'players',
+        op: 'upsert',
+        data: null,
+      },
+      {
+        table: 'daily_quests_progress',
+        op: 'select',
+        data: { progress: 1, claimed: false },
+      },
+      {
+        table: 'daily_quests_progress',
+        op: 'update',
+        data: null,
+      },
+      {
+        table: 'players',
+        op: 'select',
+        data: { gold: 10 },
+      },
+      {
+        table: 'players',
+        op: 'update',
+        error: { message: 'write failed' },
+      },
+      {
+        table: 'daily_quests_progress',
+        op: 'update',
+        data: null,
+      },
+    ]);
+
+    mockedGetSupabaseAdminClient.mockReturnValue(client as never);
+
+    const result = await claimDailyQuestReward('user-1');
+
+    expect(result).toEqual({ status: 'unavailable', rewardGold: 0 });
+    expect(client.queries).toHaveLength(6);
+
+    const rollbackQuery = client.queries[5];
+    expect(rollbackQuery.table).toBe('daily_quests_progress');
+    expect(rollbackQuery.op).toBe('update');
+    expect(rollbackQuery.payload).toEqual(
+      expect.objectContaining({ claimed: false })
     );
   });
 });

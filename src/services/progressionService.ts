@@ -436,6 +436,8 @@ export async function claimDailyQuestReward(
   userId: string,
   questKey: string = DAILY_QUEST_KEY
 ): Promise<ClaimDailyQuestResult> {
+  await ensurePlayerProfile(userId);
+
   const supabase = getSupabaseAdminClient();
   const questDef = getQuestDefinition(questKey);
 
@@ -470,6 +472,19 @@ export async function claimDailyQuestReward(
     return { status: 'unavailable', rewardGold: 0 };
   }
 
+  const rollbackClaimed = async () => {
+    const { error: rollbackError } = await supabase
+      .from('daily_quests_progress')
+      .update({ claimed: false, updated_at: new Date().toISOString() })
+      .eq('user_id', userId)
+      .eq('quest_day', questStatus.questDay)
+      .eq('quest_key', questKey);
+
+    if (rollbackError) {
+      console.error('[db] rollback quest claim failed:', rollbackError.message);
+    }
+  };
+
   const { data: player, error: playerError } = await supabase
     .from('players')
     .select('gold')
@@ -481,6 +496,7 @@ export async function claimDailyQuestReward(
       '[db] load player for quest reward failed:',
       playerError?.message || 'missing row'
     );
+    await rollbackClaimed();
     return { status: 'unavailable', rewardGold: 0 };
   }
 
@@ -492,6 +508,7 @@ export async function claimDailyQuestReward(
 
   if (goldError) {
     console.error('[db] update gold failed:', goldError.message);
+    await rollbackClaimed();
     return { status: 'unavailable', rewardGold: 0 };
   }
 
