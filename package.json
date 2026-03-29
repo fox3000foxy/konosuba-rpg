@@ -34,7 +34,8 @@
     "deploy": "pnpm build && npm run vercel:build && npm run vercel:deploy",
     "test-battery": "npm run tsc:build && npm run test:perf && npm run test:leaks && npm run lint",
     "bench": "npx esbuild src/utils/bench.ts --bundle --platform=node --target=node18 --outfile=bench.js && node --expose-gc bench.js && npx rimraf bench.js",
-    "deploy-commands": "npx esbuild src/commandsUpdater.ts --bundle --platform=node --target=node18 --outfile=update-commands.js && node update-commands.js && npx rimraf update-commands.js"
+    "deploy-commands": "npx esbuild src/commandsUpdater.ts --bundle --platform=node --target=node18 --outfile=update-commands.js && node update-commands.js && npx rimraf update-commands.js",
+    "db:check": "npx ts-node scripts/supabaseCrudCheck.ts"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
