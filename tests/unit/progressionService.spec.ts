@@ -231,6 +231,16 @@ describe('progressionService with Supabase interactions', () => {
         op: 'update',
         data: null,
       },
+      {
+        table: 'players',
+        op: 'select',
+        data: { xp: 10, gold: 60 },
+      },
+      {
+        table: 'runs',
+        op: 'select',
+        data: [],
+      },
     ]);
 
     mockedGetSupabaseAdminClient.mockReturnValue(client as never);
@@ -238,7 +248,7 @@ describe('progressionService with Supabase interactions', () => {
     const result = await claimDailyQuestReward('user-1');
 
     expect(result).toEqual({ status: 'claimed', rewardGold: 50 });
-    expect(client.queries).toHaveLength(5);
+    expect(client.queries).toHaveLength(7);
 
     const markClaimedQuery = client.queries[2];
     expect(markClaimedQuery.table).toBe('daily_quests_progress');
@@ -386,6 +396,16 @@ describe('progressionService with Supabase interactions', () => {
         table: 'players',
         op: 'update',
         data: null,
+      },
+      {
+        table: 'players',
+        op: 'select',
+        data: { xp: 50, gold: 175 },
+      },
+      {
+        table: 'runs',
+        op: 'select',
+        data: [],
       },
     ]);
 

@@ -36,6 +36,32 @@ type ClaimDailyQuestResult = {
   rewardGold: number;
 };
 
+type AchievementDefinition = {
+  key: string;
+  titleFr: string;
+  titleEn: string;
+  descriptionFr: string;
+  descriptionEn: string;
+};
+
+type AchievementUnlockRow = {
+  achievement_key: string;
+  unlocked_at: string;
+};
+
+type UserRunStats = {
+  totalRuns: number;
+  winRuns: number;
+};
+
+type AchievementOverviewItem = {
+  key: string;
+  title: string;
+  description: string;
+  unlocked: boolean;
+  unlockedAt: string | null;
+};
+
 type QuestDefinition = {
   key: string;
   targetProgress: number;
@@ -69,6 +95,149 @@ const DAILY_QUEST_KEY = QUESTS[0].key;
 
 function getQuestDefinition(questKey: string): QuestDefinition | null {
   return QUESTS.find(q => q.key === questKey) ?? null;
+}
+
+export const ACHIEVEMENTS: AchievementDefinition[] = [
+  {
+    key: 'first_win',
+    titleFr: 'Premiere victoire',
+    titleEn: 'First victory',
+    descriptionFr: 'Gagner 1 combat',
+    descriptionEn: 'Win 1 battle',
+  },
+  {
+    key: 'ten_wins',
+    titleFr: 'Chasseur confirme',
+    titleEn: 'Seasoned hunter',
+    descriptionFr: 'Gagner 10 combats',
+    descriptionEn: 'Win 10 battles',
+  },
+  {
+    key: 'xp_100',
+    titleFr: 'Aventurier niveau 2',
+    titleEn: 'Adventurer level 2',
+    descriptionFr: 'Atteindre 100 XP',
+    descriptionEn: 'Reach 100 XP',
+  },
+  {
+    key: 'gold_250',
+    titleFr: 'Bourse pleine',
+    titleEn: 'Heavy purse',
+    descriptionFr: 'Atteindre 250 or',
+    descriptionEn: 'Reach 250 gold',
+  },
+];
+
+async function getUserRunStats(userId: string): Promise<UserRunStats> {
+  const supabase = getSupabaseAdminClient();
+  if (!supabase) {
+    return { totalRuns: 0, winRuns: 0 };
+  }
+
+  const { data, error } = await supabase
+    .from('runs')
+    .select('state')
+    .eq('user_id', userId);
+
+  if (error) {
+    console.error('[db] getUserRunStats failed:', error.message);
+    return { totalRuns: 0, winRuns: 0 };
+  }
+
+  const rows = data || [];
+  const winRuns = rows.filter(
+    row => row.state === GameState.Good || row.state === GameState.Best
+  ).length;
+
+  return {
+    totalRuns: rows.length,
+    winRuns,
+  };
+}
+
+async function syncAchievements(userId: string): Promise<void> {
+  const supabase = getSupabaseAdminClient();
+  if (!supabase) {
+    return;
+  }
+
+  const { data: profile, error: profileError } = await supabase
+    .from('players')
+    .select('xp, gold')
+    .eq('user_id', userId)
+    .maybeSingle();
+
+  if (profileError || !profile) {
+    console.error(
+      '[db] syncAchievements profile load failed:',
+      profileError?.message || 'missing row'
+    );
+    return;
+  }
+
+  const stats = await getUserRunStats(userId);
+  const xp = Number(profile.xp || 0);
+  const gold = Number(profile.gold || 0);
+
+  const toUnlock: string[] = [];
+  if (stats.winRuns >= 1) toUnlock.push('first_win');
+  if (stats.winRuns >= 10) toUnlock.push('ten_wins');
+  if (xp >= 100) toUnlock.push('xp_100');
+  if (gold >= 250) toUnlock.push('gold_250');
+
+  if (toUnlock.length === 0) {
+    return;
+  }
+
+  const rows = toUnlock.map(key => ({
+    user_id: userId,
+    achievement_key: key,
+    unlocked_at: new Date().toISOString(),
+  }));
+
+  const { error: unlockError } = await supabase
+    .from('achievements_unlocked')
+    .upsert(rows, { onConflict: 'user_id,achievement_key' });
+
+  if (unlockError) {
+    console.error('[db] syncAchievements unlock failed:', unlockError.message);
+  }
+}
+
+export async function getAchievementsOverview(
+  userId: string,
+  fr: boolean
+): Promise<AchievementOverviewItem[] | null> {
+  const supabase = getSupabaseAdminClient();
+  if (!supabase) {
+    return null;
+  }
+
+  const { data, error } = await supabase
+    .from('achievements_unlocked')
+    .select('achievement_key, unlocked_at')
+    .eq('user_id', userId);
+
+  if (error) {
+    console.error('[db] getAchievementsOverview failed:', error.message);
+    return null;
+  }
+
+  const unlockedRows = (data || []) as AchievementUnlockRow[];
+  const unlockedByKey = new Map(
+    unlockedRows.map(row => [row.achievement_key, row.unlocked_at])
+  );
+
+  return ACHIEVEMENTS.map(achievement => {
+    const unlockedAt = unlockedByKey.get(achievement.key) || null;
+    return {
+      key: achievement.key,
+      title: fr ? achievement.titleFr : achievement.titleEn,
+      description: fr ? achievement.descriptionFr : achievement.descriptionEn,
+      unlocked: Boolean(unlockedAt),
+      unlockedAt,
+    };
+  });
 }
 
 export function getAllQuestStatuses(
@@ -316,6 +485,8 @@ export async function recordRunResult(input: RecordRunInput): Promise<void> {
     }
   }
 
+  await syncAchievements(input.userId);
+
   console.log(`[db] run processing complete for user=${input.userId} state=${input.state}`);
 }
 
@@ -511,6 +682,8 @@ export async function claimDailyQuestReward(
     await rollbackClaimed();
     return { status: 'unavailable', rewardGold: 0 };
   }
+
+  await syncAchievements(userId);
 
   return { status: 'claimed', rewardGold: questDef.rewardGold };
 }
