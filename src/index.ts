@@ -2,6 +2,7 @@ import { Context, Hono } from 'hono';
 import { Interaction } from './enums/Interaction';
 import { Lang } from './enums/Lang';
 import { handleDefaultButton } from './interactionReplies/buttons/handleDefaultButton';
+import { handleMenuButton } from './interactionReplies/buttons/handleMenuButton';
 import { handleSpecialButton } from './interactionReplies/buttons/handleSpecialButton';
 import {
   generateMonsterInfosByConstructorName,
@@ -11,6 +12,7 @@ import {
   generatePlayerInfos,
   handleInfosPlayerCommand,
 } from './interactionReplies/commands/infos-player';
+import { handleMenuCommand } from './interactionReplies/commands/menu';
 import { handleStartCommand } from './interactionReplies/commands/start';
 import { handleTrainCommand } from './interactionReplies/commands/train';
 import { InteractionDataOption } from './objects/types/InteractionDataOption';
@@ -109,6 +111,11 @@ app.post('/api/interactions', async (c: Context) => {
       return handleStartCommand(c, userID, lang, fr);
     }
 
+    // /menu
+    if (interaction.data?.name === 'menu') {
+      return handleMenuCommand(c, userID, fr);
+    }
+
     // /train
     if (interaction.data?.name === 'train') {
       if (!interaction.data.options || interaction.data.options.length === 0) {
@@ -171,6 +178,26 @@ app.post('/api/interactions', async (c: Context) => {
           flags: 1 << 6,
         },
       });
+    }
+
+    console.log('Received button interaction with payload:', encodedPayload);
+
+    if (encodedPayload.startsWith('menu.')) {
+      try {
+        return await handleMenuButton(c, encodedPayload, userID, lang, fr);
+      } catch (error) {
+        const message = error instanceof Error ? error.message : String(error);
+        console.error('[menu] Interaction error:', message);
+        return c.json({
+          type: 4,
+          data: {
+            content: fr
+              ? "Erreur du menu. Reessayez dans quelques secondes."
+              : 'Menu error. Please try again in a few seconds.',
+            flags: 1 << 6,
+          },
+        });
+      }
     }
 
     const training = isTraining(payload);

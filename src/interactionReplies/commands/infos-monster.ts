@@ -4,22 +4,68 @@ import { GenericCreature } from '../../classes/GenericCreature';
 import { Random } from '../../classes/Random';
 import { generateMob } from '../../objects/data/mobMap';
 import { InteractionDataOption } from '../../objects/types/InteractionDataOption';
-import { pascalCaseToString } from '../../utils/processGame';
 
-function findMonster(monsterCandidate: string, fr: boolean) {
-  const mobs = generateMob();
+type MonsterCatalogItem = {
+  id: string;
+  name: string;
+  creature: Creature;
+};
+
+function normalizeMonsterText(value: string): string {
+  return value
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .trim()
+    .toLowerCase();
+}
+
+function buildMonsterId(index: number): string {
+  return `m${index}`;
+}
+
+function parseMonsterId(candidate: string): number | null {
+  if (!candidate.startsWith('m')) {
+    return null;
+  }
+
+  const raw = Number(candidate.slice(1));
+  return Number.isInteger(raw) && raw >= 0 ? raw : null;
+}
+
+export function getMonsterCatalog(fr: boolean): MonsterCatalogItem[] {
   const langIndex = fr ? 1 : 0;
-  return mobs.find(m => m.name[langIndex].toLowerCase() === monsterCandidate);
+  const mobs = generateMob();
+
+  return mobs
+    .map((creature, index) => ({
+      id: buildMonsterId(index),
+      name: creature.name[langIndex],
+      creature,
+    }))
+    .sort((a, b) => a.name.localeCompare(b.name, fr ? 'fr' : 'en'));
+}
+
+function findMonster(monsterCandidate: string) {
+  const mobs = generateMob();
+  const normalizedCandidate = normalizeMonsterText(monsterCandidate);
+
+  const idIndex = parseMonsterId(normalizedCandidate);
+  if (idIndex !== null) {
+    return mobs[idIndex] || null;
+  }
+
+  return (
+    mobs.find(m => normalizeMonsterText(m.name[0]) === normalizedCandidate) ||
+    mobs.find(m => normalizeMonsterText(m.name[1]) === normalizedCandidate) ||
+    null
+  );
 }
 
 function buildInvalidMonsterResponse(fr: boolean, mobs = generateMob()) {
   const langIndex = fr ? 1 : 0;
-  const allMobs = mobs
-    .map(
-      m =>
-        `**${m.name[langIndex]}** (${m.constructor.name || pascalCaseToString(m.constructor.name)})`
-    )
-    .sort();
+  const allMobs = Array.from(
+    new Set(mobs.map(m => m.name[langIndex].trim()).filter(Boolean))
+  ).sort((a, b) => a.localeCompare(b, fr ? 'fr' : 'en'));
 
   return {
     type: 4,
@@ -53,7 +99,7 @@ export function generateMonsterInfos(
 } {
   const mobs = generateMob();
   const langIndex = fr ? 1 : 0;
-  const monster = findMonster(monsterCandidate, fr);
+  const monster = findMonster(monsterCandidate);
 
   if (!monster) {
     return { command: buildInvalidMonsterResponse(fr, mobs), creature: null };
@@ -87,7 +133,7 @@ export function generateMonsterInfos(
 }
 
 export function generateMonsterInfosByConstructorName(
-  monsterConstructorName: string,
+  monsterIdentifier: string,
   fr: boolean
 ): {
   command: {
@@ -103,17 +149,13 @@ export function generateMonsterInfosByConstructorName(
   creature: Creature | null;
 } {
   const mobs = generateMob();
-  const langIndex = fr ? 1 : 0;
-  const normalizedConstructorName = monsterConstructorName.trim().toLowerCase();
-  const monster = mobs.find(
-    m => m.constructor.name.toLowerCase() === normalizedConstructorName
-  );
+  const monster = findMonster(monsterIdentifier);
 
   if (!monster) {
     return { command: buildInvalidMonsterResponse(fr, mobs), creature: null };
   }
 
-  return generateMonsterInfos(monster.name[langIndex].toLowerCase(), fr);
+  return generateMonsterInfos(monster.name[fr ? 1 : 0], fr);
 }
 
 export async function handleInfosMonsterCommand(

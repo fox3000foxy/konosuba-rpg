@@ -1,124 +1,196 @@
-// import { Client } from 'discord.js';
-// import fs from 'fs';
+import { config } from 'dotenv';
+import { readFile } from 'node:fs/promises';
+import path from 'node:path';
+config();
 
-// const client = new Client({ intents: [] });
+type JsonObject = Record<string, unknown>;
 
-// if (!process.env.DISCORD_TOKEN) {
-//   throw new Error("DISCORD_TOKEN manquant dans les variables d'environnement");
-// }
+type DiscordCommand = {
+  id: string;
+  name: string;
+};
 
-// client.on('ready', async () => {
-//   const commands = JSON.parse(fs.readFileSync(__dirname + '/commands.json', 'utf-8'));
-//   await client.application?.commands.set(commands);
-//   console.log('Commandes appliquées');
-//   client.destroy();
-// });
-
-// client.login(process.env.DISCORD_TOKEN);
+const OPTION_TYPE_MAP: Record<string, number> = {
+  SUB_COMMAND: 1,
+  SUB_COMMAND_GROUP: 2,
+  STRING: 3,
+  INTEGER: 4,
+  BOOLEAN: 5,
+  USER: 6,
+  CHANNEL: 7,
+  ROLE: 8,
+  MENTIONABLE: 9,
+  NUMBER: 10,
+  ATTACHMENT: 11,
+};
 
 export const applicationCommandIndex = {
   applications: [
     {
-      id: '1228368274488819792',
+      id: process.env.DISCORD_APPLICATION_ID || '',
       name: 'KonosubaRPG',
-      description:
-        'This is a pocket interaction game themed on Konosuba.\nType /start to play a game. /infos-player and /infos-monster are availiable too.\nBy **fox3000foxy**.',
-      icon: '056324dadd8630bd56e85dc922c35215',
-      bot_id: '1228368274488819792',
-      flags: '8388608',
     },
   ],
-  application_commands: [
-    {
-      id: '1228369685729247344',
-      type: 1,
-      application_id: '1228368274488819792',
-      version: '1230139017845280828',
-      name: 'start',
-      description: 'Commencer une partie',
-      dm_permission: true,
-      contexts: [0, 1, 2],
-      integration_types: [0, 1],
-      global_popularity_rank: 1,
-    },
-    {
-      id: '1228792471102820483',
-      type: 1,
-      application_id: '1228368274488819792',
-      version: '1230139017845280830',
-      name: 'infos-monster',
-      description: 'Donne des précisions sur un monstre particulier',
-      options: [
-        {
-          type: 3,
-          name: 'monster',
-          description: 'Le monstre que vous voulez afficher',
-          required: true,
-        },
-      ],
-      dm_permission: true,
-      contexts: [0, 1, 2],
-      integration_types: [0, 1],
-      global_popularity_rank: 3,
-    },
-    {
-      id: '1228813727462064240',
-      type: 1,
-      application_id: '1228368274488819792',
-      version: '1230139017845280831',
-      name: 'infos-player',
-      description: 'Donne des précisions sur un monstre particulier',
-      options: [
-        {
-          type: 4,
-          name: 'character',
-          description: 'Le monstre que vous voulez afficher',
-          required: true,
-          choices: [
-            {
-              name: 'Kazuma',
-              value: 0,
-            },
-            {
-              name: 'Darkness',
-              value: 1,
-            },
-            {
-              name: 'Megumin',
-              value: 2,
-            },
-            {
-              name: 'Aqua',
-              value: 3,
-            },
-          ],
-        },
-      ],
-      dm_permission: true,
-      contexts: [0, 1, 2],
-      integration_types: [0, 1],
-      global_popularity_rank: 2,
-    },
-    {
-      id: '1228849012946370560',
-      type: 1,
-      application_id: '1228368274488819792',
-      version: '1230139017845280829',
-      name: 'train',
-      description: "Permet de s'entraîner sur un monstre",
-      options: [
-        {
-          type: 3,
-          name: 'monster',
-          description: 'Le monstre que vous voulez combattre',
-          required: true,
-        },
-      ],
-      dm_permission: true,
-      contexts: [0, 1, 2],
-      integration_types: [0, 1],
-      global_popularity_rank: 4,
-    },
-  ],
-  version: '1230139017845280832',
+  application_commands: [],
 };
+
+function isObject(value: unknown): value is JsonObject {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+function normalizeOptionType(value: unknown): unknown {
+  if (typeof value === 'number') {
+    return value;
+  }
+
+  if (typeof value !== 'string') {
+    return value;
+  }
+
+  return OPTION_TYPE_MAP[value.toUpperCase()] ?? value;
+}
+
+function normalizeOption(option: unknown): unknown {
+  if (!isObject(option)) {
+    return option;
+  }
+
+  const normalized: JsonObject = { ...option };
+
+  if ('type' in normalized) {
+    normalized.type = normalizeOptionType(normalized.type);
+  }
+
+  if (Array.isArray(normalized.options)) {
+    normalized.options = normalized.options.map(normalizeOption);
+  }
+
+  return normalized;
+}
+
+function normalizeCommand(command: unknown): JsonObject {
+  if (!isObject(command)) {
+    throw new Error('Invalid command format in commands.json');
+  }
+
+  const normalized: JsonObject = { ...command };
+
+  if ('type' in normalized) {
+    normalized.type = normalizeOptionType(normalized.type);
+  }
+
+  if (Array.isArray(normalized.options)) {
+    normalized.options = normalized.options.map(normalizeOption);
+  }
+
+  return normalized;
+}
+
+async function loadCommands(): Promise<JsonObject[]> {
+  const commandsPath = path.resolve(process.cwd(), 'commands.json');
+  const content = await readFile(commandsPath, 'utf-8');
+  const parsed: unknown = JSON.parse(content);
+
+  if (!Array.isArray(parsed)) {
+    throw new Error('commands.json must contain an array of slash commands');
+  }
+
+  return parsed.map(normalizeCommand);
+}
+
+async function discordApi<T>(
+  url: string,
+  token: string,
+  init?: RequestInit
+): Promise<T> {
+  const response = await fetch(url, {
+    ...init,
+    headers: {
+      Authorization: `Bot ${token}`,
+      'Content-Type': 'application/json',
+      ...(init?.headers || {}),
+    },
+  });
+
+  if (!response.ok) {
+    const body = await response.text();
+    throw new Error(`Discord API ${response.status}: ${body}`);
+  }
+
+  if (response.status === 204) {
+    return undefined as T;
+  }
+
+  return (await response.json()) as T;
+}
+
+function getCommandsBaseUrl(applicationId: string): string {
+  const base = `https://discord.com/api/v10/applications/${applicationId}`;
+  return `${base}/commands`;
+}
+
+export async function patchCommands(): Promise<void> {
+  const token = process.env.DISCORD_TOKEN;
+  const applicationId = process.env.DISCORD_APPLICATION_ID;
+  const guildId = process.env.DISCORD_GUILD_ID;
+
+  if (!token) {
+    throw new Error('Missing DISCORD_TOKEN');
+  }
+
+  if (!applicationId) {
+    throw new Error('Missing DISCORD_APPLICATION_ID');
+  }
+
+  if (guildId) {
+    console.warn(
+      '[commandsUpdater] DISCORD_GUILD_ID is set but ignored. This updater patches global commands only.'
+    );
+  }
+
+  const commands = await loadCommands();
+  const baseUrl = getCommandsBaseUrl(applicationId);
+
+  const existing = await discordApi<DiscordCommand[]>(baseUrl, token, {
+    method: 'GET',
+  });
+  const existingByName = new Map(existing.map(command => [command.name, command]));
+
+  let created = 0;
+  let updated = 0;
+
+  for (const command of commands) {
+    const name = typeof command.name === 'string' ? command.name : '';
+    if (!name) {
+      throw new Error('Each command in commands.json must have a non-empty name');
+    }
+
+    const previous = existingByName.get(name);
+    if (previous) {
+      await discordApi(`${baseUrl}/${previous.id}`, token, {
+        method: 'PATCH',
+        body: JSON.stringify(command),
+      });
+      updated += 1;
+      continue;
+    }
+
+    await discordApi(baseUrl, token, {
+      method: 'POST',
+      body: JSON.stringify(command),
+    });
+    created += 1;
+  }
+
+  console.log(
+    `[commandsUpdater] Synced ${commands.length} commands (${updated} updated, ${created} created) on global scope.`
+  );
+}
+
+if (require.main === module) {
+  patchCommands().catch((error: unknown) => {
+    const message = error instanceof Error ? error.message : String(error);
+    console.error(`[commandsUpdater] Failed: ${message}`);
+    process.exit(1);
+  });
+}

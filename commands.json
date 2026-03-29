@@ -1,49 +1,120 @@
 [
 	{
+		"name": "menu",
+		"description": "Ouvre le menu interactif RPG",
+		"dm_permission": true,
+		"contexts": [
+			0,
+			1,
+			2
+		],
+		"integration_types": [
+			0,
+			1
+		],
+		"global_popularity_rank": 1
+	},
+	{
 		"name": "start",
-		"description": "Commencer une partie"
+		"description": "Commencer une partie",
+		"dm_permission": true,
+		"contexts": [
+			0,
+			1,
+			2
+		],
+		"integration_types": [
+			0,
+			1
+		],
+		"global_popularity_rank": 2
 	},
 	{
 		"name": "train",
 		"description": "Permet de s'entraîner sur un monstre",
-		"options": [{
-			"name": "monster",
-			"description": "Le monstre que vous voulez combattre",
-			"type": "STRING",
-			"required": true
-		}]
+		"options": [
+			{
+				"name": "monster",
+				"description": "Le monstre que vous voulez combattre",
+				"type": "STRING",
+				"required": true
+			}
+		],
+		"dm_permission": true,
+		"contexts": [
+			0,
+			1,
+			2
+		],
+		"integration_types": [
+			0,
+			1
+		],
+		"global_popularity_rank": 3
 	},
 	{
 		"name": "infos-monster",
 		"description": "Donne des précisions sur un monstre particulier",
-		"options": [{
-			"name": "monster",
-			"description": "Le monstre que vous voulez afficher",
-			"type": "STRING",
-			"required": true
-		}]
+		"options": [
+			{
+				"name": "monster",
+				"description": "Le monstre que vous voulez afficher",
+				"type": "STRING",
+				"required": true
+			}
+		],
+		"dm_permission": true,
+		"contexts": [
+			0,
+			1,
+			2
+		],
+		"integration_types": [
+			0,
+			1
+		],
+		"global_popularity_rank": 4
 	},
 	{
 		"name": "infos-player",
 		"description": "Donne des précisions sur un monstre particulier",
-		"options": [{
-			"name": "character",
-			"description": "Le monstre que vous voulez afficher",
-			"type": "INTEGER",
-			"required": true,
-			"choices": [{
-				"name": "Kazuma",
-				"value": 0
-			},{
-				"name": "Darkness",
-				"value": 1
-			},{
-				"name": "Megumin",
-				"value": 2
-			},{
-				"name": "Aqua",
-				"value": 3
-			}]
-		}]
+		"options": [
+			{
+				"name": "character",
+				"description": "Le monstre que vous voulez afficher",
+				"type": "INTEGER",
+				"required": true,
+				"choices": [
+					{
+						"name": "Kazuma",
+						"value": 0
+					},
+					{
+						"name": "Darkness",
+						"value": 1
+					},
+					{
+						"name": "Megumin",
+						"value": 2
+					},
+					{
+						"name": "Aqua",
+						"value": 3
+					}
+				]
+			}
+		],
+		"dm_permission": true,
+		"contexts": [
+			0,
+			1,
+			2
+		],
+		"integration_types": [
+			0,
+			1
+		],
+		"global_popularity_rank": 5
+
 	}
 ]
