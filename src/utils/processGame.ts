@@ -55,6 +55,27 @@ function generateMessage(
   );
 }
 
+function scaleStat(value: number, factor: number, minimum: number): number {
+  return Math.max(minimum, Math.round(value * factor));
+}
+
+function applyTeamLevelFactors(team: Team, factors?: number[]): void {
+  if (!factors || factors.length !== team.players.length) {
+    return;
+  }
+
+  team.players.forEach((player, index) => {
+    const factor = factors[index] ?? 1;
+    const nextHpMax = scaleStat(player.hpMax, factor, 1);
+    const nextAttackMin = Math.max(0, Math.round(player.attack[0] * factor));
+    const nextAttackMax = Math.max(nextAttackMin, scaleStat(player.attack[1], factor, 1));
+
+    player.hpMax = nextHpMax;
+    player.hp = nextHpMax;
+    player.attack = [nextAttackMin, nextAttackMax];
+  });
+}
+
 function handlePlayerAction({
   move,
   currentPlayer,
@@ -216,10 +237,12 @@ export default async function processGame(
   moves: string[],
   monsterName: string | null = null,
   lang: Lang = Lang.English,
-  renderingImage: boolean = true
+  renderingImage: boolean = true,
+  teamLevelFactors?: number[]
 ): Promise<Game> {
   lang = lang === Lang.French ? Lang.French : Lang.English;
   const team = new Team();
+  applyTeamLevelFactors(team, teamLevelFactors);
 
   // Precompute monster and team setup
   const creature = monsterName
