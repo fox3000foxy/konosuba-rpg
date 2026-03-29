@@ -1,3 +1,4 @@
+import { ACHIEVEMENT_DEFINITIONS } from '../objects/data/progressionCatalog';
 import { AchievementKey } from '../objects/enums/AchievementKey';
 import { GameState } from '../objects/enums/GameState';
 import { AchievementDefinition } from '../objects/types/AchievementDefinition';
@@ -6,36 +7,7 @@ import { AchievementUnlockRow } from '../objects/types/AchievementUnlockRow';
 import { UserRunStats } from '../objects/types/UserRunStats';
 import { getSupabaseAdminClient } from '../utils/supabaseClient';
 
-export const ACHIEVEMENTS: AchievementDefinition[] = [
-  {
-    key: AchievementKey.FirstWin,
-    titleFr: 'Premiere victoire',
-    titleEn: 'First victory',
-    descriptionFr: 'Gagner 1 combat',
-    descriptionEn: 'Win 1 battle',
-  },
-  {
-    key: AchievementKey.TenWins,
-    titleFr: 'Chasseur confirme',
-    titleEn: 'Seasoned hunter',
-    descriptionFr: 'Gagner 10 combats',
-    descriptionEn: 'Win 10 battles',
-  },
-  {
-    key: AchievementKey.Xp100,
-    titleFr: 'Aventurier niveau 2',
-    titleEn: 'Adventurer level 2',
-    descriptionFr: 'Atteindre 100 XP',
-    descriptionEn: 'Reach 100 XP',
-  },
-  {
-    key: AchievementKey.Gold250,
-    titleFr: 'Bourse pleine',
-    titleEn: 'Heavy purse',
-    descriptionFr: 'Atteindre 250 or',
-    descriptionEn: 'Reach 250 gold',
-  },
-];
+export const ACHIEVEMENTS: AchievementDefinition[] = ACHIEVEMENT_DEFINITIONS;
 
 async function getUserRunStats(userId: string): Promise<UserRunStats> {
   const supabase = getSupabaseAdminClient();

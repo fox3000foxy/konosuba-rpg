@@ -1,4 +1,6 @@
+import { QuestClaimStatus } from '../enums/QuestClaimStatus';
+
 export type ClaimDailyQuestResult = {
-  status: 'claimed' | 'already-claimed' | 'not-completed' | 'unavailable';
+  status: QuestClaimStatus;
   rewardGold: number;
 };

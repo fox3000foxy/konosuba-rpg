@@ -1,4 +1,5 @@
-import { QuestConditionKey } from '../objects/enums/QuestConditionKey';
+import { QUEST_DEFINITIONS } from '../objects/data/progressionCatalog';
+import { QuestClaimStatus } from '../objects/enums/QuestClaimStatus';
 import { QuestKey } from '../objects/enums/QuestKey';
 import { ClaimDailyQuestResult } from '../objects/types/ClaimDailyQuestResult';
 import { DailyQuestStatus } from '../objects/types/DailyQuestStatus';
@@ -7,26 +8,7 @@ import { getSupabaseAdminClient } from '../utils/supabaseClient';
 import { syncAchievements } from './achievementService';
 import { ensurePlayerProfile } from './playerService';
 
-export const QUESTS: QuestDefinition[] = [
-  {
-    key: QuestKey.Win1Run,
-    targetProgress: 1,
-    rewardGold: 50,
-    conditionKey: QuestConditionKey.Win,
-  },
-  {
-    key: QuestKey.Play3Runs,
-    targetProgress: 3,
-    rewardGold: 30,
-    conditionKey: QuestConditionKey.Play,
-  },
-  {
-    key: QuestKey.LevelUpOnce,
-    targetProgress: 1,
-    rewardGold: 75,
-    conditionKey: QuestConditionKey.LevelUp,
-  },
-];
+export const QUESTS: QuestDefinition[] = QUEST_DEFINITIONS;
 
 const DAILY_QUEST_KEY = QUESTS[0].key;
 
@@ -106,21 +88,21 @@ export async function claimDailyQuestReward(
   const questDef = getQuestDefinition(questKey);
 
   if (!questDef) {
-    return { status: 'unavailable', rewardGold: 0 };
+    return { status: QuestClaimStatus.Unavailable, rewardGold: 0 };
   }
 
   if (!supabase) {
-    return { status: 'unavailable', rewardGold: 0 };
+    return { status: QuestClaimStatus.Unavailable, rewardGold: 0 };
   }
 
   const questStatus = await getDailyQuestStatus(userId, questKey);
 
   if (questStatus.claimed) {
-    return { status: 'already-claimed', rewardGold: 0 };
+    return { status: QuestClaimStatus.AlreadyClaimed, rewardGold: 0 };
   }
 
   if (questStatus.progress < questStatus.target) {
-    return { status: 'not-completed', rewardGold: 0 };
+    return { status: QuestClaimStatus.NotCompleted, rewardGold: 0 };
   }
 
   const { error: markClaimedError } = await supabase
@@ -133,7 +115,7 @@ export async function claimDailyQuestReward(
 
   if (markClaimedError) {
     console.error('[db] claim quest failed:', markClaimedError.message);
-    return { status: 'unavailable', rewardGold: 0 };
+    return { status: QuestClaimStatus.Unavailable, rewardGold: 0 };
   }
 
   const rollbackClaimed = async () => {
@@ -161,7 +143,7 @@ export async function claimDailyQuestReward(
       playerError?.message || 'missing row'
     );
     await rollbackClaimed();
-    return { status: 'unavailable', rewardGold: 0 };
+    return { status: QuestClaimStatus.Unavailable, rewardGold: 0 };
   }
 
   const nextGold = Number(player.gold || 0) + questDef.rewardGold;
@@ -173,10 +155,10 @@ export async function claimDailyQuestReward(
   if (goldError) {
     console.error('[db] update gold failed:', goldError.message);
     await rollbackClaimed();
-    return { status: 'unavailable', rewardGold: 0 };
+    return { status: QuestClaimStatus.Unavailable, rewardGold: 0 };
   }
 
   await syncAchievements(userId);
 
-  return { status: 'claimed', rewardGold: questDef.rewardGold };
+  return { status: QuestClaimStatus.Claimed, rewardGold: questDef.rewardGold };
 }
