@@ -99,6 +99,29 @@
 		"global_popularity_rank": 5
 	},
 	{
+		"name": "affinity",
+		"description": "Affiche l'affinite des personnages",
+		"options": [
+			{
+				"name": "mention",
+				"description": "Mention d'un joueur pour afficher son affinite",
+				"type": "USER",
+				"required": false
+			}
+		],
+		"dm_permission": true,
+		"contexts": [
+			0,
+			1,
+			2
+		],
+		"integration_types": [
+			0,
+			1
+		],
+		"global_popularity_rank": 10
+	},
+	{
 		"name": "start",
 		"description": "Commencer une partie",
 		"dm_permission": true,

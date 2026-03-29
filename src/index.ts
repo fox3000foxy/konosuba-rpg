@@ -4,6 +4,7 @@ import { handleDefaultButton } from './interactionReplies/buttons/handleDefaultB
 import { handleMenuButton } from './interactionReplies/buttons/handleMenuButton';
 import { handleSpecialButton } from './interactionReplies/buttons/handleSpecialButton';
 import { handleAchievementsCommand } from './interactionReplies/commands/achievements';
+import { handleAffinityCommand } from './interactionReplies/commands/affinity';
 import {
   generateMonsterInfosByConstructorName,
   getMonsterCatalog,
@@ -220,6 +221,11 @@ app.post('/api/interactions', async (c: Context) => {
     // /achievements
     if (interaction.data?.name === 'achievements') {
       return handleAchievementsCommand(c, userID, fr);
+    }
+
+    // /affinity
+    if (interaction.data?.name === 'affinity') {
+      return handleAffinityCommand(c, userID, fr, interaction.data.options);
     }
 
     // /train
