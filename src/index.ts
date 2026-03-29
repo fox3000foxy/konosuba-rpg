@@ -33,7 +33,8 @@ import {
 import { buildComponents } from './utils/componentsBuilder';
 import { verifySignature } from './utils/discordUtils';
 import { decompressMoves } from './utils/movesUtils';
-import { extractMonster, isTraining } from './utils/payloadUtils';
+import { isTraining } from './utils/payloadUtils';
+import { inferMonsterFromPayload } from './utils/runMonsterUtils';
 
 config();
 
@@ -203,7 +204,7 @@ app.post('/api/interactions', async (c: Context) => {
 
     // /profile
     if (interaction.data?.name === 'profile') {
-      return handleProfileCommand(c, userID, fr);
+      return handleProfileCommand(c, userID, fr, interaction.data.options);
     }
 
     // /leaderboard
@@ -306,7 +307,8 @@ app.post('/api/interactions', async (c: Context) => {
     }
 
     const training = isTraining(payload);
-    const monsterName = training ? extractMonster(payload) : '';
+    const inferredMonsterName = inferMonsterFromPayload(payload);
+    const monsterName = inferredMonsterName || '';
     const { buttons, embedDescription, activePlayerName, gameState } =
       await buildComponents(payload, userID, lang);
 
@@ -315,7 +317,7 @@ app.post('/api/interactions', async (c: Context) => {
       payload,
       state: gameState,
       training,
-      monsterName: monsterName || null,
+      monsterName: inferredMonsterName,
     });
 
     const special = interaction.data.custom_id.split(':')[0].endsWith('p');

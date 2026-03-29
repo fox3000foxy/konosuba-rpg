@@ -1,5 +1,8 @@
+import { GameState } from '../objects/enums/GameState';
 import { LeaderboardEntry } from '../objects/types/LeaderboardEntry';
 import { PlayerProfile } from '../objects/types/PlayerProfile';
+import { PlayerRunSummary } from '../objects/types/PlayerRunSummary';
+import { inferMonsterFromRunKey } from '../utils/runMonsterUtils';
 import { getSupabaseAdminClient } from '../utils/supabaseClient';
 
 export async function ensurePlayerProfile(userId: string): Promise<void> {
@@ -78,4 +81,63 @@ export async function getLeaderboard(
     level: Number(row.level || 1),
     xp: Number(row.xp || 0),
   }));
+}
+
+export async function getPlayerRunSummary(
+  userId: string
+): Promise<PlayerRunSummary | null> {
+  const supabase = getSupabaseAdminClient();
+  if (!supabase) {
+    return null;
+  }
+
+  const { data: runs, error } = await supabase
+    .from('runs')
+    .select('state, monster_name, completed_at, run_key')
+    .eq('user_id', userId)
+    .order('completed_at', { ascending: false });
+
+  if (error) {
+    console.error('[db] getPlayerRunSummary failed:', error.message);
+    return null;
+  }
+
+  const rows = runs || [];
+  const killsByMonster = new Map<string, number>();
+  const updates: Array<{ runKey: string; monsterName: string }> = [];
+
+  for (const row of rows) {
+    const existingMonster = row.monster_name ? String(row.monster_name) : '';
+    const inferredMonster = existingMonster || inferMonsterFromRunKey(String(row.run_key || ''));
+
+    if (!existingMonster && inferredMonster && row.run_key) {
+      updates.push({ runKey: String(row.run_key), monsterName: inferredMonster });
+    }
+
+    const isWin = row.state === GameState.Good || row.state === GameState.Best;
+    if (!isWin || !inferredMonster) {
+      continue;
+    }
+
+    killsByMonster.set(inferredMonster, (killsByMonster.get(inferredMonster) ?? 0) + 1);
+  }
+
+  for (const update of updates) {
+    const { error: updateError } = await supabase
+      .from('runs')
+      .update({ monster_name: update.monsterName })
+      .eq('run_key', update.runKey)
+      .eq('user_id', userId);
+
+    if (updateError) {
+      console.error('[db] getPlayerRunSummary backfill failed:', updateError.message);
+    }
+  }
+
+  return {
+    totalRuns: rows.length,
+    killedMonsters: Array.from(killsByMonster.entries())
+      .sort((a, b) => a[0].localeCompare(b[0]))
+      .map(([name, count]) => ({ name, count })),
+  };
 }
