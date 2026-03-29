@@ -262,6 +262,23 @@ export default async function processGame(
   // Precompute reusable values
   const langIndex = lang === Lang.French ? 1 : 0;
   let activePlayers: Player[];
+
+  // Reducing the creature HP by dividing it per 2
+  creature.hpMax = Math.ceil(creature.hpMax / 2);
+  creature.hp = creature.hpMax;
+
+  // console.log('Initial game state:', {
+  //   creature: {
+  //     name: creature.name,
+  //     hp: creature.hp,
+  //     love: creature.love,
+  //   },
+  //   team: team.players.map(player => ({
+  //     name: player.name,
+  //     hp: player.hp,
+  //   })),
+  // });
+
   for (const move of moves) {
     activePlayers = team.players.filter(player => player.hp > 0);
     if (state !== GameState.Incomplete) break; // Early exit if game state is resolved
