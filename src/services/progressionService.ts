@@ -1,4 +1,4 @@
-import { GameState } from '../enums/GameState';
+import { GameState } from '../objects/enums/GameState';
 import { getSupabaseAdminClient } from '../utils/supabaseClient';
 
 type RecordRunInput = {

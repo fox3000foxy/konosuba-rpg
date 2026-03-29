@@ -1,6 +1,6 @@
 import { Context } from 'hono';
-import { Lang } from '../../enums/Lang';
 import { generateMob } from '../../objects/data/mobMap';
+import { Lang } from '../../objects/enums/Lang';
 import { InteractionDataOption } from '../../objects/types/InteractionDataOption';
 import { buildComponents } from '../../utils/componentsBuilder';
 import { makeid } from '../../utils/idUtils';

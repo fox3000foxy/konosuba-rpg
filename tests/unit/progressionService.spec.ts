@@ -1,4 +1,4 @@
-import { GameState } from '../../src/enums/GameState';
+import { GameState } from '../../src/objects/enums/GameState';
 import {
   claimDailyQuestReward,
   getAllQuestStatuses,

@@ -1,5 +1,5 @@
 import { Context } from 'hono';
-import { RawButton } from '../../enums/RawButton';
+import { RawButton } from '../../objects/enums/RawButton';
 import { buildImageUrl } from '../../utils/imageUtils';
 
 export async function handleDefaultButton(

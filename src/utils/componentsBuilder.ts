@@ -1,9 +1,9 @@
 /** Function to build Discord components */
 
-import { ButtonsLabels } from '../enums/ButtonsLabels';
-import { GameState } from '../enums/GameState';
-import { Lang } from '../enums/Lang';
-import { RawButton } from '../enums/RawButton';
+import { ButtonsLabels } from '../objects/enums/ButtonsLabels';
+import { GameState } from '../objects/enums/GameState';
+import { Lang } from '../objects/enums/Lang';
+import { RawButton } from '../objects/enums/RawButton';
 import { makeid, restartId } from './idUtils';
 import { buildImageUrl } from './imageUtils';
 import { compressMoves } from './movesUtils';

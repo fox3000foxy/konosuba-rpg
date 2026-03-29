@@ -1,13 +1,13 @@
-import { Errors } from '../enums/Errors';
-import { Gender } from '../enums/Gender';
-import { AquaImages } from '../enums/player/AquaImages';
-import { DarknessImages } from '../enums/player/DarknessImages';
-import { KazumaImages } from '../enums/player/KazumaImages';
-import { MeguminImages } from '../enums/player/MeguminImages';
-import { PlayerAction } from '../enums/player/PlayerAction';
-import { PlayerLore } from '../enums/player/PlayerLore';
-import { PlayerStats } from '../enums/player/PlayerStats';
-import { PlayerThmb } from '../enums/player/PlayerThmb';
+import { Errors } from '../objects/enums/Errors';
+import { Gender } from '../objects/enums/Gender';
+import { AquaImages } from '../objects/enums/player/AquaImages';
+import { DarknessImages } from '../objects/enums/player/DarknessImages';
+import { KazumaImages } from '../objects/enums/player/KazumaImages';
+import { MeguminImages } from '../objects/enums/player/MeguminImages';
+import { PlayerAction } from '../objects/enums/player/PlayerAction';
+import { PlayerLore } from '../objects/enums/player/PlayerLore';
+import { PlayerStats } from '../objects/enums/player/PlayerStats';
+import { PlayerThmb } from '../objects/enums/player/PlayerThmb';
 
 type ActionImageMap = Partial<Record<PlayerAction, string>>;
 

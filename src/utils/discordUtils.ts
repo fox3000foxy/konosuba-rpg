@@ -2,8 +2,8 @@
 
 import { verifyKey } from 'discord-interactions';
 import { Context } from 'vm';
-import { DISCORD_API_URL } from '../config/constants';
-import { Interaction } from '../enums/Interaction';
+import { DISCORD_API_URL } from '../objects/config/constants';
+import { Interaction } from '../objects/enums/Interaction';
 
 export function followUpTimeout(
   interaction: Interaction,

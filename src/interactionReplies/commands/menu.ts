@@ -1,5 +1,5 @@
 import { Context } from 'hono';
-import { RawButton } from '../../enums/RawButton';
+import { RawButton } from '../../objects/enums/RawButton';
 
 function buildMenuComponents(userID: string, fr: boolean): RawButton[] {
   const owner = `:${userID}`;

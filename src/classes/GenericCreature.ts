@@ -1,4 +1,4 @@
-import { Errors } from '../enums/Errors';
+import { Errors } from '../objects/enums/Errors';
 import { Creature, CreatureInterface } from './Creature';
 import { Random } from './Random';
 
