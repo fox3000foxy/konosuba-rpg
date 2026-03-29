@@ -173,7 +173,7 @@ Mettre en place une progression RPG multi-personnages (Kazuma, Darkness, Aqua, M
 - [x] ~~Brancher XP perso dans `recordRunResult`~~
 - [x] ~~Ajouter lecture progression perso dans `/profile`~~
 - [x] ~~Ajouter tests unitaires `characterService`~~
-- [ ] Ajouter tests integration run->xp perso
+- [x] ~~Ajouter tests integration run->xp perso~~
 
 ## Questions ouvertes
 - Formule XP->level pour personnages: meme courbe que joueur global (100 XP/level) ?
