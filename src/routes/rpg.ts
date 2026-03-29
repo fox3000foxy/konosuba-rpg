@@ -1,13 +1,10 @@
-import { Context } from 'vm';
+import { Context } from 'hono';
 import { Lang } from '../objects/enums/Lang';
-import processGame from '../utils/processGame';
-import processUrl from '../utils/processUrl';
+import { calculateGameImageFromUrl } from '../services/gameService';
 
 export async function calculateRPG(c: Context) {
-  // console.log("Received request:", c.req.url);
   const { lang } = c.req.param() as { lang: Lang };
-  const [rand, moves, , monster] = await processUrl(c.req.url);
-  const { image } = await processGame(rand, moves, monster, lang, true);
+  const { image } = await calculateGameImageFromUrl(c.req.url, lang);
 
   if (!image) {
     return c.text('Image generation failed', 500);
