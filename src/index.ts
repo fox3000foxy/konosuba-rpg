@@ -15,6 +15,7 @@ import {
 import { handleLeaderboardCommand } from './interactionReplies/commands/leaderboard';
 import { handleMenuCommand } from './interactionReplies/commands/menu';
 import { handleProfileCommand } from './interactionReplies/commands/profile';
+import { handleQuestCommand } from './interactionReplies/commands/quest';
 import { handleStartCommand } from './interactionReplies/commands/start';
 import { handleTrainCommand } from './interactionReplies/commands/train';
 import { InteractionDataOption } from './objects/types/InteractionDataOption';
@@ -132,6 +133,11 @@ app.post('/api/interactions', async (c: Context) => {
     // /leaderboard
     if (interaction.data?.name === 'leaderboard') {
       return handleLeaderboardCommand(c, fr);
+    }
+
+    // /quest
+    if (interaction.data?.name === 'quest') {
+      return handleQuestCommand(c, userID, fr, interaction.data.options);
     }
 
     // /train
