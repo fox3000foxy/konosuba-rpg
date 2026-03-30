@@ -2,6 +2,8 @@ import { Context, Hono } from 'hono';
 import { generateMonsterInfosByConstructorName } from '../interactionReplies/commands/infos-monster';
 import { generatePlayerInfos } from '../interactionReplies/commands/infos-player';
 import { getInventoryItems } from '../services/inventoryService';
+import { getCharacterProgresses } from '../services/progressionService';
+import { buildAffinitySvg, renderAffinityImage } from '../utils/renderAffinityImage';
 import { buildSvg, renderInventoryImage } from '../utils/renderInventoryImage';
 
 const PLAYER_ID_BY_NAME: Record<string, number> = {
@@ -85,6 +87,53 @@ export function registerApiRoutes(app: Hono): void {
     }
     const items = await getInventoryItems(userId);
     const image = await renderInventoryImage(userId, items, fr);
+    const responseBody = image.buffer.slice(
+      image.byteOffset,
+      image.byteOffset + image.byteLength
+    );
+
+    return new Response(responseBody as ArrayBuffer, {
+      headers: {
+        'Content-Type': 'image/png',
+        'Cache-Control':
+          'public, max-age=0, s-maxage=15, stale-while-revalidate=60',
+        'CDN-Cache-Control': 'public, s-maxage=15, stale-while-revalidate=60',
+        'Vercel-CDN-Cache-Control':
+          'public, s-maxage=15, stale-while-revalidate=60',
+      },
+    });
+  });
+
+  app.get('/affinity/:userId', async (c: Context) => {
+    const userId = (c.req.param('userId') || '').trim();
+    const fr = getApiLang(c);
+
+    if (!userId) {
+      return c.text(fr ? 'Utilisateur invalide.' : 'Invalid user.', 400);
+    }
+
+    const progresses = await getCharacterProgresses(userId);
+    if (!progresses) {
+      return c.text(
+        fr ? 'Affinite indisponible pour le moment.' : 'Affinity is unavailable right now.',
+        404
+      );
+    }
+
+    const renderSvg = c.req.query('renderSvg') === 'true';
+    if (renderSvg) {
+      const image = await buildAffinitySvg(userId, progresses, fr);
+      return c.text(image, 200, {
+        'Content-Type': 'image/svg+xml',
+        'Cache-Control':
+          'public, max-age=0, s-maxage=15, stale-while-revalidate=60',
+        'CDN-Cache-Control': 'public, s-maxage=15, stale-while-revalidate=60',
+        'Vercel-CDN-Cache-Control':
+          'public, s-maxage=15, stale-while-revalidate=60',
+      });
+    }
+
+    const image = await renderAffinityImage(userId, progresses, fr);
     const responseBody = image.buffer.slice(
       image.byteOffset,
       image.byteOffset + image.byteLength
