@@ -142,6 +142,39 @@ export async function addCharacterXp(
   }
 }
 
+export async function addCharacterAffinity(
+  userId: string,
+  characterKey: CharacterKey,
+  amount: number
+): Promise<void> {
+  if (amount <= 0) {
+    return;
+  }
+
+  const supabase = getSupabaseAdminClient();
+  if (!supabase) {
+    return;
+  }
+
+  await ensureCharacterProgress(userId);
+
+  const current = await getCharacterProgress(userId, characterKey);
+  const nextAffinity = Number(current?.affinity || 0) + amount;
+
+  const { error } = await supabase
+    .from('character_progress')
+    .update({
+      affinity: nextAffinity,
+      updated_at: new Date().toISOString(),
+    })
+    .eq('user_id', userId)
+    .eq('character_key', characterKey);
+
+  if (error) {
+    console.error('[db] addCharacterAffinity failed:', error.message);
+  }
+}
+
 export async function getCharacterStatsSnapshot(
   userId: string
 ): Promise<CharacterStatsSnapshot[] | null> {
