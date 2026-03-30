@@ -31,11 +31,19 @@ export async function handleButtonInteraction(
   const customId: string = interaction.data.custom_id;
 
   // Handle special non-combat custom_ids first (before payload decoding)
-  if (customId === 'consumables' || customId === `consumables:${userID}`) {
+  if (
+    customId === 'consumables' ||
+    customId === `consumables:${userID}` ||
+    customId.startsWith('consumables:')
+  ) {
     return handleConsumablesButton(c, userID, fr);
   }
 
-  if (customId === 'useitem' || customId === `useitem:${userID}`) {
+  if (
+    customId === 'useitem' ||
+    customId === `useitem:${userID}` ||
+    customId.startsWith('useitem:')
+  ) {
     try {
       return await handleUseItemButton(c, userID, lang, fr);
     } catch (error) {
