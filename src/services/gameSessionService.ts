@@ -5,8 +5,20 @@ const TOKEN_PREFIX = 'gs.';
 const TOKEN_SIZE = 10;
 const TOKEN_CHARS =
     'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-const SESSION_TTL_MS = 24 * 60 * 60 * 1000;
+const SESSION_TTL_MS = 7 * 24 * 60 * 60 * 1000;
 const PRUNE_INTERVAL_MS = 10 * 60 * 1000;
+
+export type DecodeGameplayPayloadFailureReason =
+    | 'invalid-token'
+    | 'not-found'
+    | 'forbidden'
+    | 'expired'
+    | 'stale';
+
+export type DecodeGameplayPayloadResult = {
+    payload: string | null;
+    reason?: DecodeGameplayPayloadFailureReason;
+};
 
 type SessionTokenRow = {
     token: string;
@@ -412,39 +424,47 @@ async function loadTokenRowByToken(token: string): Promise<SessionEntry | null> 
     return entry;
 }
 
-export async function decodeGameplayPayload(
+export async function decodeGameplayPayloadWithStatus(
     encodedPayload: string,
     userID: string
-): Promise<string | null> {
+): Promise<DecodeGameplayPayloadResult> {
     await pruneExpiredSessions();
 
     if (!encodedPayload.startsWith(TOKEN_PREFIX)) {
-        return encodedPayload;
+        return { payload: encodedPayload };
     }
 
     const token = encodedPayload.slice(TOKEN_PREFIX.length);
     if (!token) {
-        return null;
+        return { payload: null, reason: 'invalid-token' };
     }
 
     const cached = tokenToSession.get(token) || null;
     const entry = cached || (await loadTokenRowByToken(token));
     if (!entry) {
-        return null;
+        return { payload: null, reason: 'not-found' };
     }
 
     if (entry.ownerUserId !== userID && entry.ownerUserId !== 'all') {
-        return null;
+        return { payload: null, reason: 'forbidden' };
     }
 
     if (isExpired(entry)) {
-        return null;
+        return { payload: null, reason: 'expired' };
     }
 
     const latestTurn = await getLatestTurnVersion(entry.ownerUserId, entry.battleKey);
     if (entry.turnVersion !== latestTurn) {
-        return null;
+        return { payload: null, reason: 'stale' };
     }
 
-    return entry.payload;
+    return { payload: entry.payload };
+}
+
+export async function decodeGameplayPayload(
+    encodedPayload: string,
+    userID: string
+): Promise<string | null> {
+    const result = await decodeGameplayPayloadWithStatus(encodedPayload, userID);
+    return result.payload;
 }

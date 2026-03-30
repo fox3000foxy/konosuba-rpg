@@ -6,7 +6,7 @@ create table if not exists public.game_sessions (
   payload text not null,
   battle_key text not null default '',
   turn_version integer not null default 1,
-  expires_at timestamptz not null default (now() + interval '24 hours'),
+  expires_at timestamptz not null default (now() + interval '7 days'),
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
@@ -28,7 +28,7 @@ set owner_user_id = coalesce(owner_user_id, 'all')
 where owner_user_id is null;
 
 update public.game_sessions
-set expires_at = coalesce(expires_at, now() + interval '24 hours')
+set expires_at = coalesce(expires_at, now() + interval '7 days')
 where expires_at is null;
 
 update public.game_sessions

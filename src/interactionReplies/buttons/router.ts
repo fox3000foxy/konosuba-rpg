@@ -1,7 +1,9 @@
 import { Context } from 'hono';
 import { Interaction } from '../../objects/enums/Interaction';
 import { Lang } from '../../objects/enums/Lang';
-import { decodeGameplayPayload } from '../../services/gameSessionService';
+import {
+  decodeGameplayPayloadWithStatus,
+} from '../../services/gameSessionService';
 import { recordRunResult } from '../../services/progressionService';
 import { buildComponents } from '../../utils/componentsBuilder';
 import { decompressMoves } from '../../utils/movesUtils';
@@ -31,21 +33,31 @@ export async function handleButtonInteraction(
   const colonIdx = customId.lastIndexOf(':');
   const encodedPayload =
     colonIdx !== -1 ? customId.slice(0, colonIdx) : customId;
-  const resolvedEncodedPayload = await decodeGameplayPayload(
+  const decodeResult = await decodeGameplayPayloadWithStatus(
     encodedPayload,
     userID
   );
-  if (!resolvedEncodedPayload) {
+
+  if (!decodeResult.payload) {
+    const content =
+      decodeResult.reason === 'stale'
+        ? fr
+          ? 'Ce bouton est obsolete. Utilise le dernier message de combat.'
+          : 'This button is outdated. Use the latest battle message.'
+        : fr
+          ? 'Session de combat invalide ou expirée. Utilise le dernier message de combat.'
+          : 'Battle session is invalid or expired. Use the latest battle message.';
+
     return c.json({
       type: 4,
       data: {
-        content: fr
-          ? 'Session de combat expirée. Relance une partie.'
-          : 'Battle session expired. Please start a new game.',
+        content,
         flags: 1 << 6,
       },
     });
   }
+
+  const resolvedEncodedPayload = decodeResult.payload;
 
   const payload = decompressMoves(resolvedEncodedPayload);
   const owner = colonIdx !== -1 ? customId.slice(colonIdx + 1) : '';
