@@ -5,7 +5,10 @@ import { RecordRunInput } from '../objects/types/RecordRunInput';
 import { getSupabaseAdminClient } from '../utils/supabaseClient';
 import { syncAchievements } from './achievementService';
 import { addCharacterXp, ensureCharacterProgress } from './characterService';
-import { grantAccessoryDropRewards } from './dropService';
+import {
+  grantAccessoryDropRewards,
+  grantConsumableDropRewards,
+} from './dropService';
 import { ensurePlayerProfile } from './playerService';
 import { QUESTS } from './questService';
 
@@ -173,15 +176,28 @@ export async function recordRunResult(input: RecordRunInput): Promise<void> {
   ]);
 
   if (isWin) {
-    const drops = await grantAccessoryDropRewards(
+    const accessoryDrops = await grantAccessoryDropRewards(
       input.userId,
       runKey,
       input.monsterName
     );
-    if (drops && drops.length > 0) {
-      for (const drop of drops) {
+    if (accessoryDrops && accessoryDrops.length > 0) {
+      for (const drop of accessoryDrops) {
         console.log(
           `[db] accessory drop granted: user=${input.userId} item=${drop.accessoryId} rarity=${drop.rarity} affinity=${drop.affinityPoints} target=${drop.characterKey}`
+        );
+      }
+    }
+
+    const consumableDrops = await grantConsumableDropRewards(
+      input.userId,
+      runKey,
+      input.monsterName
+    );
+    if (consumableDrops && consumableDrops.length > 0) {
+      for (const drop of consumableDrops) {
+        console.log(
+          `[db] consumable drop granted: user=${input.userId} item=${drop.itemId} rarity=${drop.rarity} type=${drop.itemType} inventoryType=${drop.inventoryItemType}`
         );
       }
     }

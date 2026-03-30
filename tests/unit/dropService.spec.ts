@@ -4,6 +4,7 @@ import { Rarity } from '../../src/objects/enums/Rarity';
 import {
     ACCESSORY_AFFINITY_POINTS_BY_RARITY,
     rollAccessoryDrop,
+  rollConsumableDrop,
 } from '../../src/services/dropService';
 
 describe('dropService', () => {
@@ -76,6 +77,44 @@ describe('dropService', () => {
 
     const easyDrops = rollAccessoryDrop(runKey, 'Slime');
     const hardDrops = rollAccessoryDrop(runKey, 'King Troll');
+
+    const easyHigh = easyDrops.filter(
+      drop => drop.rarity === Rarity.Gold || drop.rarity === Rarity.Epic
+    ).length;
+    const hardHigh = hardDrops.filter(
+      drop => drop.rarity === Rarity.Gold || drop.rarity === Rarity.Epic
+    ).length;
+
+    expect(hardHigh).toBeGreaterThanOrEqual(easyHigh);
+  });
+
+  it('is deterministic for consumables with same run key and monster', () => {
+    const runKey = 'user-42:consumable-seed/atk';
+
+    const a = rollConsumableDrop(runKey, 'Dragon');
+    const b = rollConsumableDrop(runKey, 'Dragon');
+
+    expect(a).toEqual(b);
+  });
+
+  it('drops consumables in expected rarity domain', () => {
+    const drops = rollConsumableDrop('user-13:seed777/atk', 'Troll');
+
+    expect(drops.length).toBeGreaterThanOrEqual(1);
+    expect(drops.length).toBeLessThanOrEqual(3);
+
+    for (const drop of drops) {
+      expect([Rarity.Basic, Rarity.Gold, Rarity.Epic]).toContain(drop.rarity);
+      expect(drop.itemId).toMatch(/^\d{8}$/);
+      expect(['potion', 'component']).toContain(drop.inventoryItemType);
+    }
+  });
+
+  it('gives at least as many high-rarity consumable drops on hard as on easy for same seed', () => {
+    const runKey = 'user-77:consumable-hard-check/atk';
+
+    const easyDrops = rollConsumableDrop(runKey, 'Slime');
+    const hardDrops = rollConsumableDrop(runKey, 'Dragon');
 
     const easyHigh = easyDrops.filter(
       drop => drop.rarity === Rarity.Gold || drop.rarity === Rarity.Epic
