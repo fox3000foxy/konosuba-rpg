@@ -46,7 +46,7 @@ describe('dropService', () => {
   it('calculates difficulty levels correctly', () => {
     expect(getMonsterDifficulty('Slime')).toBe(MonsterDifficulty.Easy);
     expect(getMonsterDifficulty('Troll')).toBe(MonsterDifficulty.Medium);
-    expect(getMonsterDifficulty('King Troll')).toBe(MonsterDifficulty.Hard);
+    expect(getMonsterDifficulty('King Troll')).toBe(MonsterDifficulty.VeryHard);
     expect(getMonsterDifficulty('Dragon')).toBe(MonsterDifficulty.Extreme);
   });
 
