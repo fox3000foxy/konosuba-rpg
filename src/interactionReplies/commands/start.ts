@@ -8,10 +8,11 @@ export async function handleStartCommand(
   c: Context,
   userID: string,
   lang: Lang,
-  fr: boolean
+  fr: boolean,
+  difficulty?: string
 ) {
   const id = makeid(15);
-  const imageUrl = buildImageUrl(id, lang);
+  const imageUrl = buildImageUrl(id, lang, difficulty);
   const buildedComponents = await buildComponents(id, userID, lang);
   const { embedDescription, buttons } = buildedComponents;
   return c.json({
@@ -22,6 +23,9 @@ export async function handleStartCommand(
           image: { url: imageUrl },
           description:
             (fr ? `**Partie de <@${userID}>**` : `**<@${userID}> game**`) +
+            (difficulty
+              ? `\n${fr ? 'Difficulté' : 'Difficulty'}: **${difficulty}**`
+              : '') +
             (embedDescription.length > 0
               ? `\n\n${embedDescription.join('\n')}`
               : ''),

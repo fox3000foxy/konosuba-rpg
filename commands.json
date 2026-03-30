@@ -124,6 +124,15 @@
 	{
 		"name": "start",
 		"description": "Commencer une partie",
+		"options": [
+			{
+				"name": "difficulty",
+				"description": "Sélectionner la difficulté de l'adversaire (optionnel)",
+				"type": "STRING",
+				"required": false,
+				"autocomplete": true
+			}
+		],
 		"dm_permission": true,
 		"contexts": [
 			0,
