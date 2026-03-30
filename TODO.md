@@ -1,41 +1,41 @@
 # Konosuba RPG - Mega TODO
 
 ## Vision
-Mettre en place une progression RPG multi-personnages (Kazuma, Darkness, Aqua, Megumin) avec:
-- XP et niveaux par personnage
-- Facteurs de stats basés sur le niveau
-- Systeme d'affinite (declaration maintenant, gameplay plus tard)
-- Systeme de drops (items d'affinite + composants)
-- Fusion de composants en potions (plus tard)
-- UI basee sur les portraits dans `assets/characters-emojis`
-- PVP en backlog long terme
+Build a multi-character RPG progression system (Kazuma, Darkness, Aqua, Megumin) with:
+- XP and levels per character
+- Level-based stat factors
+- Affinity system (declared now, deeper gameplay later)
+- Drop system (affinity items + crafting components)
+- Component fusion into potions (later)
+- UI based on portraits in `assets/characters-emojis`
+- PVP in long-term backlog
 
-## Regles de progression (a implementer)
+## Progression Rules (to implement)
 
-### Multiplicateur de stats par niveau
-- Regle: niveau 1 => x1.0
-- Regle: chaque niveau ajoute +0.2
-- Formule: `factor(level) = 1.0 + 0.2 * (level - 1)`
-- Exemples:
+### Level stat multiplier
+- Rule: level 1 => x1.0
+- Rule: each level adds +0.2
+- Formula: `factor(level) = 1.0 + 0.2 * (level - 1)`
+- Examples:
   - level 1 => x1.0
   - level 2 => x1.2
   - level 3 => x1.4
 
-### Source du niveau selon personnage
-- Kazuma: utilise le niveau joueur global (deja present)
-- Darkness, Aqua, Megumin: utilisent leur propre XP/niveau de personnage
+### Level source per character
+- Kazuma: uses global player level (already present)
+- Darkness, Aqua, Megumin: use their own character XP/level
 
-### Application du facteur de stats
-- Appliquer sur stats de base des personnages:
+### Applying the stat factor
+- Apply to base character stats:
   - HP
   - attack min/max
-  - (eventuellement defense/special scaling si necessaire)
-- Garder un arrondi coherent (a definir):
-  - `Math.round` ou `Math.floor` selon feeling gameplay
+  - (optional defense/special scaling if needed)
+- Keep rounding consistent (to decide):
+  - `Math.round` or `Math.floor` based on gameplay feel
 
-## Phase 1 - Data model et migrations (priorite haute)
+## Phase 1 - Data model and migrations (high priority)
 
-### Tables DB a ajouter
+### DB tables to add
 - `character_progress`
   - `user_id` (FK players.user_id)
   - `character_key` (`darkness` | `aqua` | `megumin`)
@@ -43,32 +43,32 @@ Mettre en place une progression RPG multi-personnages (Kazuma, Darkness, Aqua, M
   - `level` (int, default 1)
   - `affinity` (int, default 0)
   - `updated_at`
-  - contrainte unique: `(user_id, character_key)`
+  - unique constraint: `(user_id, character_key)`
 
-### Extensions futures (declarer maintenant)
+### Future extensions (declare now)
 - `inventory_items` (future)
-  - stock des drops (affinite/composants)
+  - stores drops (affinity/components)
 - `crafting_recipes` (future)
-  - definition des fusions composants -> potions
+  - component fusion definitions -> potions
 - `player_potions` (future)
-  - inventaire potions craft
+  - crafted potion inventory
 
 ### Migration script
-- Ajouter migration SQL versionnee dans `supabase/`
-- Backfill initial:
-  - pour chaque joueur existant, creer les 3 rows `character_progress`
-- Ajouter index utiles:
+- Add versioned SQL migration in `supabase/`
+- Initial backfill:
+  - for each existing player, create the 3 `character_progress` rows
+- Add useful indexes:
   - `(user_id)`
   - `(user_id, character_key)` unique
 
-## Phase 2 - Services TypeScript (priorite haute)
+## Phase 2 - TypeScript services (high priority)
 
-### Nouveaux types
+### New types
 - `CharacterKey` enum
 - `CharacterProgress` type
-- `CharacterStatsSnapshot` type (stats finales apres scaling)
+- `CharacterStatsSnapshot` type (final stats after scaling)
 
-### Nouveaux services
+### New services
 - `characterService.ts`
   - `ensureCharacterProgress(userId)`
   - `getCharacterProgress(userId, character)`
@@ -76,132 +76,132 @@ Mettre en place une progression RPG multi-personnages (Kazuma, Darkness, Aqua, M
   - `computeLevelFromXp(xp)`
   - `getLevelFactor(level)`
 
-### Refactor du calcul gameplay
-- Introduire un point unique de scaling des stats
-- Kazuma lit `players.level`
-- Darkness/Aqua/Megumin lisent `character_progress.level`
+### Gameplay calculation refactor
+- Introduce a single stat-scaling point
+- Kazuma reads `players.level`
+- Darkness/Aqua/Megumin read `character_progress.level`
 
-## Phase 3 - Integrer la progression dans le jeu (priorite haute)
+## Phase 3 - Integrate progression into gameplay (high priority)
 
-### Gains XP
-- Definir repartition XP fin de run:
-  - joueur global (deja existant)
-  - personnages utilises dans la run
-- Regles a valider:
-  - XP uniquement sur win?
-  - XP reduite si giveup?
+### XP gains
+- Define end-of-run XP distribution:
+  - global player XP (already exists)
+  - characters used during the run
+- Rules to validate:
+  - XP only on win?
+  - reduced XP on give up?
 
-### Mise a jour run processing
-- Etendre `recordRunResult` pour:
-  - maintenir la progression globale actuelle
-  - alimenter `character_progress`
+### Run processing update
+- Extend `recordRunResult` to:
+  - keep current global progression
+  - feed `character_progress`
 
-## Phase 4 - Affinite (declaration maintenant, logique plus tard)
+## Phase 4 - Affinity (declare now, implement deeper logic later)
 
-### Maintenant
-- Champs DB presents (`affinity`) + types + endpoints lecture
-- Afficher affinite dans `/profile` (optionnel)
+### Now
+- DB fields exist (`affinity`) + types + read endpoints
+- Display affinity in `/profile` (optional)
 
-### Plus tard
-- Consommables d'affinite par personnage
-- Attentes differentes par personnage
-- Bonus gameplay selon paliers d'affinite
+### Later
+- Character-specific affinity consumables
+- Different expectations by character
+- Gameplay bonuses by affinity thresholds
 
-## Phase 5 - Drops et inventaire (TODO)
+## Phase 5 - Drops and inventory (TODO)
 
-### Drops de combat
-- Ajouter table de loot/drop
-- Ajouter generation de recompenses en fin de run
-  - accessoires d'affinite (priorite immediate)
-  - composants d'alchimie
-  - consommables utilisables en combat (apres la phase accessoires)
+### Combat drops
+- Add loot/drop table
+- Add reward generation at end of run
+  - affinity accessories (immediate priority)
+  - alchemy components
+  - combat consumables (after accessories phase)
 
-### Inventaire
-- Endpoints lecture inventaire
-- Consommation item sur personnage cible
+### Inventory
+- Inventory read endpoints
+- Item consumption on target character
 
-### Priorite immediate (prochaine iteration)
-- Drops d'accessoires en fin de combat
-- Gain d'affinite selon l'accessoire obtenu (bronze/silver/gold/epic)
-- Persistance dans `inventory_items`
-- Exposition basique via `/inventory`
+### Immediate priority (next iteration)
+- End-of-combat accessory drops
+- Affinity gain based on obtained accessory (bronze/silver/gold/epic)
+- Persistence in `inventory_items`
+- Basic exposure through `/inventory`
 
-## Phase 6 - Crafting potions via composants (TODO)
+## Phase 6 - Potion crafting from components (TODO)
 
-### Systeme de fusion
-- Definir recettes
-- Validation des ingredients
-- Production de potion
-- Consommation atomique des composants
+### Fusion system
+- Define recipes
+- Validate ingredients
+- Produce potion
+- Atomic component consumption
 
-### Effets potions
-- Buff temporaires
-- Buff permanents (a debattre)
+### Potion effects
+- Temporary buffs
+- Permanent buffs (to discuss)
 
-## Phase 7 - UI Assets personnages (basee sur `assets/characters-emojis`)
+## Phase 7 - Character UI assets (based on `assets/characters-emojis`)
 
-### Preparation data
-- Mapping `character_key` -> set d'images
-- Etats visuels potentiels:
+### Data preparation
+- Mapping `character_key` -> image set
+- Potential visual states:
   - normal
   - rare/special
-  - affinite high
+  - high affinity
 
-### Plus tard (pas maintenant)
-- Integrer ces visuels dans les embeds/composants
-- Ajouter selection visuelle du personnage cible
+### Later (not now)
+- Integrate visuals into embeds/components
+- Add visual target character selection
 
-## Phase 8 - Profile et commandes (incremental)
+## Phase 8 - Profile and commands (incremental)
 
 ### `/profile`
-- Afficher:
-  - ~~niveau joueur (Kazuma scaling)~~
-  - ~~progression Darkness/Aqua/Megumin~~
-  - affinite par perso (quand utile)
-  - ~~monstres tues stackes~~
+- Display:
+  - ~~player level (Kazuma scaling)~~
+  - ~~Darkness/Aqua/Megumin progression~~
+  - affinity per character (when useful)
+  - ~~stacked monsters killed~~
 
-### Commandes futures
-- `/character` (inspect personnage)
-- `/inventory` (drops + composants)
+### Future commands
+- `/character` (inspect character)
+- `/inventory` (drops + components)
 - `/use-item`
 - `/craft`
 
-## Phase 9 - PVP (backlog long terme)
-- Concevoir format 1v1 joueurs
-- Matchmaking simple
-- Equilibrage des multiplicateurs
-- Recompenses PVP (XP/drops cosmetiques)
+## Phase 9 - PVP (long-term backlog)
+- Design 1v1 player format
+- Simple matchmaking
+- Multiplier balancing
+- PVP rewards (XP/cosmetic drops)
 
-## Checklist implementation immediate
-- [x] ~~Creer migration SQL `character_progress`~~
-- [x] ~~Ajouter enum/type `CharacterKey` + types associes~~
-- [x] ~~Creer `characterService.ts`~~
-- [x] ~~Brancher scaling des stats par niveau~~
-- [x] ~~Brancher XP perso dans `recordRunResult`~~
-- [x] ~~Ajouter lecture progression perso dans `/profile`~~
-- [x] ~~Ajouter tests unitaires `characterService`~~
-- [x] ~~Ajouter tests integration run->xp perso~~
-- [x] ~~Refactoriser le routage: extraction des interactions Discord et des routes API hors de `index.ts`~~
+## Immediate implementation checklist
+- [x] ~~Create SQL migration `character_progress`~~
+- [x] ~~Add `CharacterKey` enum/type + related types~~
+- [x] ~~Create `characterService.ts`~~
+- [x] ~~Wire level-based stat scaling~~
+- [x] ~~Wire character XP in `recordRunResult`~~
+- [x] ~~Add character progression read in `/profile`~~
+- [x] ~~Add unit tests for `characterService`~~
+- [x] ~~Add integration tests run -> character XP~~
+- [x] ~~Refactor routing: extract Discord interactions and API routes out of `index.ts`~~
 
-## Checklist items, drops et affinite
-- [x] ~~Ajouter enums de rarete/type pour items et accessoires~~
-- [x] ~~Ajouter catalogues localises (FR/EN) pour consumables et accessoires~~
-- [x] ~~Ajouter services de recherche/filtrage (`consumableService`, `accessoryService`)~~
-- [x] ~~Ajouter tests unitaires des services items/accessoires~~
-- [x] ~~Aligner la rarete accessoires sur 4 paliers (`bronze`, `silver`, `gold`, `epic`)~~
-- [x] ~~Ajouter les drops d'accessoires a la fin des combats~~
-- [x] ~~Definir la table de conversion rarete -> points d'affinite~~
-- [x] ~~Crediter l'affinite personnage depuis les accessoires droppes~~
-- [x] ~~Integrer l'inventaire accessoires dans `/inventory`~~
-- [ ] Integrer les consommables en combat (apres stabilisation accessoires)
+## Items, drops, and affinity checklist
+- [x] ~~Add rarity/type enums for items and accessories~~
+- [x] ~~Add localized catalogs (FR/EN) for consumables and accessories~~
+- [x] ~~Add search/filter services (`consumableService`, `accessoryService`)~~
+- [x] ~~Add unit tests for item/accessory services~~
+- [x] ~~Align accessory rarity to 4 tiers (`bronze`, `silver`, `gold`, `epic`)~~
+- [x] ~~Add accessory drops at end of combat~~
+- [x] ~~Define rarity -> affinity points conversion table~~
+- [x] ~~Credit character affinity from dropped accessories~~
+- [x] ~~Integrate accessory inventory in `/inventory`~~
+- [ ] Integrate consumables in combat (after accessory stabilization)
 
-## Questions ouvertes
-- Formule XP->level pour personnages: meme courbe que joueur global (100 XP/level) ?
-- Est-ce que tous les persos gagnent XP a chaque run, ou seulement ceux qui ont agit ?
-- Limite de niveau initiale (cap)?
-- Faut-il afficher le facteur exact (`x1.6`) dans les embeds ?
+## Open questions
+- Character XP -> level formula: same curve as global player (100 XP/level)?
+- Do all characters gain XP each run, or only characters that acted?
+- Initial level cap?
+- Should embeds display the exact factor (`x1.6`)?
 
 ## Notes
-- Garder la compatibilite avec les services actuels (`progressionService` orchestrateur).
-- Eviter les breaking changes sur les routes Discord existantes.
-- Les visuels `characters-emojis` sont consideres comme assets UI internes, pas emojis Discord.
+- Keep compatibility with current services (`progressionService` as orchestrator).
+- Avoid breaking changes on existing Discord routes.
+- `characters-emojis` visuals are internal UI assets, not Discord emojis.
