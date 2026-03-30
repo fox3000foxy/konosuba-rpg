@@ -6,6 +6,7 @@ const TOKEN_SIZE = 10;
 const TOKEN_CHARS =
     'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
 const SESSION_TTL_MS = 24 * 60 * 60 * 1000;
+const PRUNE_INTERVAL_MS = 10 * 60 * 1000;
 
 type SessionTokenRow = {
     token: string;
@@ -28,14 +29,17 @@ type SessionEntry = {
 type GameSessionGlobals = {
     __gameSessionTokenToSession?: Map<string, SessionEntry>;
     __gameSessionLatestTurnByBattle?: Map<string, number>;
+    __gameSessionLastPruneAt?: number;
 };
 
 const G = globalThis as unknown as GameSessionGlobals;
 G.__gameSessionTokenToSession ??= new Map<string, SessionEntry>();
 G.__gameSessionLatestTurnByBattle ??= new Map<string, number>();
+G.__gameSessionLastPruneAt ??= 0;
 
 const tokenToSession = G.__gameSessionTokenToSession;
 const latestTurnByBattle = G.__gameSessionLatestTurnByBattle;
+let lastPruneAt = G.__gameSessionLastPruneAt;
 
 function hasCustomId(component: unknown): component is { custom_id: string } {
     if (!component || typeof component !== 'object') {
@@ -81,6 +85,37 @@ function parseExpiresAt(value: string | null | undefined): number {
     }
 
     return parsed;
+}
+
+async function pruneExpiredSessions(force = false): Promise<void> {
+    const now = nowMs();
+
+    for (const [token, entry] of tokenToSession.entries()) {
+        if (entry.expiresAt <= now) {
+            tokenToSession.delete(token);
+        }
+    }
+
+    if (!force && now - lastPruneAt < PRUNE_INTERVAL_MS) {
+        return;
+    }
+
+    lastPruneAt = now;
+    G.__gameSessionLastPruneAt = now;
+
+    const supabase = getSupabaseAdminClient();
+    if (!supabase) {
+        return;
+    }
+
+    const { error } = await supabase
+        .from('game_sessions')
+        .delete()
+        .lt('expires_at', new Date(now).toISOString());
+
+    if (error) {
+        console.error('[db] prune expired game sessions failed:', error.message);
+    }
 }
 
 function buildSessionEntry(row: SessionTokenRow): SessionEntry {
@@ -274,6 +309,8 @@ type PendingEncoding = {
 export async function encodeGameplayButtons(
     buttons: RawButton[]
 ): Promise<RawButton[]> {
+    await pruneExpiredSessions();
+
     const groups = new Map<string, PendingEncoding>();
 
     for (const row of buttons) {
@@ -379,6 +416,8 @@ export async function decodeGameplayPayload(
     encodedPayload: string,
     userID: string
 ): Promise<string | null> {
+    await pruneExpiredSessions();
+
     if (!encodedPayload.startsWith(TOKEN_PREFIX)) {
         return encodedPayload;
     }
