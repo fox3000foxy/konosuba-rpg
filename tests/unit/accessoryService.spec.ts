@@ -15,7 +15,7 @@ describe('accessoryService', () => {
   });
 
   it('finds item by localized name', () => {
-    const item = getItemByName('bague cristal basique');
+    const item = getItemByName('bague cristal bronze');
     expect(item).not.toBeNull();
     expect(item?.id).toBe(AccessoryId.I21110);
   });

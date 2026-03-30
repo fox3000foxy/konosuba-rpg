@@ -88,6 +88,8 @@ const ELEMENT_NAME_BY_SUFFIX: Record<string, { fr: string; en: string }> = {
 };
 
 const RARITY_LABEL: Record<Rarity, { fr: string; en: string }> = {
+  [Rarity.Bronze]: { fr: 'bronze', en: 'bronze' },
+  [Rarity.Silver]: { fr: 'argente', en: 'silver' },
   [Rarity.Basic]: { fr: 'basique', en: 'basic' },
   [Rarity.Gold]: { fr: 'doré', en: 'gold' },
   [Rarity.Epic]: { fr: 'epique', en: 'epic' },
