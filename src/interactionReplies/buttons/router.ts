@@ -4,7 +4,7 @@ import { Lang } from '../../objects/enums/Lang';
 import { recordRunResult } from '../../services/progressionService';
 import { buildComponents } from '../../utils/componentsBuilder';
 import { decompressMoves } from '../../utils/movesUtils';
-import { isTraining } from '../../utils/payloadUtils';
+import { extractDifficulty, isTraining, removeDifficultyFromPayload } from '../../utils/payloadUtils';
 import { inferMonsterFromPayload } from '../../utils/runMonsterUtils';
 import { handleDefaultButton } from './handleDefaultButton';
 import { handleMenuButton } from './handleMenuButton';
@@ -58,10 +58,12 @@ export async function handleButtonInteraction(
   }
 
   const training = isTraining(payload);
-  const inferredMonsterName = inferMonsterFromPayload(payload);
+  const difficulty = extractDifficulty(payload) ?? undefined;
+  const cleanPayload = removeDifficultyFromPayload(payload);
+  const inferredMonsterName = inferMonsterFromPayload(cleanPayload);
   const monsterName = inferredMonsterName || '';
   const { buttons, embedDescription, activePlayerName, gameState } =
-    await buildComponents(payload, userID, lang);
+    await buildComponents(payload, userID, lang, false, difficulty);
 
   void recordRunResult({
     userId: userID,

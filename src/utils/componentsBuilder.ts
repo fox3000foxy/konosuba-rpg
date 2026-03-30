@@ -8,7 +8,7 @@ import { getCharacterStatsSnapshot } from '../services/progressionService';
 import { makeid, restartId } from './idUtils';
 import { buildImageUrl } from './imageUtils';
 import { compressMoves } from './movesUtils';
-import { extractMonster, isTraining } from './payloadUtils';
+import { addDifficultyToPayload, extractDifficulty, extractMonster, isTraining, removeDifficultyFromPayload } from './payloadUtils';
 import processGame from './processGame';
 import processUrl from './processUrl';
 
@@ -40,7 +40,12 @@ export async function buildComponents(
   activePlayerName: string | null;
   gameState: GameState;
 }> {
-  const imageUrl = buildImageUrl(payload, lang, difficulty);
+  // Extraire la difficulté du payload si elle y est encodée
+  const payloadDifficulty = extractDifficulty(payload);
+  const cleanPayload = removeDifficultyFromPayload(payload);
+  const effectiveDifficulty = difficulty || payloadDifficulty;
+
+  const imageUrl = buildImageUrl(cleanPayload, lang, effectiveDifficulty);
 
   const [rand, moves, , monster, difficultyFromUrl] = processUrl(imageUrl);
   const characterStatsSnapshot = await getCharacterStatsSnapshot(userID);
@@ -55,16 +60,18 @@ export async function buildComponents(
     lang,
     false,
     characterFactors,
-    difficultyFromUrl || difficulty
+    difficultyFromUrl || effectiveDifficulty
   );
-  const training = isTraining(payload);
+  const training = isTraining(cleanPayload);
   const fr = lang === Lang.French;
   const langIndex = fr ? 1 : 0;
 
-  const compressedPayload = compressMoves(payload);
-  const restartPayload = restartId(payload);
+  const compressedPayload = compressMoves(cleanPayload);
+  const compressedPayloadWithDifficulty = addDifficultyToPayload(compressedPayload, effectiveDifficulty);
+  const restartPayload = restartId(cleanPayload);
+  const restartPayloadWithDifficulty = addDifficultyToPayload(restartPayload, effectiveDifficulty);
   const userIdSuffix = `:${userID}`;
-  const actionPrefix = `${compressedPayload}`;
+  const actionPrefix = `${compressedPayloadWithDifficulty}`;
   const activePlayerName = team.activePlayer?.name[langIndex] ?? null;
   const attackLabels = fr ? ATTACK_LABELS_FR : ATTACK_LABELS_EN;
   const hugLabels = fr ? HUG_LABELS_FR : HUG_LABELS_EN;
@@ -161,7 +168,7 @@ export async function buildComponents(
           type: 2,
           label: fr ? ButtonsLabels.RestartFr : ButtonsLabels.Restart,
           style: 2,
-          custom_id: `${restartPayload}${userIdSuffix}`,
+          custom_id: `${restartPayloadWithDifficulty}${userIdSuffix}`,
         },
         {
           type: 2,
@@ -176,8 +183,8 @@ export async function buildComponents(
             : ButtonsLabels.ChangeMonster,
           style: 2,
           custom_id: training
-            ? `train.${extractMonster(payload)}.${makeid(10)}${userIdSuffix}`
-            : `${makeid(15)}${userIdSuffix}`,
+            ? addDifficultyToPayload(`train.${extractMonster(cleanPayload)}.${makeid(10)}`, effectiveDifficulty) + userIdSuffix
+            : addDifficultyToPayload(`${makeid(15)}`, effectiveDifficulty) + userIdSuffix,
           disabled: disableChangeMonster || training,
         },
       ],

@@ -50,3 +50,35 @@ export function extractMonster(payload: string): string {
   const monster = payload.slice(firstDot + 1, secondDot);
   return monster || 'Troll';
 }
+
+/** Extrait la difficulté depuis un payload */
+export function extractDifficulty(payload: string): string | null {
+  const bracketIdx = payload.indexOf('[');
+  if (bracketIdx === -1) {
+    return null;
+  }
+
+  const closeBracketIdx = payload.indexOf(']', bracketIdx);
+  if (closeBracketIdx === -1) {
+    return null;
+  }
+
+  const difficulty = payload.slice(bracketIdx + 1, closeBracketIdx);
+  return difficulty || null;
+}
+
+/** Ajoute la difficulté à un payload */
+export function addDifficultyToPayload(payload: string, difficulty?: string | null): string {
+  if (!difficulty) {
+    return payload;
+  }
+
+  // Enlever la difficulté existante s'il y en a une
+  const cleanPayload = payload.replace(/\[.*?\]/, '');
+  return `${cleanPayload}[${difficulty}]`;
+}
+
+/** Enlève la difficulté du payload */
+export function removeDifficultyFromPayload(payload: string): string {
+  return payload.replace(/\[.*?\]/, '');
+}
