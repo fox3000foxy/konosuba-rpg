@@ -33,7 +33,9 @@ export function inferMonsterFromPayload(payload: string): string | null {
   }
 
   const slashIndex = payload.indexOf('/');
-  const runId = (slashIndex === -1 ? payload : payload.slice(0, slashIndex)).trim();
+  const runId = (
+    slashIndex === -1 ? payload : payload.slice(0, slashIndex)
+  ).trim();
   if (!runId) {
     return null;
   }

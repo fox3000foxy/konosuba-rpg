@@ -6,7 +6,10 @@ import { MonsterDifficulty } from '../objects/enums/MonsterDifficulty';
 import { Rarity } from '../objects/enums/Rarity';
 import { getSupabaseAdminClient } from '../utils/supabaseClient';
 import { getItems } from './accessoryService';
-import { addCharacterAffinity, ensureCharacterProgress } from './characterService';
+import {
+  addCharacterAffinity,
+  ensureCharacterProgress,
+} from './characterService';
 
 export type AccessoryDropResult = {
   accessoryId: string;
@@ -111,7 +114,10 @@ const LOOT_TABLE_BY_DIFFICULTY: Record<MonsterDifficulty, LootTable> = {
 };
 
 function getLootTable(difficulty: MonsterDifficulty): LootTable {
-  return LOOT_TABLE_BY_DIFFICULTY[difficulty] || LOOT_TABLE_BY_DIFFICULTY[MonsterDifficulty.Medium];
+  return (
+    LOOT_TABLE_BY_DIFFICULTY[difficulty] ||
+    LOOT_TABLE_BY_DIFFICULTY[MonsterDifficulty.Medium]
+  );
 }
 
 function seedFromRunKey(runKey: string): number {
@@ -149,13 +155,19 @@ function computeDropCount(rand: Random, lootTable: LootTable): number {
   return Math.min(4, Math.max(2, count));
 }
 
-function pickAccessoryByRarity(rarity: Rarity, rand: Random): AccessoryDefinition {
+function pickAccessoryByRarity(
+  rarity: Rarity,
+  rand: Random
+): AccessoryDefinition {
   const byRarity = getItems({ rarity });
   const pool = byRarity.length > 0 ? byRarity : getItems();
   return rand.choice(pool);
 }
 
-export function rollAccessoryDrop(runKey: string, monsterName?: string | null): AccessoryDropResult[] {
+export function rollAccessoryDrop(
+  runKey: string,
+  monsterName?: string | null
+): AccessoryDropResult[] {
   const rand = new Random(seedFromRunKey(runKey));
   const difficulty = getMonsterDifficulty(monsterName ?? null);
   const lootTable = getLootTable(difficulty);
@@ -200,7 +212,10 @@ export async function grantAccessoryDropRewards(
       .maybeSingle();
 
     if (loadError) {
-      console.error('[db] load inventory item for drop failed:', loadError.message);
+      console.error(
+        '[db] load inventory item for drop failed:',
+        loadError.message
+      );
       return null;
     }
 
@@ -216,7 +231,10 @@ export async function grantAccessoryDropRewards(
         });
 
       if (insertError) {
-        console.error('[db] insert dropped accessory failed:', insertError.message);
+        console.error(
+          '[db] insert dropped accessory failed:',
+          insertError.message
+        );
         return null;
       }
     } else {
@@ -230,7 +248,10 @@ export async function grantAccessoryDropRewards(
         .eq('item_key', drop.accessoryId);
 
       if (updateError) {
-        console.error('[db] update dropped accessory quantity failed:', updateError.message);
+        console.error(
+          '[db] update dropped accessory quantity failed:',
+          updateError.message
+        );
         return null;
       }
     }

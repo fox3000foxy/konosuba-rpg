@@ -1,7 +1,7 @@
 import { Context } from 'hono';
 import {
-    ensurePlayerProfile,
-    getAchievementsOverview,
+  ensurePlayerProfile,
+  getAchievementsOverview,
 } from '../../services/progressionService';
 
 export async function handleAchievementsCommand(

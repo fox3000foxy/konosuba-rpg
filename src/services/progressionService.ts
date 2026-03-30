@@ -4,33 +4,33 @@ import { QuestConditionKey } from '../objects/enums/QuestConditionKey';
 import { RecordRunInput } from '../objects/types/RecordRunInput';
 import { getSupabaseAdminClient } from '../utils/supabaseClient';
 import { syncAchievements } from './achievementService';
-import {
-    addCharacterXp,
-    ensureCharacterProgress
-} from './characterService';
+import { addCharacterXp, ensureCharacterProgress } from './characterService';
 import { grantAccessoryDropRewards } from './dropService';
 import { ensurePlayerProfile } from './playerService';
 import { QUESTS } from './questService';
 
 export { ACHIEVEMENTS, getAchievementsOverview } from './achievementService';
 export {
-    addCharacterAffinity,
-    addCharacterXp, computeLevelFromXp, ensureCharacterProgress,
-    getCharacterProgress,
-    getCharacterProgresses,
-    getCharacterStatsSnapshot, getLevelFactor
+  addCharacterAffinity,
+  addCharacterXp,
+  computeLevelFromXp,
+  ensureCharacterProgress,
+  getCharacterProgress,
+  getCharacterProgresses,
+  getCharacterStatsSnapshot,
+  getLevelFactor,
 } from './characterService';
 export {
-    ensurePlayerProfile,
-    getLeaderboard,
-    getPlayerProfile,
-    getPlayerRunSummary
+  ensurePlayerProfile,
+  getLeaderboard,
+  getPlayerProfile,
+  getPlayerRunSummary,
 } from './playerService';
 export {
-    claimDailyQuestReward,
-    getAllQuestStatuses,
-    getDailyQuestStatus,
-    QUESTS
+  claimDailyQuestReward,
+  getAllQuestStatuses,
+  getDailyQuestStatus,
+  QUESTS,
 } from './questService';
 
 function currentQuestDay(): string {
@@ -71,7 +71,9 @@ function xpFromState(state: GameState): number {
 
 export async function recordRunResult(input: RecordRunInput): Promise<void> {
   if (!shouldPersistRun(input.state)) {
-    console.log(`[db] skipping run: state=${input.state} for user=${input.userId}`);
+    console.log(
+      `[db] skipping run: state=${input.state} for user=${input.userId}`
+    );
     return;
   }
 
@@ -113,7 +115,9 @@ export async function recordRunResult(input: RecordRunInput): Promise<void> {
     return;
   }
 
-  console.log(`[db] run recorded successfully for user=${input.userId} state=${input.state}`);
+  console.log(
+    `[db] run recorded successfully for user=${input.userId} state=${input.state}`
+  );
 
   const gainedXp = xpFromState(input.state);
   if (gainedXp <= 0) {
@@ -121,7 +125,9 @@ export async function recordRunResult(input: RecordRunInput): Promise<void> {
     return;
   }
 
-  console.log(`[db] loading player profile for xp update: user=${input.userId}`);
+  console.log(
+    `[db] loading player profile for xp update: user=${input.userId}`
+  );
 
   const { data: player, error: playerError } = await supabase
     .from('players')
@@ -167,7 +173,11 @@ export async function recordRunResult(input: RecordRunInput): Promise<void> {
   ]);
 
   if (isWin) {
-    const drops = await grantAccessoryDropRewards(input.userId, runKey, input.monsterName);
+    const drops = await grantAccessoryDropRewards(
+      input.userId,
+      runKey,
+      input.monsterName
+    );
     if (drops && drops.length > 0) {
       for (const drop of drops) {
         console.log(
@@ -194,7 +204,9 @@ export async function recordRunResult(input: RecordRunInput): Promise<void> {
       continue;
     }
 
-    console.log(`[db] incrementing quest: key=${quest.key} for user=${input.userId}`);
+    console.log(
+      `[db] incrementing quest: key=${quest.key} for user=${input.userId}`
+    );
 
     const { data: questRow, error: questLoadError } = await supabase
       .from('daily_quests_progress')
@@ -239,7 +251,9 @@ export async function recordRunResult(input: RecordRunInput): Promise<void> {
     }
 
     if (questRow.claimed) {
-      console.log(`[db] quest already claimed: key=${quest.key} user=${input.userId}`);
+      console.log(
+        `[db] quest already claimed: key=${quest.key} user=${input.userId}`
+      );
       continue;
     }
 
@@ -273,5 +287,7 @@ export async function recordRunResult(input: RecordRunInput): Promise<void> {
 
   await syncAchievements(input.userId);
 
-  console.log(`[db] run processing complete for user=${input.userId} state=${input.state}`);
+  console.log(
+    `[db] run processing complete for user=${input.userId} state=${input.state}`
+  );
 }

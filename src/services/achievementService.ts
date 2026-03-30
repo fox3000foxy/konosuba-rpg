@@ -90,10 +90,14 @@ async function getUserRunStats(userId: string): Promise<UserRunStats> {
   for (const row of rows) {
     const didWin = row.state === GameState.Good || row.state === GameState.Best;
     const existingMonster = row.monster_name ? String(row.monster_name) : '';
-    const inferredMonster = existingMonster || inferMonsterFromRunKey(String(row.run_key || ''));
+    const inferredMonster =
+      existingMonster || inferMonsterFromRunKey(String(row.run_key || ''));
 
     if (!existingMonster && inferredMonster && row.run_key) {
-      updates.push({ runKey: String(row.run_key), monsterName: inferredMonster });
+      updates.push({
+        runKey: String(row.run_key),
+        monsterName: inferredMonster,
+      });
     }
 
     if (!didWin || !inferredMonster) {
@@ -115,7 +119,10 @@ async function getUserRunStats(userId: string): Promise<UserRunStats> {
       .is('monster_name', null);
 
     if (updateError) {
-      console.error('[db] getUserRunStats backfill failed:', updateError.message);
+      console.error(
+        '[db] getUserRunStats backfill failed:',
+        updateError.message
+      );
     }
   }
 

@@ -4,7 +4,11 @@ import { Lang } from '../../objects/enums/Lang';
 import { recordRunResult } from '../../services/progressionService';
 import { buildComponents } from '../../utils/componentsBuilder';
 import { decompressMoves } from '../../utils/movesUtils';
-import { extractDifficulty, isTraining, removeDifficultyFromPayload } from '../../utils/payloadUtils';
+import {
+  extractDifficulty,
+  isTraining,
+  removeDifficultyFromPayload,
+} from '../../utils/payloadUtils';
 import { inferMonsterFromPayload } from '../../utils/runMonsterUtils';
 import { handleDefaultButton } from './handleDefaultButton';
 import { handleMenuButton } from './handleMenuButton';
@@ -23,7 +27,8 @@ export async function handleButtonInteraction(
 
   const customId: string = interaction.data.custom_id;
   const colonIdx = customId.lastIndexOf(':');
-  const encodedPayload = colonIdx !== -1 ? customId.slice(0, colonIdx) : customId;
+  const encodedPayload =
+    colonIdx !== -1 ? customId.slice(0, colonIdx) : customId;
   const payload = decompressMoves(encodedPayload);
   const owner = colonIdx !== -1 ? customId.slice(colonIdx + 1) : '';
 

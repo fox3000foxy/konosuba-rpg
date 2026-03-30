@@ -8,7 +8,13 @@ import { getCharacterStatsSnapshot } from '../services/progressionService';
 import { makeid, restartId } from './idUtils';
 import { buildImageUrl } from './imageUtils';
 import { compressMoves } from './movesUtils';
-import { addDifficultyToPayload, extractDifficulty, extractMonster, isTraining, removeDifficultyFromPayload } from './payloadUtils';
+import {
+  addDifficultyToPayload,
+  extractDifficulty,
+  extractMonster,
+  isTraining,
+  removeDifficultyFromPayload,
+} from './payloadUtils';
 import processGame from './processGame';
 import processUrl from './processUrl';
 
@@ -67,9 +73,15 @@ export async function buildComponents(
   const langIndex = fr ? 1 : 0;
 
   const compressedPayload = compressMoves(cleanPayload);
-  const compressedPayloadWithDifficulty = addDifficultyToPayload(compressedPayload, effectiveDifficulty);
+  const compressedPayloadWithDifficulty = addDifficultyToPayload(
+    compressedPayload,
+    effectiveDifficulty
+  );
   const restartPayload = restartId(cleanPayload);
-  const restartPayloadWithDifficulty = addDifficultyToPayload(restartPayload, effectiveDifficulty);
+  const restartPayloadWithDifficulty = addDifficultyToPayload(
+    restartPayload,
+    effectiveDifficulty
+  );
   const userIdSuffix = `:${userID}`;
   const actionPrefix = `${compressedPayloadWithDifficulty}`;
   const activePlayerName = team.activePlayer?.name[langIndex] ?? null;
@@ -183,8 +195,12 @@ export async function buildComponents(
             : ButtonsLabels.ChangeMonster,
           style: 2,
           custom_id: training
-            ? addDifficultyToPayload(`train.${extractMonster(cleanPayload)}.${makeid(10)}`, effectiveDifficulty) + userIdSuffix
-            : addDifficultyToPayload(`${makeid(15)}`, effectiveDifficulty) + userIdSuffix,
+            ? addDifficultyToPayload(
+                `train.${extractMonster(cleanPayload)}.${makeid(10)}`,
+                effectiveDifficulty
+              ) + userIdSuffix
+            : addDifficultyToPayload(`${makeid(15)}`, effectiveDifficulty) +
+              userIdSuffix,
           disabled: disableChangeMonster || training,
         },
       ],

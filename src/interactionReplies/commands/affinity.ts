@@ -2,8 +2,8 @@ import { Context } from 'hono';
 import { CharacterKey } from '../../objects/enums/CharacterKey';
 import { InteractionDataOption } from '../../objects/types/InteractionDataOption';
 import {
-    ensurePlayerProfile,
-    getCharacterProgresses,
+  ensurePlayerProfile,
+  getCharacterProgresses,
 } from '../../services/progressionService';
 
 const AFFINITY_DISPLAY_CAP = 100;
