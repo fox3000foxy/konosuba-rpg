@@ -8,6 +8,7 @@ export enum ButtonsLabels {
   Consumables = 'Consumables',
   Heal = 'Heal',
   SpecialAttack = 'Special Attack',
+  UsePotion = 'Use potion',
 
   AttackFr = 'Attaquer x fois',
   HugFr = 'Câliner x fois',
@@ -18,4 +19,5 @@ export enum ButtonsLabels {
   ConsumablesFr = 'Consommables',
   HealFr = 'Soigner',
   SpecialAttackFr = 'Attaque spéciale',
+  UsePotionFr = 'Utiliser potion',
 }
