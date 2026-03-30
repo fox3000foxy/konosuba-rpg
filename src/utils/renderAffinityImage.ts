@@ -13,7 +13,7 @@ const G = globalThis as unknown as AffinityImageGlobals;
 G.__affinityIconCache ??= {};
 const iconCache = G.__affinityIconCache;
 
-const ASSET_BASE_URL = 'https://dev.fox3000foxy.com';
+const ASSET_BASE_URL = 'https://konosuba-rpg.vercel.app';
 const FONT_URL = `${ASSET_BASE_URL}/assets/swordgame/font/GintoNordMedium.otf`;
 const BOARD_PATH = '/assets/swordgame/art/board.webp';
 const STAR_ENABLED_PATH = '/assets/star-enabled.webp';
