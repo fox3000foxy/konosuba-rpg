@@ -7,7 +7,11 @@ export type ConsumableDefinition = {
   fileName: string;
   rarity: Rarity;
   type: TypeItem;
+  nameFr: string;
+  nameEn: string;
 };
+
+type ConsumableDefinitionSeed = Omit<ConsumableDefinition, 'nameFr' | 'nameEn'>;
 
 export type ConsumableCombinationRule = {
   sourceA: ItemId;
@@ -15,7 +19,7 @@ export type ConsumableCombinationRule = {
   result: ItemId;
 };
 
-const ELEMENTAL_POTION_BASIC: ConsumableDefinition[] = [
+const ELEMENTAL_POTION_BASIC: ConsumableDefinitionSeed[] = [
   { id: ItemId.I20001000, fileName: '20001000.webp', rarity: Rarity.Basic, type: TypeItem.Potion },
   { id: ItemId.I20001001, fileName: '20001001.webp', rarity: Rarity.Basic, type: TypeItem.Potion },
   { id: ItemId.I20001002, fileName: '20001002.webp', rarity: Rarity.Basic, type: TypeItem.Potion },
@@ -26,7 +30,7 @@ const ELEMENTAL_POTION_BASIC: ConsumableDefinition[] = [
   { id: ItemId.I20001007, fileName: '20001007.webp', rarity: Rarity.Basic, type: TypeItem.Potion },
 ];
 
-const ELEMENTAL_POTION_GOLD: ConsumableDefinition[] = [
+const ELEMENTAL_POTION_GOLD: ConsumableDefinitionSeed[] = [
   { id: ItemId.I20002000, fileName: '20002000.webp', rarity: Rarity.Gold, type: TypeItem.Potion },
   { id: ItemId.I20002001, fileName: '20002001.webp', rarity: Rarity.Gold, type: TypeItem.Potion },
   { id: ItemId.I20002002, fileName: '20002002.webp', rarity: Rarity.Gold, type: TypeItem.Potion },
@@ -37,7 +41,7 @@ const ELEMENTAL_POTION_GOLD: ConsumableDefinition[] = [
   { id: ItemId.I20002007, fileName: '20002007.webp', rarity: Rarity.Gold, type: TypeItem.Potion },
 ];
 
-const CHRONO_AND_SPECIAL_GOLD: ConsumableDefinition[] = [
+const CHRONO_AND_SPECIAL_GOLD: ConsumableDefinitionSeed[] = [
   { id: ItemId.I20003000, fileName: '20003000.webp', rarity: Rarity.Gold, type: TypeItem.Chrono },
   { id: ItemId.I20003001, fileName: '20003001.webp', rarity: Rarity.Gold, type: TypeItem.Chrono },
   { id: ItemId.I20003002, fileName: '20003002.webp', rarity: Rarity.Gold, type: TypeItem.Chrono },
@@ -48,7 +52,7 @@ const CHRONO_AND_SPECIAL_GOLD: ConsumableDefinition[] = [
   { id: ItemId.I20003007, fileName: '20003007.webp', rarity: Rarity.Gold, type: TypeItem.Chrono },
 ];
 
-const STONES_AND_SCROLLS_EPIC: ConsumableDefinition[] = [
+const STONES_AND_SCROLLS_EPIC: ConsumableDefinitionSeed[] = [
   { id: ItemId.I20004001, fileName: '20004001.webp', rarity: Rarity.Epic, type: TypeItem.Stone },
   { id: ItemId.I20004002, fileName: '20004002.webp', rarity: Rarity.Epic, type: TypeItem.Stone },
   { id: ItemId.I20004003, fileName: '20004003.webp', rarity: Rarity.Epic, type: TypeItem.Stone },
@@ -65,12 +69,82 @@ const STONES_AND_SCROLLS_EPIC: ConsumableDefinition[] = [
   { id: ItemId.I20004014, fileName: '20004014.webp', rarity: Rarity.Epic, type: TypeItem.Scroll },
 ];
 
+const ELEMENT_NAME_BY_SUFFIX: Record<string, { fr: string; en: string }> = {
+  '00': { fr: 'feu', en: 'fire' },
+  '01': { fr: 'eau', en: 'water' },
+  '02': { fr: 'terre', en: 'earth' },
+  '03': { fr: 'vent', en: 'wind' },
+  '04': { fr: 'foudre', en: 'lightning' },
+  '05': { fr: 'lumiere', en: 'light' },
+  '06': { fr: 'ombre', en: 'shadow' },
+  '07': { fr: 'cristal', en: 'crystal' },
+  '08': { fr: 'feu', en: 'fire' },
+  '09': { fr: 'eau', en: 'water' },
+  '10': { fr: 'terre', en: 'earth' },
+  '11': { fr: 'vent', en: 'wind' },
+  '12': { fr: 'foudre', en: 'lightning' },
+  '13': { fr: 'lumiere', en: 'light' },
+  '14': { fr: 'ombre', en: 'shadow' },
+};
+
+const RARITY_LABEL: Record<Rarity, { fr: string; en: string }> = {
+  [Rarity.Basic]: { fr: 'basique', en: 'basic' },
+  [Rarity.Gold]: { fr: 'doré', en: 'gold' },
+  [Rarity.Epic]: { fr: 'epique', en: 'epic' },
+};
+
+function localizedConsumableName(seed: ConsumableDefinitionSeed): {
+  nameFr: string;
+  nameEn: string;
+} {
+  const id = seed.id;
+  const suffix = id.slice(-2);
+  const element = ELEMENT_NAME_BY_SUFFIX[suffix] || { fr: 'mystique', en: 'mystic' };
+  const rarity = RARITY_LABEL[seed.rarity];
+
+  if (id === ItemId.I20003005) {
+    return {
+      nameFr: `fiole d'affinite ${rarity.fr}`,
+      nameEn: `${rarity.en} affinity vial`,
+    };
+  }
+
+  if (seed.type === TypeItem.Potion) {
+    return {
+      nameFr: `potion ${element.fr} ${rarity.fr}`,
+      nameEn: `${rarity.en} ${element.en} potion`,
+    };
+  }
+
+  if (seed.type === TypeItem.Chrono) {
+    return {
+      nameFr: `chronometre ${element.fr} ${rarity.fr}`,
+      nameEn: `${rarity.en} ${element.en} chronometer`,
+    };
+  }
+
+  if (seed.type === TypeItem.Stone) {
+    return {
+      nameFr: `pierre ${element.fr} ${rarity.fr}`,
+      nameEn: `${rarity.en} ${element.en} stone`,
+    };
+  }
+
+  return {
+    nameFr: `parchemin ${element.fr} ${rarity.fr}`,
+    nameEn: `${rarity.en} ${element.en} scroll`,
+  };
+}
+
 export const CONSUMABLE_DEFINITIONS: ConsumableDefinition[] = [
   ...ELEMENTAL_POTION_BASIC,
   ...ELEMENTAL_POTION_GOLD,
   ...CHRONO_AND_SPECIAL_GOLD,
   ...STONES_AND_SCROLLS_EPIC,
-];
+].map(seed => ({
+  ...seed,
+  ...localizedConsumableName(seed),
+}));
 
 export const CONSUMABLE_COMBINATION_RULES: ConsumableCombinationRule[] = [
   // basic potion -> gold potion

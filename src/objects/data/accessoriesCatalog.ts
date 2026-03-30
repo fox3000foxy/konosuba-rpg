@@ -7,7 +7,11 @@ export type AccessoryDefinition = {
   fileName: string;
   rarity: Rarity;
   type: AccessoryType;
+  nameFr: string;
+  nameEn: string;
 };
+
+type AccessoryDefinitionSeed = Omit<AccessoryDefinition, 'nameFr' | 'nameEn'>;
 
 export type AccessoryCombinationRule = {
   sourceA: AccessoryId;
@@ -15,7 +19,7 @@ export type AccessoryCombinationRule = {
   result: AccessoryId;
 };
 
-const RINGS: AccessoryDefinition[] = [
+const RINGS: AccessoryDefinitionSeed[] = [
   { id: AccessoryId.I21110, fileName: '21110.webp', rarity: Rarity.Basic, type: AccessoryType.Ring },
   { id: AccessoryId.I21120, fileName: '21120.webp', rarity: Rarity.Basic, type: AccessoryType.Ring },
   { id: AccessoryId.I21210, fileName: '21210.webp', rarity: Rarity.Gold, type: AccessoryType.Ring },
@@ -24,7 +28,7 @@ const RINGS: AccessoryDefinition[] = [
   { id: AccessoryId.I21320, fileName: '21320.webp', rarity: Rarity.Epic, type: AccessoryType.Ring },
 ];
 
-const EARRINGS_BASIC: AccessoryDefinition[] = [
+const EARRINGS_BASIC: AccessoryDefinitionSeed[] = [
   { id: AccessoryId.I22201, fileName: '22201.webp', rarity: Rarity.Basic, type: AccessoryType.Earring },
   { id: AccessoryId.I22202, fileName: '22202.webp', rarity: Rarity.Basic, type: AccessoryType.Earring },
   { id: AccessoryId.I22203, fileName: '22203.webp', rarity: Rarity.Basic, type: AccessoryType.Earring },
@@ -34,7 +38,7 @@ const EARRINGS_BASIC: AccessoryDefinition[] = [
   { id: AccessoryId.I22207, fileName: '22207.webp', rarity: Rarity.Basic, type: AccessoryType.Earring },
 ];
 
-const EARRINGS_GOLD: AccessoryDefinition[] = [
+const EARRINGS_GOLD: AccessoryDefinitionSeed[] = [
   { id: AccessoryId.I22311, fileName: '22311.webp', rarity: Rarity.Gold, type: AccessoryType.Earring },
   { id: AccessoryId.I22312, fileName: '22312.webp', rarity: Rarity.Gold, type: AccessoryType.Earring },
   { id: AccessoryId.I22313, fileName: '22313.webp', rarity: Rarity.Gold, type: AccessoryType.Earring },
@@ -51,7 +55,7 @@ const EARRINGS_GOLD: AccessoryDefinition[] = [
   { id: AccessoryId.I22327, fileName: '22327.webp', rarity: Rarity.Gold, type: AccessoryType.Earring },
 ];
 
-const EARRINGS_EPIC: AccessoryDefinition[] = [
+const EARRINGS_EPIC: AccessoryDefinitionSeed[] = [
   { id: AccessoryId.I22411, fileName: '22411.webp', rarity: Rarity.Epic, type: AccessoryType.Earring },
   { id: AccessoryId.I22412, fileName: '22412.webp', rarity: Rarity.Epic, type: AccessoryType.Earring },
   { id: AccessoryId.I22413, fileName: '22413.webp', rarity: Rarity.Epic, type: AccessoryType.Earring },
@@ -68,7 +72,7 @@ const EARRINGS_EPIC: AccessoryDefinition[] = [
   { id: AccessoryId.I22427, fileName: '22427.webp', rarity: Rarity.Epic, type: AccessoryType.Earring },
 ];
 
-const NECKLACES: AccessoryDefinition[] = [
+const NECKLACES: AccessoryDefinitionSeed[] = [
   { id: AccessoryId.I23201, fileName: '23201.webp', rarity: Rarity.Basic, type: AccessoryType.Necklace },
   { id: AccessoryId.I23202, fileName: '23202.webp', rarity: Rarity.Basic, type: AccessoryType.Necklace },
   { id: AccessoryId.I23203, fileName: '23203.webp', rarity: Rarity.Basic, type: AccessoryType.Necklace },
@@ -91,7 +95,7 @@ const NECKLACES: AccessoryDefinition[] = [
   { id: AccessoryId.I23424, fileName: '23424.webp', rarity: Rarity.Epic, type: AccessoryType.Necklace },
 ];
 
-const CHARMS: AccessoryDefinition[] = [
+const CHARMS: AccessoryDefinitionSeed[] = [
   { id: AccessoryId.I34400, fileName: '34400.webp', rarity: Rarity.Epic, type: AccessoryType.Charm },
   { id: AccessoryId.I34401, fileName: '34401.webp', rarity: Rarity.Epic, type: AccessoryType.Charm },
   { id: AccessoryId.I34402, fileName: '34402.webp', rarity: Rarity.Epic, type: AccessoryType.Charm },
@@ -111,7 +115,7 @@ const CHARMS: AccessoryDefinition[] = [
   { id: AccessoryId.I34416, fileName: '34416.webp', rarity: Rarity.Epic, type: AccessoryType.Charm },
 ];
 
-const ORNAMENTS: AccessoryDefinition[] = [
+const ORNAMENTS: AccessoryDefinitionSeed[] = [
   { id: AccessoryId.I36001, fileName: '36001.webp', rarity: Rarity.Epic, type: AccessoryType.Ornament },
   { id: AccessoryId.I36002, fileName: '36002.webp', rarity: Rarity.Epic, type: AccessoryType.Ornament },
   { id: AccessoryId.I36003, fileName: '36003.webp', rarity: Rarity.Epic, type: AccessoryType.Ornament },
@@ -128,6 +132,88 @@ const ORNAMENTS: AccessoryDefinition[] = [
   { id: AccessoryId.I36014, fileName: '36014.webp', rarity: Rarity.Epic, type: AccessoryType.Ornament },
 ];
 
+const ELEMENT_NAME_BY_SUFFIX: Record<string, { fr: string; en: string }> = {
+  '01': { fr: 'feu', en: 'fire' },
+  '02': { fr: 'eau', en: 'water' },
+  '03': { fr: 'terre', en: 'earth' },
+  '04': { fr: 'vent', en: 'wind' },
+  '05': { fr: 'foudre', en: 'lightning' },
+  '06': { fr: 'lumiere', en: 'light' },
+  '07': { fr: 'ombre', en: 'shadow' },
+  '08': { fr: 'feu', en: 'fire' },
+  '09': { fr: 'eau', en: 'water' },
+  '10': { fr: 'terre', en: 'earth' },
+  '11': { fr: 'vent', en: 'wind' },
+  '12': { fr: 'foudre', en: 'lightning' },
+  '13': { fr: 'lumiere', en: 'light' },
+  '14': { fr: 'ombre', en: 'shadow' },
+  '15': { fr: 'feu', en: 'fire' },
+  '16': { fr: 'eau', en: 'water' },
+  '17': { fr: 'terre', en: 'earth' },
+  '21': { fr: 'vent', en: 'wind' },
+  '22': { fr: 'foudre', en: 'lightning' },
+  '23': { fr: 'lumiere', en: 'light' },
+  '24': { fr: 'ombre', en: 'shadow' },
+  '25': { fr: 'feu', en: 'fire' },
+  '26': { fr: 'eau', en: 'water' },
+  '27': { fr: 'terre', en: 'earth' },
+};
+
+const RARITY_LABEL: Record<Rarity, { fr: string; en: string }> = {
+  [Rarity.Basic]: { fr: 'basique', en: 'basic' },
+  [Rarity.Gold]: { fr: 'doré', en: 'gold' },
+  [Rarity.Epic]: { fr: 'epique', en: 'epic' },
+};
+
+function localizedAccessoryName(seed: AccessoryDefinitionSeed): {
+  nameFr: string;
+  nameEn: string;
+} {
+  const id = seed.id;
+  const suffix = id.slice(-2);
+  const element = ELEMENT_NAME_BY_SUFFIX[suffix] || { fr: 'arcane', en: 'arcane' };
+  const rarity = RARITY_LABEL[seed.rarity];
+
+  if (seed.type === AccessoryType.Ring) {
+    const variant = id.endsWith('10') ? { fr: 'cristal', en: 'crystal' } : { fr: 'goutte', en: 'drop' };
+    return {
+      nameFr: `bague ${variant.fr} ${rarity.fr}`,
+      nameEn: `${rarity.en} ${variant.en} ring`,
+    };
+  }
+
+  if (seed.type === AccessoryType.Earring) {
+    const style = id.startsWith('2232') || id.startsWith('2242')
+      ? { fr: 'coquille', en: 'shell' }
+      : id.startsWith('2231') || id.startsWith('2241')
+        ? { fr: 'plume', en: 'feather' }
+        : { fr: 'pierre', en: 'stone' };
+    return {
+      nameFr: `boucles ${style.fr} ${element.fr} ${rarity.fr}`,
+      nameEn: `${rarity.en} ${element.en} ${style.en} earrings`,
+    };
+  }
+
+  if (seed.type === AccessoryType.Necklace) {
+    return {
+      nameFr: `collier ${element.fr} ${rarity.fr}`,
+      nameEn: `${rarity.en} ${element.en} necklace`,
+    };
+  }
+
+  if (seed.type === AccessoryType.Charm) {
+    return {
+      nameFr: `charme relique ${id}`,
+      nameEn: `relic charm ${id}`,
+    };
+  }
+
+  return {
+    nameFr: `ornement legendaire ${id}`,
+    nameEn: `legendary ornament ${id}`,
+  };
+}
+
 export const ACCESSORY_DEFINITIONS: AccessoryDefinition[] = [
   ...RINGS,
   ...EARRINGS_BASIC,
@@ -136,7 +222,10 @@ export const ACCESSORY_DEFINITIONS: AccessoryDefinition[] = [
   ...NECKLACES,
   ...CHARMS,
   ...ORNAMENTS,
-];
+].map(seed => ({
+  ...seed,
+  ...localizedAccessoryName(seed),
+}));
 
 export const ACCESSORY_COMBINATION_RULES: AccessoryCombinationRule[] = [
   // rings
