@@ -15,6 +15,7 @@ import { handleConsumablesButton } from './handleConsumablesButton';
 import { handleDefaultButton } from './handleDefaultButton';
 import { handleMenuButton } from './handleMenuButton';
 import { handleSpecialButton } from './handleSpecialButton';
+import { handleUseItemButton } from './handleUseItemButton';
 
 export async function handleButtonInteraction(
   c: Context,
@@ -28,6 +29,49 @@ export async function handleButtonInteraction(
   }
 
   const customId: string = interaction.data.custom_id;
+
+  // Handle special non-combat custom_ids first (before payload decoding)
+  if (customId === 'consumables' || customId === `consumables:${userID}`) {
+    return handleConsumablesButton(c, userID, fr);
+  }
+
+  if (customId === 'useitem' || customId === `useitem:${userID}`) {
+    try {
+      return await handleUseItemButton(c, userID, lang, fr);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      console.error('[useitem] Interaction error:', message);
+      return c.json({
+        type: 4,
+        data: {
+          content: fr
+            ? 'Erreur lors de l\'utilisation d\'un consommable. Réessayez.'
+            : 'Error using consumable. Please try again.',
+          flags: 1 << 6,
+        },
+      });
+    }
+  }
+
+  if (customId.startsWith('menu.')) {
+    try {
+      return await handleMenuButton(c, customId, userID, lang, fr);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      console.error('[menu] Interaction error:', message);
+      return c.json({
+        type: 4,
+        data: {
+          content: fr
+            ? 'Erreur du menu. Reessayez dans quelques secondes.'
+            : 'Menu error. Please try again in a few seconds.',
+          flags: 1 << 6,
+        },
+      });
+    }
+  }
+
+  // Handle combat-related custom_ids (require payload decoding)
   const colonIdx = customId.lastIndexOf(':');
   const encodedPayload =
     colonIdx !== -1 ? customId.slice(0, colonIdx) : customId;
@@ -74,34 +118,6 @@ export async function handleButtonInteraction(
     'Received button interaction with payload:',
     resolvedEncodedPayload
   );
-
-  if (resolvedEncodedPayload.startsWith('menu.')) {
-    try {
-      return await handleMenuButton(
-        c,
-        resolvedEncodedPayload,
-        userID,
-        lang,
-        fr
-      );
-    } catch (error) {
-      const message = error instanceof Error ? error.message : String(error);
-      console.error('[menu] Interaction error:', message);
-      return c.json({
-        type: 4,
-        data: {
-          content: fr
-            ? 'Erreur du menu. Reessayez dans quelques secondes.'
-            : 'Menu error. Please try again in a few seconds.',
-          flags: 1 << 6,
-        },
-      });
-    }
-  }
-
-  if (resolvedEncodedPayload === 'consumables') {
-    return handleConsumablesButton(c, userID, fr);
-  }
 
   const training = isTraining(payload);
   const difficulty = extractDifficulty(payload) ?? undefined;
