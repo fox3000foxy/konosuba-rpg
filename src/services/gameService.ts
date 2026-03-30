@@ -7,16 +7,16 @@ export async function calculateGameStateFromUrl(
   url: string,
   lang: Lang
 ): Promise<Game> {
-  const { rand, moves, monster } = parseGameUrl(url);
-  return processGame(rand, moves, monster, lang, false);
+  const { rand, moves, monster, difficulty } = parseGameUrl(url);
+  return processGame(rand, moves, monster, lang, false, undefined, difficulty);
 }
 
 export async function calculateGameImageFromUrl(
   url: string,
   lang: Lang
 ): Promise<Game> {
-  const { rand, moves, monster } = parseGameUrl(url);
-  return processGame(rand, moves, monster, lang, true);
+  const { rand, moves, monster, difficulty } = parseGameUrl(url);
+  return processGame(rand, moves, monster, lang, true, undefined, difficulty);
 }
 
 export function serializeGameForApi(game: Game, lang: Lang): Record<string, unknown> {

@@ -13,7 +13,7 @@ export async function handleStartCommand(
 ) {
   const id = makeid(15);
   const imageUrl = buildImageUrl(id, lang, difficulty);
-  const buildedComponents = await buildComponents(id, userID, lang);
+  const buildedComponents = await buildComponents(id, userID, lang, false, difficulty);
   const { embedDescription, buttons } = buildedComponents;
   return c.json({
     type: 4,

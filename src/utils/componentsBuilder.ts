@@ -32,16 +32,17 @@ export async function buildComponents(
   payload: string,
   userID: string,
   lang: Lang,
-  disableChangeMonster = false
+  disableChangeMonster = false,
+  difficulty?: string
 ): Promise<{
   buttons: RawButton[];
   embedDescription: string[];
   activePlayerName: string | null;
   gameState: GameState;
 }> {
-  const imageUrl = buildImageUrl(payload, lang);
+  const imageUrl = buildImageUrl(payload, lang, difficulty);
 
-  const [rand, moves, , monster] = processUrl(imageUrl);
+  const [rand, moves, , monster, difficultyFromUrl] = processUrl(imageUrl);
   const characterStatsSnapshot = await getCharacterStatsSnapshot(userID);
   const characterFactors = characterStatsSnapshot
     ? characterStatsSnapshot.map(snapshot => snapshot.factor)
@@ -53,7 +54,8 @@ export async function buildComponents(
     monster,
     lang,
     false,
-    characterFactors
+    characterFactors,
+    difficultyFromUrl || difficulty
   );
   const training = isTraining(payload);
   const fr = lang === Lang.French;

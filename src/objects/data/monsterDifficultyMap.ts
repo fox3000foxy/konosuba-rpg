@@ -70,3 +70,23 @@ export function getMonsterDifficulty(monsterName: string | null): MonsterDifficu
 
   return MonsterDifficulty.Legendary;
 }
+
+/**
+ * Retourne tous les monstres d'une difficulté donnée
+ */
+export function getMonstersByDifficulty(difficulty: MonsterDifficulty | string | null): typeof generateMob extends () => infer T ? T : never {
+  if (!difficulty) {
+    return generateMob();
+  }
+
+  const mobs = generateMob();
+  const filtered = mobs.filter(mob => {
+    const mobName = mob?.name?.[0];
+    if (!mobName) return false;
+    const mobDifficulty = getMonsterDifficulty(mobName);
+    return mobDifficulty === difficulty;
+  });
+
+  // Si aucun monstre trouvé pour cette difficulté, retourner tous
+  return filtered.length > 0 ? filtered : mobs;
+}

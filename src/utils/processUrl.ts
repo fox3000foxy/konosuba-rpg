@@ -13,13 +13,21 @@ const VALID_MOVES_SET = new Set([
 
 export default function processUrl(
   url: string
-): [Random, string[], string, string | null] {
+): [Random, string[], string, string | null, string | null] {
   const monsterIdx = url.indexOf('monster=');
   let monster: string | null = null;
   if (monsterIdx !== -1) {
     const raw = url.slice(monsterIdx + 8);
     const ampIdx = raw.indexOf('&');
     monster = ampIdx === -1 ? raw || null : raw.slice(0, ampIdx) || null;
+  }
+
+  const difficultyIdx = url.indexOf('difficulty=');
+  let difficulty: string | null = null;
+  if (difficultyIdx !== -1) {
+    const raw = url.slice(difficultyIdx + 11);
+    const ampIdx = raw.indexOf('&');
+    difficulty = ampIdx === -1 ? raw || null : raw.slice(0, ampIdx) || null;
   }
 
   const urlParts = url.split('/');
@@ -39,5 +47,5 @@ export default function processUrl(
   }
 
   const rand = new Random(seed);
-  return [rand, moves, seedStr, monster];
+  return [rand, moves, seedStr, monster, difficulty];
 }
