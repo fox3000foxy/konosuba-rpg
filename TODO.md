@@ -33,73 +33,73 @@ Build a multi-character RPG progression system (Kazuma, Darkness, Aqua, Megumin)
 - Keep rounding consistent (to decide):
   - `Math.round` or `Math.floor` based on gameplay feel
 
-## Phase 1 - Data model and migrations (high priority)
+## ~~Phase 1 - Data model and migrations (high priority)~~
 
-### DB tables to add
-- `character_progress`
-  - `user_id` (FK players.user_id)
-  - `character_key` (`darkness` | `aqua` | `megumin`)
-  - `xp` (int, default 0)
-  - `level` (int, default 1)
-  - `affinity` (int, default 0)
-  - `updated_at`
-  - unique constraint: `(user_id, character_key)`
+### ~~DB tables to add~~
+- ~~`character_progress`~~
+  - ~~`user_id` (FK players.user_id)~~
+  - ~~`character_key` (`darkness` | `aqua` | `megumin`)~~
+  - ~~`xp` (int, default 0)~~
+  - ~~`level` (int, default 1)~~
+  - ~~`affinity` (int, default 0)~~
+  - ~~`updated_at`~~
+  - ~~unique constraint: `(user_id, character_key)`~~
 
-### Future extensions (declare now)
-- `inventory_items` (future)
-  - stores drops (affinity/components)
-- `crafting_recipes` (future)
-  - component fusion definitions -> potions
-- `player_potions` (future)
-  - crafted potion inventory
+### ~~Future extensions (declare now)~~
+- ~~`inventory_items` (future)~~
+  - ~~stores drops (affinity/components)~~
+- ~~`crafting_recipes` (future)~~
+  - ~~component fusion definitions -> potions~~
+- ~~`player_potions` (future)~~
+  - ~~crafted potion inventory~~
 
-### Migration script
-- Add versioned SQL migration in `supabase/`
-- Initial backfill:
-  - for each existing player, create the 3 `character_progress` rows
-- Add useful indexes:
-  - `(user_id)`
-  - `(user_id, character_key)` unique
+### ~~Migration script~~
+- ~~Add versioned SQL migration in `supabase/`~~
+- ~~Initial backfill:~~
+  - ~~for each existing player, create the 3 `character_progress` rows~~
+- ~~Add useful indexes:~~
+  - ~~`(user_id)`~~
+  - ~~`(user_id, character_key)` unique~~
 
-## Phase 2 - TypeScript services (high priority)
+## ~~Phase 2 - TypeScript services (high priority)~~
 
-### New types
-- `CharacterKey` enum
-- `CharacterProgress` type
-- `CharacterStatsSnapshot` type (final stats after scaling)
+### ~~New types~~
+- ~~`CharacterKey` enum~~
+- ~~`CharacterProgress` type~~
+- ~~`CharacterStatsSnapshot` type (final stats after scaling)~~
 
-### New services
-- `characterService.ts`
-  - `ensureCharacterProgress(userId)`
-  - `getCharacterProgress(userId, character)`
-  - `addCharacterXp(userId, character, amount)`
-  - `computeLevelFromXp(xp)`
-  - `getLevelFactor(level)`
+### ~~New services~~
+- ~~`characterService.ts`~~
+  - ~~`ensureCharacterProgress(userId)`~~
+  - ~~`getCharacterProgress(userId, character)`~~
+  - ~~`addCharacterXp(userId, character, amount)`~~
+  - ~~`computeLevelFromXp(xp)`~~
+  - ~~`getLevelFactor(level)`~~
 
-### Gameplay calculation refactor
-- Introduce a single stat-scaling point
-- Kazuma reads `players.level`
-- Darkness/Aqua/Megumin read `character_progress.level`
+### ~~Gameplay calculation refactor~~
+- ~~Introduce a single stat-scaling point~~
+- ~~Kazuma reads `players.level`~~
+- ~~Darkness/Aqua/Megumin read `character_progress.level`~~
 
 ## Phase 3 - Integrate progression into gameplay (high priority)
 
 ### XP gains
 - Define end-of-run XP distribution:
-  - global player XP (already exists)
+  - ~~global player XP (already exists)~~
   - characters used during the run
 - Rules to validate:
   - XP only on win?
   - reduced XP on give up?
 
-### Run processing update
-- Extend `recordRunResult` to:
-  - keep current global progression
-  - feed `character_progress`
+### ~~Run processing update~~
+- ~~Extend `recordRunResult` to:~~
+  - ~~keep current global progression~~
+  - ~~feed `character_progress`~~
 
 ## Phase 4 - Affinity (declare now, implement deeper logic later)
 
 ### Now
-- DB fields exist (`affinity`) + types + read endpoints
+- ~~DB fields exist (`affinity`) + types + read endpoints~~
 - Display affinity in `/profile` (optional)
 
 ### Later
@@ -110,21 +110,21 @@ Build a multi-character RPG progression system (Kazuma, Darkness, Aqua, Megumin)
 ## Phase 5 - Drops and inventory (TODO)
 
 ### Combat drops
-- Add loot/drop table
+- ~~Add loot/drop table~~
 - Add reward generation at end of run
-  - affinity accessories (immediate priority)
+  - ~~affinity accessories (immediate priority)~~
   - alchemy components
   - combat consumables (after accessories phase)
 
 ### Inventory
-- Inventory read endpoints
+- ~~Inventory read endpoints~~
 - Item consumption on target character
 
 ### Immediate priority (next iteration)
-- End-of-combat accessory drops
-- Affinity gain based on obtained accessory (bronze/silver/gold/epic)
-- Persistence in `inventory_items`
-- Basic exposure through `/inventory`
+- ~~End-of-combat accessory drops~~
+- ~~Affinity gain based on obtained accessory (bronze/silver/gold/epic)~~
+- ~~Persistence in `inventory_items`~~
+- ~~Basic exposure through `/inventory`~~
 
 ## Phase 6 - Potion crafting from components (TODO)
 
@@ -162,7 +162,7 @@ Build a multi-character RPG progression system (Kazuma, Darkness, Aqua, Megumin)
 
 ### Future commands
 - `/character` (inspect character)
-- `/inventory` (drops + components)
+- ~~`/inventory` (drops + components)~~
 - `/use-item`
 - `/craft`
 

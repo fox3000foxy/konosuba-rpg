@@ -12,12 +12,15 @@ Fan-made RPG project inspired by the Konosuba universe, built for Discord intera
 	- Global player XP/level.
 	- Per-character XP/level for Darkness, Megumin, and Aqua.
 	- Stat scaling integrated into gameplay.
+	- Run result persistence wired to both global and character progression.
 - Accessory and inventory system:
 	- Localized item catalogs (FR/EN).
 	- Accessory drops after wins.
 	- Affinity gain from dropped accessories.
+	- Accessory persistence in `inventory_items`.
 	- Inventory API and inventory image rendering.
 - Difficulty-aware drops with loot-table style distribution.
+- Affinity command and profile display for character progression/affinity overview.
 - Discord interaction routing extracted from the main entrypoint.
 - Profile/quest/achievement/menu command handlers and API routes.
 - Unit and performance test suites (including leak-oriented tests).
@@ -25,12 +28,14 @@ Fan-made RPG project inspired by the Konosuba universe, built for Discord intera
 ### Remaining work (high level)
 
 - Consumables integration in real combat flow.
+- Item consumption on target character.
 - Crafting system (components to potions).
 - Expanded affinity gameplay effects.
-- More character-focused commands (`/character`, richer `/inventory`, item usage/crafting actions).
+- More character-focused commands (`/character`, `/use-item`, `/craft`).
 - Long-term PVP backlog.
+- XP distribution rule finalization ("used characters only" and win/giveup policy).
 
-See the complete tracked roadmap in [TODO.md](TODO.md).
+Roadmap status is tracked in [TODO.md](TODO.md) and updated as features are validated.
 
 ## Assets Attribution
 
