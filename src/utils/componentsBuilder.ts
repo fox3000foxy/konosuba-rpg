@@ -52,8 +52,8 @@ export async function buildComponents(
   const cleanPayload = removeDifficultyFromPayload(payload);
   const effectiveDifficulty = difficulty || payloadDifficulty;
 
-  const imageUrl = buildImageUrl(cleanPayload, lang, effectiveDifficulty);
-
+  const imageUrl = buildImageUrl(cleanPayload, lang, effectiveDifficulty, userID);
+  console.log(imageUrl);
   const [rand, moves, , monster, difficultyFromUrl] = processUrl(imageUrl);
   const characterStatsSnapshot = await getCharacterStatsSnapshot(userID);
   const characterFactors = characterStatsSnapshot

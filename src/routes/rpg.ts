@@ -4,7 +4,8 @@ import { calculateGameImageFromUrl } from '../services/gameService';
 
 export async function calculateRPG(c: Context) {
   const { lang } = c.req.param() as { lang: Lang };
-  const { image } = await calculateGameImageFromUrl(c.req.url, lang);
+    const userId = c.req.query('userId');
+    const { image } = await calculateGameImageFromUrl(c.req.url, lang, userId);
 
   if (!image) {
     return c.text('Image generation failed', 500);
