@@ -7,9 +7,11 @@ import { Random } from '../classes/Random';
 import lines from '../objects/data/constants';
 import descriptions from '../objects/data/embedText';
 import { generateMob } from '../objects/data/mobMap';
+import { getMonstersByDifficulty } from '../objects/data/monsterDifficultyMap';
 import { EndMessages } from '../objects/enums/EndMessages';
 import { GameState } from '../objects/enums/GameState';
 import { Lang } from '../objects/enums/Lang';
+import { MonsterDifficulty } from '../objects/enums/MonsterDifficulty';
 import { PlayerAction } from '../objects/enums/player/PlayerAction';
 import { Prefix } from '../objects/enums/Prefix';
 import { Game } from '../objects/types/Game';
@@ -238,7 +240,8 @@ export default async function processGame(
   monsterName: string | null = null,
   lang: Lang = Lang.English,
   renderingImage: boolean = true,
-  teamLevelFactors?: number[]
+  teamLevelFactors?: number[],
+  difficulty?: string | MonsterDifficulty | null
 ): Promise<Game> {
   lang = lang === Lang.French ? Lang.French : Lang.English;
   const team = new Team();
@@ -251,7 +254,7 @@ export default async function processGame(
           MobClass.name[lang === Lang.French ? 1 : 0].toLowerCase() ===
           monsterName.toLowerCase()
       ) || new Troll()
-    : rand.choice(Object.values(generateMob()));
+    : rand.choice(Object.values(getMonstersByDifficulty(difficulty || null)));
 
   if (creature instanceof GenericCreature) {
     creature.pickColor(rand);
