@@ -112,12 +112,19 @@ Mettre en place une progression RPG multi-personnages (Kazuma, Darkness, Aqua, M
 ### Drops de combat
 - Ajouter table de loot/drop
 - Ajouter generation de recompenses en fin de run
-  - items d'affinite
+  - accessoires d'affinite (priorite immediate)
   - composants d'alchimie
+  - consommables utilisables en combat (apres la phase accessoires)
 
 ### Inventaire
 - Endpoints lecture inventaire
 - Consommation item sur personnage cible
+
+### Priorite immediate (prochaine iteration)
+- Drops d'accessoires en fin de combat
+- Gain d'affinite selon l'accessoire obtenu (bronze/silver/gold/epic)
+- Persistance dans `inventory_items`
+- Exposition basique via `/inventory`
 
 ## Phase 6 - Crafting potions via composants (TODO)
 
@@ -174,6 +181,18 @@ Mettre en place une progression RPG multi-personnages (Kazuma, Darkness, Aqua, M
 - [x] ~~Ajouter lecture progression perso dans `/profile`~~
 - [x] ~~Ajouter tests unitaires `characterService`~~
 - [x] ~~Ajouter tests integration run->xp perso~~
+
+## Checklist items, drops et affinite
+- [x] ~~Ajouter enums de rarete/type pour items et accessoires~~
+- [x] ~~Ajouter catalogues localises (FR/EN) pour consumables et accessoires~~
+- [x] ~~Ajouter services de recherche/filtrage (`consumableService`, `accessoryService`)~~
+- [x] ~~Ajouter tests unitaires des services items/accessoires~~
+- [x] ~~Aligner la rarete accessoires sur 4 paliers (`bronze`, `silver`, `gold`, `epic`)~~
+- [ ] Ajouter les drops d'accessoires a la fin des combats
+- [ ] Definir la table de conversion rarete -> points d'affinite
+- [ ] Crediter l'affinite personnage depuis les accessoires droppes
+- [ ] Integrer l'inventaire accessoires dans `/inventory`
+- [ ] Integrer les consommables en combat (apres stabilisation accessoires)
 
 ## Questions ouvertes
 - Formule XP->level pour personnages: meme courbe que joueur global (100 XP/level) ?
