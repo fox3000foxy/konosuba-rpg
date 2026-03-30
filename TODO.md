@@ -192,7 +192,7 @@ Mettre en place une progression RPG multi-personnages (Kazuma, Darkness, Aqua, M
 - [x] ~~Ajouter les drops d'accessoires a la fin des combats~~
 - [x] ~~Definir la table de conversion rarete -> points d'affinite~~
 - [x] ~~Crediter l'affinite personnage depuis les accessoires droppes~~
-- [ ] Integrer l'inventaire accessoires dans `/inventory`
+- [x] ~~Integrer l'inventaire accessoires dans `/inventory`~~
 - [ ] Integrer les consommables en combat (apres stabilisation accessoires)
 
 ## Questions ouvertes

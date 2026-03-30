@@ -2,6 +2,11 @@
 	{
 		"name": "menu",
 		"description": "Ouvre le menu interactif RPG",
+		"description_localizations": {
+			"fr": "Ouvre le menu interactif RPG",
+			"en-US": "Open the interactive RPG menu",
+			"en-GB": "Open the interactive RPG menu"
+		},
 		"dm_permission": true,
 		"contexts": [
 			0,
@@ -17,10 +22,20 @@
 	{
 		"name": "profile",
 		"description": "Affiche ton profil RPG",
+		"description_localizations": {
+			"fr": "Affiche ton profil RPG",
+			"en-US": "Show your RPG profile",
+			"en-GB": "Show your RPG profile"
+		},
 		"options": [
 			{
 				"name": "mention",
 				"description": "Mention d'un joueur pour afficher son profil",
+				"description_localizations": {
+					"fr": "Mention d'un joueur pour afficher son profil",
+					"en-US": "Mention a player to show their profile",
+					"en-GB": "Mention a player to show their profile"
+				},
 				"type": "USER",
 				"required": false
 			}
@@ -40,6 +55,11 @@
 	{
 		"name": "leaderboard",
 		"description": "Affiche le classement RPG",
+		"description_localizations": {
+			"fr": "Affiche le classement RPG",
+			"en-US": "Show the RPG leaderboard",
+			"en-GB": "Show the RPG leaderboard"
+		},
 		"dm_permission": true,
 		"contexts": [
 			0,
@@ -55,10 +75,20 @@
 	{
 		"name": "quest",
 		"description": "Affiche les quetes du jour ou recupere la recompense",
+		"description_localizations": {
+			"fr": "Affiche les quetes du jour ou recupere la recompense",
+			"en-US": "Show daily quests or claim the reward",
+			"en-GB": "Show daily quests or claim the reward"
+		},
 		"options": [
 			{
 				"name": "action",
 				"description": "Action sur la quete",
+				"description_localizations": {
+					"fr": "Action sur la quete",
+					"en-US": "Quest action",
+					"en-GB": "Quest action"
+				},
 				"type": "STRING",
 				"required": false,
 				"autocomplete": true
@@ -66,6 +96,11 @@
 			{
 				"name": "quest_id",
 				"description": "ID de la quete (pour claim)",
+				"description_localizations": {
+					"fr": "ID de la quete (pour claim)",
+					"en-US": "Quest ID (for claim)",
+					"en-GB": "Quest ID (for claim)"
+				},
 				"type": "STRING",
 				"required": false,
 				"autocomplete": true
@@ -86,6 +121,11 @@
 	{
 		"name": "achievements",
 		"description": "Affiche tes achievements debloques",
+		"description_localizations": {
+			"fr": "Affiche tes achievements debloques",
+			"en-US": "Show your unlocked achievements",
+			"en-GB": "Show your unlocked achievements"
+		},
 		"dm_permission": true,
 		"contexts": [
 			0,
@@ -101,10 +141,20 @@
 	{
 		"name": "affinity",
 		"description": "Affiche l'affinite des personnages",
+		"description_localizations": {
+			"fr": "Affiche l'affinite des personnages",
+			"en-US": "Show character affinity",
+			"en-GB": "Show character affinity"
+		},
 		"options": [
 			{
 				"name": "mention",
 				"description": "Mention d'un joueur pour afficher son affinite",
+				"description_localizations": {
+					"fr": "Mention d'un joueur pour afficher son affinite",
+					"en-US": "Mention a player to show their affinity",
+					"en-GB": "Mention a player to show their affinity"
+				},
 				"type": "USER",
 				"required": false
 			}
@@ -122,12 +172,55 @@
 		"global_popularity_rank": 10
 	},
 	{
+		"name": "inventory",
+		"description": "Affiche l'inventaire d'un joueur",
+		"description_localizations": {
+			"fr": "Affiche l'inventaire d'un joueur",
+			"en-US": "Show a player's inventory",
+			"en-GB": "Show a player's inventory"
+		},
+		"options": [
+			{
+				"name": "mention",
+				"description": "Mention d'un joueur pour afficher son inventaire",
+				"description_localizations": {
+					"fr": "Mention d'un joueur pour afficher son inventaire",
+					"en-US": "Mention a player to show their inventory",
+					"en-GB": "Mention a player to show their inventory"
+				},
+				"type": "USER",
+				"required": false
+			}
+		],
+		"dm_permission": true,
+		"contexts": [
+			0,
+			1,
+			2
+		],
+		"integration_types": [
+			0,
+			1
+		],
+		"global_popularity_rank": 11
+	},
+	{
 		"name": "start",
 		"description": "Commencer une partie",
+		"description_localizations": {
+			"fr": "Commencer une partie",
+			"en-US": "Start a game",
+			"en-GB": "Start a game"
+		},
 		"options": [
 			{
 				"name": "difficulty",
 				"description": "Sélectionner la difficulté de l'adversaire (optionnel)",
+				"description_localizations": {
+					"fr": "Sélectionner la difficulté de l'adversaire (optionnel)",
+					"en-US": "Select the opponent difficulty (optional)",
+					"en-GB": "Select the opponent difficulty (optional)"
+				},
 				"type": "STRING",
 				"required": false,
 				"autocomplete": true
@@ -148,10 +241,20 @@
 	{
 		"name": "train",
 		"description": "Permet de s'entraîner sur un monstre",
+		"description_localizations": {
+			"fr": "Permet de s'entraîner sur un monstre",
+			"en-US": "Train against a monster",
+			"en-GB": "Train against a monster"
+		},
 		"options": [
 			{
 				"name": "monster",
 				"description": "Le monstre que vous voulez combattre",
+				"description_localizations": {
+					"fr": "Le monstre que vous voulez combattre",
+					"en-US": "The monster you want to fight",
+					"en-GB": "The monster you want to fight"
+				},
 				"type": "STRING",
 				"required": true
 			}
@@ -171,10 +274,20 @@
 	{
 		"name": "infos-monster",
 		"description": "Donne des précisions sur un monstre particulier",
+		"description_localizations": {
+			"fr": "Donne des précisions sur un monstre particulier",
+			"en-US": "Show details about a specific monster",
+			"en-GB": "Show details about a specific monster"
+		},
 		"options": [
 			{
 				"name": "monster",
 				"description": "Le monstre que vous voulez afficher",
+				"description_localizations": {
+					"fr": "Le monstre que vous voulez afficher",
+					"en-US": "The monster you want to display",
+					"en-GB": "The monster you want to display"
+				},
 				"type": "STRING",
 				"required": true,
 				"autocomplete": true
@@ -194,11 +307,21 @@
 	},
 	{
 		"name": "infos-player",
-		"description": "Donne des précisions sur un monstre particulier",
+		"description": "Donne des précisions sur un personnage particulier",
+		"description_localizations": {
+			"fr": "Donne des précisions sur un personnage particulier",
+			"en-US": "Show details about a specific character",
+			"en-GB": "Show details about a specific character"
+		},
 		"options": [
 			{
 				"name": "character",
-				"description": "Le monstre que vous voulez afficher",
+				"description": "Le personnage que vous voulez afficher",
+				"description_localizations": {
+					"fr": "Le personnage que vous voulez afficher",
+					"en-US": "The character you want to display",
+					"en-GB": "The character you want to display"
+				},
 				"type": "INTEGER",
 				"required": true,
 				"autocomplete": true
