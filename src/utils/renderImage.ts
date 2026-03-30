@@ -1,5 +1,5 @@
 import * as Photon from '@cf-wasm/photon';
-import { initWasm, Resvg } from '@resvg/resvg-wasm';
+import { Resvg } from '@resvg/resvg-wasm';
 import satori from 'satori';
 import { Creature } from '../classes/Creature';
 import { Team } from '../classes/Player';
@@ -14,6 +14,7 @@ import { DarknessImages } from '../objects/enums/player/DarknessImages';
 import { KazumaImages } from '../objects/enums/player/KazumaImages';
 import { MeguminImages } from '../objects/enums/player/MeguminImages';
 import { PlayerName } from '../objects/enums/player/PlayerName';
+import { ensureResvgWasm } from './resvgWasm';
 
 // ─── LRU Cache ───────────────────────────────────────────────────────────────
 
@@ -86,26 +87,6 @@ const photonCache: LRUCache<string, Photon.PhotonImage> = G.__photonCache;
 const layerCache: LRUCache<string, Photon.PhotonImage> = G.__layerCache;
 const uiPhotonCache: LRUCache<string, Photon.PhotonImage> = G.__uiPhotonCache;
 const renderOutputCache: LRUCache<string, Uint8Array> = G.__renderOutputCache;
-
-// ─── WASM init ───────────────────────────────────────────────────────────────
-
-const WASM_URL = 'https://unpkg.com/@resvg/resvg-wasm/index_bg.wasm';
-let wasmInitPromise: Promise<void> | null = null;
-
-async function ensureWasm(): Promise<void> {
-  if (wasmInitPromise) return wasmInitPromise;
-  wasmInitPromise = (async () => {
-    let buf = imageCache[WASM_URL];
-    if (!buf) {
-      const r = await fetch(WASM_URL);
-      if (!r.ok) throw new Error(`WASM fetch failed: ${r.status}`);
-      buf = await r.arrayBuffer();
-      imageCache[WASM_URL] = buf;
-    }
-    await initWasm(buf);
-  })();
-  return wasmInitPromise;
-}
 
 // ─── Image / Font helpers ────────────────────────────────────────────────────
 
@@ -755,7 +736,7 @@ const END_STATES = ['good', 'bad', 'giveup', 'best'];
 
 export async function warmup(): Promise<void> {
   await Promise.all([
-    ensureWasm(),
+    ensureResvgWasm(),
     ...END_STATES.map(s => getImageBytes('end_' + s)),
   ]);
 }
@@ -772,7 +753,7 @@ export default async function renderImage(
   creature: Creature,
   lang = 'en'
 ): Promise<Uint8Array> {
-  await ensureWasm();
+  await ensureResvgWasm();
 
   const W = 1000,
     H = 600;
