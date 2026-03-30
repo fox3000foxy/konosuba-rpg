@@ -181,6 +181,7 @@ Mettre en place une progression RPG multi-personnages (Kazuma, Darkness, Aqua, M
 - [x] ~~Ajouter lecture progression perso dans `/profile`~~
 - [x] ~~Ajouter tests unitaires `characterService`~~
 - [x] ~~Ajouter tests integration run->xp perso~~
+- [x] ~~Refactoriser le routage: extraction des interactions Discord et des routes API hors de `index.ts`~~
 
 ## Checklist items, drops et affinite
 - [x] ~~Ajouter enums de rarete/type pour items et accessoires~~
