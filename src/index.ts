@@ -22,6 +22,7 @@ import { handleStartCommand } from './interactionReplies/commands/start';
 import { handleTrainCommand } from './interactionReplies/commands/train';
 import { Interaction } from './objects/enums/Interaction';
 import { Lang } from './objects/enums/Lang';
+import { MonsterDifficulty } from './objects/enums/MonsterDifficulty';
 import { QuestAction } from './objects/enums/QuestAction';
 import { QuestKey } from './objects/enums/QuestKey';
 import { InteractionDataOption } from './objects/types/InteractionDataOption';
@@ -53,6 +54,15 @@ const PLAYER_AUTOCOMPLETE_CHOICES = [
   { name: 'Darkness', value: 1 },
   { name: 'Megumin', value: 2 },
   { name: 'Aqua', value: 3 },
+];
+
+const DIFFICULTY_AUTOCOMPLETE_CHOICES = [
+  { name: '🟢 Easy', value: MonsterDifficulty.Easy },
+  { name: '🟡 Medium', value: MonsterDifficulty.Medium },
+  { name: '🔴 Hard', value: MonsterDifficulty.Hard },
+  { name: '🔴 VeryHard', value: MonsterDifficulty.VeryHard },
+  { name: '⚫ Extreme', value: MonsterDifficulty.Extreme },
+  { name: '👑 Legendary', value: MonsterDifficulty.Legendary },
 ];
 
 function getApiLang(c: Context) {
@@ -186,6 +196,24 @@ app.post('/api/interactions', async (c: Context) => {
       }
     }
 
+    if (interaction.data?.name === 'start') {
+      const options = interaction.data.options || [];
+      const focused = options.find(option => option.focused);
+      const focusedValue = String(focused?.value || '').toLowerCase();
+
+      if (focused?.name === 'difficulty') {
+        const choices = DIFFICULTY_AUTOCOMPLETE_CHOICES
+          .filter(choice => {
+            const byName = choice.name.toLowerCase().includes(focusedValue);
+            const byValue = choice.value.toLowerCase().includes(focusedValue);
+            return byName || byValue;
+          })
+          .slice(0, 25);
+
+        return c.json({ type: 8, data: { choices } });
+      }
+    }
+
     return c.json({ type: 8, data: { choices: [] } });
   }
 
@@ -195,7 +223,10 @@ app.post('/api/interactions', async (c: Context) => {
 
     // /start
     if (interaction.data?.name === 'start') {
-      return handleStartCommand(c, userID, lang, fr);
+      const options = interaction.data.options || [];
+      const difficultyOption = options.find(opt => opt.name === 'difficulty');
+      const difficulty = difficultyOption ? String(difficultyOption.value) : undefined;
+      return handleStartCommand(c, userID, lang, fr, difficulty);
     }
 
     // /menu
