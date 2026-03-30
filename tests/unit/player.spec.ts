@@ -1,5 +1,5 @@
 import { Kazuma } from '../../src/classes/Player';
-import { PlayerAction } from '../../src/enums/player/PlayerAction';
+import { PlayerAction } from '../../src/objects/enums/player/PlayerAction';
 
 describe('Player mechanics', () => {
   it('initializes with expected default stats', () => {

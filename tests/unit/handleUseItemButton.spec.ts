@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { handleUseItemButton } from '../../src/interactionReplies/buttons/handleUseItemButton';
 import { Lang } from '../../src/objects/enums/Lang';
 
