@@ -2,12 +2,12 @@ import { CharacterKey } from '../../src/objects/enums/CharacterKey';
 import { GameState } from '../../src/objects/enums/GameState';
 import { syncAchievements } from '../../src/services/achievementService';
 import {
-  addCharacterXp,
-  ensureCharacterProgress,
+    addCharacterXp,
+    ensureCharacterProgress,
 } from '../../src/services/characterService';
 import {
-  grantAccessoryDropRewards,
-  grantConsumableDropRewards,
+    grantAccessoryDropRewards,
+    grantConsumableDropRewards,
 } from '../../src/services/dropService';
 import { ensurePlayerProfile } from '../../src/services/playerService';
 import { recordRunResult } from '../../src/services/progressionService';

@@ -110,7 +110,9 @@ function getTierLabel(fr: boolean, tier: 'basic' | 'gold' | 'epic'): string {
 }
 
 function getRows(progresses: CharacterProgress[]): AffinityRow[] {
-  const byKey = new Map(progresses.map(progress => [progress.characterKey, progress]));
+  const byKey = new Map(
+    progresses.map(progress => [progress.characterKey, progress])
+  );
 
   return [
     {
@@ -175,7 +177,12 @@ export async function renderAffinityImage(
   await ensureResvgWasm();
   const rows = getRows(progresses);
   const fontBuffer = await getEmbeddedFontBuffer();
-  const svg = await buildAffinitySvg(userId, progresses, fr, Boolean(fontBuffer));
+  const svg = await buildAffinitySvg(
+    userId,
+    progresses,
+    fr,
+    Boolean(fontBuffer)
+  );
 
   const options = fontBuffer
     ? {
@@ -198,7 +205,12 @@ export async function renderAffinityImage(
 
   if (boardBytes) {
     board = Photon.PhotonImage.new_from_byteslice(new Uint8Array(boardBytes));
-    canvas = Photon.resize(board, WIDTH, HEIGHT, Photon.SamplingFilter.Lanczos3);
+    canvas = Photon.resize(
+      board,
+      WIDTH,
+      HEIGHT,
+      Photon.SamplingFilter.Lanczos3
+    );
     Photon.watermark(canvas, overlay, 0n, 0n);
   } else {
     canvas = overlay;
@@ -210,7 +222,11 @@ export async function renderAffinityImage(
   ]);
 
   const badgeBuffers = await Promise.all(
-    rows.map(row => getAssetBytes(getCharacterBadgePath(row.key, getAffinityStars(row.affinity))))
+    rows.map(row =>
+      getAssetBytes(
+        getCharacterBadgePath(row.key, getAffinityStars(row.affinity))
+      )
+    )
   );
 
   const rowY = [180, 300, 420];
@@ -225,8 +241,15 @@ export async function renderAffinityImage(
       let badgeResized: Photon.PhotonImage | null = null;
 
       try {
-        badge = Photon.PhotonImage.new_from_byteslice(new Uint8Array(badgeBuffer));
-        badgeResized = Photon.resize(badge, 96, 96, Photon.SamplingFilter.Lanczos3);
+        badge = Photon.PhotonImage.new_from_byteslice(
+          new Uint8Array(badgeBuffer)
+        );
+        badgeResized = Photon.resize(
+          badge,
+          96,
+          96,
+          Photon.SamplingFilter.Lanczos3
+        );
         Photon.watermark(canvas, badgeResized, 48n, BigInt(rowY[rowIdx] - 62));
       } catch {
         // Keep the row even when a badge image fails to decode.
@@ -247,8 +270,15 @@ export async function renderAffinityImage(
       let starResized: Photon.PhotonImage | null = null;
 
       try {
-        star = Photon.PhotonImage.new_from_byteslice(new Uint8Array(starBuffer));
-        starResized = Photon.resize(star, 36, 36, Photon.SamplingFilter.Lanczos3);
+        star = Photon.PhotonImage.new_from_byteslice(
+          new Uint8Array(starBuffer)
+        );
+        starResized = Photon.resize(
+          star,
+          36,
+          36,
+          Photon.SamplingFilter.Lanczos3
+        );
         Photon.watermark(
           canvas,
           starResized,

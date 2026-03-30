@@ -3,7 +3,10 @@ import { generateMonsterInfosByConstructorName } from '../interactionReplies/com
 import { generatePlayerInfos } from '../interactionReplies/commands/infos-player';
 import { getInventoryItems } from '../services/inventoryService';
 import { getCharacterProgresses } from '../services/progressionService';
-import { buildAffinitySvg, renderAffinityImage } from '../utils/renderAffinityImage';
+import {
+  buildAffinitySvg,
+  renderAffinityImage,
+} from '../utils/renderAffinityImage';
 import { buildSvg, renderInventoryImage } from '../utils/renderInventoryImage';
 
 const PLAYER_ID_BY_NAME: Record<string, number> = {
@@ -115,7 +118,9 @@ export function registerApiRoutes(app: Hono): void {
     const progresses = await getCharacterProgresses(userId);
     if (!progresses) {
       return c.text(
-        fr ? 'Affinite indisponible pour le moment.' : 'Affinity is unavailable right now.',
+        fr
+          ? 'Affinite indisponible pour le moment.'
+          : 'Affinity is unavailable right now.',
         404
       );
     }
