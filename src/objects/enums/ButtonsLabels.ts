@@ -5,6 +5,7 @@ export enum ButtonsLabels {
   Restart = 'Restart',
   GiveUp = 'Give up',
   ChangeMonster = 'Change monster',
+  Consumables = 'Consumables',
   Heal = 'Heal',
   SpecialAttack = 'Special Attack',
 
@@ -14,6 +15,7 @@ export enum ButtonsLabels {
   RestartFr = 'Recommencer',
   GiveUpFr = 'Abandonner',
   ChangeMonsterFr = 'Changer de monstre',
+  ConsumablesFr = 'Consommables',
   HealFr = 'Soigner',
   SpecialAttackFr = 'Attaque spéciale',
 }
