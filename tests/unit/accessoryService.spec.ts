@@ -2,9 +2,9 @@ import { AccessoryId } from '../../src/objects/enums/AccessoryId';
 import { AccessoryType } from '../../src/objects/enums/AccessoryType';
 import { Rarity } from '../../src/objects/enums/Rarity';
 import {
-    getItemById,
-    getItemByName,
-    getItems,
+  getItemById,
+  getItemByName,
+  getItems,
 } from '../../src/services/accessoryService';
 
 describe('accessoryService', () => {
@@ -15,7 +15,7 @@ describe('accessoryService', () => {
   });
 
   it('finds item by localized name', () => {
-    const item = getItemByName('bague cristal bronze');
+    const item = getItemByName('bague cristal en bronze');
     expect(item).not.toBeNull();
     expect(item?.id).toBe(AccessoryId.I21110);
   });

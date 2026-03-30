@@ -1,12 +1,13 @@
 import { Random } from '../../src/classes/Random';
-import { Lang } from '../../src/enums/Lang';
+import { GameState } from '../../src/objects/enums/GameState';
+import { Lang } from '../../src/objects/enums/Lang';
 import processGame from '../../src/utils/processGame';
 
 describe('processGame core loop', () => {
   it('returns giveup state when move is GIV', async () => {
     const game = await processGame(new Random(), ['GIV'], 'Troll', Lang.English, false);
 
-    expect(game.state).toBe('giveup');
+    expect(game.state).toBe(GameState.Giveup);
     expect(Array.isArray(game.messages)).toBe(true);
   });
 
