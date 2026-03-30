@@ -57,12 +57,12 @@ const PLAYER_AUTOCOMPLETE_CHOICES = [
 ];
 
 const DIFFICULTY_AUTOCOMPLETE_CHOICES = [
-  { name: '🟢 Easy', value: MonsterDifficulty.Easy },
-  { name: '🟡 Medium', value: MonsterDifficulty.Medium },
-  { name: '🔴 Hard', value: MonsterDifficulty.Hard },
-  { name: '🔴 VeryHard', value: MonsterDifficulty.VeryHard },
-  { name: '⚫ Extreme', value: MonsterDifficulty.Extreme },
-  { name: '👑 Legendary', value: MonsterDifficulty.Legendary },
+  { name: 'Easy', value: MonsterDifficulty.Easy },
+  { name: 'Medium', value: MonsterDifficulty.Medium },
+  { name: 'Hard', value: MonsterDifficulty.Hard },
+  { name: 'Very Hard', value: MonsterDifficulty.VeryHard },
+  { name: 'Extreme', value: MonsterDifficulty.Extreme },
+  { name: 'Legendary', value: MonsterDifficulty.Legendary },
 ];
 
 function getApiLang(c: Context) {
