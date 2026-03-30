@@ -1,8 +1,11 @@
 import { AccessoryId } from '../objects/enums/AccessoryId';
 import { AccessoryType } from '../objects/enums/AccessoryType';
+import { ItemId } from '../objects/enums/ItemId';
 import { Rarity } from '../objects/enums/Rarity';
+import { TypeItem } from '../objects/enums/TypeItem';
 import { getSupabaseAdminClient } from '../utils/supabaseClient';
 import { getItemById } from './accessoryService';
+import { getItemById as getConsumableById } from './consumableService';
 
 type InventoryRow = {
   item_key: string;
@@ -16,6 +19,9 @@ export type InventoryItemView = {
   quantity: number;
   rarity: Rarity | null;
   accessoryType: AccessoryType | null;
+  consumableType: TypeItem | null;
+  category: 'accessory' | 'consumable' | 'unknown';
+  imagePath: string | null;
   nameFr: string;
   nameEn: string;
 };
@@ -40,14 +46,31 @@ export async function getInventoryItems(userId: string): Promise<InventoryItemVi
   const rows = (data || []) as InventoryRow[];
   const mapped = rows.map(row => {
     const accessory = getItemById(row.item_key as AccessoryId);
+    const consumable = accessory ? null : getConsumableById(row.item_key as ItemId);
+
+    const category: 'accessory' | 'consumable' | 'unknown' = accessory
+      ? 'accessory'
+      : consumable
+        ? 'consumable'
+        : 'unknown';
+
+    const imagePath = accessory
+      ? `/assets/accessories/${accessory.fileName}`
+      : consumable
+        ? `/assets/consumables/${consumable.fileName}`
+        : null;
+
     return {
       itemKey: row.item_key,
       itemType: row.item_type,
       quantity: Number(row.quantity || 0),
-      rarity: accessory?.rarity || null,
+      rarity: accessory?.rarity || consumable?.rarity || null,
       accessoryType: accessory?.type || null,
-      nameFr: accessory?.nameFr || row.item_key,
-      nameEn: accessory?.nameEn || row.item_key,
+      consumableType: consumable?.type || null,
+      category,
+      imagePath,
+      nameFr: accessory?.nameFr || consumable?.nameFr || row.item_key,
+      nameEn: accessory?.nameEn || consumable?.nameEn || row.item_key,
     };
   });
 

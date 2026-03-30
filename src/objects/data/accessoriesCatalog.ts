@@ -160,8 +160,8 @@ const ELEMENT_NAME_BY_SUFFIX: Record<string, { fr: string; en: string }> = {
 };
 
 const RARITY_LABEL: Record<Rarity, { fr: string; en: string }> = {
-  [Rarity.Bronze]: { fr: 'bronze', en: 'bronze' },
-  [Rarity.Silver]: { fr: 'argente', en: 'silver' },
+  [Rarity.Bronze]: { fr: 'en bronze', en: 'copper' },
+  [Rarity.Silver]: { fr: 'en argent', en: 'silver' },
   [Rarity.Basic]: { fr: 'basique', en: 'basic' },
   [Rarity.Gold]: { fr: 'doré', en: 'gold' },
   [Rarity.Epic]: { fr: 'epique', en: 'epic' },
@@ -205,14 +205,14 @@ function localizedAccessoryName(seed: AccessoryDefinitionSeed): {
 
   if (seed.type === AccessoryType.Charm) {
     return {
-      nameFr: `charme relique ${id}`,
-      nameEn: `relic charm ${id}`,
+      nameFr: `charme relique`,
+      nameEn: `relic charm`,
     };
   }
 
   return {
-    nameFr: `ornement legendaire ${id}`,
-    nameEn: `legendary ornament ${id}`,
+    nameFr: `ornement legendaire`,
+    nameEn: `legendary ornament`,
   };
 }
 

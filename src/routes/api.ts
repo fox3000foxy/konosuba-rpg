@@ -4,7 +4,7 @@ import {
 } from '../interactionReplies/commands/infos-monster';
 import { generatePlayerInfos } from '../interactionReplies/commands/infos-player';
 import { getInventoryItems } from '../services/inventoryService';
-import { renderInventoryImage } from '../utils/renderInventoryImage';
+import { buildSvg, renderInventoryImage } from '../utils/renderInventoryImage';
 
 const PLAYER_ID_BY_NAME: Record<string, number> = {
   kazuma: 0,
@@ -68,6 +68,20 @@ export function registerApiRoutes(app: Hono): void {
       return c.text(fr ? 'Utilisateur invalide.' : 'Invalid user.', 400);
     }
 
+    // if path contains "?renderSvg=true", return the svg instead of the png
+    const renderSvg = c.req.query('renderSvg') === 'true';
+    if (renderSvg) {
+      const items = await getInventoryItems(userId);
+      const image = await buildSvg(userId, items, fr);
+      return c.text(image, 200, {
+        'Content-Type': 'image/svg+xml',
+        'Cache-Control':
+          'public, max-age=0, s-maxage=15, stale-while-revalidate=60',
+        'CDN-Cache-Control': 'public, s-maxage=15, stale-while-revalidate=60',
+        'Vercel-CDN-Cache-Control':
+          'public, s-maxage=15, stale-while-revalidate=60',
+      });
+    }
     const items = await getInventoryItems(userId);
     const image = await renderInventoryImage(userId, items, fr);
     const responseBody = image.buffer.slice(
