@@ -1,7 +1,10 @@
 import { Context } from 'hono';
 import { BASE_URL } from '../../objects/config/constants';
 import { TypeItem } from '../../objects/enums/TypeItem';
-import { InventoryItemView, getInventoryItems } from '../../services/inventoryService';
+import {
+  InventoryItemView,
+  getInventoryItems,
+} from '../../services/inventoryService';
 
 const EPHEMERAL_FLAG = 1 << 6;
 const DISPLAY_LIMIT = 12;

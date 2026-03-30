@@ -4,7 +4,7 @@ import { Rarity } from '../../src/objects/enums/Rarity';
 import {
     ACCESSORY_AFFINITY_POINTS_BY_RARITY,
     rollAccessoryDrop,
-  rollConsumableDrop,
+    rollConsumableDrop,
 } from '../../src/services/dropService';
 
 describe('dropService', () => {

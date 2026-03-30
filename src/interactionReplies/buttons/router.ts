@@ -1,9 +1,7 @@
 import { Context } from 'hono';
 import { Interaction } from '../../objects/enums/Interaction';
 import { Lang } from '../../objects/enums/Lang';
-import {
-  decodeGameplayPayloadWithStatus,
-} from '../../services/gameSessionService';
+import { decodeGameplayPayloadWithStatus } from '../../services/gameSessionService';
 import { recordRunResult } from '../../services/progressionService';
 import { buildComponents } from '../../utils/componentsBuilder';
 import { decompressMoves } from '../../utils/movesUtils';
@@ -79,7 +77,13 @@ export async function handleButtonInteraction(
 
   if (resolvedEncodedPayload.startsWith('menu.')) {
     try {
-      return await handleMenuButton(c, resolvedEncodedPayload, userID, lang, fr);
+      return await handleMenuButton(
+        c,
+        resolvedEncodedPayload,
+        userID,
+        lang,
+        fr
+      );
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       console.error('[menu] Interaction error:', message);

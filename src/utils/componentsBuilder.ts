@@ -10,11 +10,11 @@ import { makeid, restartId } from './idUtils';
 import { buildImageUrl } from './imageUtils';
 import { compressMoves } from './movesUtils';
 import {
-    addDifficultyToPayload,
-    extractDifficulty,
-    extractMonster,
-    isTraining,
-    removeDifficultyFromPayload,
+  addDifficultyToPayload,
+  extractDifficulty,
+  extractMonster,
+  isTraining,
+  removeDifficultyFromPayload,
 } from './payloadUtils';
 import processGame from './processGame';
 import processUrl from './processUrl';

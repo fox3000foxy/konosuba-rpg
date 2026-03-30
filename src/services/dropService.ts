@@ -123,7 +123,10 @@ const LOOT_TABLE_BY_DIFFICULTY: Record<MonsterDifficulty, LootTable> = {
   },
 };
 
-const CONSUMABLE_LOOT_TABLE_BY_DIFFICULTY: Record<MonsterDifficulty, LootTable> = {
+const CONSUMABLE_LOOT_TABLE_BY_DIFFICULTY: Record<
+  MonsterDifficulty,
+  LootTable
+> = {
   [MonsterDifficulty.Easy]: {
     baseRolls: 1,
     bonusRollChance: 0.08,
@@ -235,7 +238,10 @@ function computeDropCount(rand: Random, lootTable: LootTable): number {
   return Math.min(4, Math.max(2, count));
 }
 
-function computeConsumableDropCount(rand: Random, lootTable: LootTable): number {
+function computeConsumableDropCount(
+  rand: Random,
+  lootTable: LootTable
+): number {
   let count = lootTable.baseRolls;
 
   for (let i = 0; i < lootTable.maxBonusRolls; i += 1) {
@@ -258,11 +264,14 @@ function pickAccessoryByRarity(
 
 function pickConsumableByRarity(rarity: Rarity, rand: Random): ItemId {
   const byRarity = getConsumableItems({ rarity }).map(item => item.id);
-  const pool = byRarity.length > 0 ? byRarity : getConsumableItems().map(item => item.id);
+  const pool =
+    byRarity.length > 0 ? byRarity : getConsumableItems().map(item => item.id);
   return rand.choice(pool) as ItemId;
 }
 
-function inventoryTypeForConsumableType(type: TypeItem): 'potion' | 'component' {
+function inventoryTypeForConsumableType(
+  type: TypeItem
+): 'potion' | 'component' {
   return type === TypeItem.Potion ? 'potion' : 'component';
 }
 
