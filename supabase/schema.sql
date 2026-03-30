@@ -110,7 +110,7 @@ create table if not exists public.game_sessions (
   payload text not null,
   battle_key text not null,
   turn_version integer not null default 1,
-  expires_at timestamptz not null default (now() + interval '24 hours'),
+  expires_at timestamptz not null default (now() + interval '7 days'),
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
