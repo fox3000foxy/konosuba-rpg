@@ -10,6 +10,69 @@ Build a multi-character RPG progression system (Kazuma, Darkness, Aqua, Megumin)
 - UI based on portraits in `assets/characters-emojis`
 - PVP in long-term backlog
 
+## Execution roadmap (before adding new features)
+
+### Scope freeze rule
+- No new gameplay systems until all P0 and P1 items below are done and tested.
+- Allowed during freeze: bug fixes, tests, balancing, docs.
+- Not allowed during freeze: PVP, new command families outside inventory/use/craft loop.
+
+### P0 - Complete consumable combat loop
+Goal: make consumables usable in real combat flow with deterministic, testable behavior.
+
+- Integrate consumables into battle action resolution.
+- Support item consumption on a selected target character.
+- Persist inventory decrements atomically.
+- Define command UX for use flow (`/use-item` or interaction equivalent).
+- Add unit tests (service), integration tests (run flow), and edge-case tests (empty stock, invalid target, simultaneous updates).
+
+Exit criteria:
+- A player can consume a combat item in battle and see the effect immediately.
+- Quantity is decremented exactly once per valid use.
+- Existing battle actions are not regressed.
+
+### P1 - Implement component crafting loop
+Goal: ship first complete craft cycle from components to usable potion.
+
+- Define recipe model and initial recipe set.
+- Validate ingredient ownership and quantities.
+- Implement atomic component consumption and crafted item creation.
+- Expose craft flow (`/craft` command or interaction equivalent).
+- Add tests for successful craft, missing ingredients, concurrent craft attempts.
+
+Exit criteria:
+- Player can craft at least one potion end-to-end from inventory.
+- No partial state on failure (all-or-nothing inventory updates).
+
+### P2 - Clarify progression and affinity policy
+Goal: remove gameplay ambiguities before wider content expansion.
+
+- Finalize XP distribution policy:
+  - win only or win + give up reduced XP
+  - all characters vs only used characters
+- Finalize level cap policy.
+- Decide profile/embeds factor display policy (show or hide exact multiplier).
+- Add tests/documentation reflecting chosen rules.
+
+Exit criteria:
+- Policies are documented and enforced by tests.
+
+### P3 - Character-facing polish on existing systems
+Goal: improve usability of what already exists without expanding scope.
+
+- Add `/character` inspection command using existing progression/affinity/inventory signals.
+- Improve inventory readability (grouping, rarity clarity, target compatibility hints).
+- Validate FR/EN consistency for newly exposed consumable/crafting texts.
+
+Exit criteria:
+- Character progression and item usage are understandable without external docs.
+
+### Release gates before new feature development
+- Gate A: P0 completed + green tests (`pnpm test`, targeted perf checks).
+- Gate B: P1 completed + transactional guarantees verified.
+- Gate C: P2 decisions locked + TODO/README aligned.
+- Only after Gates A+B+C: reopen roadmap for new systems.
+
 ## Progression Rules (to implement)
 
 ### Level stat multiplier
