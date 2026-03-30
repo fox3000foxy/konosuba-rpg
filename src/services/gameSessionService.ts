@@ -174,6 +174,10 @@ function needsEncoding(payload: string): boolean {
     return false;
   }
 
+  if (payload === 'useitem') {
+    return false;
+  }
+
   return true;
 }
 
