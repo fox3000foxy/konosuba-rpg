@@ -21,7 +21,11 @@ const DIFFICULTY_AUTOCOMPLETE_CHOICES = [
   { name: 'Legendary', value: MonsterDifficulty.Legendary },
 ];
 
-export function handleAutocomplete(c: Context, interaction: Interaction, fr: boolean) {
+export function handleAutocomplete(
+  c: Context,
+  interaction: Interaction,
+  fr: boolean
+) {
   if (interaction.data?.name === 'quest') {
     const options = interaction.data.options || [];
     const focused = options.find(option => option.focused);
@@ -52,13 +56,11 @@ export function handleAutocomplete(c: Context, interaction: Interaction, fr: boo
     const focusedValue = String(focused?.value || '').toLowerCase();
 
     if (focused?.name === 'character') {
-      const choices = PLAYER_AUTOCOMPLETE_CHOICES
-        .filter(choice => {
-          const byName = choice.name.toLowerCase().includes(focusedValue);
-          const byId = String(choice.value).includes(focusedValue);
-          return byName || byId;
-        })
-        .slice(0, 25);
+      const choices = PLAYER_AUTOCOMPLETE_CHOICES.filter(choice => {
+        const byName = choice.name.toLowerCase().includes(focusedValue);
+        const byId = String(choice.value).includes(focusedValue);
+        return byName || byId;
+      }).slice(0, 25);
 
       return c.json({ type: 8, data: { choices } });
     }
@@ -85,13 +87,11 @@ export function handleAutocomplete(c: Context, interaction: Interaction, fr: boo
     const focusedValue = String(focused?.value || '').toLowerCase();
 
     if (focused?.name === 'difficulty') {
-      const choices = DIFFICULTY_AUTOCOMPLETE_CHOICES
-        .filter(choice => {
-          const byName = choice.name.toLowerCase().includes(focusedValue);
-          const byValue = choice.value.toLowerCase().includes(focusedValue);
-          return byName || byValue;
-        })
-        .slice(0, 25);
+      const choices = DIFFICULTY_AUTOCOMPLETE_CHOICES.filter(choice => {
+        const byName = choice.name.toLowerCase().includes(focusedValue);
+        const byValue = choice.value.toLowerCase().includes(focusedValue);
+        return byName || byValue;
+      }).slice(0, 25);
 
       return c.json({ type: 8, data: { choices } });
     }

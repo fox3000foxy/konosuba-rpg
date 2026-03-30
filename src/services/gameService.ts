@@ -19,7 +19,10 @@ export async function calculateGameImageFromUrl(
   return processGame(rand, moves, monster, lang, true, undefined, difficulty);
 }
 
-export function serializeGameForApi(game: Game, lang: Lang): Record<string, unknown> {
+export function serializeGameForApi(
+  game: Game,
+  lang: Lang
+): Record<string, unknown> {
   const serializableTeam = {
     ...game.team,
     players: game.team.players.map(player => {

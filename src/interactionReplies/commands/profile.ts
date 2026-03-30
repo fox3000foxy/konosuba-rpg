@@ -49,7 +49,10 @@ export async function handleProfileCommand(
   const totalRuns = runSummary?.totalRuns ?? 0;
   const killedMonsters = runSummary?.killedMonsters ?? [];
   const characterByKey = new Map(
-    (characterProgresses || []).map(progress => [progress.characterKey, progress])
+    (characterProgresses || []).map(progress => [
+      progress.characterKey,
+      progress,
+    ])
   );
 
   const darkness = characterByKey.get(CharacterKey.Darkness);
@@ -59,8 +62,8 @@ export async function handleProfileCommand(
   const nextLevelXp = profile.level * 100;
   const monstersText = killedMonsters.length
     ? killedMonsters
-      .map(monster => `- ${monster.name} x${monster.count}`)
-      .join('\n')
+        .map(monster => `- ${monster.name} x${monster.count}`)
+        .join('\n')
     : fr
       ? '- Aucun monstre battu pour le moment'
       : '- No defeated monsters yet';

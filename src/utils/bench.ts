@@ -19,10 +19,10 @@ import { Lang } from '../objects/enums/Lang';
 import processGame from './processGame';
 import processUrl from './processUrl';
 import {
-    PerfReport,
-    getCacheDiagnostics,
-    getLastPerfReport,
-    renderOutputCache,
+  PerfReport,
+  getCacheDiagnostics,
+  getLastPerfReport,
+  renderOutputCache,
 } from './renderImage';
 
 // ─── Générateur d'URL ─────────────────────────────────────────────────────────

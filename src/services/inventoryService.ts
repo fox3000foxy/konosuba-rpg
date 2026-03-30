@@ -26,7 +26,9 @@ export type InventoryItemView = {
   nameEn: string;
 };
 
-export async function getInventoryItems(userId: string): Promise<InventoryItemView[]> {
+export async function getInventoryItems(
+  userId: string
+): Promise<InventoryItemView[]> {
   const supabase = getSupabaseAdminClient();
   if (!supabase) {
     return [];
@@ -46,7 +48,9 @@ export async function getInventoryItems(userId: string): Promise<InventoryItemVi
   const rows = (data || []) as InventoryRow[];
   const mapped = rows.map(row => {
     const accessory = getItemById(row.item_key as AccessoryId);
-    const consumable = accessory ? null : getConsumableById(row.item_key as ItemId);
+    const consumable = accessory
+      ? null
+      : getConsumableById(row.item_key as ItemId);
 
     const category: 'accessory' | 'consumable' | 'unknown' = accessory
       ? 'accessory'

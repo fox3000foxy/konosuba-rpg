@@ -108,10 +108,14 @@ export async function getPlayerRunSummary(
 
   for (const row of rows) {
     const existingMonster = row.monster_name ? String(row.monster_name) : '';
-    const inferredMonster = existingMonster || inferMonsterFromRunKey(String(row.run_key || ''));
+    const inferredMonster =
+      existingMonster || inferMonsterFromRunKey(String(row.run_key || ''));
 
     if (!existingMonster && inferredMonster && row.run_key) {
-      updates.push({ runKey: String(row.run_key), monsterName: inferredMonster });
+      updates.push({
+        runKey: String(row.run_key),
+        monsterName: inferredMonster,
+      });
     }
 
     const isWin = row.state === GameState.Good || row.state === GameState.Best;
@@ -119,7 +123,10 @@ export async function getPlayerRunSummary(
       continue;
     }
 
-    killsByMonster.set(inferredMonster, (killsByMonster.get(inferredMonster) ?? 0) + 1);
+    killsByMonster.set(
+      inferredMonster,
+      (killsByMonster.get(inferredMonster) ?? 0) + 1
+    );
   }
 
   for (const update of updates) {
@@ -130,7 +137,10 @@ export async function getPlayerRunSummary(
       .eq('user_id', userId);
 
     if (updateError) {
-      console.error('[db] getPlayerRunSummary backfill failed:', updateError.message);
+      console.error(
+        '[db] getPlayerRunSummary backfill failed:',
+        updateError.message
+      );
     }
   }
 

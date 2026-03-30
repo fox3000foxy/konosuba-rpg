@@ -1,6 +1,6 @@
 import {
-    ACCESSORY_DEFINITIONS,
-    AccessoryDefinition,
+  ACCESSORY_DEFINITIONS,
+  AccessoryDefinition,
 } from '../objects/data/accessoriesCatalog';
 import { AccessoryId } from '../objects/enums/AccessoryId';
 import { AccessoryType } from '../objects/enums/AccessoryType';
@@ -24,12 +24,9 @@ const normalizeText = (value: string): string =>
 
 const matchesName = (item: AccessoryDefinition, name: string): boolean => {
   const n = normalizeText(name);
-  const fields = [
-    item.id,
-    item.fileName,
-    item.nameFr,
-    item.nameEn,
-  ].map(value => normalizeText(String(value)));
+  const fields = [item.id, item.fileName, item.nameFr, item.nameEn].map(value =>
+    normalizeText(String(value))
+  );
 
   return fields.some(field => field.includes(n));
 };
@@ -54,7 +51,9 @@ export function getItemByName(name: string): AccessoryDefinition | null {
     return exact;
   }
 
-  return ACCESSORY_DEFINITIONS.find(item => matchesName(item, normalized)) || null;
+  return (
+    ACCESSORY_DEFINITIONS.find(item => matchesName(item, normalized)) || null
+  );
 }
 
 export function getItems(query: AccessoryQuery = {}): AccessoryDefinition[] {

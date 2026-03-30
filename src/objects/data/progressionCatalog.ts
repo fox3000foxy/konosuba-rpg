@@ -49,7 +49,7 @@ export const ACHIEVEMENT_DEFINITIONS: AchievementDefinition[] = [
   },
   {
     key: AchievementKey.Wins50,
-    titleFr: 'Maitre de l\'arene',
+    titleFr: "Maitre de l'arene",
     titleEn: 'Arena master',
     descriptionFr: 'Gagner 50 combats',
     descriptionEn: 'Win 50 battles',
@@ -224,7 +224,7 @@ export const ACHIEVEMENT_DEFINITIONS: AchievementDefinition[] = [
   },
   {
     key: AchievementKey.SlayerHydra,
-    titleFr: 'Tueur d\'Hydra',
+    titleFr: "Tueur d'Hydra",
     titleEn: 'Hydra Slayer',
     descriptionFr: 'Vaincre Hydra',
     descriptionEn: 'Defeat Hydra',

@@ -70,7 +70,10 @@ function applyTeamLevelFactors(team: Team, factors?: number[]): void {
     const factor = factors[index] ?? 1;
     const nextHpMax = scaleStat(player.hpMax, factor, 1);
     const nextAttackMin = Math.max(0, Math.round(player.attack[0] * factor));
-    const nextAttackMax = Math.max(nextAttackMin, scaleStat(player.attack[1], factor, 1));
+    const nextAttackMax = Math.max(
+      nextAttackMin,
+      scaleStat(player.attack[1], factor, 1)
+    );
 
     player.hpMax = nextHpMax;
     player.hp = nextHpMax;

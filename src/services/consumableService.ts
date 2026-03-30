@@ -1,6 +1,6 @@
 import {
-    CONSUMABLE_DEFINITIONS,
-    ConsumableDefinition,
+  CONSUMABLE_DEFINITIONS,
+  ConsumableDefinition,
 } from '../objects/data/consumablesCatalog';
 import { ItemId } from '../objects/enums/ItemId';
 import { Rarity } from '../objects/enums/Rarity';
@@ -24,12 +24,9 @@ const normalizeText = (value: string): string =>
 
 const matchesName = (item: ConsumableDefinition, name: string): boolean => {
   const n = normalizeText(name);
-  const fields = [
-    item.id,
-    item.fileName,
-    item.nameFr,
-    item.nameEn,
-  ].map(value => normalizeText(String(value)));
+  const fields = [item.id, item.fileName, item.nameFr, item.nameEn].map(value =>
+    normalizeText(String(value))
+  );
 
   return fields.some(field => field.includes(n));
 };
@@ -54,7 +51,9 @@ export function getItemByName(name: string): ConsumableDefinition | null {
     return exact;
   }
 
-  return CONSUMABLE_DEFINITIONS.find(item => matchesName(item, normalized)) || null;
+  return (
+    CONSUMABLE_DEFINITIONS.find(item => matchesName(item, normalized)) || null
+  );
 }
 
 export function getItems(query: ConsumableQuery = {}): ConsumableDefinition[] {

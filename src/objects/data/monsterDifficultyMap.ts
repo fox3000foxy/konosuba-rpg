@@ -10,7 +10,9 @@ interface MonsterStats {
 /**
  * Récupère les stats d'un monstre par son nom
  */
-export function getMonsterStats(monsterName: string | null): MonsterStats | null {
+export function getMonsterStats(
+  monsterName: string | null
+): MonsterStats | null {
   if (!monsterName) {
     return null;
   }
@@ -51,7 +53,9 @@ function calculateDifficultyScore(stats: MonsterStats): number {
  * - Extreme: monstres très forts (40-70)
  * - Legendary: monstres ultimes (70+)
  */
-export function getMonsterDifficulty(monsterName: string | null): MonsterDifficulty {
+export function getMonsterDifficulty(
+  monsterName: string | null
+): MonsterDifficulty {
   const stats = getMonsterStats(monsterName);
   if (!stats) {
     return MonsterDifficulty.Medium; // Par défaut si le monstre n'est pas trouvé
@@ -81,7 +85,9 @@ export function getMonsterDifficulty(monsterName: string | null): MonsterDifficu
 /**
  * Retourne tous les monstres d'une difficulté donnée
  */
-export function getMonstersByDifficulty(difficulty: MonsterDifficulty | string | null): ReturnType<typeof generateMob> {
+export function getMonstersByDifficulty(
+  difficulty: MonsterDifficulty | string | null
+): ReturnType<typeof generateMob> {
   if (!difficulty) {
     return generateMob();
   }
@@ -95,5 +101,7 @@ export function getMonstersByDifficulty(difficulty: MonsterDifficulty | string |
   });
 
   // Si aucun monstre trouvé pour cette difficulté, retourner tous
-  return (filtered.length > 0 ? filtered : mobs) as ReturnType<typeof generateMob>;
+  return (filtered.length > 0 ? filtered : mobs) as ReturnType<
+    typeof generateMob
+  >;
 }

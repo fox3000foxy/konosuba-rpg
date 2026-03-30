@@ -1,7 +1,5 @@
 import { Context, Hono } from 'hono';
-import {
-    generateMonsterInfosByConstructorName,
-} from '../interactionReplies/commands/infos-monster';
+import { generateMonsterInfosByConstructorName } from '../interactionReplies/commands/infos-monster';
 import { generatePlayerInfos } from '../interactionReplies/commands/infos-player';
 import { getInventoryItems } from '../services/inventoryService';
 import { buildSvg, renderInventoryImage } from '../utils/renderInventoryImage';
@@ -46,7 +44,10 @@ export function registerApiRoutes(app: Hono): void {
     const fr = getApiLang(c);
 
     const monsterConstructorName = c.req.param('monsterConstructorName') || '';
-    const infos = generateMonsterInfosByConstructorName(monsterConstructorName, fr);
+    const infos = generateMonsterInfosByConstructorName(
+      monsterConstructorName,
+      fr
+    );
     if (!infos.creature) {
       return c.json(
         {

@@ -12,7 +12,9 @@ export const QUESTS: QuestDefinition[] = QUEST_DEFINITIONS;
 
 const DAILY_QUEST_KEY = QUESTS[0].key;
 
-function getQuestDefinition(questKey: QuestKey | string): QuestDefinition | null {
+function getQuestDefinition(
+  questKey: QuestKey | string
+): QuestDefinition | null {
   return QUESTS.find(q => q.key === questKey) ?? null;
 }
 

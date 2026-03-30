@@ -190,7 +190,10 @@ export async function getCharacterStatsSnapshot(
     .maybeSingle();
 
   if (playerError) {
-    console.error('[db] getCharacterStatsSnapshot player load failed:', playerError.message);
+    console.error(
+      '[db] getCharacterStatsSnapshot player load failed:',
+      playerError.message
+    );
     return null;
   }
 
@@ -200,7 +203,9 @@ export async function getCharacterStatsSnapshot(
     return null;
   }
 
-  const byKey = new Map(progresses.map(progress => [progress.characterKey, progress]));
+  const byKey = new Map(
+    progresses.map(progress => [progress.characterKey, progress])
+  );
 
   return [
     {
@@ -211,12 +216,16 @@ export async function getCharacterStatsSnapshot(
     {
       characterKey: CharacterKey.Darkness,
       level: Number(byKey.get(CharacterKey.Darkness)?.level || 1),
-      factor: getLevelFactor(Number(byKey.get(CharacterKey.Darkness)?.level || 1)),
+      factor: getLevelFactor(
+        Number(byKey.get(CharacterKey.Darkness)?.level || 1)
+      ),
     },
     {
       characterKey: CharacterKey.Megumin,
       level: Number(byKey.get(CharacterKey.Megumin)?.level || 1),
-      factor: getLevelFactor(Number(byKey.get(CharacterKey.Megumin)?.level || 1)),
+      factor: getLevelFactor(
+        Number(byKey.get(CharacterKey.Megumin)?.level || 1)
+      ),
     },
     {
       characterKey: CharacterKey.Aqua,
