@@ -108,6 +108,8 @@ create table if not exists public.game_sessions (
   token text primary key,
   owner_user_id text not null,
   payload text not null,
+  battle_key text not null,
+  turn_version integer not null default 1,
   expires_at timestamptz not null default (now() + interval '24 hours'),
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
@@ -116,5 +118,5 @@ create table if not exists public.game_sessions (
 create index if not exists game_sessions_updated_at_idx
   on public.game_sessions(updated_at desc);
 
-create unique index if not exists game_sessions_owner_payload_uidx
-  on public.game_sessions(owner_user_id, payload);
+create index if not exists game_sessions_owner_battle_turn_idx
+  on public.game_sessions(owner_user_id, battle_key, turn_version desc);
