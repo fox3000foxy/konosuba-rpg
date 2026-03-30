@@ -8,11 +8,13 @@ import {
   addCharacterXp,
   ensureCharacterProgress
 } from './characterService';
+import { grantAccessoryDropRewards } from './dropService';
 import { ensurePlayerProfile } from './playerService';
 import { QUESTS } from './questService';
 
 export { ACHIEVEMENTS, getAchievementsOverview } from './achievementService';
 export {
+  addCharacterAffinity,
   addCharacterXp, computeLevelFromXp, ensureCharacterProgress,
   getCharacterProgress,
   getCharacterProgresses,
@@ -89,6 +91,7 @@ export async function recordRunResult(input: RecordRunInput): Promise<void> {
 
   const actionCount = countActions(input.payload);
   const runKey = `${input.userId}:${input.payload}`;
+  const isWin = isWinningState(input.state);
 
   console.log(`[db] upserting run: runKey=${runKey} actions=${actionCount}`);
 
@@ -163,8 +166,16 @@ export async function recordRunResult(input: RecordRunInput): Promise<void> {
     addCharacterXp(input.userId, CharacterKey.Aqua, gainedXp),
   ]);
 
+  if (isWin) {
+    const drop = await grantAccessoryDropRewards(input.userId, runKey, input.monsterName);
+    if (drop) {
+      console.log(
+        `[db] accessory drop granted: user=${input.userId} item=${drop.accessoryId} rarity=${drop.rarity} affinity=${drop.affinityPoints} target=${drop.characterKey}`
+      );
+    }
+  }
+
   const questDay = currentQuestDay();
-  const isWin = isWinningState(input.state);
   const leveledUp = nextLevel > oldLevel;
 
   console.log(

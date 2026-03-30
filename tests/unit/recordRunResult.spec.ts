@@ -2,9 +2,10 @@ import { CharacterKey } from '../../src/objects/enums/CharacterKey';
 import { GameState } from '../../src/objects/enums/GameState';
 import { syncAchievements } from '../../src/services/achievementService';
 import {
-    addCharacterXp,
-    ensureCharacterProgress,
+  addCharacterXp,
+  ensureCharacterProgress,
 } from '../../src/services/characterService';
+import { grantAccessoryDropRewards } from '../../src/services/dropService';
 import { ensurePlayerProfile } from '../../src/services/playerService';
 import { recordRunResult } from '../../src/services/progressionService';
 import { getSupabaseAdminClient } from '../../src/utils/supabaseClient';
@@ -52,6 +53,10 @@ jest.mock('../../src/services/achievementService', () => ({
   getAchievementsOverview: jest.fn(),
 }));
 
+jest.mock('../../src/services/dropService', () => ({
+  grantAccessoryDropRewards: jest.fn(),
+}));
+
 const mockedGetSupabaseAdminClient = getSupabaseAdminClient as jest.MockedFunction<
   typeof getSupabaseAdminClient
 >;
@@ -70,6 +75,10 @@ const mockedAddCharacterXp = addCharacterXp as jest.MockedFunction<
 
 const mockedSyncAchievements = syncAchievements as jest.MockedFunction<
   typeof syncAchievements
+>;
+
+const mockedGrantAccessoryDropRewards = grantAccessoryDropRewards as jest.MockedFunction<
+  typeof grantAccessoryDropRewards
 >;
 
 class QueryBuilder implements PromiseLike<{ data: unknown; error: MockDbError | null }> {
@@ -172,6 +181,7 @@ describe('recordRunResult integration-like flow', () => {
     mockedEnsureCharacterProgress.mockResolvedValue(undefined);
     mockedAddCharacterXp.mockResolvedValue(undefined);
     mockedSyncAchievements.mockResolvedValue(undefined);
+    mockedGrantAccessoryDropRewards.mockResolvedValue(null);
   });
 
   afterEach(() => {
@@ -241,6 +251,7 @@ describe('recordRunResult integration-like flow', () => {
     );
 
     expect(mockedSyncAchievements).toHaveBeenCalledWith('user-1');
+    expect(mockedGrantAccessoryDropRewards).not.toHaveBeenCalled();
 
     expect(client.queries[0].table).toBe('runs');
     expect(client.queries[0].op).toBe('upsert');
@@ -250,6 +261,62 @@ describe('recordRunResult integration-like flow', () => {
         run_key: 'user-1:seed123/atk',
         monster_name: 'Troll',
       })
+    );
+  });
+
+  it('triggers accessory drop rewards on winning runs', async () => {
+    const client = new SupabaseMockClient([
+      {
+        table: 'runs',
+        op: 'upsert',
+        data: null,
+      },
+      {
+        table: 'players',
+        op: 'select',
+        data: { xp: 0, level: 1 },
+      },
+      {
+        table: 'players',
+        op: 'update',
+        data: null,
+      },
+      {
+        table: 'daily_quests_progress',
+        op: 'select',
+        data: null,
+      },
+      {
+        table: 'daily_quests_progress',
+        op: 'insert',
+        data: null,
+      },
+      {
+        table: 'daily_quests_progress',
+        op: 'select',
+        data: null,
+      },
+      {
+        table: 'daily_quests_progress',
+        op: 'insert',
+        data: null,
+      },
+    ]);
+
+    mockedGetSupabaseAdminClient.mockReturnValue(client as never);
+
+    await recordRunResult({
+      userId: 'winner-1',
+      payload: 'seedwin/atk',
+      state: GameState.Good,
+      training: false,
+      monsterName: 'Dragon',
+    });
+
+    expect(mockedGrantAccessoryDropRewards).toHaveBeenCalledWith(
+      'winner-1',
+      'winner-1:seedwin/atk',
+      'Dragon'
     );
   });
 });
