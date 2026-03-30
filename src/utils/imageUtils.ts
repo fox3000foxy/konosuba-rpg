@@ -13,7 +13,8 @@ import {
 export function buildImageUrl(
   payload: string,
   lang: string,
-  difficulty?: string | null
+  difficulty?: string | null,
+  userId?: string
 ): string {
   // Extraire la difficulté du payload si elle n'est pas fournie
   const cleanPayload = removeDifficultyFromPayload(payload);
@@ -28,6 +29,10 @@ export function buildImageUrl(
   if (training) {
     queryParams.append('training', 'true');
     queryParams.append('monster', monsterName);
+  }
+
+  if(userId) {
+    queryParams.append('userId', userId);
   }
 
   if (effectiveDifficulty) {

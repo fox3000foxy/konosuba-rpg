@@ -3,21 +3,50 @@ import { Game } from '../objects/types/Game';
 import processGame from '../utils/processGame';
 import { parseGameUrl } from './urlService';
 
+import { getCharacterStatsSnapshot } from './progressionService';
+
+async function getCharacterFactors(userID?: string): Promise<number[] | undefined> {
+  if (!userID) {
+    return undefined;
+  }
+
+  const characterStatsSnapshot = await getCharacterStatsSnapshot(userID);
+  if (!characterStatsSnapshot) {
+    return undefined;
+  }
+
+  return characterStatsSnapshot.map(snapshot => snapshot.factor);
+}
+
 export async function calculateGameStateFromUrl(
   url: string,
-  lang: Lang
+  lang: Lang,
+  userID?: string
 ): Promise<Game> {
   const { rand, moves, monster, difficulty } = parseGameUrl(url);
-  return processGame(rand, moves, monster, lang, false, undefined, difficulty);
+  const characterFactors = await getCharacterFactors(userID);
+  return processGame(
+    rand,
+    moves,
+    monster,
+    lang,
+    false,
+    characterFactors,
+    difficulty
+  );
 }
 
 export async function calculateGameImageFromUrl(
   url: string,
-  lang: Lang
+  lang: Lang,
+  userID?: string
 ): Promise<Game> {
   const { rand, moves, monster, difficulty } = parseGameUrl(url);
-  return processGame(rand, moves, monster, lang, true, undefined, difficulty);
+  const characterFactors = await getCharacterFactors(userID);
+
+  return processGame(rand, moves, monster, lang, true, characterFactors, difficulty);
 }
+
 
 export function serializeGameForApi(
   game: Game,

@@ -212,7 +212,7 @@ function resolveMonsterName(monsterIdentifier: string, fr: boolean): string {
 
 async function buildStartData(userID: string, lang: Lang, fr: boolean) {
   const id = makeid(15);
-  const imageUrl = buildImageUrl(id, lang);
+  const imageUrl = buildImageUrl(id, lang, undefined, userID);
   const { embedDescription, buttons } = await buildComponents(id, userID, lang);
 
   return {

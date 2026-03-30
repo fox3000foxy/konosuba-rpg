@@ -25,7 +25,7 @@ export async function handleSpecialButton(
   embedDescription: string[],
   buttons: RawButton[]
 ) {
-  const imageUrl = buildImageUrl(payload, lang);
+  const imageUrl = buildImageUrl(payload, lang, undefined, userID);
   const title = fr
     ? `Entraînement contre ${monsterName}`
     : `Training vs ${monsterName}`;
