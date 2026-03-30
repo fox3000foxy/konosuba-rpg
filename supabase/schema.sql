@@ -120,3 +120,18 @@ create index if not exists game_sessions_updated_at_idx
 
 create index if not exists game_sessions_owner_battle_turn_idx
   on public.game_sessions(owner_user_id, battle_key, turn_version desc);
+
+create or replace function public.prune_expired_game_sessions()
+returns integer
+language plpgsql
+as $$
+declare
+  deleted_count integer;
+begin
+  delete from public.game_sessions
+  where expires_at < now();
+
+  get diagnostics deleted_count = row_count;
+  return deleted_count;
+end;
+$$;
