@@ -2,8 +2,8 @@ import { getMonsterDifficulty } from '../../src/objects/data/monsterDifficultyMa
 import { MonsterDifficulty } from '../../src/objects/enums/MonsterDifficulty';
 import { Rarity } from '../../src/objects/enums/Rarity';
 import {
-  ACCESSORY_AFFINITY_POINTS_BY_RARITY,
-  rollAccessoryDrop,
+    ACCESSORY_AFFINITY_POINTS_BY_RARITY,
+    rollAccessoryDrop,
 } from '../../src/services/dropService';
 
 describe('dropService', () => {
@@ -36,11 +36,18 @@ describe('dropService', () => {
   });
 
   it('drops accessories in the expected rarity domain', () => {
-    const drop = rollAccessoryDrop('user-13:seed777/atk', 'Troll');
+    const drops = rollAccessoryDrop('user-13:seed777/atk', 'Troll');
 
-    expect([Rarity.Bronze, Rarity.Silver, Rarity.Gold, Rarity.Epic]).toContain(drop.rarity);
-    expect(drop.accessoryId).toMatch(/^\d{5}$/);
-    expect(drop.affinityPoints).toBeGreaterThan(0);
+    expect(drops.length).toBeGreaterThanOrEqual(2);
+    expect(drops.length).toBeLessThanOrEqual(4);
+
+    for (const drop of drops) {
+      expect([Rarity.Bronze, Rarity.Silver, Rarity.Gold, Rarity.Epic]).toContain(
+        drop.rarity
+      );
+      expect(drop.accessoryId).toMatch(/^\d{5}$/);
+      expect(drop.affinityPoints).toBeGreaterThan(0);
+    }
   });
 
   it('calculates difficulty levels correctly', () => {
@@ -51,14 +58,32 @@ describe('dropService', () => {
   });
 
   it('handles unknown monsters gracefully', () => {
-    const drop = rollAccessoryDrop('user-42:abc123/atk', 'UnknownMonster');
-    expect(drop.accessoryId).toBeDefined();
-    expect(drop.rarity).toBeDefined();
+    const drops = rollAccessoryDrop('user-42:abc123/atk', 'UnknownMonster');
+    expect(drops.length).toBeGreaterThanOrEqual(2);
+    expect(drops[0]?.accessoryId).toBeDefined();
+    expect(drops[0]?.rarity).toBeDefined();
   });
 
   it('handles null monster name gracefully', () => {
-    const drop = rollAccessoryDrop('user-42:abc123/atk', null);
-    expect(drop.accessoryId).toBeDefined();
-    expect(drop.rarity).toBeDefined();
+    const drops = rollAccessoryDrop('user-42:abc123/atk', null);
+    expect(drops.length).toBeGreaterThanOrEqual(2);
+    expect(drops[0]?.accessoryId).toBeDefined();
+    expect(drops[0]?.rarity).toBeDefined();
+  });
+
+  it('gives at least as many high-rarity drops on hard as on easy for same seed', () => {
+    const runKey = 'user-99:minecraft-loot/atk';
+
+    const easyDrops = rollAccessoryDrop(runKey, 'Slime');
+    const hardDrops = rollAccessoryDrop(runKey, 'King Troll');
+
+    const easyHigh = easyDrops.filter(
+      drop => drop.rarity === Rarity.Gold || drop.rarity === Rarity.Epic
+    ).length;
+    const hardHigh = hardDrops.filter(
+      drop => drop.rarity === Rarity.Gold || drop.rarity === Rarity.Epic
+    ).length;
+
+    expect(hardHigh).toBeGreaterThanOrEqual(easyHigh);
   });
 });

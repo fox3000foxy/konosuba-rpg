@@ -5,8 +5,8 @@ import { RecordRunInput } from '../objects/types/RecordRunInput';
 import { getSupabaseAdminClient } from '../utils/supabaseClient';
 import { syncAchievements } from './achievementService';
 import {
-  addCharacterXp,
-  ensureCharacterProgress
+    addCharacterXp,
+    ensureCharacterProgress
 } from './characterService';
 import { grantAccessoryDropRewards } from './dropService';
 import { ensurePlayerProfile } from './playerService';
@@ -14,23 +14,23 @@ import { QUESTS } from './questService';
 
 export { ACHIEVEMENTS, getAchievementsOverview } from './achievementService';
 export {
-  addCharacterAffinity,
-  addCharacterXp, computeLevelFromXp, ensureCharacterProgress,
-  getCharacterProgress,
-  getCharacterProgresses,
-  getCharacterStatsSnapshot, getLevelFactor
+    addCharacterAffinity,
+    addCharacterXp, computeLevelFromXp, ensureCharacterProgress,
+    getCharacterProgress,
+    getCharacterProgresses,
+    getCharacterStatsSnapshot, getLevelFactor
 } from './characterService';
 export {
-  ensurePlayerProfile,
-  getLeaderboard,
-  getPlayerProfile,
-  getPlayerRunSummary
+    ensurePlayerProfile,
+    getLeaderboard,
+    getPlayerProfile,
+    getPlayerRunSummary
 } from './playerService';
 export {
-  claimDailyQuestReward,
-  getAllQuestStatuses,
-  getDailyQuestStatus,
-  QUESTS
+    claimDailyQuestReward,
+    getAllQuestStatuses,
+    getDailyQuestStatus,
+    QUESTS
 } from './questService';
 
 function currentQuestDay(): string {
@@ -167,11 +167,13 @@ export async function recordRunResult(input: RecordRunInput): Promise<void> {
   ]);
 
   if (isWin) {
-    const drop = await grantAccessoryDropRewards(input.userId, runKey, input.monsterName);
-    if (drop) {
-      console.log(
-        `[db] accessory drop granted: user=${input.userId} item=${drop.accessoryId} rarity=${drop.rarity} affinity=${drop.affinityPoints} target=${drop.characterKey}`
-      );
+    const drops = await grantAccessoryDropRewards(input.userId, runKey, input.monsterName);
+    if (drops && drops.length > 0) {
+      for (const drop of drops) {
+        console.log(
+          `[db] accessory drop granted: user=${input.userId} item=${drop.accessoryId} rarity=${drop.rarity} affinity=${drop.affinityPoints} target=${drop.characterKey}`
+        );
+      }
     }
   }
 
