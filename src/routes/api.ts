@@ -3,6 +3,8 @@ import {
     generateMonsterInfosByConstructorName,
 } from '../interactionReplies/commands/infos-monster';
 import { generatePlayerInfos } from '../interactionReplies/commands/infos-player';
+import { getInventoryItems } from '../services/inventoryService';
+import { renderInventoryImage } from '../utils/renderInventoryImage';
 
 const PLAYER_ID_BY_NAME: Record<string, number> = {
   kazuma: 0,
@@ -56,5 +58,32 @@ export function registerApiRoutes(app: Hono): void {
     }
 
     return c.json(infos.creature);
+  });
+
+  app.get('/inventory/:userId', async (c: Context) => {
+    const userId = (c.req.param('userId') || '').trim();
+    const fr = getApiLang(c);
+
+    if (!userId) {
+      return c.text(fr ? 'Utilisateur invalide.' : 'Invalid user.', 400);
+    }
+
+    const items = await getInventoryItems(userId);
+    const image = await renderInventoryImage(userId, items, fr);
+    const responseBody = image.buffer.slice(
+      image.byteOffset,
+      image.byteOffset + image.byteLength
+    );
+
+    return new Response(responseBody as ArrayBuffer, {
+      headers: {
+        'Content-Type': 'image/png',
+        'Cache-Control':
+          'public, max-age=0, s-maxage=15, stale-while-revalidate=60',
+        'CDN-Cache-Control': 'public, s-maxage=15, stale-while-revalidate=60',
+        'Vercel-CDN-Cache-Control':
+          'public, s-maxage=15, stale-while-revalidate=60',
+      },
+    });
   });
 }

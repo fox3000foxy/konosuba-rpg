@@ -7,6 +7,7 @@ import { handleAchievementsCommand } from './achievements';
 import { handleAffinityCommand } from './affinity';
 import { handleInfosMonsterCommand } from './infos-monster';
 import { handleInfosPlayerCommand } from './infos-player';
+import { handleInventoryCommand } from './inventory';
 import { handleLeaderboardCommand } from './leaderboard';
 import { handleMenuCommand } from './menu';
 import { handleProfileCommand } from './profile';
@@ -54,6 +55,10 @@ export async function handleSlashCommand(
 
   if (interaction.data?.name === 'affinity') {
     return handleAffinityCommand(c, userID, fr, interaction.data.options);
+  }
+
+  if (interaction.data?.name === 'inventory') {
+    return handleInventoryCommand(c, userID, fr, interaction.data.options);
   }
 
   if (interaction.data?.name === 'train') {
