@@ -167,6 +167,12 @@ export async function buildComponents(
             custom_id: `${actionPrefix}p${userIdSuffix}`,
             disabled: !team.activePlayer?.specialAttackReady,
           },
+          {
+            type: 2,
+            label: fr ? ButtonsLabels.UsePotionFr : ButtonsLabels.UsePotion,
+            style: 1,
+            custom_id: `useitem${userIdSuffix}`,
+          },
         ],
       },
     ];
