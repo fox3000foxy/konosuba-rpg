@@ -103,3 +103,18 @@ create table if not exists public.player_potions (
 
 create index if not exists player_potions_user_id_idx
   on public.player_potions(user_id);
+
+create table if not exists public.game_sessions (
+  token text primary key,
+  owner_user_id text not null,
+  payload text not null,
+  expires_at timestamptz not null default (now() + interval '24 hours'),
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+create index if not exists game_sessions_updated_at_idx
+  on public.game_sessions(updated_at desc);
+
+create unique index if not exists game_sessions_owner_payload_uidx
+  on public.game_sessions(owner_user_id, payload);

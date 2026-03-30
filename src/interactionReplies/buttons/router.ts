@@ -1,6 +1,7 @@
 import { Context } from 'hono';
 import { Interaction } from '../../objects/enums/Interaction';
 import { Lang } from '../../objects/enums/Lang';
+import { decodeGameplayPayload } from '../../services/gameSessionService';
 import { recordRunResult } from '../../services/progressionService';
 import { buildComponents } from '../../utils/componentsBuilder';
 import { decompressMoves } from '../../utils/movesUtils';
@@ -30,7 +31,23 @@ export async function handleButtonInteraction(
   const colonIdx = customId.lastIndexOf(':');
   const encodedPayload =
     colonIdx !== -1 ? customId.slice(0, colonIdx) : customId;
-  const payload = decompressMoves(encodedPayload);
+  const resolvedEncodedPayload = await decodeGameplayPayload(
+    encodedPayload,
+    userID
+  );
+  if (!resolvedEncodedPayload) {
+    return c.json({
+      type: 4,
+      data: {
+        content: fr
+          ? 'Session de combat expirée. Relance une partie.'
+          : 'Battle session expired. Please start a new game.',
+        flags: 1 << 6,
+      },
+    });
+  }
+
+  const payload = decompressMoves(resolvedEncodedPayload);
   const owner = colonIdx !== -1 ? customId.slice(colonIdx + 1) : '';
 
   if (owner && owner !== userID && owner !== 'all') {
@@ -43,11 +60,14 @@ export async function handleButtonInteraction(
     });
   }
 
-  console.log('Received button interaction with payload:', encodedPayload);
+  console.log(
+    'Received button interaction with payload:',
+    resolvedEncodedPayload
+  );
 
-  if (encodedPayload.startsWith('menu.')) {
+  if (resolvedEncodedPayload.startsWith('menu.')) {
     try {
-      return await handleMenuButton(c, encodedPayload, userID, lang, fr);
+      return await handleMenuButton(c, resolvedEncodedPayload, userID, lang, fr);
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       console.error('[menu] Interaction error:', message);
@@ -63,7 +83,7 @@ export async function handleButtonInteraction(
     }
   }
 
-  if (encodedPayload === 'consumables') {
+  if (resolvedEncodedPayload === 'consumables') {
     return handleConsumablesButton(c, userID, fr);
   }
 
@@ -83,7 +103,7 @@ export async function handleButtonInteraction(
     monsterName: inferredMonsterName,
   });
 
-  const special = interaction.data.custom_id.split(':')[0].endsWith('p');
+  const special = resolvedEncodedPayload.endsWith('p');
   if (special) {
     return handleSpecialButton(
       interaction,

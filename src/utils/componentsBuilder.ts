@@ -4,16 +4,17 @@ import { ButtonsLabels } from '../objects/enums/ButtonsLabels';
 import { GameState } from '../objects/enums/GameState';
 import { Lang } from '../objects/enums/Lang';
 import { RawButton } from '../objects/enums/RawButton';
+import { encodeGameplayButtons } from '../services/gameSessionService';
 import { getCharacterStatsSnapshot } from '../services/progressionService';
 import { makeid, restartId } from './idUtils';
 import { buildImageUrl } from './imageUtils';
 import { compressMoves } from './movesUtils';
 import {
-  addDifficultyToPayload,
-  extractDifficulty,
-  extractMonster,
-  isTraining,
-  removeDifficultyFromPayload,
+    addDifficultyToPayload,
+    extractDifficulty,
+    extractMonster,
+    isTraining,
+    removeDifficultyFromPayload,
 } from './payloadUtils';
 import processGame from './processGame';
 import processUrl from './processUrl';
@@ -213,5 +214,12 @@ export async function buildComponents(
     },
   ];
 
-  return { buttons, embedDescription, activePlayerName, gameState: state };
+  const encodedButtons = await encodeGameplayButtons(buttons);
+
+  return {
+    buttons: encodedButtons,
+    embedDescription,
+    activePlayerName,
+    gameState: state,
+  };
 }
