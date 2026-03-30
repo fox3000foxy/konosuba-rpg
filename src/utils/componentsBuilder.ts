@@ -190,6 +190,12 @@ export async function buildComponents(
         },
         {
           type: 2,
+          label: fr ? ButtonsLabels.ConsumablesFr : ButtonsLabels.Consumables,
+          style: 1,
+          custom_id: `consumables${userIdSuffix}`,
+        },
+        {
+          type: 2,
           label: fr
             ? ButtonsLabels.ChangeMonsterFr
             : ButtonsLabels.ChangeMonster,

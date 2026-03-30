@@ -10,6 +10,7 @@ import {
   removeDifficultyFromPayload,
 } from '../../utils/payloadUtils';
 import { inferMonsterFromPayload } from '../../utils/runMonsterUtils';
+import { handleConsumablesButton } from './handleConsumablesButton';
 import { handleDefaultButton } from './handleDefaultButton';
 import { handleMenuButton } from './handleMenuButton';
 import { handleSpecialButton } from './handleSpecialButton';
@@ -60,6 +61,10 @@ export async function handleButtonInteraction(
         },
       });
     }
+  }
+
+  if (encodedPayload === 'consumables') {
+    return handleConsumablesButton(c, userID, fr);
   }
 
   const training = isTraining(payload);
