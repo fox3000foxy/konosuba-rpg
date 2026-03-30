@@ -177,7 +177,7 @@ Exit criteria:
 - Add reward generation at end of run
   - ~~affinity accessories (immediate priority)~~
   - alchemy components
-  - combat consumables (after accessories phase)
+  - ~~combat consumables (after accessories phase)~~
 
 ### Inventory
 - ~~Inventory read endpoints~~
@@ -228,6 +228,7 @@ Exit criteria:
 - ~~`/inventory` (drops + components)~~
 - `/use-item`
 - `/craft`
+- `/shop` (buy/sell and gold sinks, later)
 
 ## Phase 9 - PVP (long-term backlog)
 - Design 1v1 player format
@@ -256,6 +257,7 @@ Exit criteria:
 - [x] ~~Define rarity -> affinity points conversion table~~
 - [x] ~~Credit character affinity from dropped accessories~~
 - [x] ~~Integrate accessory inventory in `/inventory`~~
+- [x] Add consumable drops at end of combat
 - [ ] Integrate consumables in combat (after accessory stabilization)
 
 ## Open questions

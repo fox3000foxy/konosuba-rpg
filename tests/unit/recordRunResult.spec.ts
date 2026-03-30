@@ -5,7 +5,10 @@ import {
   addCharacterXp,
   ensureCharacterProgress,
 } from '../../src/services/characterService';
-import { grantAccessoryDropRewards } from '../../src/services/dropService';
+import {
+  grantAccessoryDropRewards,
+  grantConsumableDropRewards,
+} from '../../src/services/dropService';
 import { ensurePlayerProfile } from '../../src/services/playerService';
 import { recordRunResult } from '../../src/services/progressionService';
 import { getSupabaseAdminClient } from '../../src/utils/supabaseClient';
@@ -55,6 +58,7 @@ jest.mock('../../src/services/achievementService', () => ({
 
 jest.mock('../../src/services/dropService', () => ({
   grantAccessoryDropRewards: jest.fn(),
+  grantConsumableDropRewards: jest.fn(),
 }));
 
 const mockedGetSupabaseAdminClient = getSupabaseAdminClient as jest.MockedFunction<
@@ -79,6 +83,10 @@ const mockedSyncAchievements = syncAchievements as jest.MockedFunction<
 
 const mockedGrantAccessoryDropRewards = grantAccessoryDropRewards as jest.MockedFunction<
   typeof grantAccessoryDropRewards
+>;
+
+const mockedGrantConsumableDropRewards = grantConsumableDropRewards as jest.MockedFunction<
+  typeof grantConsumableDropRewards
 >;
 
 class QueryBuilder implements PromiseLike<{ data: unknown; error: MockDbError | null }> {
@@ -182,6 +190,7 @@ describe('recordRunResult integration-like flow', () => {
     mockedAddCharacterXp.mockResolvedValue(undefined);
     mockedSyncAchievements.mockResolvedValue(undefined);
     mockedGrantAccessoryDropRewards.mockResolvedValue(null);
+    mockedGrantConsumableDropRewards.mockResolvedValue(null);
   });
 
   afterEach(() => {
@@ -252,6 +261,7 @@ describe('recordRunResult integration-like flow', () => {
 
     expect(mockedSyncAchievements).toHaveBeenCalledWith('user-1');
     expect(mockedGrantAccessoryDropRewards).not.toHaveBeenCalled();
+    expect(mockedGrantConsumableDropRewards).not.toHaveBeenCalled();
 
     expect(client.queries[0].table).toBe('runs');
     expect(client.queries[0].op).toBe('upsert');
@@ -314,6 +324,11 @@ describe('recordRunResult integration-like flow', () => {
     });
 
     expect(mockedGrantAccessoryDropRewards).toHaveBeenCalledWith(
+      'winner-1',
+      'winner-1:seedwin/atk',
+      'Dragon'
+    );
+    expect(mockedGrantConsumableDropRewards).toHaveBeenCalledWith(
       'winner-1',
       'winner-1:seedwin/atk',
       'Dragon'
