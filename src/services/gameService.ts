@@ -32,7 +32,8 @@ export async function calculateGameStateFromUrl(
     lang,
     false,
     characterFactors,
-    difficulty
+    difficulty,
+    userID
   );
 }
 
@@ -44,7 +45,7 @@ export async function calculateGameImageFromUrl(
   const { rand, moves, monster, difficulty } = parseGameUrl(url);
   const characterFactors = await getCharacterFactors(userID);
 
-  return processGame(rand, moves, monster, lang, true, characterFactors, difficulty);
+  return processGame(rand, moves, monster, lang, true, characterFactors, difficulty, userID);
 }
 
 

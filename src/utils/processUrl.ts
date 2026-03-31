@@ -9,6 +9,7 @@ const VALID_MOVES_SET = new Set([
   PlayerAction.Hea.toLocaleUpperCase(),
   PlayerAction.Giv.toLocaleUpperCase(),
   PlayerAction.Spe.toLocaleUpperCase(),
+  PlayerAction.Use.toLocaleUpperCase(),
 ]);
 
 export default function processUrl(
