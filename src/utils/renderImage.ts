@@ -336,6 +336,101 @@ async function buildOverlayJsx(
     lang === Lang.French ? HealthBarName.French : HealthBarName.English;
   const langIndex = lang === Lang.French ? 1 : 0;
 
+  type ConsumableEffectType = 'potion' | 'chrono' | 'stone' | 'scroll';
+
+  function detectConsumableEffectType(message: string): ConsumableEffectType | null {
+    const lower = message.toLowerCase();
+    if (lower.includes('regagn') || lower.includes('healed for')) {
+      return 'potion';
+    }
+    if (lower.includes('pv max') || lower.includes('max hp')) {
+      return 'chrono';
+    }
+    if (lower.includes('defense') || lower.includes('defense')) {
+      return 'stone';
+    }
+    if (lower.includes('attaque') || lower.includes('attack')) {
+      return 'scroll';
+    }
+    return null;
+  }
+
+  function detectConsumableTargetPlayerId(message: string): number | null {
+    const lower = message.toLowerCase();
+    const target = team.players.find(player => {
+      const n0 = player.name[0]?.toLowerCase?.() ?? '';
+      const n1 = player.name[1]?.toLowerCase?.() ?? '';
+      return lower.includes(n0) || lower.includes(n1);
+    });
+    return typeof target?.playerId === 'number' ? target.playerId : null;
+  }
+
+  function playerEffectAnchor(playerId: number): { left: number; top: number } {
+    if (playerId === pid) {
+      return {
+        left: 38 * 2 + 173.5 * 2 - 34,
+        top: 46.25 * 2 - 38 - 20,
+      };
+    }
+
+    const offsets = [1, 2, 3];
+    for (const offset of offsets) {
+      const i = (pid + offset) % 4;
+      if (i === playerId) {
+        const xBase = offset === 2 ? 332 * 2 : 234 * 2;
+        const yBase = offset === 3 ? 56.25 * 2 - 38 : 36 * 2 - 38 + 3;
+        return {
+          left: xBase + 173 - 28,
+          top: yBase - 18,
+        };
+      }
+    }
+
+    return { left: 38 * 2 + 173.5 * 2 - 34, top: 46.25 * 2 - 38 - 20 };
+  }
+
+  function buildConsumableEffectBadge(
+    effectType: ConsumableEffectType,
+    playerId: number
+  ): object {
+    let label = '';
+
+    // Placeholder symbols until we wire real image assets.
+    // Future assets:
+    // - assets/ui/effects/potion.png
+    // - assets/ui/effects/chrono.png
+    // - assets/ui/effects/stone.png
+    // - assets/ui/effects/scroll.png
+    if (effectType === 'potion') label = '✚';
+    if (effectType === 'chrono') label = '↑♡';
+    if (effectType === 'stone') label = '🛡';
+    if (effectType === 'scroll') label = '⚔';
+
+    const { left, top } = playerEffectAnchor(playerId);
+    return {
+      type: 'div',
+      props: {
+        style: {
+          display: 'flex' as const,
+          position: 'absolute' as const,
+          alignItems: 'center' as const,
+          justifyContent: 'center' as const,
+          left,
+          top,
+          width: 28,
+          height: 28,
+          borderRadius: 14,
+          background: 'rgba(0,0,0,0.55)',
+          border: '1px solid rgba(255,255,255,0.65)',
+          color: '#FFFFFF',
+          fontSize: 16,
+          fontFamily: '"Ginto Nord Black"',
+        },
+        children: label,
+      },
+    };
+  }
+
   function healthBar(
     current: number,
     max: number,
@@ -450,6 +545,13 @@ async function buildOverlayJsx(
       break;
   }
   team.setActivePlayer(team.players[pid]);
+
+  const latestMessage = messages.length > 0 ? messages[messages.length - 1] : '';
+  const latestConsumableEffect = detectConsumableEffectType(latestMessage);
+  const latestConsumableTargetId =
+    latestMessage && latestConsumableEffect
+      ? detectConsumableTargetPlayerId(latestMessage)
+      : null;
 
   return {
     type: 'div',
@@ -571,6 +673,15 @@ async function buildOverlayJsx(
             healthBar(op?.hp || 0, op?.hpMax || 0, xBase, yBase, 173, 8.5),
           ];
         }),
+
+        ...(latestConsumableEffect !== null && latestConsumableTargetId !== null
+          ? [
+              buildConsumableEffectBadge(
+                latestConsumableEffect,
+                latestConsumableTargetId
+              ),
+            ]
+          : []),
 
         // ── Creature info ──────────────────────────────────────────────
         {
