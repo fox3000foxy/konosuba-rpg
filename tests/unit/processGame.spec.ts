@@ -1,6 +1,7 @@
 import { Random } from '../../src/classes/Random';
 import { GameState } from '../../src/objects/enums/GameState';
 import { Lang } from '../../src/objects/enums/Lang';
+import * as inventoryConsumptionService from '../../src/services/inventoryConsumptionService';
 import processGame from '../../src/utils/processGame';
 
 describe('processGame core loop', () => {
@@ -46,5 +47,49 @@ describe('processGame core loop', () => {
       const game = await processGame(new Random(), ['ATK'], monster, Lang.English, false);
       expect(game.creature.name.length).toBeGreaterThan(0);
     }
+  });
+
+  it('uses consumable items and persists inventory when userId is provided', async () => {
+    // Mock the consumeInventoryItem function
+    const mockConsume = jest.spyOn(inventoryConsumptionService, 'consumeInventoryItem')
+      .mockResolvedValue(true);
+
+    const game = await processGame(
+      new Random(42),
+      ['USE'],
+      'Troll',
+      Lang.English,
+      false,
+      undefined,
+      undefined,
+      'user-123' // userId
+    );
+
+    // Verify game state is valid
+    expect(game.creature).toBeDefined();
+    expect(game.messages.length).toBeGreaterThan(0);
+
+    // Verify consumeInventoryItem was called with userId
+    expect(mockConsume).toHaveBeenCalled();
+    const callArgs = mockConsume.mock.calls[0];
+    expect(callArgs[0]).toBe('user-123');
+    expect(callArgs[1]).toBeDefined(); // itemId
+
+    mockConsume.mockRestore();
+  });
+
+  it('allows USE action without userId (no inventory persistence)', async () => {
+    const game = await processGame(
+      new Random(42),
+      ['USE'],
+      'Troll',
+      Lang.English,
+      false
+      // no userId provided
+    );
+
+    // Verify game state is valid (no crash when userId not provided)
+    expect(game.creature).toBeDefined();
+    expect(game.messages.length).toBeGreaterThan(0);
   });
 });
