@@ -1,3 +1,4 @@
+import { Button } from 'discord-interactions';
 import { Context } from 'hono';
 import { Lang } from '../../objects/enums/Lang';
 import { getInventoryItems } from '../../services/inventoryService';
@@ -28,32 +29,37 @@ export async function handleUseItemButton(
     });
   }
 
-  // Display consumable usage menu (ephemeral)
-  // For now, just show the list - full integration coming next
-  const consumableList = consumables
-    .slice(0, 10)
-    .map(
-      (item, idx) =>
-        `${idx + 1}. ${fr ? item.nameFr : item.nameEn} x${item.quantity}`
-    )
-    .join('\n');
+  // Create button groups for consumables (5 buttons per row max)
+  const consumableButtons: Button[] = consumables.slice(0, 25).map(item => ({
+    type: 2,
+    label: `${fr ? item.nameFr : item.nameEn} x${item.quantity}`,
+    style: 1, // Blurple style
+    custom_id: `consumable_use:${item.itemKey}:${userId}`,
+  }));
 
-  const moreCount = Math.max(0, consumables.length - 10);
-  const moreLine =
+  // Group buttons in rows (5 per row)
+  const components: Array<{ type: number; components: Button[] }> = [];
+  for (let i = 0; i < consumableButtons.length; i += 5) {
+    components.push({
+      type: 1,
+      components: consumableButtons.slice(i, i + 5),
+    });
+  }
+
+  const header = fr ? '# Utiliser un consommable' : '# Use a consumable';
+  const moreCount = Math.max(0, consumables.length - 25);
+  const footer =
     moreCount > 0
       ? fr
-        ? `\n... et ${moreCount} autre(s)`
-        : `\n... and ${moreCount} more`
+        ? `\n\n... et ${moreCount} autre(s) non affiché(s)`
+        : `\n\n... and ${moreCount} more not shown`
       : '';
-
-  const content = fr
-    ? `# Utiliser un consommable\n\n${consumableList}${moreLine}\n\nFonctionnalité complète: bientôt disponible`
-    : `# Use a consumable\n\n${consumableList}${moreLine}\n\nFull feature: coming soon`;
 
   return c.json({
     type: 4,
     data: {
-      content,
+      content: header + footer,
+      components,
       flags: EPHEMERAL_FLAG,
     },
   });

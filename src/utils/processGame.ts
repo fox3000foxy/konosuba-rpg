@@ -96,6 +96,7 @@ async function handlePlayerAction({
   embedDescription,
   userId,
   itemIds,
+  consumedItemIds,
 }: {
   move: string;
   currentPlayer: Aqua | Player;
@@ -108,6 +109,7 @@ async function handlePlayerAction({
   embedDescription: string[];
   userId?: string;
   itemIds?: ItemId[];
+  consumedItemIds?: Set<ItemId>;
 }): Promise<void> {
   const langIndex = lang === Lang.French ? 1 : 0;
   switch (move) {
@@ -265,9 +267,10 @@ async function handlePlayerAction({
           lang === Lang.French ? effect.message.fr : effect.message.en
         );
         
-        // Persist inventory consumption if userId is provided
-        if (userId) {
+        // Persist inventory consumption only once per item (track in consumedItemIds)
+        if (userId && consumedItemIds && !consumedItemIds.has(selectedItemId)) {
           await consumeInventoryItem(userId, selectedItemId);
+          consumedItemIds.add(selectedItemId);
         }
       } else {
         messages.push(
@@ -335,6 +338,7 @@ export default async function processGame(
   let state: GameState = GameState.Incomplete;
   let playerId: number;
   let counter = -1;
+  const consumedItemIds = new Set<ItemId>();
 
   // Reset special attack status for all players
   team.players.forEach(player => player.resetSpecialAttack());
@@ -389,6 +393,7 @@ export default async function processGame(
       embedDescription,
       userId,
       itemIds,
+      consumedItemIds,
     });
 
     // Check if creature is defeated

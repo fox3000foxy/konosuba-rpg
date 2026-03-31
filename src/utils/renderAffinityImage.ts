@@ -1,5 +1,6 @@
 import * as Photon from '@cf-wasm/photon';
 import { Resvg } from '@resvg/resvg-wasm';
+import { BASE_URL } from '../objects/config/constants';
 import { CharacterKey } from '../objects/enums/CharacterKey';
 import { CharacterProgress } from '../objects/types/CharacterProgress';
 import { ensureResvgWasm } from './resvgWasm';
@@ -13,7 +14,7 @@ const G = globalThis as unknown as AffinityImageGlobals;
 G.__affinityIconCache ??= {};
 const iconCache = G.__affinityIconCache;
 
-const ASSET_BASE_URL = 'https://konosuba-rpg.vercel.app';
+const ASSET_BASE_URL = BASE_URL;
 const FONT_URL = `${ASSET_BASE_URL}/assets/swordgame/font/GintoNordMedium.otf`;
 const BOARD_PATH = '/assets/swordgame/art/board.webp';
 const STAR_ENABLED_PATH = '/assets/star-enabled.webp';
