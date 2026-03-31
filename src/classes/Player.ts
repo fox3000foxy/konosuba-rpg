@@ -17,6 +17,7 @@ const KAZUMA_IMAGE_BY_ACTION: ActionImageMap = {
   [PlayerAction.Atk]: KazumaImages.Atk,
   [PlayerAction.Hug]: KazumaImages.Hug,
   [PlayerAction.Spe]: KazumaImages.Atk,
+  [PlayerAction.Use]: KazumaImages.Idle, // Using item defaults to idle
 };
 
 const DARKNESS_IMAGE_BY_ACTION: ActionImageMap = {
@@ -25,6 +26,7 @@ const DARKNESS_IMAGE_BY_ACTION: ActionImageMap = {
   [PlayerAction.Atk]: DarknessImages.Atk,
   [PlayerAction.Hug]: DarknessImages.Hug,
   [PlayerAction.Spe]: DarknessImages.Atk,
+  [PlayerAction.Use]: DarknessImages.Idle,
 };
 
 const MEGUMIN_IMAGE_BY_ACTION: ActionImageMap = {
@@ -33,6 +35,7 @@ const MEGUMIN_IMAGE_BY_ACTION: ActionImageMap = {
   [PlayerAction.Atk]: MeguminImages.Atk,
   [PlayerAction.Hug]: MeguminImages.Hug,
   [PlayerAction.Spe]: MeguminImages.Atk,
+  [PlayerAction.Use]: MeguminImages.Idle,
 };
 
 const AQUA_IMAGE_BY_ACTION: ActionImageMap = {
@@ -41,6 +44,7 @@ const AQUA_IMAGE_BY_ACTION: ActionImageMap = {
   [PlayerAction.Atk]: AquaImages.Atk,
   [PlayerAction.Hug]: AquaImages.Hug,
   [PlayerAction.Spe]: AquaImages.Atk,
+  [PlayerAction.Use]: AquaImages.Idle,
 };
 
 // Abstract Player class
@@ -48,6 +52,7 @@ export abstract class Player {
   public hpMax: number;
   public hp: number;
   public attack: [number, number];
+  public defense: number;
   public defending: boolean;
   public name: [string, string]; // [français, anglais]
   public images: string[];
@@ -80,6 +85,7 @@ export abstract class Player {
     this.hpMax = hpMax;
     this.hp = hpMax;
     this.attack = attack;
+    this.defense = 0;
     this.defending = false;
     this.name = name;
     this.images = images;

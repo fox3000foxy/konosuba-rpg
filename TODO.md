@@ -258,13 +258,19 @@ Exit criteria:
 - [x] ~~Credit character affinity from dropped accessories~~
 - [x] ~~Integrate accessory inventory in `/inventory`~~
 - [x] Add consumable drops at end of combat
-- [ ] Integrate consumables into combat flow with real effect application
+- [x] Integrate consumables into combat flow with real effect application
+- [x] Persist consumable consumption to inventory during combat
 
-### Consumable effects to implement
-- Potions: restore target character HP
-- Chrono: increase target character max HP
-- Stones: increase target character defense
-- Scrolls: increase target character attack
+### Consumable effects (implemented in battle)
+- [x] Potions: restore target character HP (25% basic, 50% gold, 75% epic)
+- [x] Chrono: increase target character max HP (+10% basic, +20% gold, +30% epic)
+- [x] Stones: increase target character defense (+1 basic, +2 gold, +3 epic)
+- [x] Scrolls: increase target character attack (+1 basic, +2 gold, +3 epic)
+
+### Next consumable features
+- [ ] Support item selection via URL (e.g. `/USE/I20001000` to use specific item)
+- [ ] Validate item ownership before use
+- [ ] Support targeting specific team member with consumable
 
 ## Open questions
 - Character XP -> level formula: same curve as global player (100 XP/level)?

@@ -67,7 +67,8 @@ export async function buildComponents(
     lang,
     false,
     characterFactors,
-    difficultyFromUrl || effectiveDifficulty
+    difficultyFromUrl || effectiveDifficulty,
+    userID
   );
   const training = isTraining(cleanPayload);
   const fr = lang === Lang.French;

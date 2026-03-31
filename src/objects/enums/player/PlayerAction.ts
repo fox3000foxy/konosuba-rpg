@@ -6,4 +6,5 @@ export enum PlayerAction {
   Giv = 'Giv',
   Hea = 'Hea',
   Spe = 'Spe',
+  Use = 'Use', // Use consumable item
 }
