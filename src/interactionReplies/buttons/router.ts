@@ -28,44 +28,131 @@ export async function handleButtonInteraction(
 
   const customId: string = interaction.data.custom_id;
 
-  // Handle consumable selection from useitem menu
-  if (customId.startsWith('consumable_use:')) {
+  // Handle consumable item selection (step 1): choose which item to use
+  if (customId.startsWith('consumable_item:')) {
     try {
       const parts = customId.split(':');
-      const itemId = parts[1];
-      const requestUserId = parts[2];
+      const payload = parts[1] || '';
+      const itemKey = parts[2] || '';
+      const requestUserId = parts[3] || '';
 
       if (requestUserId !== userID) {
         return c.json({
-          type: 4,
-          data: {
-            content: fr ? "Ce n'est pas votre partie !" : 'Not your game!',
-            flags: 1 << 6,
-          },
+          type: 6,
         });
       }
 
-      // Return ephemeral message confirming selection
+      const targets = [
+        { id: 0, labelFr: 'Kazuma', labelEn: 'Kazuma' },
+        { id: 1, labelFr: 'Aqua', labelEn: 'Aqua' },
+        { id: 2, labelFr: 'Megumin', labelEn: 'Megumin' },
+        { id: 3, labelFr: 'Darkness', labelEn: 'Darkness' },
+      ];
+
+      const difficulty = extractDifficulty(payload) ?? undefined;
+      const { alivePlayerIds } = await buildComponents(
+        payload,
+        userID,
+        lang,
+        false,
+        difficulty
+      );
+
+      const components = [
+        {
+          type: 1,
+          components: targets.map(target => ({
+            type: 2,
+            label: fr ? target.labelFr : target.labelEn,
+            style: 1,
+            custom_id: `consumable_apply:${payload}:${itemKey}:${target.id}:${userID}`,
+            disabled: !alivePlayerIds.includes(target.id),
+          })),
+        },
+        {
+          type: 1,
+          components: [
+            {
+              type: 2,
+              label: fr ? 'Retour en jeu' : 'Back to game',
+              style: 2,
+              custom_id: `${payload}:${userID}`,
+            },
+          ],
+        },
+      ];
+
       return c.json({
-        type: 4,
+        type: 7,
         data: {
-          content: fr
-            ? `Consommable sélectionné: ${itemId}\n\nCliquez sur le bouton USE Item pendant un combat pour utiliser cet item.`
-            : `Consumable selected: ${itemId}\n\nClick the USE Item button during combat to use this item.`,
-          flags: 1 << 6,
+          components,
         },
       });
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
-      console.error('[consumable_use] Interaction error:', message);
+      console.error('[consumable_item] Interaction error:', message);
       return c.json({
-        type: 4,
-        data: {
-          content: fr
-            ? 'Erreur lors de la sélection du consommable. Réessayez.'
-            : 'Error selecting consumable. Please try again.',
-          flags: 1 << 6,
-        },
+        type: 6,
+      });
+    }
+  }
+
+  // Handle consumable application (step 2): apply item to selected target
+  if (customId.startsWith('consumable_apply:')) {
+    try {
+      const parts = customId.split(':');
+      const payload = parts[1] || '';
+      const itemKey = parts[2] || '';
+      const targetIdRaw = parts[3] || '0';
+      const requestUserId = parts[4] || '';
+
+      if (requestUserId !== userID) {
+        return c.json({
+          type: 6,
+        });
+      }
+
+      const targetId = Number.parseInt(targetIdRaw, 10);
+      const nextPayload = `${payload}u`;
+      const difficulty = extractDifficulty(nextPayload) ?? undefined;
+      const cleanPayload = removeDifficultyFromPayload(nextPayload);
+      const inferredMonsterName = inferMonsterFromPayload(cleanPayload);
+      const monsterName = inferredMonsterName || '';
+
+      const { buttons, embedDescription, gameState } =
+        await buildComponents(
+          nextPayload,
+          userID,
+          lang,
+          false,
+          difficulty,
+          itemKey,
+          Number.isNaN(targetId) ? undefined : targetId
+        );
+
+      void recordRunResult({
+        userId: userID,
+        payload: nextPayload,
+        state: gameState,
+        training: isTraining(nextPayload),
+        monsterName: inferredMonsterName,
+      });
+
+      return handleDefaultButton(
+        c,
+        nextPayload,
+        userID,
+        lang,
+        fr,
+        monsterName,
+        embedDescription,
+        buttons
+      );
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      console.error('[consumable_apply] Interaction error:', message);
+      return c.json({
+        type: 6,
       });
     }
   }

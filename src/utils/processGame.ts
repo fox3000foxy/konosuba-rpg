@@ -87,6 +87,7 @@ function applyTeamLevelFactors(team: Team, factors?: number[]): void {
 async function handlePlayerAction({
   move,
   currentPlayer,
+  team,
   creature,
   rand,
   lang,
@@ -97,9 +98,12 @@ async function handlePlayerAction({
   userId,
   itemIds,
   consumedItemIds,
+  selectedUseTargetPlayerId,
+  isLastMove,
 }: {
   move: string;
   currentPlayer: Aqua | Player;
+  team: Team;
   creature: Creature | Troll;
   rand: Random;
   lang: Lang;
@@ -110,6 +114,8 @@ async function handlePlayerAction({
   userId?: string;
   itemIds?: ItemId[];
   consumedItemIds?: Set<ItemId>;
+  selectedUseTargetPlayerId?: number;
+  isLastMove?: boolean;
 }): Promise<void> {
   const langIndex = lang === Lang.French ? 1 : 0;
   switch (move) {
@@ -244,7 +250,15 @@ async function handlePlayerAction({
       break;
     }
     case PlayerAction.Use.toLocaleUpperCase(): {
-      // Use a consumable item on the current player
+      // Use a consumable item on a selected player (fallback to current player)
+      const selectedTarget =
+        typeof selectedUseTargetPlayerId === 'number'
+          ? team.players.find(player => player.playerId === selectedUseTargetPlayerId)
+          : undefined;
+      const targetPlayer = selectedTarget && selectedTarget.hp > 0
+        ? selectedTarget
+        : currentPlayer;
+
       // Prefer itemIds passed from URL, otherwise use a fixed set for testing
       const availableItems: ItemId[] = itemIds &&  itemIds.length > 0
         ? itemIds
@@ -256,10 +270,10 @@ async function handlePlayerAction({
           ];
       
       const selectedItemId = rand.choice(availableItems);
-      const effect = applyConsumableEffect(selectedItemId, currentPlayer);
+      const effect = applyConsumableEffect(selectedItemId, targetPlayer);
 
       if (effect.applied) {
-        currentPlayer.performAction(PlayerAction.Use);
+        targetPlayer.performAction(PlayerAction.Use);
         messages.push(
           lang === Lang.French ? effect.message.fr : effect.message.en
         );
@@ -268,7 +282,12 @@ async function handlePlayerAction({
         );
         
         // Persist inventory consumption only once per item (track in consumedItemIds)
-        if (userId && consumedItemIds && !consumedItemIds.has(selectedItemId)) {
+        if (
+          isLastMove &&
+          userId &&
+          consumedItemIds &&
+          !consumedItemIds.has(selectedItemId)
+        ) {
           await consumeInventoryItem(userId, selectedItemId);
           consumedItemIds.add(selectedItemId);
         }
@@ -298,7 +317,8 @@ export default async function processGame(
   teamLevelFactors?: number[],
   difficulty?: string | MonsterDifficulty | null,
   userId?: string,
-  itemIds?: ItemId[]
+  itemIds?: ItemId[],
+  selectedUseTargetPlayerId?: number
 ): Promise<Game> {
   lang = lang === Lang.French ? Lang.French : Lang.English;
   const team = new Team();
@@ -363,7 +383,8 @@ export default async function processGame(
   //   })),
   // });
 
-  for (const move of moves) {
+  for (let moveIndex = 0; moveIndex < moves.length; moveIndex += 1) {
+    const move = moves[moveIndex];
     activePlayers = team.players.filter(player => player.hp > 0);
     if (state !== GameState.Incomplete) break; // Early exit if game state is resolved
 
@@ -384,6 +405,7 @@ export default async function processGame(
     await handlePlayerAction({
       move,
       currentPlayer,
+      team,
       creature: creature as Creature,
       rand,
       lang,
@@ -394,6 +416,8 @@ export default async function processGame(
       userId,
       itemIds,
       consumedItemIds,
+      selectedUseTargetPlayerId,
+      isLastMove: moveIndex === moves.length - 1,
     });
 
     // Check if creature is defeated
