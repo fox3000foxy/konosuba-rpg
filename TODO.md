@@ -258,7 +258,13 @@ Exit criteria:
 - [x] ~~Credit character affinity from dropped accessories~~
 - [x] ~~Integrate accessory inventory in `/inventory`~~
 - [x] Add consumable drops at end of combat
-- [ ] Integrate consumables in combat (after accessory stabilization)
+- [ ] Integrate consumables into combat flow with real effect application
+
+### Consumable effects to implement
+- Potions: restore target character HP
+- Chrono: increase target character max HP
+- Stones: increase target character defense
+- Scrolls: increase target character attack
 
 ## Open questions
 - Character XP -> level formula: same curve as global player (100 XP/level)?
