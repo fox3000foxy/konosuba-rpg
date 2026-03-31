@@ -15,6 +15,7 @@
  *   BENCH_WARMUP=N   Warm-up ignorés dans les stats (défaut : 2)
  */
 
+import { BASE_URL } from '../objects/config/constants';
 import { Lang } from '../objects/enums/Lang';
 import processGame from './processGame';
 import processUrl from './processUrl';
@@ -26,8 +27,6 @@ import {
 } from './renderImage';
 
 // ─── Générateur d'URL ─────────────────────────────────────────────────────────
-
-const BASE_URL = 'https://konosuba-rpg.vercel.app';
 
 /**
  * Construit une URL de jeu valide, identique à celles produites par index.ts.

@@ -30,6 +30,48 @@ export async function handleButtonInteraction(
 
   const customId: string = interaction.data.custom_id;
 
+  // Handle consumable selection from useitem menu
+  if (customId.startsWith('consumable_use:')) {
+    try {
+      const parts = customId.split(':');
+      const itemId = parts[1];
+      const requestUserId = parts[2];
+
+      if (requestUserId !== userID) {
+        return c.json({
+          type: 4,
+          data: {
+            content: fr ? "Ce n'est pas votre partie !" : 'Not your game!',
+            flags: 1 << 6,
+          },
+        });
+      }
+
+      // Return ephemeral message confirming selection
+      return c.json({
+        type: 4,
+        data: {
+          content: fr
+            ? `Consommable sélectionné: ${itemId}\n\nCliquez sur le bouton USE Item pendant un combat pour utiliser cet item.`
+            : `Consumable selected: ${itemId}\n\nClick the USE Item button during combat to use this item.`,
+          flags: 1 << 6,
+        },
+      });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      console.error('[consumable_use] Interaction error:', message);
+      return c.json({
+        type: 4,
+        data: {
+          content: fr
+            ? 'Erreur lors de la sélection du consommable. Réessayez.'
+            : 'Error selecting consumable. Please try again.',
+          flags: 1 << 6,
+        },
+      });
+    }
+  }
+
   // Handle special non-combat custom_ids first (before payload decoding)
   if (
     customId === 'consumables' ||
