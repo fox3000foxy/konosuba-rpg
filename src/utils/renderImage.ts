@@ -394,17 +394,34 @@ async function buildOverlayJsx(
     playerId: number
   ): object {
     let label = '';
+    let effectImageKey = '';
 
-    // Placeholder symbols until we wire real image assets.
-    // Future assets:
+    // Effect assets:
     // - assets/ui/effects/potion.png
     // - assets/ui/effects/chrono.png
     // - assets/ui/effects/stone.png
     // - assets/ui/effects/scroll.png
-    if (effectType === 'potion') label = '✚';
-    if (effectType === 'chrono') label = '↑♡';
-    if (effectType === 'stone') label = '🛡';
-    if (effectType === 'scroll') label = '⚔';
+    if (effectType === 'potion') {
+      label = '✚';
+      effectImageKey = 'ui_effect_potion';
+    }
+    if (effectType === 'chrono') {
+      label = '↑♡';
+      effectImageKey = 'ui_effect_chrono';
+    }
+    if (effectType === 'stone') {
+      label = '🛡';
+      effectImageKey = 'ui_effect_stone';
+    }
+    if (effectType === 'scroll') {
+      label = '⚔';
+      effectImageKey = 'ui_effect_scroll';
+    }
+
+    const effectImageSrc =
+      effectImageKey && imageCache[effectImageKey]
+        ? `data:image/png;base64,${getBase64Cached(effectImageKey, imageCache[effectImageKey])}`
+        : null;
 
     const { left, top } = playerEffectAnchor(playerId);
     return {
@@ -426,7 +443,18 @@ async function buildOverlayJsx(
           fontSize: 16,
           fontFamily: '"Ginto Nord Black"',
         },
-        children: label,
+        children: effectImageSrc
+          ? {
+              type: 'img',
+              props: {
+                src: effectImageSrc,
+                style: {
+                  width: 22,
+                  height: 22,
+                },
+              },
+            }
+          : label,
       },
     };
   }
@@ -893,6 +921,10 @@ export default async function renderImage(
 
   const [fontMediumBuf] = await Promise.all([
     getFontBytes(`${BASE_URL}/assets/swordgame/font/GintoNordMedium.otf`),
+    getImageBytes('ui_effect_potion').catch(() => undefined),
+    getImageBytes('ui_effect_chrono').catch(() => undefined),
+    getImageBytes('ui_effect_stone').catch(() => undefined),
+    getImageBytes('ui_effect_scroll').catch(() => undefined),
   ]);
 
   const [canvas, chars, uiImg] = await Promise.all([
