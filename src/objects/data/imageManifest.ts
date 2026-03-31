@@ -300,4 +300,8 @@ export const imageManifest: Record<string, string> = {
   end_good: '/assets/swordgame/art/end_good.png',
   frame: '/assets/swordgame/art/frame.webp',
   frameless: '/assets/swordgame/art/frameless.webp',
+  ui_effect_chrono: '/assets/ui/effects/chrono.png',
+  ui_effect_potion: '/assets/ui/effects/potion.png',
+  ui_effect_scroll: '/assets/ui/effects/scroll.png',
+  ui_effect_stone: '/assets/ui/effects/stone.png',
 };
