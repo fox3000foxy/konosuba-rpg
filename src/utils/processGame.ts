@@ -10,12 +10,15 @@ import { generateMob } from '../objects/data/mobMap';
 import { getMonstersByDifficulty } from '../objects/data/monsterDifficultyMap';
 import { EndMessages } from '../objects/enums/EndMessages';
 import { GameState } from '../objects/enums/GameState';
+import { ItemId } from '../objects/enums/ItemId';
 import { Lang } from '../objects/enums/Lang';
 import { MonsterDifficulty } from '../objects/enums/MonsterDifficulty';
 import { PlayerAction } from '../objects/enums/player/PlayerAction';
 import { Prefix } from '../objects/enums/Prefix';
 import { Game } from '../objects/types/Game';
 import { LinesType } from '../objects/types/LinesType';
+import { applyConsumableEffect } from '../services/consumableEffectService';
+import { consumeInventoryItem } from '../services/inventoryConsumptionService';
 import renderImage from './renderImage';
 
 const linesTyped = lines as LinesType;
@@ -81,7 +84,7 @@ function applyTeamLevelFactors(team: Team, factors?: number[]): void {
   });
 }
 
-function handlePlayerAction({
+async function handlePlayerAction({
   move,
   currentPlayer,
   creature,
@@ -91,6 +94,8 @@ function handlePlayerAction({
   descriptionsTyped,
   messages,
   embedDescription,
+  userId,
+  itemIds,
 }: {
   move: string;
   currentPlayer: Aqua | Player;
@@ -101,7 +106,9 @@ function handlePlayerAction({
   descriptionsTyped: LinesType;
   messages: string[];
   embedDescription: string[];
-}): void {
+  userId?: string;
+  itemIds?: ItemId[];
+}): Promise<void> {
   const langIndex = lang === Lang.French ? 1 : 0;
   switch (move) {
     case PlayerAction.Def.toLocaleUpperCase(): {
@@ -234,6 +241,48 @@ function handlePlayerAction({
       }
       break;
     }
+    case PlayerAction.Use.toLocaleUpperCase(): {
+      // Use a consumable item on the current player
+      // Prefer itemIds passed from URL, otherwise use a fixed set for testing
+      const availableItems: ItemId[] = itemIds &&  itemIds.length > 0
+        ? itemIds
+        : [
+            ItemId.I20001000, // Potion basic
+            ItemId.I20003000, // Chrono gold
+            ItemId.I20004001, // Stone epic
+            ItemId.I20004008, // Scroll epic
+          ];
+      
+      const selectedItemId = rand.choice(availableItems);
+      const effect = applyConsumableEffect(selectedItemId, currentPlayer);
+
+      if (effect.applied) {
+        currentPlayer.performAction(PlayerAction.Use);
+        messages.push(
+          lang === Lang.French ? effect.message.fr : effect.message.en
+        );
+        embedDescription.push(
+          lang === Lang.French ? effect.message.fr : effect.message.en
+        );
+        
+        // Persist inventory consumption if userId is provided
+        if (userId) {
+          await consumeInventoryItem(userId, selectedItemId);
+        }
+      } else {
+        messages.push(
+          lang === Lang.French
+            ? 'Impossible d\'utiliser cet item'
+            : 'Cannot use this item'
+        );
+        embedDescription.push(
+          lang === Lang.French
+            ? 'Impossible d\'utiliser cet item'
+            : 'Cannot use this item'
+        );
+      }
+      break;
+    }
   }
 }
 
@@ -244,7 +293,9 @@ export default async function processGame(
   lang: Lang = Lang.English,
   renderingImage: boolean = true,
   teamLevelFactors?: number[],
-  difficulty?: string | MonsterDifficulty | null
+  difficulty?: string | MonsterDifficulty | null,
+  userId?: string,
+  itemIds?: ItemId[]
 ): Promise<Game> {
   lang = lang === Lang.French ? Lang.French : Lang.English;
   const team = new Team();
@@ -326,7 +377,7 @@ export default async function processGame(
     const currentPlayer = activePlayers[playerId];
     team.setActivePlayer(currentPlayer);
 
-    handlePlayerAction({
+    await handlePlayerAction({
       move,
       currentPlayer,
       creature: creature as Creature,
@@ -336,6 +387,8 @@ export default async function processGame(
       descriptionsTyped,
       messages,
       embedDescription,
+      userId,
+      itemIds,
     });
 
     // Check if creature is defeated
@@ -381,7 +434,12 @@ export default async function processGame(
       messages.push(msg);
       embedDescription.push(msg);
     } else {
-      randomPlayer.hp -= creatureMove[1];
+      // Apply damage reduction from player defense
+      const rawDamage = creatureMove[1];
+      const damageReduction = Math.min(rawDamage, Math.max(0, randomPlayer.defense * 0.2 * rawDamage));
+      const finalDamage = Math.max(0, rawDamage - damageReduction);
+      randomPlayer.hp -= finalDamage;
+      
       const msg =
         randomPlayer.hp > 0
           ? creatureMove[0]
