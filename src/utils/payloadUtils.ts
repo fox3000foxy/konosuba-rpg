@@ -7,6 +7,7 @@ const ACTION_PATHS: Record<string, string> = {
   h: '/hug',
   s: '/hea',
   p: '/spe',
+  u: '/use',
 };
 
 /** Reconstruit l'URL de jeu à partir du customId brut */

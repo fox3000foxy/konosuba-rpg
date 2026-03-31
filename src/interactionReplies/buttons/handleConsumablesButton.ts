@@ -7,7 +7,6 @@ import {
   getInventoryItems,
 } from '../../services/inventoryService';
 
-const EPHEMERAL_FLAG = 1 << 6;
 const DISPLAY_LIMIT = 12;
 
 function formatRarity(rarity: string | null, fr: boolean): string {
@@ -58,6 +57,36 @@ function formatType(type: TypeItem | null, fr: boolean): string {
   return type;
 }
 
+function styleForConsumableType(type: TypeItem | null): number {
+  switch (type) {
+    case TypeItem.Potion:
+      return 3; // green
+    case TypeItem.Chrono:
+      return 1; // blurple
+    case TypeItem.Stone:
+      return 2; // gray
+    case TypeItem.Scroll:
+      return 4; // red
+    default:
+      return 1;
+  }
+}
+
+function emojiForConsumableType(type: TypeItem | null): string {
+  switch (type) {
+    case TypeItem.Potion:
+      return '🧪';
+    case TypeItem.Chrono:
+      return '⏳';
+    case TypeItem.Stone:
+      return '🪨';
+    case TypeItem.Scroll:
+      return '📜';
+    default:
+      return '🎒';
+  }
+}
+
 export function buildConsumablesDescription(
   items: InventoryItemView[],
   fr: boolean,
@@ -106,14 +135,9 @@ export async function handleConsumablesButton(
   const consumables = items.filter(item => item.category === 'consumable');
 
   if (consumables.length === 0) {
+    // Ack interaction without followup/update when there is nothing to show.
     return c.json({
-      type: 4,
-      data: {
-        content: fr
-          ? 'Tu n\'as aucun consommable disponible.'
-          : 'You have no consumables available.',
-        flags: EPHEMERAL_FLAG,
-      },
+      type: 6,
     });
   }
 
@@ -122,13 +146,11 @@ export async function handleConsumablesButton(
 
   // Create buttons for each consumable (max 25 to respect Discord limits)
   const consumableButtons: Button[] = consumables.slice(0, 25).map(item => {
-    // Format the rarity for display
-    const rarityText = formatRarity(item.rarity, fr);
     return {
       type: 2,
-      label: `${fr ? item.nameFr : item.nameEn} x${item.quantity}`,
-      style: 1, // Blurple
-      custom_id: `${cleanPayload}U${item.itemKey}:${userId}`,
+      label: `${emojiForConsumableType(item.consumableType)} ${fr ? item.nameFr : item.nameEn} x${item.quantity}`,
+      style: styleForConsumableType(item.consumableType),
+      custom_id: `consumable_item:${cleanPayload}:${item.itemKey}:${userId}`,
     };
   });
 
@@ -141,21 +163,22 @@ export async function handleConsumablesButton(
     });
   }
 
-  const header = fr ? '# Sélectionner un consommable' : '# Select a consumable';
-  const moreCount = Math.max(0, consumables.length - 25);
-  const footer =
-    moreCount > 0
-      ? fr
-        ? `\n\n... et ${moreCount} autre(s) non affiché(s)`
-        : `\n\n... and ${moreCount} more not shown`
-      : '';
+  components.push({
+    type: 1,
+    components: [
+      {
+        type: 2,
+        label: fr ? 'Retour en jeu' : 'Back to game',
+        style: 2,
+        custom_id: `${cleanPayload}:${userId}`,
+      },
+    ],
+  });
 
   return c.json({
-    type: 4,
+    type: 7,
     data: {
-      content: header + footer,
       components,
-      flags: EPHEMERAL_FLAG,
     },
   });
 }

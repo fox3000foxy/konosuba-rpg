@@ -40,12 +40,15 @@ export async function buildComponents(
   userID: string,
   lang: Lang,
   disableChangeMonster = false,
-  difficulty?: string
+  difficulty?: string,
+  selectedConsumableItemId?: string,
+  selectedConsumableTargetId?: number
 ): Promise<{
   buttons: RawButton[];
   embedDescription: string[];
   activePlayerName: string | null;
   gameState: GameState;
+  alivePlayerIds: number[];
 }> {
   // Extraire la difficulté du payload si elle y est encodée
   const payloadDifficulty = extractDifficulty(payload);
@@ -68,7 +71,9 @@ export async function buildComponents(
     false,
     characterFactors,
     difficultyFromUrl || effectiveDifficulty,
-    userID
+    userID,
+    selectedConsumableItemId ? [selectedConsumableItemId as never] : undefined,
+    selectedConsumableTargetId
   );
   const training = isTraining(cleanPayload);
   const fr = lang === Lang.French;
@@ -196,12 +201,12 @@ export async function buildComponents(
           style: 2,
           custom_id: `${actionPrefix}g${userIdSuffix}`,
         },
-        {
+        /*{
           type: 2,
           label: fr ? ButtonsLabels.ConsumablesFr : ButtonsLabels.Consumables,
           style: 1,
           custom_id: `consumables${userIdSuffix}`,
-        },
+        },*/
         {
           type: 2,
           label: fr
@@ -210,11 +215,11 @@ export async function buildComponents(
           style: 2,
           custom_id: training
             ? addDifficultyToPayload(
-                `train.${extractMonster(cleanPayload)}.${makeid(10)}`,
-                effectiveDifficulty
-              ) + userIdSuffix
+              `train.${extractMonster(cleanPayload)}.${makeid(10)}`,
+              effectiveDifficulty
+            ) + userIdSuffix
             : addDifficultyToPayload(`${makeid(15)}`, effectiveDifficulty) +
-              userIdSuffix,
+            userIdSuffix,
           disabled: disableChangeMonster || training,
         },
       ],
@@ -228,5 +233,8 @@ export async function buildComponents(
     embedDescription,
     activePlayerName,
     gameState: state,
+    alivePlayerIds: team.players
+      .filter(player => player.hp > 0)
+      .map(player => player.playerId),
   };
 }
