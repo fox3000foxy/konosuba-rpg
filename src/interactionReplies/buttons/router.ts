@@ -13,9 +13,7 @@ import {
 import { inferMonsterFromPayload } from '../../utils/runMonsterUtils';
 import { handleConsumablesButton } from './handleConsumablesButton';
 import { handleDefaultButton } from './handleDefaultButton';
-import { handleMenuButton } from './handleMenuButton';
 import { handleSpecialButton } from './handleSpecialButton';
-import { handleUseItemButton } from './handleUseItemButton';
 
 export async function handleButtonInteraction(
   c: Context,
@@ -72,55 +70,6 @@ export async function handleButtonInteraction(
     }
   }
 
-  // Handle special non-combat custom_ids first (before payload decoding)
-  if (
-    customId === 'consumables' ||
-    customId === `consumables:${userID}` ||
-    customId.startsWith('consumables:')
-  ) {
-    return handleConsumablesButton(c, userID, fr);
-  }
-
-  if (
-    customId === 'useitem' ||
-    customId === `useitem:${userID}` ||
-    customId.startsWith('useitem:')
-  ) {
-    try {
-      return await handleUseItemButton(c, userID, lang, fr);
-    } catch (error) {
-      const message = error instanceof Error ? error.message : String(error);
-      console.error('[useitem] Interaction error:', message);
-      return c.json({
-        type: 4,
-        data: {
-          content: fr
-            ? 'Erreur lors de l\'utilisation d\'un consommable. Réessayez.'
-            : 'Error using consumable. Please try again.',
-          flags: 1 << 6,
-        },
-      });
-    }
-  }
-
-  if (customId.startsWith('menu.')) {
-    try {
-      return await handleMenuButton(c, customId, userID, lang, fr);
-    } catch (error) {
-      const message = error instanceof Error ? error.message : String(error);
-      console.error('[menu] Interaction error:', message);
-      return c.json({
-        type: 4,
-        data: {
-          content: fr
-            ? 'Erreur du menu. Reessayez dans quelques secondes.'
-            : 'Menu error. Please try again in a few seconds.',
-          flags: 1 << 6,
-        },
-      });
-    }
-  }
-
   // Handle combat-related custom_ids (require payload decoding)
   const colonIdx = customId.lastIndexOf(':');
   const encodedPayload =
@@ -150,6 +99,25 @@ export async function handleButtonInteraction(
   }
 
   const resolvedEncodedPayload = decodeResult.payload;
+
+  // Check if this is a consumables menu action (ends with 'c')
+  if (resolvedEncodedPayload.endsWith('c')) {
+    try {
+      return await handleConsumablesButton(c, userID, fr, resolvedEncodedPayload);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      console.error('[consumables] Interaction error:', message);
+      return c.json({
+        type: 4,
+        data: {
+          content: fr
+            ? 'Erreur lors de l\'ouverture du menu consommables. Réessayez.'
+            : 'Error opening consumables menu. Please try again.',
+          flags: 1 << 6,
+        },
+      });
+    }
+  }
 
   const payload = decompressMoves(resolvedEncodedPayload);
   const owner = colonIdx !== -1 ? customId.slice(colonIdx + 1) : '';

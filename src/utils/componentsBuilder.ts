@@ -170,9 +170,9 @@ export async function buildComponents(
           },
           {
             type: 2,
-            label: fr ? ButtonsLabels.UsePotionFr : ButtonsLabels.UsePotion,
+            label: fr ? ButtonsLabels.ConsumablesFr : ButtonsLabels.Consumables,
             style: 1,
-            custom_id: `useitem${userIdSuffix}`,
+            custom_id: `${compressedPayloadWithDifficulty}c${userIdSuffix}`,
           },
         ],
       },
