@@ -29,7 +29,8 @@ returns table (
   success boolean,
   reason text,
   crafted_item_key text,
-  crafted_quantity integer
+  crafted_quantity integer,
+  missing_ingredients jsonb
 )
 language plpgsql
 as $$
@@ -39,6 +40,7 @@ declare
   recipe_result_item_key text;
   recipe_result_quantity integer;
   recipe_enabled boolean;
+  missing_items jsonb := '[]'::jsonb;
 begin
   perform pg_advisory_xact_lock(hashtext('craft:' || p_user_id));
 
@@ -48,12 +50,12 @@ begin
   where recipe_key = p_recipe_key;
 
   if not found then
-    return query select false, 'recipe_not_found', null::text, 0;
+    return query select false, 'recipe_not_found', null::text, 0, null::jsonb;
     return;
   end if;
 
   if recipe_enabled is not true then
-    return query select false, 'recipe_disabled', null::text, 0;
+    return query select false, 'recipe_disabled', null::text, 0, null::jsonb;
     return;
   end if;
 
@@ -70,10 +72,18 @@ begin
     for update;
 
     if coalesce(inventory_qty, 0) < ingredient_row.required_quantity then
-      return query select false, 'insufficient_ingredients', null::text, 0;
-      return;
+      missing_items := missing_items || jsonb_build_object(
+        'item_key', ingredient_row.ingredient_item_key,
+        'required', ingredient_row.required_quantity,
+        'available', coalesce(inventory_qty, 0)
+      );
     end if;
   end loop;
+
+  if jsonb_array_length(missing_items) > 0 then
+    return query select false, 'insufficient_ingredients', null::text, 0, missing_items;
+    return;
+  end if;
 
   for ingredient_row in
     select ingredient_item_key, required_quantity
@@ -113,9 +123,9 @@ begin
     updated_at = now();
 
   return query
-  select true, 'crafted', recipe_result_item_key, recipe_result_quantity;
+  select true, 'crafted', recipe_result_item_key, recipe_result_quantity, null::jsonb;
 exception
   when others then
-    return query select false, 'internal_error', null::text, 0;
+    return query select false, 'internal_error', null::text, 0, null::jsonb;
 end;
 $$;
