@@ -1,7 +1,5 @@
 import { Context } from 'hono';
 import { Aqua, Darkness, Megumin, Player, Team } from '../../classes/Player';
-import { EnglishLore } from '../../objects/enums/EnglishLore';
-import { FrenchLores } from '../../objects/enums/FrenchLores';
 import { Lang } from '../../objects/enums/Lang';
 
 function getPlayerById(team: Team, characterId: number) {
@@ -101,8 +99,7 @@ export function generatePlayerInfos(
   const charName = player.name[fr ? 1 : 0];
   const hp = player.hp;
   const attackR = player.attack;
-  const playerLoreKey = `Player_${player.constructor.name}` as keyof typeof FrenchLores;
-  const lore = fr ? FrenchLores[playerLoreKey] : EnglishLore[playerLoreKey];
+  const lore = fr ? player.lore[0] : player.lore[1];
 
   const imgUrl = `https://fox3000foxy.com/konosuba-rpg/assets/player/${player.images[0]}.webp`;
   return {
