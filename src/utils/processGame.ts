@@ -1,5 +1,5 @@
 // import fs from 'fs';
-import { Creature, MessagesTemplates } from '../classes/Creature';
+import { Creature } from '../classes/Creature';
 import { GenericCreature } from '../classes/GenericCreature';
 import Troll from '../classes/mobs/Troll';
 import { Aqua, Player, Team } from '../classes/Player';
@@ -10,8 +10,10 @@ import { generateMob } from '../objects/data/mobMap';
 import { getMonstersByDifficulty } from '../objects/data/monsterDifficultyMap';
 import { EndMessages } from '../objects/enums/EndMessages';
 import { GameState } from '../objects/enums/GameState';
+import { Gender } from '../objects/enums/Gender';
 import { ItemId } from '../objects/enums/ItemId';
 import { Lang } from '../objects/enums/Lang';
+import { MessagesTemplates } from '../objects/enums/MessagesTemplates';
 import { MonsterDifficulty } from '../objects/enums/MonsterDifficulty';
 import { PlayerAction } from '../objects/enums/player/PlayerAction';
 import { Prefix } from '../objects/enums/Prefix';
@@ -36,13 +38,13 @@ export function pascalCaseToString(pascalCaseWord: string): string {
 function getCreatureNameAndPrefix(
   creature: Creature | Troll,
   lang: Lang,
-  gender: string
+  gender: Gender
 ): { name: string; prefix: string } {
   const langIndex = lang === Lang.French ? 1 : 0;
   const name = creature.name[langIndex];
   const prefix = creature.prefix
     ? lang === Lang.French
-      ? gender === 'female'
+      ? gender === Gender.Female
         ? Prefix.French_Undetermined_Feminine
         : Prefix.French_Undetermined_Masculine
       : Prefix.English_Determined

@@ -1,10 +1,8 @@
 import { Errors } from '../objects/enums/Errors';
-import { Creature, CreatureInterface } from './Creature';
+import { Creature } from './Creature';
 import { Random } from './Random';
 
-export interface GenericCreatureInterface extends CreatureInterface {
-  pickColor(rng: Random): void;
-}
+export type { GenericCreatureInterface } from '../objects/types/GenericCreatureInterface';
 
 export abstract class GenericCreature extends Creature {
   constructor() {

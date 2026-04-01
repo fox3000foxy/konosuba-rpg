@@ -2,7 +2,7 @@ import { buildConsumablesDescription } from '../../src/interactionReplies/button
 import { AccessoryType } from '../../src/objects/enums/AccessoryType';
 import { Rarity } from '../../src/objects/enums/Rarity';
 import { TypeItem } from '../../src/objects/enums/TypeItem';
-import { InventoryItemView } from '../../src/services/inventoryService';
+import { InventoryItemView } from '../../src/objects/types/InventoryItemView';
 
 describe('handleConsumablesButton', () => {
   it('returns empty-state message when no consumables are available', () => {

@@ -1,29 +1,17 @@
 import { AccessoryId } from '../objects/enums/AccessoryId';
-import { AccessoryType } from '../objects/enums/AccessoryType';
 import { ItemId } from '../objects/enums/ItemId';
 import { Rarity } from '../objects/enums/Rarity';
-import { TypeItem } from '../objects/enums/TypeItem';
+import { InventoryItemView } from '../objects/types/InventoryItemView';
 import { getSupabaseAdminClient } from '../utils/supabaseClient';
 import { getItemById } from './accessoryService';
 import { getItemById as getConsumableById } from './consumableService';
+
+export type { InventoryItemView } from '../objects/types/InventoryItemView';
 
 type InventoryRow = {
   item_key: string;
   item_type: string;
   quantity: number;
-};
-
-export type InventoryItemView = {
-  itemKey: string;
-  itemType: string;
-  quantity: number;
-  rarity: Rarity | null;
-  accessoryType: AccessoryType | null;
-  consumableType: TypeItem | null;
-  category: 'accessory' | 'consumable' | 'unknown';
-  imagePath: string | null;
-  nameFr: string;
-  nameEn: string;
 };
 
 export async function getInventoryItems(
@@ -52,7 +40,7 @@ export async function getInventoryItems(
       ? null
       : getConsumableById(row.item_key as ItemId);
 
-    const category: 'accessory' | 'consumable' | 'unknown' = accessory
+    const category: InventoryItemView['category'] = accessory
       ? 'accessory'
       : consumable
         ? 'consumable'

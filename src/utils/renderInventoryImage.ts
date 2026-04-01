@@ -1,6 +1,6 @@
 import * as Photon from '@cf-wasm/photon';
 import { Resvg } from '@resvg/resvg-wasm';
-import { InventoryItemView } from '../services/inventoryService';
+import { InventoryItemView } from '../objects/types/InventoryItemView';
 import { ensureResvgWasm } from './resvgWasm';
 
 type InventoryImageGlobals = {
