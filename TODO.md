@@ -269,8 +269,8 @@ Exit criteria:
 
 ### Next consumable features
 - [ ] Support item selection via URL (e.g. `/USE/I20001000` to use specific item)
-- [ ] Validate item ownership before use
-- [ ] Support targeting specific team member with consumable
+- [ ] Re-validate item ownership at apply time (before consuming) to avoid stale selections
+- [x] Support targeting specific team member with consumable
 
 ## Open questions
 - Character XP -> level formula: same curve as global player (100 XP/level)?
