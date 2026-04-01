@@ -28,6 +28,11 @@ export type CraftRecipeResult = {
     | 'internal_error';
   craftedItemId?: ItemId;
   craftedQuantity?: number;
+  missingIngredients?: Array<{
+    itemId: ItemId;
+    required: number;
+    available: number;
+  }>;
 };
 
 type CraftRecipeRpcRow = {
@@ -35,6 +40,11 @@ type CraftRecipeRpcRow = {
   reason: string;
   crafted_item_key: string | null;
   crafted_quantity: number;
+  missing_ingredients: Array<{
+    item_key: string;
+    required: number;
+    available: number;
+  }> | null;
 };
 
 function mapReason(reason: string): CraftRecipeResult['reason'] {
@@ -130,9 +140,16 @@ export async function craftRecipe(
   }
 
   if (!row.success) {
+    const missingIngredients = row.missing_ingredients?.map(item => ({
+      itemId: item.item_key as ItemId,
+      required: item.required,
+      available: item.available,
+    })) || [];
+
     return {
       success: false,
       reason: mapReason(row.reason),
+      missingIngredients,
     };
   }
 

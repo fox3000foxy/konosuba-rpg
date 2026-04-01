@@ -33,7 +33,37 @@ function recipesHelpText(fr: boolean): string {
     : '# Available recipes\n\nUse `/craft recipe:` then select the recipe\n\n') + lines.join('\n');
 }
 
-function failureMessage(reason: string, fr: boolean): string {
+function failureMessage(
+  reason: string,
+  fr: boolean,
+  missingIngredients?: Array<{ itemId: string; required: number; available: number }>
+): string {
+  if (reason === 'insufficient_ingredients' && missingIngredients && missingIngredients.length > 0) {
+    const recipes = getCraftingRecipes();
+    const missingLines = missingIngredients.map(missing => {
+      // Find the ingredient name from recipes
+      let ingredientName = missing.itemId;
+      for (const recipe of recipes) {
+        const found = recipe.ingredients.find(ing => ing.itemId === missing.itemId);
+        if (found) {
+          ingredientName = fr ? found.nameFr : found.nameEn;
+          break;
+        }
+      }
+
+      const needed = missing.required - missing.available;
+      return fr
+        ? `- ${ingredientName}: manquent ${needed} (en stock: ${missing.available}/${missing.required})`
+        : `- ${ingredientName}: missing ${needed} (have: ${missing.available}/${missing.required})`;
+    });
+
+    const title = fr
+      ? "❌ Ingredients insuffisants:\n"
+      : "❌ Not enough ingredients:\n";
+
+    return title + missingLines.join('\n');
+  }
+
   switch (reason) {
     case 'recipe_not_found':
       return fr ? 'Recette introuvable.' : 'Recipe not found.';
@@ -80,7 +110,7 @@ export async function handleCraftCommand(
     return c.json({
       type: 4,
       data: {
-        content: failureMessage(result.reason, fr),
+        content: failureMessage(result.reason, fr, result.missingIngredients),
         flags: 1 << 6,
       },
     });
@@ -94,12 +124,33 @@ export async function handleCraftCommand(
       : crafted.resultNameEn
     : result.craftedItemId;
 
+  let successMessage;
+  if (crafted && fr) {
+    const consumedItems = crafted.ingredients
+      .map(ing => `${ing.nameFr} x${ing.quantity}`)
+      .join(', ');
+    successMessage =
+      `✅ Craft reussi\n` +
+      `- Consommé: ${consumedItems}\n` +
+      `- Ajouté: ${craftedName} x${result.craftedQuantity || 1}`;
+  } else if (crafted) {
+    const consumedItems = crafted.ingredients
+      .map(ing => `${ing.nameEn} x${ing.quantity}`)
+      .join(', ');
+    successMessage =
+      `✅ Craft successful\n` +
+      `- Consumed: ${consumedItems}\n` +
+      `- Added: ${craftedName} x${result.craftedQuantity || 1}`;
+  } else {
+    successMessage = fr
+      ? `✅ Craft reussi: ${craftedName} x${result.craftedQuantity || 1}`
+      : `✅ Craft successful: ${craftedName} x${result.craftedQuantity || 1}`;
+  }
+
   return c.json({
     type: 4,
     data: {
-      content: fr
-        ? `✅ Craft reussi: ${craftedName} x${result.craftedQuantity || 1}`
-        : `✅ Craft successful: ${craftedName} x${result.craftedQuantity || 1}`,
+      content: successMessage,
       flags: 1 << 6,
     },
   });
