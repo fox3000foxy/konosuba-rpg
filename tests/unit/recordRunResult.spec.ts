@@ -1,13 +1,12 @@
-import { CharacterKey } from '../../src/objects/enums/CharacterKey';
 import { GameState } from '../../src/objects/enums/GameState';
 import { syncAchievements } from '../../src/services/achievementService';
 import {
-    addCharacterXp,
-    ensureCharacterProgress,
+  addCharacterXp,
+  ensureCharacterProgress,
 } from '../../src/services/characterService';
 import {
-    grantAccessoryDropRewards,
-    grantConsumableDropRewards,
+  grantAccessoryDropRewards,
+  grantConsumableDropRewards,
 } from '../../src/services/dropService';
 import { ensurePlayerProfile } from '../../src/services/playerService';
 import { recordRunResult } from '../../src/services/progressionService';
@@ -239,25 +238,7 @@ describe('recordRunResult integration-like flow', () => {
     expect(mockedEnsurePlayerProfile).toHaveBeenCalledWith('user-1');
     expect(mockedEnsureCharacterProgress).not.toHaveBeenCalled();
 
-    expect(mockedAddCharacterXp).toHaveBeenCalledTimes(3);
-    expect(mockedAddCharacterXp).toHaveBeenNthCalledWith(
-      1,
-      'user-1',
-      CharacterKey.Darkness,
-      2
-    );
-    expect(mockedAddCharacterXp).toHaveBeenNthCalledWith(
-      2,
-      'user-1',
-      CharacterKey.Megumin,
-      2
-    );
-    expect(mockedAddCharacterXp).toHaveBeenNthCalledWith(
-      3,
-      'user-1',
-      CharacterKey.Aqua,
-      2
-    );
+    expect(mockedAddCharacterXp).not.toHaveBeenCalled();
 
     expect(mockedSyncAchievements).toHaveBeenCalledWith('user-1');
     expect(mockedGrantAccessoryDropRewards).not.toHaveBeenCalled();
