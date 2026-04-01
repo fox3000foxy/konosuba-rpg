@@ -7,6 +7,7 @@ import { Lang } from '../objects/enums/Lang';
 import { RawButton } from '../objects/enums/RawButton';
 import { encodeGameplayButtons } from '../services/gameSessionService';
 import { getCharacterStatsSnapshot } from '../services/progressionService';
+import { getCreatureDisplayName } from './creatureText';
 import { makeid, restartId } from './idUtils';
 import { buildImageUrl } from './imageUtils';
 import { compressMoves } from './movesUtils';
@@ -37,10 +38,8 @@ const HUG_LABELS_EN = HUG_LABELS.map(value =>
 );
 
 export function getBattleMonsterNames(creature: Creature, lang: Lang) {
-  const langIndex = lang === Lang.French ? 1 : 0;
-
   return {
-    displayName: creature.name[langIndex] || creature.constructor.name,
+    displayName: getCreatureDisplayName(creature, lang),
     recordName: creature.name[0] || creature.constructor.name,
   };
 }

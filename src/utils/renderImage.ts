@@ -5,10 +5,8 @@ import { Creature } from '../classes/Creature';
 import { Team } from '../classes/Player';
 import { imageManifest } from '../objects/data/imageManifest';
 import { EndMessages } from '../objects/enums/EndMessages';
-import { Gender } from '../objects/enums/Gender';
 import { HealthBarName } from '../objects/enums/HealthBarName';
 import { Lang } from '../objects/enums/Lang';
-import { Prefix } from '../objects/enums/Prefix';
 import { RetryMessages } from '../objects/enums/RetryMessages';
 import { TypeItem } from '../objects/enums/TypeItem';
 import { AquaImages } from '../objects/enums/player/AquaImages';
@@ -16,6 +14,7 @@ import { DarknessImages } from '../objects/enums/player/DarknessImages';
 import { KazumaImages } from '../objects/enums/player/KazumaImages';
 import { MeguminImages } from '../objects/enums/player/MeguminImages';
 import { PlayerName } from '../objects/enums/player/PlayerName';
+import { getCreatureNameAndPrefix } from './creatureText';
 import { ensureResvgWasm } from './resvgWasm';
 
 // ─── LRU Cache ───────────────────────────────────────────────────────────────
@@ -497,15 +496,11 @@ async function buildOverlayJsx(
     };
   }
 
-  const creatureGender = creature.gender;
-  const name = creature.name[langIndex];
-  const creaturePrefix = creature.prefix
-    ? lang === Lang.French
-      ? creatureGender === Gender.Female
-        ? Prefix.French_Determined_Feminine
-        : Prefix.French_Determined_Masculine
-      : Prefix.English_Determined
-    : Prefix.None;
+  const { name, prefix: creaturePrefix } = getCreatureNameAndPrefix(
+    creature,
+    lang,
+    true
+  );
 
   const endMsg = state
     ? (

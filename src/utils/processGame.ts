@@ -10,17 +10,16 @@ import { generateMob } from '../objects/data/mobMap';
 import { getMonstersByDifficulty } from '../objects/data/monsterDifficultyMap';
 import { EndMessages } from '../objects/enums/EndMessages';
 import { GameState } from '../objects/enums/GameState';
-import { Gender } from '../objects/enums/Gender';
 import { ItemId } from '../objects/enums/ItemId';
 import { Lang } from '../objects/enums/Lang';
 import { MessagesTemplates } from '../objects/enums/MessagesTemplates';
 import { MonsterDifficulty } from '../objects/enums/MonsterDifficulty';
 import { PlayerAction } from '../objects/enums/player/PlayerAction';
-import { Prefix } from '../objects/enums/Prefix';
 import { Game } from '../objects/types/Game';
 import { LinesType } from '../objects/types/LinesType';
 import { applyConsumableEffect } from '../services/consumableEffectService';
 import { consumeInventoryItem } from '../services/inventoryConsumptionService';
+import { getCreatureNameAndPrefix } from './creatureText';
 import renderImage from './renderImage';
 
 const linesTyped = lines as LinesType;
@@ -33,23 +32,6 @@ export function pascalCaseToString(pascalCaseWord: string): string {
     .split(' ')
     .map(word => word.charAt(0).toUpperCase() + word.slice(1))
     .join(' ');
-}
-
-function getCreatureNameAndPrefix(
-  creature: Creature | Troll,
-  lang: Lang,
-  gender: Gender
-): { name: string; prefix: string } {
-  const langIndex = lang === Lang.French ? 1 : 0;
-  const name = creature.name[langIndex];
-  const prefix = creature.prefix
-    ? lang === Lang.French
-      ? gender === Gender.Female
-        ? Prefix.French_Undetermined_Feminine
-        : Prefix.French_Undetermined_Masculine
-      : Prefix.English_Determined
-    : Prefix.None;
-  return { name, prefix };
 }
 
 function generateMessage(
@@ -343,16 +325,12 @@ export default async function processGame(
     creature.pickColor(rand);
   }
 
-  const { name, prefix } = getCreatureNameAndPrefix(
-    creature as Creature,
-    lang,
-    creature.gender
-  );
+  const { name, prefix } = getCreatureNameAndPrefix(creature as Creature, lang, false);
 
   const messages: string[] = [
     lang === Lang.French
-      ? `Attention, ${prefix}${name} !`
-      : `Watch out, ${prefix}${name}!`,
+      ? `Attention, ${prefix.toLowerCase()}${name.toLowerCase()} !`
+      : `Watch out, ${prefix.toLowerCase()}${name.toLowerCase()}!`,
   ];
 
   let embedDescription: string[] = [
@@ -451,11 +429,7 @@ export default async function processGame(
     });
 
     if (randomPlayer.defending) {
-      const { name, prefix } = getCreatureNameAndPrefix(
-        creature as Creature,
-        lang,
-        creature.gender
-      );
+      const { name, prefix } = getCreatureNameAndPrefix(creature as Creature, lang, true);
       const msg = generateMessage(
         MessagesTemplates[
           `${lang === Lang.French ? 'French' : 'English'}_CreatureMisses`
