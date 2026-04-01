@@ -96,7 +96,9 @@ export function handleAutocomplete(
       const recipes = getCraftingRecipes();
       const choices = recipes
         .filter(recipe => {
-          const recipeName = (fr ? recipe.resultNameFr : recipe.resultNameEn).toLowerCase();
+          const recipeName = (
+            fr ? recipe.resultNameFr : recipe.resultNameEn
+          ).toLowerCase();
           return recipeName.includes(focusedValue);
         })
         .slice(0, 25)

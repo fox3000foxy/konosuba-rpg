@@ -12,7 +12,10 @@ export const QUESTS: QuestDefinition[] = QUEST_DEFINITIONS;
 
 const DAILY_QUEST_KEY = QUESTS[0].key;
 
-export function getQuestLabel(questKey: QuestKey | string, fr: boolean): string {
+export function getQuestLabel(
+  questKey: QuestKey | string,
+  fr: boolean
+): string {
   if (questKey === QuestKey.Win1Run) {
     return fr ? 'Gagner 1 Victoire' : 'Win 1 Battle';
   }
