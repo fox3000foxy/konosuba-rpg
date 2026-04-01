@@ -1,11 +1,11 @@
 import { Errors } from '../objects/enums/Errors';
+import { FrenchLores } from '../objects/enums/FrenchLores';
 import { Gender } from '../objects/enums/Gender';
 import { AquaImages } from '../objects/enums/player/AquaImages';
 import { DarknessImages } from '../objects/enums/player/DarknessImages';
 import { KazumaImages } from '../objects/enums/player/KazumaImages';
 import { MeguminImages } from '../objects/enums/player/MeguminImages';
 import { PlayerAction } from '../objects/enums/player/PlayerAction';
-import { PlayerLore } from '../objects/enums/player/PlayerLore';
 import { PlayerStats } from '../objects/enums/player/PlayerStats';
 import { PlayerThmb } from '../objects/enums/player/PlayerThmb';
 
@@ -160,7 +160,7 @@ export class Kazuma extends Player {
       [PlayerStats.KazumaAttackMin, PlayerStats.KazumaAttackMax],
       [KazumaImages.Idle],
       PlayerThmb.Kazuma,
-      PlayerLore.Kazuma,
+      FrenchLores.Player_Kazuma,
       Gender.Male
     );
     this.specialAttackNeededRounds = 3; // Kazuma's special attack is ready after 3 rounds
@@ -182,7 +182,7 @@ export class Darkness extends Player {
       [PlayerStats.DarknessAttackMin, PlayerStats.DarknessAttackMax],
       [DarknessImages.Idle],
       PlayerThmb.Darkness,
-      PlayerLore.Darkness,
+      FrenchLores.Player_Darkness,
       Gender.Female
     );
     this.specialAttackNeededRounds = 5; // Darkness's special attack is ready after 5 rounds
@@ -204,7 +204,7 @@ export class Megumin extends Player {
       [PlayerStats.MeguminAttackMin, PlayerStats.MeguminAttackMax],
       [MeguminImages.Idle],
       PlayerThmb.Megumin,
-      PlayerLore.Megumin,
+      FrenchLores.Player_Megumin,
       Gender.Female
     );
     this.specialAttackNeededRounds = 4; // Megumin's special attack is ready after 4 rounds
@@ -226,7 +226,7 @@ export class Aqua extends Player {
       [PlayerStats.AquaAttackMin, PlayerStats.AquaAttackMax],
       [AquaImages.Idle],
       PlayerThmb.Aqua,
-      PlayerLore.Aqua,
+      FrenchLores.Player_Aqua,
       Gender.Female
     );
     this.specialAttackNeededRounds = 3; // Aqua's special attack is ready after 3 rounds
