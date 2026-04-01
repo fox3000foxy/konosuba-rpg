@@ -24,20 +24,20 @@ export {
   getCharacterProgress,
   getCharacterProgresses,
   getCharacterStatsSnapshot,
-  getLevelFactor,
+  getLevelFactor
 } from './characterService';
 export {
   ensurePlayerProfile,
   getLeaderboard,
   getPlayerProfile,
-  getPlayerRunSummary,
+  getPlayerRunSummary
 } from './playerService';
 export {
   claimDailyQuestReward,
   getAllQuestStatuses,
   getDailyQuestStatus,
   getQuestLabel,
-  QUESTS,
+  QUESTS
 } from './questService';
 
 function currentQuestDay(): string {
@@ -68,9 +68,9 @@ function xpFromState(state: GameState): number {
     case GameState.Good:
       return 20;
     case GameState.Bad:
-      return 8;
+      return 0;
     case GameState.Giveup:
-      return 2;
+      return 0;
     default:
       return 0;
   }
@@ -173,13 +173,12 @@ export async function recordRunResult(input: RecordRunInput): Promise<void> {
   );
 
   const gainedXp = xpFromState(input.state);
-  if (gainedXp <= 0) {
-    console.log(`[db] no xp gained for state=${input.state}`);
-    return;
-  }
+  let leveledUp = false;
+  let oldLevel;
+  let nextLevel;
 
   console.log(
-    `[db] loading player profile for xp update: user=${input.userId}`
+    `[db] loading player profile for quest and xp evaluation: user=${input.userId}`
   );
 
   const { data: player, error: playerError } = await supabase
@@ -190,40 +189,49 @@ export async function recordRunResult(input: RecordRunInput): Promise<void> {
 
   if (playerError || !player) {
     console.error(
-      '[db] load player profile for xp update failed:',
+      '[db] load player profile failed:',
       playerError?.message || 'missing row'
     );
-    return;
-  }
-
-  const nextXp = Number(player.xp || 0) + gainedXp;
-  const oldLevel = Math.floor(Number(player.xp || 0) / 100) + 1;
-  const nextLevel = Math.floor(nextXp / 100) + 1;
-
-  console.log(
-    `[db] xp update: user=${input.userId} oldXp=${player.xp} newXp=${nextXp} oldLevel=${oldLevel} newLevel=${nextLevel}`
-  );
-
-  const { error: updateError } = await supabase
-    .from('players')
-    .update({
-      xp: nextXp,
-      level: nextLevel,
-      updated_at: new Date().toISOString(),
-    })
-    .eq('user_id', input.userId);
-
-  if (updateError) {
-    console.error('[db] xp update failed:', updateError.message);
   } else {
-    console.log(`[db] xp updated successfully for user=${input.userId}`);
+    const currentXp = Number(player.xp || 0);
+    oldLevel = Math.floor(currentXp / 100) + 1;
+    const nextXpValue = currentXp + gainedXp;
+    nextLevel = Math.floor(nextXpValue / 100) + 1;
+
+    console.log(
+      `[db] xp update: user=${input.userId} oldXp=${currentXp} newXp=${nextXpValue} oldLevel=${oldLevel} newLevel=${nextLevel}`
+    );
+
+    const { error: updateError } = await supabase
+      .from('players')
+      .update({
+        xp: nextXpValue,
+        level: nextLevel,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('user_id', input.userId);
+
+    if (updateError) {
+      console.error('[db] xp update failed:', updateError.message);
+    } else {
+      console.log(`[db] xp updated successfully for user=${input.userId}`);
+    }
+
+    if (gainedXp > 0) {
+      leveledUp = nextLevel > oldLevel;
+    } else {
+      console.log(`[db] no xp gained for state=${input.state}`);
+      leveledUp = false;
+    }
   }
 
-  await Promise.all([
-    addCharacterXp(input.userId, CharacterKey.Darkness, gainedXp),
-    addCharacterXp(input.userId, CharacterKey.Megumin, gainedXp),
-    addCharacterXp(input.userId, CharacterKey.Aqua, gainedXp),
-  ]);
+  if (gainedXp > 0) {
+    await Promise.all([
+      addCharacterXp(input.userId, CharacterKey.Darkness, gainedXp),
+      addCharacterXp(input.userId, CharacterKey.Megumin, gainedXp),
+      addCharacterXp(input.userId, CharacterKey.Aqua, gainedXp),
+    ]);
+  }
 
   if (isWin) {
     const accessoryDrops = await grantAccessoryDropRewards(
@@ -254,7 +262,6 @@ export async function recordRunResult(input: RecordRunInput): Promise<void> {
   }
 
   const questDay = currentQuestDay();
-  const leveledUp = nextLevel > oldLevel;
 
   console.log(
     `[db] quest processing: user=${input.userId} questDay=${questDay} isWin=${isWin} leveledUp=${leveledUp}`
