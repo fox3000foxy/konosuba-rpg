@@ -22,11 +22,11 @@ Completed work is tracked in [DONE.md](DONE.md).
 ### P1 - Implement component crafting loop
 Goal: ship first complete craft cycle from components to usable potion.
 
-- Define recipe model and initial recipe set.
-- Validate ingredient ownership and quantities.
-- Implement atomic component consumption and crafted item creation.
-- Expose craft flow (`/craft` command or interaction equivalent).
-- Add tests for successful craft, missing ingredients, concurrent craft attempts.
+- [x] Define recipe model and initial recipe set.
+- [x] Validate ingredient ownership and quantities.
+- [x] Implement atomic component consumption and crafted item creation.
+- [x] Expose craft flow (`/craft` command or interaction equivalent).
+- [x] Add tests for successful craft, missing ingredients, concurrent craft attempts.
 
 Exit criteria:
 - Player can craft at least one potion end-to-end from inventory.
