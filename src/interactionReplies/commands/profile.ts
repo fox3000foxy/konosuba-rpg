@@ -1,4 +1,5 @@
 import { Context } from 'hono';
+import { BASE_URL } from '../../objects/config/constants';
 import { CharacterKey } from '../../objects/enums/CharacterKey';
 import { InteractionDataOption } from '../../objects/types/InteractionDataOption';
 import {
@@ -68,6 +69,8 @@ export async function handleProfileCommand(
       ? '- Aucun monstre battu pour le moment'
       : '- No defeated monsters yet';
 
+  const profileImageUrl = `${BASE_URL}/profile/${targetUserId}?lang=${fr ? 'fr' : 'en'}`;
+
   const description = fr
     ? `# Profil de <@${targetUserId}>\n\n**Kazuma**\n- Niveau: ${profile.level}\n- XP: ${profile.xp}/${nextLevelXp}\n- Facteur: x${(1 + 0.2 * (Math.max(profile.level, 1) - 1)).toFixed(1)}\n\n**Darkness**\n- Niveau: ${darkness?.level ?? 1}\n- XP: ${darkness?.xp ?? 0}\n\n**Megumin**\n- Niveau: ${megumin?.level ?? 1}\n- XP: ${megumin?.xp ?? 0}\n\n**Aqua**\n- Niveau: ${aqua?.level ?? 1}\n- XP: ${aqua?.xp ?? 0}\n\n**Or**: ${profile.gold}\n**Achievements**: ${unlockedCount}/${totalAchievements}\n**Parties jouees**: ${totalRuns}\n\n**Monstres battus**\n${monstersText}`
     : `# <@${targetUserId}> profile\n\n**Kazuma**\n- Level: ${profile.level}\n- XP: ${profile.xp}/${nextLevelXp}\n- Factor: x${(1 + 0.2 * (Math.max(profile.level, 1) - 1)).toFixed(1)}\n\n**Darkness**\n- Level: ${darkness?.level ?? 1}\n- XP: ${darkness?.xp ?? 0}\n\n**Megumin**\n- Level: ${megumin?.level ?? 1}\n- XP: ${megumin?.xp ?? 0}\n\n**Aqua**\n- Level: ${aqua?.level ?? 1}\n- XP: ${aqua?.xp ?? 0}\n\n**Gold**: ${profile.gold}\n**Achievements**: ${unlockedCount}/${totalAchievements}\n**Games played**: ${totalRuns}\n\n**Defeated monsters**\n${monstersText}`;
@@ -78,6 +81,7 @@ export async function handleProfileCommand(
       embeds: [
         {
           description,
+          image: { url: profileImageUrl },
           color: 0x2b2d31,
         },
       ],

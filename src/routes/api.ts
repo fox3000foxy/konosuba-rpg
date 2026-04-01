@@ -2,12 +2,21 @@ import { Context, Hono } from 'hono';
 import { generateMonsterInfosByConstructorName } from '../interactionReplies/commands/infos-monster';
 import { generatePlayerInfos } from '../interactionReplies/commands/infos-player';
 import { getInventoryItems } from '../services/inventoryService';
-import { getCharacterProgresses } from '../services/progressionService';
+import {
+  getAchievementsOverview,
+  getCharacterProgresses,
+  getPlayerProfile,
+  getPlayerRunSummary,
+} from '../services/progressionService';
 import {
   buildAffinitySvg,
   renderAffinityImage,
 } from '../utils/renderAffinityImage';
 import { buildSvg, renderInventoryImage } from '../utils/renderInventoryImage';
+import {
+  buildProfileSvg,
+  renderProfileImage,
+} from '../utils/renderProfileImage';
 
 const PLAYER_ID_BY_NAME: Record<string, number> = {
   kazuma: 0,
@@ -139,6 +148,86 @@ export function registerApiRoutes(app: Hono): void {
     }
 
     const image = await renderAffinityImage(userId, progresses, fr);
+    const responseBody = image.buffer.slice(
+      image.byteOffset,
+      image.byteOffset + image.byteLength
+    );
+
+    return new Response(responseBody as ArrayBuffer, {
+      headers: {
+        'Content-Type': 'image/png',
+        'Cache-Control':
+          'public, max-age=0, s-maxage=15, stale-while-revalidate=60',
+        'CDN-Cache-Control': 'public, s-maxage=15, stale-while-revalidate=60',
+        'Vercel-CDN-Cache-Control':
+          'public, s-maxage=15, stale-while-revalidate=60',
+      },
+    });
+  });
+
+  app.get('/profile/:userId', async (c: Context) => {
+    const userId = (c.req.param('userId') || '').trim();
+    const fr = getApiLang(c);
+
+    if (!userId) {
+      return c.text(fr ? 'Utilisateur invalide.' : 'Invalid user.', 400);
+    }
+
+    const profile = await getPlayerProfile(userId);
+    if (!profile) {
+      return c.text(
+        fr
+          ? 'Profil indisponible pour le moment.'
+          : 'Profile is unavailable right now.',
+        404
+      );
+    }
+
+    const progresses = await getCharacterProgresses(userId);
+    const runSummary = await getPlayerRunSummary(userId);
+    const achievements = await getAchievementsOverview(userId, fr);
+
+    if (!progresses || !runSummary || !achievements) {
+      return c.text(
+        fr
+          ? 'Données de profil incomplètes.'
+          : 'Incomplete profile data.',
+        404
+      );
+    }
+
+    const renderSvg = c.req.query('renderSvg') === 'true';
+
+    if (renderSvg) {
+      const image = await buildProfileSvg(
+        userId,
+        profile,
+        progresses,
+        runSummary,
+        achievements.filter(item => item.unlocked).length,
+        achievements.length,
+        fr
+      );
+      return c.text(image, 200, {
+        'Content-Type': 'image/svg+xml',
+        'Cache-Control':
+          'public, max-age=0, s-maxage=15, stale-while-revalidate=60',
+        'CDN-Cache-Control': 'public, s-maxage=15, stale-while-revalidate=60',
+        'Vercel-CDN-Cache-Control':
+          'public, s-maxage=15, stale-while-revalidate=60',
+      });
+    }
+
+    const image = await renderProfileImage(
+      userId,
+      profile,
+      progresses,
+      runSummary,
+      achievements.filter(item => item.unlocked).length,
+      achievements.length,
+      fr
+    );
+
     const responseBody = image.buffer.slice(
       image.byteOffset,
       image.byteOffset + image.byteLength
