@@ -1,4 +1,5 @@
 import { Gender } from '../../objects/enums/Gender';
+import { FrenchLores } from '../../objects/enums/FrenchLores';
 import { GenericCreature, GenericCreatureInterface } from '../GenericCreature';
 import { Random } from '../Random';
 
@@ -19,8 +20,7 @@ export default class DarkBear
   pickColor(rng: Random) {
     this.color = rng.choice(['11301', '11303', '11304']);
     this.images = [`enemy_image_${this.color}`];
-    this.lore =
-      "L'Ours Ténébreux est un ours ordinaire dont le corps a été altéré par une exposition prolongée à l'énergie du Roi Démon, lui conférant une agressivité et une puissance décuplées. Il rôde dans les zones forestières proches des territoires maudits, attaquant tout ce qui croise son chemin. Malgré son intelligence limitée, son instinct de prédateur en fait une menace sérieuse même pour des aventuriers de niveau intermédiaire. Sa fourrure sombre absorbe partiellement les sorts de lumière.";
+    this.lore = FrenchLores.Creature_DarkBear;
     this.gender = Gender.Male;
   }
 }
