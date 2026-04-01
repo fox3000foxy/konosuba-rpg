@@ -11,6 +11,9 @@ const CHARACTER_KEYS: CharacterKey[] = [
 ];
 
 const clampLevel = (level: number) => Math.max(1, level);
+const AFFINITY_POINTS_PER_STAR = 20;
+const MAX_AFFINITY_STARS = 5;
+const STAR_FACTOR = 1.2;
 
 export function computeLevelFromXp(xp: number): number {
   return clampLevel(Math.floor(Math.max(0, xp) / 100) + 1);
@@ -18,6 +21,16 @@ export function computeLevelFromXp(xp: number): number {
 
 export function getLevelFactor(level: number): number {
   return 1 + 0.2 * (clampLevel(level) - 1);
+}
+
+export function getAffinityStars(affinity: number): number {
+  const safeAffinity = Math.max(0, affinity);
+  const stars = Math.floor(safeAffinity / AFFINITY_POINTS_PER_STAR);
+  return Math.max(0, Math.min(MAX_AFFINITY_STARS, stars));
+}
+
+export function getAffinityFactor(affinity: number): number {
+  return STAR_FACTOR ** getAffinityStars(affinity);
 }
 
 export async function ensureCharacterProgress(userId: string): Promise<void> {
@@ -303,21 +316,23 @@ export async function getCharacterStatsSnapshot(
     {
       characterKey: CharacterKey.Darkness,
       level: Number(byKey.get(CharacterKey.Darkness)?.level || 1),
-      factor: getLevelFactor(
-        Number(byKey.get(CharacterKey.Darkness)?.level || 1)
-      ),
+      factor:
+        getLevelFactor(Number(byKey.get(CharacterKey.Darkness)?.level || 1)) *
+        getAffinityFactor(Number(byKey.get(CharacterKey.Darkness)?.affinity || 0)),
     },
     {
       characterKey: CharacterKey.Megumin,
       level: Number(byKey.get(CharacterKey.Megumin)?.level || 1),
-      factor: getLevelFactor(
-        Number(byKey.get(CharacterKey.Megumin)?.level || 1)
-      ),
+      factor:
+        getLevelFactor(Number(byKey.get(CharacterKey.Megumin)?.level || 1)) *
+        getAffinityFactor(Number(byKey.get(CharacterKey.Megumin)?.affinity || 0)),
     },
     {
       characterKey: CharacterKey.Aqua,
       level: Number(byKey.get(CharacterKey.Aqua)?.level || 1),
-      factor: getLevelFactor(Number(byKey.get(CharacterKey.Aqua)?.level || 1)),
+      factor:
+        getLevelFactor(Number(byKey.get(CharacterKey.Aqua)?.level || 1)) *
+        getAffinityFactor(Number(byKey.get(CharacterKey.Aqua)?.affinity || 0)),
     },
   ];
 }
