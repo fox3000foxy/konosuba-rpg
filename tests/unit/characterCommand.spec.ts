@@ -33,9 +33,8 @@ describe('handleCharacterCommand', () => {
 
     expect(mockContext.json).toHaveBeenCalled();
     const response = mockContext.json.mock.calls[0][0];
-    expect(response.data.embeds[0].description).toContain('**darkness**');
-    expect(response.data.embeds[0].description).toContain('**aqua**');
-    expect(response.data.embeds[0].description).toContain('**megumin**');
+    expect(response.data.embeds[0].description).toBeUndefined();
+    expect(response.data.embeds[0].image.url).toContain('/affinity/u1?lang=fr');
   });
 
   it('shows only selected character when option supplied', async () => {
@@ -56,7 +55,7 @@ describe('handleCharacterCommand', () => {
     await handleCharacterCommand(mockContext, 'u1', false, [{ name: 'character', value: 'aqua' }]);
 
     const response = mockContext.json.mock.calls[0][0];
-    expect(response.data.embeds[0].description).toContain('**aqua**');
-    expect(response.data.embeds[0].description).not.toContain('**darkness**');
+    expect(response.data.embeds[0].description).toBeUndefined();
+    expect(response.data.embeds[0].image.url).toContain('/affinity/u1?lang=en');
   });
 });
