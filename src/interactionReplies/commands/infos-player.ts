@@ -109,9 +109,9 @@ export function generatePlayerInfos(
         embeds: [
           {
             description: fr
-              ? `# Informations sur ${charName}:\n\n**Nom**: ${charName}\n**PV**: ${hp} PV\n**ATK**: ${attackR[0]}-${attackR[1]} points de dégâts.` +
+              ? `# Informations sur ${charName}:\n\n**Nom**: ${charName}\n**PV de base**: ${hp} PV\n**ATK de base**: ${attackR[0]}-${attackR[1]} points de dégâts.` +
                 `\n\n${lore}`
-              : `# Player infos for ${charName}:\n\n**Name**: ${charName}\n**HP**: ${hp} HP\n**ATK**: ${attackR[0]}-${attackR[1]} damage points.` +
+              : `# Player infos for ${charName}:\n\n**Name**: ${charName}\n**Basic HP**: ${hp} HP\n**Basic ATK**: ${attackR[0]}-${attackR[1]} damage points.` +
                 `\n\n${lore}`,
             image: { url: imgUrl },
             color: 0x2b2d31,
