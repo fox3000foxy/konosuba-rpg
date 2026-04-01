@@ -205,6 +205,39 @@
 		"global_popularity_rank": 11
 	},
 	{
+		"name": "craft",
+		"description": "Fabriquer une potion via une recette",
+		"description_localizations": {
+			"fr": "Fabriquer une potion via une recette",
+			"en-US": "Craft a potion from a recipe",
+			"en-GB": "Craft a potion from a recipe"
+		},
+		"options": [
+			{
+				"name": "recipe",
+				"description": "Cle de recette a utiliser",
+				"description_localizations": {
+					"fr": "Cle de recette a utiliser",
+					"en-US": "Recipe key to use",
+					"en-GB": "Recipe key to use"
+				},
+				"type": "STRING",
+				"required": false
+			}
+		],
+		"dm_permission": true,
+		"contexts": [
+			0,
+			1,
+			2
+		],
+		"integration_types": [
+			0,
+			1
+		],
+		"global_popularity_rank": 6
+	},
+	{
 		"name": "start",
 		"description": "Commencer une partie",
 		"description_localizations": {

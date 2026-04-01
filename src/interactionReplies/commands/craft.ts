@@ -1,0 +1,106 @@
+import { Context } from 'hono';
+import { InteractionDataOption } from '../../objects/types/InteractionDataOption';
+import { craftRecipe, getCraftingRecipes } from '../../services/craftService';
+import { ensurePlayerProfile } from '../../services/progressionService';
+
+function getRecipeOption(options: InteractionDataOption[] | undefined): string {
+  const value = options?.find(option => option.name === 'recipe')?.value;
+  return typeof value === 'string' ? value.trim() : '';
+}
+
+function recipesHelpText(fr: boolean): string {
+  const recipes = getCraftingRecipes();
+  if (recipes.length === 0) {
+    return fr
+      ? 'Aucune recette disponible actuellement.'
+      : 'No recipe is currently available.';
+  }
+
+  const lines = recipes.map(recipe => {
+    const resultName = fr ? recipe.resultNameFr : recipe.resultNameEn;
+    const ingredients = recipe.ingredients
+      .map(ingredient => {
+        const ingredientName = fr ? ingredient.nameFr : ingredient.nameEn;
+        return `${ingredientName} x${ingredient.quantity}`;
+      })
+      .join(', ');
+
+    return `- \`${recipe.key}\` -> ${resultName} x${recipe.resultQuantity} (${ingredients})`;
+  });
+
+  return (fr
+    ? '# Recettes disponibles\n\nUtilise `/craft recipe:<key>`\n\n'
+    : '# Available recipes\n\nUse `/craft recipe:<key>`\n\n') + lines.join('\n');
+}
+
+function failureMessage(reason: string, fr: boolean): string {
+  switch (reason) {
+    case 'recipe_not_found':
+      return fr ? 'Recette introuvable.' : 'Recipe not found.';
+    case 'recipe_disabled':
+      return fr ? 'Cette recette est desactivee.' : 'This recipe is disabled.';
+    case 'insufficient_ingredients':
+      return fr
+        ? "Ingredients insuffisants dans l'inventaire."
+        : 'Not enough ingredients in inventory.';
+    case 'service_unavailable':
+      return fr
+        ? 'Service de craft indisponible pour le moment.'
+        : 'Craft service is currently unavailable.';
+    default:
+      return fr ? 'Craft impossible pour le moment.' : 'Craft failed for now.';
+  }
+}
+
+export async function handleCraftCommand(
+  c: Context,
+  userId: string,
+  fr: boolean,
+  options?: InteractionDataOption[]
+) {
+  await ensurePlayerProfile(userId);
+
+  const recipeKey = getRecipeOption(options);
+  if (!recipeKey) {
+    return c.json({
+      type: 4,
+      data: {
+        embeds: [
+          {
+            description: recipesHelpText(fr),
+            color: 0x2b2d31,
+          },
+        ],
+      },
+    });
+  }
+
+  const result = await craftRecipe(userId, recipeKey);
+  if (!result.success || !result.craftedItemId) {
+    return c.json({
+      type: 4,
+      data: {
+        content: failureMessage(result.reason, fr),
+        flags: 1 << 6,
+      },
+    });
+  }
+
+  const recipes = getCraftingRecipes();
+  const crafted = recipes.find(recipe => recipe.resultItemId === result.craftedItemId);
+  const craftedName = crafted
+    ? fr
+      ? crafted.resultNameFr
+      : crafted.resultNameEn
+    : result.craftedItemId;
+
+  return c.json({
+    type: 4,
+    data: {
+      content: fr
+        ? `✅ Craft reussi: ${craftedName} x${result.craftedQuantity || 1}`
+        : `✅ Craft successful: ${craftedName} x${result.craftedQuantity || 1}`,
+      flags: 1 << 6,
+    },
+  });
+}
