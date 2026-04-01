@@ -12,6 +12,19 @@ export const QUESTS: QuestDefinition[] = QUEST_DEFINITIONS;
 
 const DAILY_QUEST_KEY = QUESTS[0].key;
 
+export function getQuestLabel(questKey: QuestKey | string, fr: boolean): string {
+  if (questKey === QuestKey.Win1Run) {
+    return fr ? 'Gagner 1 Victoire' : 'Win 1 Battle';
+  }
+  if (questKey === QuestKey.Play3Runs) {
+    return fr ? 'Jouer 3 Combats' : 'Play 3 Battles';
+  }
+  if (questKey === QuestKey.LevelUpOnce) {
+    return fr ? 'Monter de Niveau' : 'Level Up';
+  }
+  return String(questKey);
+}
+
 function getQuestDefinition(
   questKey: QuestKey | string
 ): QuestDefinition | null {

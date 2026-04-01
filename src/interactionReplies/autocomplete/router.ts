@@ -2,7 +2,8 @@ import { Context } from 'hono';
 import { Interaction } from '../../objects/enums/Interaction';
 import { MonsterDifficulty } from '../../objects/enums/MonsterDifficulty';
 import { QuestAction } from '../../objects/enums/QuestAction';
-import { QuestKey } from '../../objects/enums/QuestKey';
+import { getCraftingRecipes } from '../../services/craftService';
+import { getQuestLabel, QUESTS } from '../../services/progressionService';
 import { getMonsterCatalog } from '../commands/infos-monster';
 
 const PLAYER_AUTOCOMPLETE_CHOICES = [
@@ -41,12 +42,17 @@ export function handleAutocomplete(
     }
 
     if (focused?.name === 'quest_id') {
-      const questKeys = Object.values(QuestKey)
-        .filter(key => key.includes(focusedValue))
+      const questChoices = QUESTS.filter(quest => {
+        const label = getQuestLabel(quest.key, fr).toLowerCase();
+        return label.includes(focusedValue);
+      })
         .slice(0, 25)
-        .map(key => ({ name: key, value: key }));
+        .map(quest => ({
+          name: getQuestLabel(quest.key, fr),
+          value: quest.key,
+        }));
 
-      return c.json({ type: 8, data: { choices: questKeys } });
+      return c.json({ type: 8, data: { choices: questChoices } });
     }
   }
 
@@ -76,6 +82,28 @@ export function handleAutocomplete(
         .filter(monster => monster.name.toLowerCase().includes(focusedValue))
         .slice(0, 25)
         .map(monster => ({ name: monster.name, value: monster.id }));
+
+      return c.json({ type: 8, data: { choices } });
+    }
+  }
+
+  if (interaction.data?.name === 'craft') {
+    const options = interaction.data.options || [];
+    const focused = options.find(option => option.focused);
+    const focusedValue = String(focused?.value || '').toLowerCase();
+
+    if (focused?.name === 'recipe') {
+      const recipes = getCraftingRecipes();
+      const choices = recipes
+        .filter(recipe => {
+          const recipeName = (fr ? recipe.resultNameFr : recipe.resultNameEn).toLowerCase();
+          return recipeName.includes(focusedValue);
+        })
+        .slice(0, 25)
+        .map(recipe => ({
+          name: fr ? recipe.resultNameFr : recipe.resultNameEn,
+          value: recipe.key,
+        }));
 
       return c.json({ type: 8, data: { choices } });
     }
