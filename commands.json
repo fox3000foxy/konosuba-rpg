@@ -20,6 +20,39 @@
 		"global_popularity_rank": 1
 	},
 	{
+		"name": "character",
+		"description": "Inspecte un personnage RPG",
+		"description_localizations": {
+			"fr": "Inspecte un personnage RPG",
+			"en-US": "Inspect a RPG character",
+			"en-GB": "Inspect a RPG character"
+		},
+		"options": [
+			{
+				"name": "character",
+				"description": "Nom du personnage (darkness/aqua/megumin)",
+				"description_localizations": {
+					"fr": "Nom du personnage (darkness/aqua/megumin)",
+					"en-US": "Character name (darkness/aqua/megumin)",
+					"en-GB": "Character name (darkness/aqua/megumin)"
+				},
+				"type": "STRING",
+				"required": false
+			}
+		],
+		"dm_permission": true,
+		"contexts": [
+			0,
+			1,
+			2
+		],
+		"integration_types": [
+			0,
+			1
+		],
+		"global_popularity_rank": 2
+	},
+	{
 		"name": "profile",
 		"description": "Affiche ton profil RPG",
 		"description_localizations": {
