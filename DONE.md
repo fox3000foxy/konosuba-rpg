@@ -23,6 +23,7 @@
 
 ## Commands and UI
 - `/profile` shows player level, character progression, and related stats.
+- `/character` command shows per-character level, XP, affinity, and factor.
 - Discord interaction routing is extracted from the main entrypoint.
 - Monster info output is stabilized with deterministic generic creature rendering.
 - Stable monster ids and constructor-based monster lookup are in place.
