@@ -25,23 +25,23 @@ Completed work is tracked in [DONE.md](DONE.md).
 - Gate C: P2 decisions locked + TODO/README aligned.
 - Only after Gates A+B+C: reopen roadmap for new systems.
 
-## Phase 5 - Drops and inventory (TODO)
+## Phase 5 - Drops and inventory (DONE)
 
 ### Combat drops
-- Add reward generation at end of run
+- Reward generation at end of run implemented
   - alchemy components
 
-## Phase 6 - Potion crafting from components (TODO)
+## Phase 6 - Potion crafting from components (DONE)
 
 ### Potion effects
-- Temporary buffs
-- Permanent buffs (to discuss)
+- Temporary buffs implemented
+- Permanent buffs pending discussion (intentional placeholder)
 
-## Phase 7 - Character UI assets (based on `assets/characters-emojis`)
+## Phase 7 - Character UI assets (DONE)
 
 ### Data preparation
-- Mapping `character_key` -> image set
-- Potential visual states:
+- Mapping `character_key` -> image set implemented
+- Potential visual states supported:
   - normal
   - rare/special
   - high affinity
