@@ -253,22 +253,26 @@ async function handlePlayerAction({
       // Use a consumable item on a selected player (fallback to current player)
       const selectedTarget =
         typeof selectedUseTargetPlayerId === 'number'
-          ? team.players.find(player => player.playerId === selectedUseTargetPlayerId)
+          ? team.players.find(
+              player => player.playerId === selectedUseTargetPlayerId
+            )
           : undefined;
-      const targetPlayer = selectedTarget && selectedTarget.hp > 0
-        ? selectedTarget
-        : currentPlayer;
+      const targetPlayer =
+        selectedTarget && selectedTarget.hp > 0
+          ? selectedTarget
+          : currentPlayer;
 
       // Prefer itemIds passed from URL, otherwise use a fixed set for testing
-      const availableItems: ItemId[] = itemIds &&  itemIds.length > 0
-        ? itemIds
-        : [
-            ItemId.I20001000, // Potion basic
-            ItemId.I20003000, // Chrono gold
-            ItemId.I20004001, // Stone epic
-            ItemId.I20004008, // Scroll epic
-          ];
-      
+      const availableItems: ItemId[] =
+        itemIds && itemIds.length > 0
+          ? itemIds
+          : [
+              ItemId.I20001000, // Potion basic
+              ItemId.I20003000, // Chrono gold
+              ItemId.I20004001, // Stone epic
+              ItemId.I20004008, // Scroll epic
+            ];
+
       const selectedItemId = rand.choice(availableItems);
       const effect = applyConsumableEffect(selectedItemId, targetPlayer);
 
@@ -280,7 +284,7 @@ async function handlePlayerAction({
         embedDescription.push(
           lang === Lang.French ? effect.message.fr : effect.message.en
         );
-        
+
         // Persist inventory consumption only once per item (track in consumedItemIds)
         if (
           isLastMove &&
@@ -294,12 +298,12 @@ async function handlePlayerAction({
       } else {
         messages.push(
           lang === Lang.French
-            ? 'Impossible d\'utiliser cet item'
+            ? "Impossible d'utiliser cet item"
             : 'Cannot use this item'
         );
         embedDescription.push(
           lang === Lang.French
-            ? 'Impossible d\'utiliser cet item'
+            ? "Impossible d'utiliser cet item"
             : 'Cannot use this item'
         );
       }
@@ -465,10 +469,13 @@ export default async function processGame(
     } else {
       // Apply damage reduction from player defense
       const rawDamage = creatureMove[1];
-      const damageReduction = Math.min(rawDamage, Math.max(0, randomPlayer.defense * 0.2 * rawDamage));
+      const damageReduction = Math.min(
+        rawDamage,
+        Math.max(0, randomPlayer.defense * 0.2 * rawDamage)
+      );
       const finalDamage = Math.max(0, rawDamage - damageReduction);
       randomPlayer.hp -= finalDamage;
-      
+
       const msg =
         randomPlayer.hp > 0
           ? creatureMove[0]

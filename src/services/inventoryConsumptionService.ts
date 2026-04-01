@@ -1,4 +1,4 @@
-import { getSupabaseAdminClient } from "../utils/supabaseClient";
+import { getSupabaseAdminClient } from '../utils/supabaseClient';
 
 /**
  * Decrements a consumable from user inventory atomically

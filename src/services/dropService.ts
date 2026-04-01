@@ -8,9 +8,7 @@ import { Rarity } from '../objects/enums/Rarity';
 import { TypeItem } from '../objects/enums/TypeItem';
 import { getSupabaseAdminClient } from '../utils/supabaseClient';
 import { getItems } from './accessoryService';
-import {
-  addCharacterAffinity,
-} from './characterService';
+import { addCharacterAffinity } from './characterService';
 import { getItems as getConsumableItems } from './consumableService';
 
 export type AccessoryDropResult = {

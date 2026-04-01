@@ -177,7 +177,9 @@ export async function handleButtonInteraction(
       return c.json({ type: 6 });
     }
 
-    if (!Object.values(CharacterKey).includes(characterKeyRaw as CharacterKey)) {
+    if (
+      !Object.values(CharacterKey).includes(characterKeyRaw as CharacterKey)
+    ) {
       return c.json({ type: 6 });
     }
 
@@ -330,16 +332,15 @@ export async function handleButtonInteraction(
       const inferredMonsterName = inferMonsterFromPayload(cleanPayload);
       const monsterName = inferredMonsterName || '';
 
-      const { buttons, embedDescription, gameState } =
-        await buildComponents(
-          nextPayload,
-          userID,
-          lang,
-          false,
-          difficulty,
-          itemKey,
-          Number.isNaN(targetId) ? undefined : targetId
-        );
+      const { buttons, embedDescription, gameState } = await buildComponents(
+        nextPayload,
+        userID,
+        lang,
+        false,
+        difficulty,
+        itemKey,
+        Number.isNaN(targetId) ? undefined : targetId
+      );
 
       void recordRunResult({
         userId: userID,
@@ -401,7 +402,12 @@ export async function handleButtonInteraction(
   // Check if this is a consumables menu action (ends with 'c')
   if (resolvedEncodedPayload.endsWith('c')) {
     try {
-      return await handleConsumablesButton(c, userID, fr, resolvedEncodedPayload);
+      return await handleConsumablesButton(
+        c,
+        userID,
+        fr,
+        resolvedEncodedPayload
+      );
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       console.error('[consumables] Interaction error:', message);
@@ -409,7 +415,7 @@ export async function handleButtonInteraction(
         type: 4,
         data: {
           content: fr
-            ? 'Erreur lors de l\'ouverture du menu consommables. Réessayez.'
+            ? "Erreur lors de l'ouverture du menu consommables. Réessayez."
             : 'Error opening consumables menu. Please try again.',
           flags: 1 << 6,
         },

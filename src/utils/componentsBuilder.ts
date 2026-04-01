@@ -55,7 +55,12 @@ export async function buildComponents(
   const cleanPayload = removeDifficultyFromPayload(payload);
   const effectiveDifficulty = difficulty || payloadDifficulty;
 
-  const imageUrl = buildImageUrl(cleanPayload, lang, effectiveDifficulty, userID);
+  const imageUrl = buildImageUrl(
+    cleanPayload,
+    lang,
+    effectiveDifficulty,
+    userID
+  );
   console.log(imageUrl);
   const [rand, moves, , monster, difficultyFromUrl] = processUrl(imageUrl);
   const characterStatsSnapshot = await getCharacterStatsSnapshot(userID);
@@ -215,11 +220,11 @@ export async function buildComponents(
           style: 2,
           custom_id: training
             ? addDifficultyToPayload(
-              `train.${extractMonster(cleanPayload)}.${makeid(10)}`,
-              effectiveDifficulty
-            ) + userIdSuffix
+                `train.${extractMonster(cleanPayload)}.${makeid(10)}`,
+                effectiveDifficulty
+              ) + userIdSuffix
             : addDifficultyToPayload(`${makeid(15)}`, effectiveDifficulty) +
-            userIdSuffix,
+              userIdSuffix,
           disabled: disableChangeMonster || training,
         },
       ],

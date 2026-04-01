@@ -31,7 +31,7 @@ export function buildImageUrl(
     queryParams.append('monster', monsterName);
   }
 
-  if(userId) {
+  if (userId) {
     queryParams.append('userId', userId);
   }
 
