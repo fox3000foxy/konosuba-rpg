@@ -5,6 +5,7 @@ import { InteractionDataOption } from '../../objects/types/InteractionDataOption
 import { ensurePlayerProfile } from '../../services/progressionService';
 import { handleAchievementsCommand } from './achievements';
 import { handleAffinityCommand } from './affinity';
+import { handleCraftCommand } from './craft';
 import { handleInfosMonsterCommand } from './infos-monster';
 import { handleInfosPlayerCommand } from './infos-player';
 import { handleInventoryCommand } from './inventory';
@@ -59,6 +60,10 @@ export async function handleSlashCommand(
 
   if (interaction.data?.name === 'inventory') {
     return handleInventoryCommand(c, userID, fr, interaction.data.options);
+  }
+
+  if (interaction.data?.name === 'craft') {
+    return handleCraftCommand(c, userID, fr, interaction.data.options);
   }
 
   if (interaction.data?.name === 'train') {
