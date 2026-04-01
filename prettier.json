@@ -4,5 +4,10 @@
   "jsxSingleQuote": true,
   "trailingComma": "es5",
   "arrowParens": "avoid",
-  "proseWrap": "never"
+  "proseWrap": "never",
+  "printWidth": 80,
+  "tabWidth": 2,
+  "useTabs": false,
+  "bracketSpacing": true,
+  "jsxBracketSameLine": false
 }
