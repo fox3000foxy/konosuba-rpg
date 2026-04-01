@@ -1,8 +1,14 @@
 import { Context } from 'hono';
+import { AccessoryType } from '../../objects/enums/AccessoryType';
+import { CharacterKey } from '../../objects/enums/CharacterKey';
 import { Interaction } from '../../objects/enums/Interaction';
 import { Lang } from '../../objects/enums/Lang';
+import { Rarity } from '../../objects/enums/Rarity';
 import { decodeGameplayPayloadWithStatus } from '../../services/gameSessionService';
-import { recordRunResult } from '../../services/progressionService';
+import {
+  donateAccessoryToCharacter,
+  recordRunResult,
+} from '../../services/progressionService';
 import { buildComponents } from '../../utils/componentsBuilder';
 import { decompressMoves } from '../../utils/movesUtils';
 import {
@@ -11,6 +17,10 @@ import {
   removeDifficultyFromPayload,
 } from '../../utils/payloadUtils';
 import { inferMonsterFromPayload } from '../../utils/runMonsterUtils';
+import {
+  buildAffinityGiftComponents,
+  buildAffinityMessageData,
+} from '../commands/affinity';
 import { handleConsumablesButton } from './handleConsumablesButton';
 import { handleDefaultButton } from './handleDefaultButton';
 import { handleSpecialButton } from './handleSpecialButton';
@@ -27,6 +37,207 @@ export async function handleButtonInteraction(
   }
 
   const customId: string = interaction.data.custom_id;
+
+  if (customId.startsWith('affinity_select_type:')) {
+    const parts = customId.split(':');
+    const requestUserId = parts[1] || '';
+    const selectedType = interaction.data.values?.[0];
+
+    if (!selectedType || requestUserId !== userID) {
+      return c.json({ type: 6 });
+    }
+
+    if (!Object.values(AccessoryType).includes(selectedType as AccessoryType)) {
+      return c.json({ type: 6 });
+    }
+
+    const components = await buildAffinityGiftComponents(userID, fr, {
+      accessoryType: selectedType as AccessoryType,
+    });
+
+    return c.json({
+      type: 7,
+      data: {
+        components,
+      },
+    });
+  }
+
+  if (customId.startsWith('affinity_select_rarity:')) {
+    const parts = customId.split(':');
+    const selectedTypeRaw = parts[1] || 'all';
+    const requestUserId = parts[2] || '';
+    const selectedRarity = interaction.data.values?.[0];
+
+    if (!selectedRarity || requestUserId !== userID) {
+      return c.json({ type: 6 });
+    }
+
+    if (!Object.values(Rarity).includes(selectedRarity as Rarity)) {
+      return c.json({ type: 6 });
+    }
+
+    const selectedType =
+      selectedTypeRaw !== 'all' &&
+      Object.values(AccessoryType).includes(selectedTypeRaw as AccessoryType)
+        ? (selectedTypeRaw as AccessoryType)
+        : undefined;
+
+    const components = await buildAffinityGiftComponents(userID, fr, {
+      accessoryType: selectedType,
+      rarity: selectedRarity as Rarity,
+    });
+
+    return c.json({
+      type: 7,
+      data: {
+        components,
+      },
+    });
+  }
+
+  if (customId.startsWith('affinity_select_item:')) {
+    const parts = customId.split(':');
+    const requestUserId = parts[3] || '';
+    const itemKey = interaction.data.values?.[0] || '';
+
+    if (!itemKey || requestUserId !== userID) {
+      return c.json({ type: 6 });
+    }
+
+    const components = [
+      {
+        type: 1,
+        components: [
+          {
+            type: 2,
+            label: 'Darkness',
+            style: 2,
+            custom_id: `affinity_gift_apply:${itemKey}:${CharacterKey.Darkness}:${userID}`,
+          },
+          {
+            type: 2,
+            label: 'Megumin',
+            style: 4,
+            custom_id: `affinity_gift_apply:${itemKey}:${CharacterKey.Megumin}:${userID}`,
+          },
+          {
+            type: 2,
+            label: 'Aqua',
+            style: 1,
+            custom_id: `affinity_gift_apply:${itemKey}:${CharacterKey.Aqua}:${userID}`,
+          },
+        ],
+      },
+      {
+        type: 1,
+        components: [
+          {
+            type: 2,
+            label: fr ? 'Annuler' : 'Cancel',
+            style: 2,
+            custom_id: `affinity_gift_back:${userID}`,
+          },
+        ],
+      },
+    ];
+
+    return c.json({
+      type: 7,
+      data: {
+        components,
+      },
+    });
+  }
+
+  if (customId.startsWith('affinity_gift_back:')) {
+    const parts = customId.split(':');
+    const requestUserId = parts[1] || '';
+
+    if (requestUserId !== userID) {
+      return c.json({ type: 6 });
+    }
+
+    const components = await buildAffinityGiftComponents(userID, fr);
+    return c.json({
+      type: 7,
+      data: {
+        components,
+      },
+    });
+  }
+
+  if (customId.startsWith('affinity_gift_apply:')) {
+    const parts = customId.split(':');
+    const itemKey = parts[1] || '';
+    const characterKeyRaw = parts[2] || '';
+    const requestUserId = parts[3] || '';
+
+    if (!itemKey || requestUserId !== userID) {
+      return c.json({ type: 6 });
+    }
+
+    if (!Object.values(CharacterKey).includes(characterKeyRaw as CharacterKey)) {
+      return c.json({ type: 6 });
+    }
+
+    const characterKey = characterKeyRaw as CharacterKey;
+    const donation = await donateAccessoryToCharacter(
+      userID,
+      itemKey,
+      characterKey
+    );
+
+    if (!donation.success) {
+      const message =
+        donation.reason === 'out-of-stock'
+          ? fr
+            ? 'Accessoire indisponible ou stock insuffisant.'
+            : 'Accessory unavailable or insufficient stock.'
+          : fr
+            ? 'Accessoire invalide.'
+            : 'Invalid accessory.';
+
+      const data = await buildAffinityMessageData(
+        userID,
+        userID,
+        fr,
+        message,
+        undefined,
+        false
+      );
+
+      return c.json({
+        type: 7,
+        data,
+      });
+    }
+
+    const targetLabel =
+      characterKey === CharacterKey.Darkness
+        ? 'Darkness'
+        : characterKey === CharacterKey.Megumin
+          ? 'Megumin'
+          : 'Aqua';
+
+    const successMessage = fr
+      ? `Don effectue sur ${targetLabel}: +${donation.affinityPoints} affinite.`
+      : `Gift sent to ${targetLabel}: +${donation.affinityPoints} affinity.`;
+
+    const data = await buildAffinityMessageData(
+      userID,
+      userID,
+      fr,
+      successMessage,
+      undefined,
+      true
+    );
+
+    return c.json({
+      type: 7,
+      data,
+    });
+  }
 
   // Handle consumable item selection (step 1): choose which item to use
   if (customId.startsWith('consumable_item:')) {

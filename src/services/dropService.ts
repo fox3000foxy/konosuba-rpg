@@ -10,7 +10,6 @@ import { getSupabaseAdminClient } from '../utils/supabaseClient';
 import { getItems } from './accessoryService';
 import {
   addCharacterAffinity,
-  ensureCharacterProgress,
 } from './characterService';
 import { getItems as getConsumableItems } from './consumableService';
 
@@ -341,7 +340,6 @@ export async function grantAccessoryDropRewards(
   }
 
   const drops = rollAccessoryDrop(runKey, monsterName);
-  await ensureCharacterProgress(userId);
 
   for (const drop of drops) {
     const { data: current, error: loadError } = await supabase

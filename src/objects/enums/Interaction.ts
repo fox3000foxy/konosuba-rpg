@@ -8,6 +8,7 @@ export interface Interaction {
     custom_id: string;
     name?: string;
     options?: InteractionDataOption[];
+    values?: string[];
   };
   options?: InteractionDataOption[];
   user: { id: string };
