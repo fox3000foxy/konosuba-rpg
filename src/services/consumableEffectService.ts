@@ -123,7 +123,7 @@ function applyChronoEffect(
     increasePercentage = 0.3;
   }
 
-  const oldMaxHp =  player.hpMax;
+  const oldMaxHp = player.hpMax;
   const hpIncrease = Math.ceil(oldMaxHp * increasePercentage);
   const newMaxHp = oldMaxHp + hpIncrease;
 
@@ -198,10 +198,7 @@ function applyScrollEffect(
   const oldAttackMax = player.attack[1];
 
   player.attack[0] = Math.max(0, oldAttackMin + attackIncrease);
-  player.attack[1] = Math.max(
-    player.attack[0],
-    oldAttackMax + attackIncrease
-  );
+  player.attack[1] = Math.max(player.attack[0], oldAttackMax + attackIncrease);
 
   const playerNameEn = player.name[0];
   const playerNameFr = player.name[1];

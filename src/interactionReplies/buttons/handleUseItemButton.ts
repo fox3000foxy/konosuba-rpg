@@ -22,7 +22,7 @@ export async function handleUseItemButton(
       type: 4,
       data: {
         content: fr
-          ? 'Tu n\'as aucun consommable disponible.'
+          ? "Tu n'as aucun consommable disponible."
           : 'You have no consumables available.',
         flags: EPHEMERAL_FLAG,
       },
@@ -64,4 +64,3 @@ export async function handleUseItemButton(
     },
   });
 }
-

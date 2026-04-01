@@ -48,7 +48,10 @@ export async function ensureCharacterProgress(userId: string): Promise<void> {
     .eq('user_id', userId);
 
   if (loadError) {
-    console.error('[db] ensureCharacterProgress load failed:', loadError.message);
+    console.error(
+      '[db] ensureCharacterProgress load failed:',
+      loadError.message
+    );
     return;
   }
 
@@ -56,22 +59,24 @@ export async function ensureCharacterProgress(userId: string): Promise<void> {
     (existingRows || []).map(row => String(row.character_key) as CharacterKey)
   );
 
-  const missingRows = CHARACTER_KEYS
-    .filter(characterKey => !existingKeys.has(characterKey))
-    .map(characterKey => ({
-      user_id: userId,
-      character_key: characterKey,
-      xp: 0,
-      level: 1,
-      affinity: 0,
-      updated_at: new Date().toISOString(),
-    }));
+  const missingRows = CHARACTER_KEYS.filter(
+    characterKey => !existingKeys.has(characterKey)
+  ).map(characterKey => ({
+    user_id: userId,
+    character_key: characterKey,
+    xp: 0,
+    level: 1,
+    affinity: 0,
+    updated_at: new Date().toISOString(),
+  }));
 
   if (missingRows.length === 0) {
     return;
   }
 
-  const { error } = await supabase.from('character_progress').insert(missingRows);
+  const { error } = await supabase
+    .from('character_progress')
+    .insert(missingRows);
 
   if (error) {
     console.error('[db] ensureCharacterProgress failed:', error.message);
@@ -192,7 +197,7 @@ export async function addCharacterXp(
     .from('character_progress')
     .update({
       xp: nextXp,
-      level: nextLevel
+      level: nextLevel,
     })
     .eq('user_id', userId)
     .eq('character_key', characterKey)
@@ -317,14 +322,18 @@ export async function getCharacterStatsSnapshot(
       level: Number(byKey.get(CharacterKey.Darkness)?.level || 1),
       factor:
         getLevelFactor(Number(byKey.get(CharacterKey.Darkness)?.level || 1)) *
-        getAffinityFactor(Number(byKey.get(CharacterKey.Darkness)?.affinity || 0)),
+        getAffinityFactor(
+          Number(byKey.get(CharacterKey.Darkness)?.affinity || 0)
+        ),
     },
     {
       characterKey: CharacterKey.Megumin,
       level: Number(byKey.get(CharacterKey.Megumin)?.level || 1),
       factor:
         getLevelFactor(Number(byKey.get(CharacterKey.Megumin)?.level || 1)) *
-        getAffinityFactor(Number(byKey.get(CharacterKey.Megumin)?.affinity || 0)),
+        getAffinityFactor(
+          Number(byKey.get(CharacterKey.Megumin)?.affinity || 0)
+        ),
     },
     {
       characterKey: CharacterKey.Aqua,

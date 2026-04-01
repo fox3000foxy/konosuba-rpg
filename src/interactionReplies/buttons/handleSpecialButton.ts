@@ -36,7 +36,8 @@ export async function handleSpecialButton(
   const playerName = activePlayerName || 'Kazuma';
 
   const specialAttackUrl = `${BASE_URL}/assets/player/${GIFS_BY_PLAYER[playerName.toLowerCase()] || 'kazuma'}.gif`;
-  const responseType = interaction.data.custom_id.split(':')[1] === userID ? 7 : 4;
+  const responseType =
+    interaction.data.custom_id.split(':')[1] === userID ? 7 : 4;
 
   console.log(
     `Special attack triggered by ${playerName}, using animation from ${specialAttackUrl}`

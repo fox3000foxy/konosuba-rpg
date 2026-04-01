@@ -338,7 +338,9 @@ async function buildOverlayJsx(
 
   type ConsumableEffectType = 'potion' | 'chrono' | 'stone' | 'scroll';
 
-  function detectConsumableEffectType(message: string): ConsumableEffectType | null {
+  function detectConsumableEffectType(
+    message: string
+  ): ConsumableEffectType | null {
     const lower = message.toLowerCase();
     if (lower.includes('regagn') || lower.includes('healed for')) {
       return 'potion';
@@ -574,7 +576,8 @@ async function buildOverlayJsx(
   }
   team.setActivePlayer(team.players[pid]);
 
-  const latestMessage = messages.length > 0 ? messages[messages.length - 1] : '';
+  const latestMessage =
+    messages.length > 0 ? messages[messages.length - 1] : '';
   const latestConsumableEffect = detectConsumableEffectType(latestMessage);
   const latestConsumableTargetId =
     latestMessage && latestConsumableEffect

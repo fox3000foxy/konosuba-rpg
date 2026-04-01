@@ -114,14 +114,13 @@ export async function buildAffinityMessageData(
   filters?: AffinityFilterSelection,
   forceImageRefresh = true
 ): Promise<AffinityMessageData> {
-
   const lang = fr ? 'fr' : 'en';
   const imageVersion = forceImageRefresh ? `&v=${Date.now()}` : '';
   const imageUrl = `${BASE_URL}/affinity/${targetUserId}?lang=${lang}${imageVersion}`;
   console.log(`Generated affinity image URL: ${imageUrl}`);
 
   const starsRule = fr
-    ? 'Etoiles: 1 etoile tous les 20 points d\'affinite (max 5).'
+    ? "Etoiles: 1 etoile tous les 20 points d'affinite (max 5)."
     : 'Stars: 1 star every 20 affinity points (max 5).';
   const rarityRule = fr
     ? 'Rarete -> affinite: bronze +3, silver +5, gold +8, epic +12.'
@@ -134,7 +133,7 @@ export async function buildAffinityMessageData(
 
   const donateHint = canDonate
     ? fr
-      ? '\nUtilise les boutons ci-dessous pour offrir un accessoire et gagner de l\'affinite.'
+      ? "\nUtilise les boutons ci-dessous pour offrir un accessoire et gagner de l'affinite."
       : '\nUse the buttons below to gift an accessory and gain affinity.'
     : '';
 
@@ -256,10 +255,11 @@ export async function buildAffinityGiftComponents(
         min_values: 1,
         max_values: 1,
         options: byRarity.slice(0, 25).map(item => ({
-          label: `${emojiForRarity(item.rarity)} ${fr ? item.nameFr : item.nameEn}`.slice(
-            0,
-            100
-          ),
+          label:
+            `${emojiForRarity(item.rarity)} ${fr ? item.nameFr : item.nameEn}`.slice(
+              0,
+              100
+            ),
           value: item.itemKey,
           description: `x${item.quantity}`,
         })),

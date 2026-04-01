@@ -5,7 +5,9 @@ import { parseGameUrl } from './urlService';
 
 import { getCharacterStatsSnapshot } from './progressionService';
 
-async function getCharacterFactors(userID?: string): Promise<number[] | undefined> {
+async function getCharacterFactors(
+  userID?: string
+): Promise<number[] | undefined> {
   if (!userID) {
     return undefined;
   }
@@ -45,9 +47,17 @@ export async function calculateGameImageFromUrl(
   const { rand, moves, monster, difficulty } = parseGameUrl(url);
   const characterFactors = await getCharacterFactors(userID);
 
-  return processGame(rand, moves, monster, lang, true, characterFactors, difficulty, userID);
+  return processGame(
+    rand,
+    moves,
+    monster,
+    lang,
+    true,
+    characterFactors,
+    difficulty,
+    userID
+  );
 }
-
 
 export function serializeGameForApi(
   game: Game,

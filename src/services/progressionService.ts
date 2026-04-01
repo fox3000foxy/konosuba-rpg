@@ -6,10 +6,7 @@ import { RecordRunInput } from '../objects/types/RecordRunInput';
 import { getSupabaseAdminClient } from '../utils/supabaseClient';
 import { getItemById as getAccessoryById } from './accessoryService';
 import { syncAchievements } from './achievementService';
-import {
-  addCharacterAffinity,
-  addCharacterXp,
-} from './characterService';
+import { addCharacterAffinity, addCharacterXp } from './characterService';
 import {
   ACCESSORY_AFFINITY_POINTS_BY_RARITY,
   grantAccessoryDropRewards,
@@ -27,19 +24,19 @@ export {
   getCharacterProgress,
   getCharacterProgresses,
   getCharacterStatsSnapshot,
-  getLevelFactor
+  getLevelFactor,
 } from './characterService';
 export {
   ensurePlayerProfile,
   getLeaderboard,
   getPlayerProfile,
-  getPlayerRunSummary
+  getPlayerRunSummary,
 } from './playerService';
 export {
   claimDailyQuestReward,
   getAllQuestStatuses,
   getDailyQuestStatus,
-  QUESTS
+  QUESTS,
 } from './questService';
 
 function currentQuestDay(): string {
