@@ -27,7 +27,7 @@ describe('renderProfileImage helper', () => {
     );
 
     expect(svg).toContain('Profile');
-    expect(svg).toContain('Player: u1');
+    expect(svg).toContain('Player stats');
     expect(svg).toContain('Level: 3');
     expect(svg).toContain('Darkness');
     expect(svg).toContain('Lv. 2 | XP 120');
