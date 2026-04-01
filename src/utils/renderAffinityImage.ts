@@ -28,6 +28,8 @@ const AFFINITY_POINTS_PER_STAR = 20;
 type AffinityRow = {
   key: CharacterKey;
   label: string;
+  xp: number;
+  level: number;
   affinity: number;
 };
 
@@ -119,16 +121,22 @@ function getRows(progresses: CharacterProgress[]): AffinityRow[] {
     {
       key: CharacterKey.Darkness,
       label: 'Darkness',
+      xp: Number(byKey.get(CharacterKey.Darkness)?.xp || 0),
+      level: Number(byKey.get(CharacterKey.Darkness)?.level || 1),
       affinity: Number(byKey.get(CharacterKey.Darkness)?.affinity || 0),
     },
     {
       key: CharacterKey.Megumin,
       label: 'Megumin',
+      xp: Number(byKey.get(CharacterKey.Megumin)?.xp || 0),
+      level: Number(byKey.get(CharacterKey.Megumin)?.level || 1),
       affinity: Number(byKey.get(CharacterKey.Megumin)?.affinity || 0),
     },
     {
       key: CharacterKey.Aqua,
       label: 'Aqua',
+      xp: Number(byKey.get(CharacterKey.Aqua)?.xp || 0),
+      level: Number(byKey.get(CharacterKey.Aqua)?.level || 1),
       affinity: Number(byKey.get(CharacterKey.Aqua)?.affinity || 0),
     },
   ];
@@ -155,8 +163,8 @@ export async function buildAffinitySvg(
       <text x="170" y="${rowY[idx] - 10}" fill="#f5f7ff" font-size="34" font-family="${fontFamily}">${escapeXml(row.label)}</text>
       <text x="1030" y="${rowY[idx] - 10}" text-anchor="end" fill="#d8e1ff" font-size="24" font-family="${fontFamily}">${row.affinity}/100 AP</text>
       <text x="170" y="${rowY[idx] + 24}" fill="#9db0e8" font-size="20" font-family="${fontFamily}">${escapeXml(fr ? `Rang: ${getTierLabel(fr, tier)}` : `Tier: ${tier}`)}</text>
+      <text x="1030" y="${rowY[idx] + 24}" text-anchor="end" fill="#9db0e8" font-size="20" font-family="${fontFamily}">${escapeXml(fr ? `Niv. ${row.level} | XP ${row.xp}` : `Lv. ${row.level} | XP ${row.xp}`)}</text>
     `;
-          // <text x="1030" y="${rowY[idx] + 24}" text-anchor="end" fill="#9db0e8" font-size="20" font-family="${fontFamily}">${stars}/${STAR_SLOT_COUNT}</text>
     })
     .join('');
 
