@@ -32,7 +32,7 @@ Exit criteria:
 - Player can craft at least one potion end-to-end from inventory.
 - No partial state on failure (all-or-nothing inventory updates).
 
-### P2 - Clarify progression and affinity policy
+### P2 - Clarify progression and affinity policy ✅
 Goal: remove gameplay ambiguities before wider content expansion.
 
 - Finalize XP distribution policy:
@@ -45,7 +45,8 @@ Goal: remove gameplay ambiguities before wider content expansion.
 Exit criteria:
 - Policies are documented and enforced by tests.
 
-### P3 - Character-facing polish on existing systems
+### P3 - Character-facing polish on existing systems ✅
+
 Goal: improve usability of what already exists without expanding scope.
 
 - Add `/character` inspection command using existing progression/affinity/inventory signals.

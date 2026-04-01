@@ -5,8 +5,8 @@
 - Kazuma uses the global player level.
 - Darkness, Aqua, and Megumin use their own character XP/level.
 - Phase 1 data model and migrations completed.
-- Phase 2 TypeScript services completed.
-- Run processing feeds character progression and global XP.
+- Phase 2 TypeScript services completed (XP model enforced, giveup/execution policies set).
+- Run processing feeds character progression and global XP, with level-up/quest integration.
 - Affinity DB fields and profile readouts are in place.
 
 ## Combat, drops, and inventory
