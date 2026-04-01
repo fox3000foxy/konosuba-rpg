@@ -30,7 +30,7 @@
     "start": "node api/index.js",
     "vercel:dev": "npx vercel dev --listen 8787",
     "vercel:build": "npx vercel build --prod",
-    "vercel:deploy": "npx vercel deploy --prebuilt --prod",
+    "vercel:deploy": "npx vercel deploy --prebuilt --prod --token \"$VERCEL_TOKEN\"",
     "deploy": "pnpm build && npm run vercel:build && npm run vercel:deploy",
     "test-battery": "npm run tsc:build && npm run test:perf && npm run test:leaks && npm run lint",
     "bench": "npx esbuild src/utils/bench.ts --bundle --platform=node --target=node18 --outfile=bench.js && node --expose-gc bench.js && npx rimraf bench.js",
