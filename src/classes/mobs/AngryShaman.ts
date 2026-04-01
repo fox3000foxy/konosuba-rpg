@@ -1,3 +1,4 @@
+import { Gender } from '../../objects/enums/Gender';
 import { Creature } from '../Creature';
 
 export default class AngryShaman extends Creature implements Creature {
@@ -12,6 +13,6 @@ export default class AngryShaman extends Creature implements Creature {
     this.prefix = true;
     this.lore =
       "Le Chaman Énervé est un sorcier tribal perpétuellement en colère, maîtrisant des rituels de malédiction et d'invocation issus de traditions ancestrales obscures. Il accompagne souvent des groupes de monstres comme meneur spirituel, décuplant leur agressivité par ses incantations. Son tempérament colérique le pousse à attaquer sans réfléchir dès qu'il perçoit une menace. Les aventuriers expérimentés le ciblent en priorité pour désorganiser les rangs ennemis.";
-    this.gender = 'male';
+    this.gender = Gender.Male;
   }
 }

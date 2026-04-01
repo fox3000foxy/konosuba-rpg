@@ -1,3 +1,4 @@
+import { Gender } from '../../objects/enums/Gender';
 import { Creature, CreatureInterface } from '../Creature';
 
 export default class Samurai extends Creature implements CreatureInterface {
@@ -13,6 +14,6 @@ export default class Samurai extends Creature implements CreatureInterface {
     this.prefix = true;
     this.lore =
       "Le Samouraï est un guerrier des contrées orientales au service des forces du Roi Démon, maîtrisant un style de combat à la lame rapide et précise inconnu dans les royaumes occidentaux. Sa discipline martiale lui confère une vitesse d'attaque supérieure à celle de la plupart des chevaliers locaux, déstabilisant les combattants habitués aux styles classiques. Il suit un code d'honneur personnel qui, parfois, entre en contradiction avec les ordres reçus. Les aventuriers qui ont survécu à un duel contre lui rapportent que sa technique est aussi élégante qu'implacable.";
-    this.gender = 'male';
+    this.gender = Gender.Male;
   }
 }

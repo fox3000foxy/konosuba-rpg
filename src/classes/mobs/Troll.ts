@@ -1,3 +1,4 @@
+import { Gender } from '../../objects/enums/Gender';
 import { GenericCreature, GenericCreatureInterface } from '../GenericCreature';
 import { Random } from '../Random';
 
@@ -29,7 +30,7 @@ export default class Troll
     this.images = [`enemy_image_${this.color}`];
     this.lore =
       "Le Troll est une créature brutale et stupide dont la force phénoménale compense largement l'absence de toute finesse tactique. Il vit en groupes dans les zones forestières et montagneuses, attaquant tout ce qui entre dans son périmètre avec une énergie inépuisable. Sa régénération lente lui permet de récupérer de blessures légères entre les combats, décourageant les adversaires qui n'éliminent pas leurs cibles rapidement. Le feu reste la méthode la plus efficace pour neutraliser définitivement ses capacités régénératives.";
-    this.gender = 'male';
+    this.gender = Gender.Male;
     return this.color;
   }
 }

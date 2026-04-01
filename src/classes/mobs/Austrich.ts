@@ -1,3 +1,4 @@
+import { Gender } from '../../objects/enums/Gender';
 import { GenericCreature, GenericCreatureInterface } from '../GenericCreature';
 import { Random } from '../Random';
 
@@ -28,6 +29,6 @@ export default class Troll
     this.images = [`enemy_image_${this.color}`];
     this.lore =
       "Ce Troll des plaines est une créature massive et stupide, dont la force brute compense largement le manque de stratégie. Il vit en solitaire ou en petits groupes territoriaux et attaque tout ce qui pénètre dans son périmètre. Sa peau épaisse lui confère une résistance naturelle aux coups ordinaires, et sa régénération lente lui permet de tenir longtemps dans un combat. Les aventuriers débutants ont appris à leurs dépens qu'il vaut mieux tourner autour plutôt que de l'affronter de face.";
-    this.gender = 'male';
+    this.gender = Gender.Male;
   }
 }

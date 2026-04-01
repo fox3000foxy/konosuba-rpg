@@ -1,3 +1,4 @@
+import { Gender } from '../../objects/enums/Gender';
 import { Creature, CreatureInterface } from '../Creature';
 
 export default class Squall extends Creature implements CreatureInterface {
@@ -13,6 +14,6 @@ export default class Squall extends Creature implements CreatureInterface {
     this.prefix = false;
     this.lore =
       "Squall est un esprit élémentaire du vent doté d'une conscience propre, capable de générer des bourrasques tranchantes qui peuvent lacérer les armures légères. Il se manifeste lors des tempêtes ou dans les zones de forte activité magique, attiré par les concentrations d'énergie élémentaire. Capricieux et imprévisible, il change de cible au fil de ses humeurs sans réelle logique tactique apparente. Les mages spécialisés en magie terrestre peinent à l'affecter, mais les sorts de foudre le neutralisent rapidement.";
-    this.gender = 'male';
+    this.gender = Gender.Male;
   }
 }
