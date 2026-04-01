@@ -1,6 +1,7 @@
 import { Context } from 'hono';
 import { Lang } from '../../objects/enums/Lang';
 import { RawButton } from '../../objects/enums/RawButton';
+import { buildBattleTitle } from '../../utils/battleTitle';
 import { buildComponents } from '../../utils/componentsBuilder';
 import { makeid } from '../../utils/idUtils';
 import { buildImageUrl } from '../../utils/imageUtils';
@@ -245,15 +246,14 @@ async function buildTrainData(
     userID,
     lang
   );
+  const title = buildBattleTitle(payload, fr, userID, monsterName);
 
   return {
     embeds: [
       {
         image: { url: imageUrl },
         description:
-          (fr
-            ? `**Entrainement contre ${monsterName} (joueur <@${userID}>)**`
-            : `**Training vs ${monsterName} (player <@${userID}>)**`) +
+          `${title} ${fr ? `(joueur <@${userID}>)` : `(player <@${userID}>)`}` +
           (embedDescription.length > 0
             ? `\n\n${embedDescription.join('\n')}`
             : ''),
