@@ -3,6 +3,7 @@ import { BASE_URL, DISCORD_API_URL } from '../../objects/config/constants';
 import { Interaction } from '../../objects/enums/Interaction';
 import { Lang } from '../../objects/enums/Lang';
 import { RawButton } from '../../objects/enums/RawButton';
+import { buildBattleTitle } from '../../utils/battleTitle';
 import { buildImageUrl } from '../../utils/imageUtils';
 
 const GIFS_BY_PLAYER: Record<string, string> = {
@@ -25,9 +26,7 @@ export async function handleSpecialButton(
   buttons: RawButton[]
 ) {
   const imageUrl = buildImageUrl(payload, lang, undefined, userID);
-  const title = fr
-    ? `Entraînement contre ${monsterName}`
-    : `Training vs ${monsterName}`;
+  const title = buildBattleTitle(payload, fr, userID, monsterName);
   const description =
     embedDescription.length > 0
       ? `${title}\n\n${embedDescription.join('\n')}`
