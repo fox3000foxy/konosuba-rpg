@@ -15,6 +15,7 @@ import {
   grantAccessoryDropRewards,
   grantConsumableDropRewards,
 } from './dropService';
+import { consumeInventoryItem } from './inventoryConsumptionService';
 import { ensurePlayerProfile } from './playerService';
 import { QUESTS } from './questService';
 
@@ -107,14 +108,14 @@ export async function donateAccessoryToCharacter(
     };
   }
 
-  // const consumed = await consumeInventoryItem(userId, accessory.id, 1);
-  // if (!consumed) {
-  //   return {
-  //     success: false,
-  //     affinityPoints: 0,
-  //     reason: 'out-of-stock',
-  //   };
-  // }
+  const consumed = await consumeInventoryItem(userId, accessory.id, 1);
+  if (!consumed) {
+    return {
+      success: false,
+      affinityPoints: 0,
+      reason: 'out-of-stock',
+    };
+  }
 
   await addCharacterAffinity(userId, characterKey, affinityPoints);
 

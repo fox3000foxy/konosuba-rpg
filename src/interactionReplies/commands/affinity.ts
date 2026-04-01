@@ -112,7 +112,7 @@ export async function buildAffinityMessageData(
   fr: boolean,
   statusLine?: string,
   filters?: AffinityFilterSelection,
-  forceImageRefresh = false
+  forceImageRefresh = true
 ): Promise<AffinityMessageData> {
 
   const lang = fr ? 'fr' : 'en';
