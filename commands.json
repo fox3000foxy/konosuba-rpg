@@ -222,6 +222,7 @@
 					"en-GB": "Recipe key to use"
 				},
 				"type": "STRING",
+				"autocomplete": true,
 				"required": false
 			}
 		],

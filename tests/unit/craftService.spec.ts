@@ -45,6 +45,7 @@ describe('craftService', () => {
           reason: 'crafted',
           crafted_item_key: '20001000',
           crafted_quantity: 1,
+          missing_ingredients: null,
         },
       ],
       error: null,
@@ -64,7 +65,7 @@ describe('craftService', () => {
     });
   });
 
-  it('maps insufficient ingredients reason', async () => {
+  it('maps insufficient ingredients reason with details', async () => {
     const rpc = jest.fn().mockResolvedValue({
       data: [
         {
@@ -72,6 +73,18 @@ describe('craftService', () => {
           reason: 'insufficient_ingredients',
           crafted_item_key: null,
           crafted_quantity: 0,
+          missing_ingredients: [
+            {
+              item_key: '20003000',
+              required: 1,
+              available: 0,
+            },
+            {
+              item_key: '20004001',
+              required: 1,
+              available: 0,
+            },
+          ],
         },
       ],
       error: null,
@@ -81,9 +94,13 @@ describe('craftService', () => {
 
     const result = await craftRecipe('user-1', 'potion_fire_basic');
 
-    expect(result).toEqual({
-      success: false,
-      reason: 'insufficient_ingredients',
+    expect(result.success).toBe(false);
+    expect(result.reason).toBe('insufficient_ingredients');
+    expect(result.missingIngredients).toHaveLength(2);
+    expect(result.missingIngredients?.[0]).toEqual({
+      itemId: '20003000',
+      required: 1,
+      available: 0,
     });
   });
 
@@ -97,6 +114,7 @@ describe('craftService', () => {
             reason: 'crafted',
             crafted_item_key: '20001000',
             crafted_quantity: 1,
+            missing_ingredients: null,
           },
         ],
         error: null,
@@ -108,6 +126,13 @@ describe('craftService', () => {
             reason: 'insufficient_ingredients',
             crafted_item_key: null,
             crafted_quantity: 0,
+            missing_ingredients: [
+              {
+                item_key: '20003000',
+                required: 1,
+                available: 0,
+              },
+            ],
           },
         ],
         error: null,
@@ -122,5 +147,6 @@ describe('craftService', () => {
 
     expect(first.reason).toBe('crafted');
     expect(second.reason).toBe('insufficient_ingredients');
+    expect(second.missingIngredients).toHaveLength(1);
   });
 });
