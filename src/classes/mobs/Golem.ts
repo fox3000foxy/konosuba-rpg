@@ -1,3 +1,4 @@
+import { Gender } from '../../objects/enums/Gender';
 import { GenericCreature, GenericCreatureInterface } from '../GenericCreature';
 import { Random } from '../Random';
 
@@ -20,6 +21,6 @@ export default class Golem
     this.images = [`enemy_image_${this.color}`];
     this.lore =
       "Le Golem est une construction magique animée par un cristal d'énergie niché dans sa poitrine, créé pour garder des lieux ou des trésors anciens. Insensible à la douleur et aux émotions, il accomplit sa mission de garde avec une persistance mécanique absolue. Ses poings de pierre peuvent briser les boucliers les plus solides, mais sa lenteur le rend vulnérable aux combattants agiles. Détruire le cristal au centre de sa masse est le seul moyen sûr de l'arrêter définitivement.";
-    this.gender = 'neutral';
+    this.gender = Gender.Neutral;
   }
 }

@@ -1,3 +1,4 @@
+import { Gender } from '../../objects/enums/Gender';
 import { GenericCreature, GenericCreatureInterface } from '../GenericCreature';
 import { Random } from '../Random';
 
@@ -20,6 +21,6 @@ export default class LoveBunny
     this.images = [`enemy_image_${this.color}`];
     this.lore =
       "Le Love Bunny est une créature mignonne et trompeuse dont l'apparence de lapin inoffensif dissimule une nature agressive et possessive. Il émet des phéromones magiques qui attirent irrésistiblement les adventuriers imprudents dans son territoire pour s'en prendre à eux. Malgré sa faible puissance d'attaque, il est capable de mordre avec une férocité surprenante et de griffer en cas de coin acculé. Les novices d'Axel ont souvent eu la mauvaise surprise de le sous-estimer en raison de son apparence attendrissante.";
-    this.gender = 'neutral';
+    this.gender = Gender.Neutral;
   }
 }

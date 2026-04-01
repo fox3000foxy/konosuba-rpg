@@ -1,3 +1,4 @@
+import { Gender } from '../../objects/enums/Gender';
 import { GenericCreature, GenericCreatureInterface } from '../GenericCreature';
 import { Random } from '../Random';
 
@@ -20,6 +21,6 @@ export default class DarkWolf
     this.images = [`enemy_image_${this.color}`];
     this.lore =
       "Le Loup Ténébreux est un prédateur des plaines et forêts corrompues, dont le pelage sombre absorbe la lumière et le rend difficile à repérer la nuit. Intelligent pour un monstre de son rang, il coordonne ses attaques en meute avec une efficacité redoutable. Sa vitesse et ses crocs imprégnés d'énergie démoniaque lui permettent de traverser certaines armures légères. Les bergers de la région d'Axel le redoutent plus que tout autre monstre des alentours.";
-    this.gender = 'male';
+    this.gender = Gender.Male;
   }
 }

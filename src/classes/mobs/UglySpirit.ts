@@ -1,3 +1,4 @@
+import { Gender } from '../../objects/enums/Gender';
 import { Creature, CreatureInterface } from '../Creature';
 
 export default class UglySpirit extends Creature implements CreatureInterface {
@@ -13,6 +14,6 @@ export default class UglySpirit extends Creature implements CreatureInterface {
     this.prefix = true;
     this.lore =
       "L'Esprit Hideux est une entité spectrale issue des âmes les plus corrompues et rancunières, dont l'apparence repoussante reflète la noirceur intérieure de ce qu'il était autrefois. Il hante les ruines et les lieux de tragédies anciennes, drainant l'énergie vitale des vivants qui s'aventurent trop près. Ses attaques traversent les armures physiques, rendant les défenses conventionnelles totalement inefficaces contre lui. La magie sacrée d'Aqua est particulièrement redoutable contre cette créature, ce qui constitue l'une des rares situations où ses pouvoirs divins s'avèrent vraiment utiles.";
-    this.gender = 'male';
+    this.gender = Gender.Male;
   }
 }

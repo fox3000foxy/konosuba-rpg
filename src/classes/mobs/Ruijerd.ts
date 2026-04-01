@@ -1,3 +1,4 @@
+import { Gender } from '../../objects/enums/Gender';
 import { Creature, CreatureInterface } from '../Creature';
 
 export default class Ruijerd extends Creature implements CreatureInterface {
@@ -13,6 +14,6 @@ export default class Ruijerd extends Creature implements CreatureInterface {
     this.prefix = false;
     this.lore =
       "Ruijerd Superdia est un Superd, membre d'une race de guerriers d'élite portant une lance cristalline et une marque sur le front, universellement craints et haïs à tort dans son monde d'origine. Stoïque et d'une droiture absolue, il s'est imposé un code d'honneur strict qui lui interdit de mentir ou d'abandonner ceux qu'il a décidé de protéger. Sa réputation de monstre sanguinaire est une injustice historique qui pèse lourdement sur lui, mais il la supporte sans se plaindre. Ici, son apparition en tant qu'adversaire trahit une manipulation extérieure de sa nature profondément loyale.";
-    this.gender = 'male';
+    this.gender = Gender.Male;
   }
 }

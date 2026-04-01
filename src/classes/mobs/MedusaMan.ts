@@ -1,3 +1,4 @@
+import { Gender } from '../../objects/enums/Gender';
 import { Creature, CreatureInterface } from '../Creature';
 
 export default class MedusaMan extends Creature implements CreatureInterface {
@@ -12,6 +13,6 @@ export default class MedusaMan extends Creature implements CreatureInterface {
     this.prefix = true;
     this.lore =
       "L'Homme Méduse est une créature mi-humaine mi-méduse capable de pétrifier ses adversaires d'un simple regard prolongé. Il vit dans les zones rocailleuses et les cavernes, entouré de statues de pierre qui sont en réalité ses victimes passées. Sa biologie hybride lui confère une résistance aux poisons et une agilité étonnante malgré son apparence disgracieuse. Les aventuriers l'affrontent systématiquement les yeux baissés ou protégés d'un miroir, rendant le combat particulièrement périlleux.";
-    this.gender = 'male';
+    this.gender = Gender.Male;
   }
 }

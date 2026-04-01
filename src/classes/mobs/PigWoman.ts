@@ -1,3 +1,4 @@
+import { Gender } from '../../objects/enums/Gender';
 import { GenericCreature, GenericCreatureInterface } from '../GenericCreature';
 import { Random } from '../Random';
 
@@ -20,6 +21,6 @@ export default class PigWoman
     this.images = [`enemy_image_${this.color}`];
     this.lore =
       "La Femme Cochon est une créature humanoïde porcine souvent croisée dans les villes et marchés louches, où elle gère des commerces douteux avec une ruse animale. Peu dangereuse en combat ouvert, elle compense par des pièges, des appels à la garde ou des complices cachés dans les ruelles. Sa nature cupide la rend corruptible, mais tenter de la soudoyer sans y mettre le prix peut facilement se retourner contre soi. Elle constitue moins une menace physique qu'un obstacle social et économique pour les aventuriers.";
-    this.gender = 'female';
+    this.gender = Gender.Female;
   }
 }

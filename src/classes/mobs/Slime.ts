@@ -1,3 +1,4 @@
+import { Gender } from '../../objects/enums/Gender';
 import { GenericCreature, GenericCreatureInterface } from '../GenericCreature';
 import { Random } from '../Random';
 
@@ -20,7 +21,7 @@ export default class Slime
     this.images = [`enemy_image_${this.color}`];
     this.lore =
       "Le Slime est une masse gélatineuse dont la forme simple dissimule une résistance aux attaques physiques et une capacité à corroder progressivement tout ce qu'il englobe. Il se retrouve dans les donjons et les zones humides, attirant les aventuriers peu méfiants par son apparence inoffensive. Sa faiblesse principale réside dans les attaques de feu ou de froid intense, qui modifient sa structure interne et réduisent sa cohésion. Dans le monde de KonoSuba, même cette créature ordinaire peut s'avérer problématique pour une équipe aussi chaotique que celle de Kazuma.";
-    this.gender = 'neutral';
+    this.gender = Gender.Neutral;
     return this.color;
   }
 }

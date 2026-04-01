@@ -1,3 +1,4 @@
+import { Gender } from '../../objects/enums/Gender';
 import { Creature, CreatureInterface } from '../Creature';
 
 export default class KingTroll extends Creature implements CreatureInterface {
@@ -12,6 +13,6 @@ export default class KingTroll extends Creature implements CreatureInterface {
     this.prefix = true;
     this.lore =
       "Le Roi Troll est le chef incontesté d'une tribu de trolls, imposant sa domination par la force brute et une taille deux fois supérieure à celle de ses congénères. Il possède une intelligence rudimentaire lui permettant de diriger des raids organisés sur les villages et les caravanes marchandes. Sa régénération est bien plus rapide que celle des trolls ordinaires, rendant les combats prolongés à son avantage. Les guildes d'aventuriers offrent une prime substantielle pour toute preuve de sa mise hors d'état de nuire.";
-    this.gender = 'male';
+    this.gender = Gender.Male;
   }
 }
