@@ -1,6 +1,7 @@
 import { Gender } from '../../objects/enums/Gender';
 import { FrenchLores } from '../../objects/enums/FrenchLores';
 import { Creature, CreatureInterface } from '../Creature';
+import { EnglishLore } from '../../objects/enums/EnglishLore';
 
 export default class Vanir extends Creature implements CreatureInterface {
   constructor() {
@@ -13,7 +14,7 @@ export default class Vanir extends Creature implements CreatureInterface {
     // this.color = rand.choice(["11000", "11001", "11002", "11003", "11004", "11005", "11006"]);
     this.images = [`enemy_image_17800`];
     this.prefix = false;
-    this.lore = FrenchLores.Creature_Vanir;
+    this.lore = [FrenchLores.Creature_Vanir, EnglishLore.Creature_Vanir];
     this.gender = Gender.Male;
   }
 }

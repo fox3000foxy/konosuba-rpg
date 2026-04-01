@@ -17,7 +17,7 @@ export abstract class Creature implements CreatureInterface {
   public images: string[];
   public color?: string;
   public prefix: boolean;
-  public lore: string;
+  public lore: string[];
   public gender: Gender;
 
   constructor() {
@@ -28,7 +28,7 @@ export abstract class Creature implements CreatureInterface {
     this.name = ['Creature', 'Créature'];
     this.images = ['frame'];
     this.prefix = true;
-    this.lore = '';
+    this.lore = ['', ''];
     this.gender = Gender.Neutral;
 
     if (new.target === Creature) {

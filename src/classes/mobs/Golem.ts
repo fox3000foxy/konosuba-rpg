@@ -2,6 +2,7 @@ import { Gender } from '../../objects/enums/Gender';
 import { FrenchLores } from '../../objects/enums/FrenchLores';
 import { GenericCreature, GenericCreatureInterface } from '../GenericCreature';
 import { Random } from '../Random';
+import { EnglishLore } from '../../objects/enums/EnglishLore';
 
 export default class Golem
   extends GenericCreature
@@ -20,7 +21,7 @@ export default class Golem
   pickColor(rng: Random) {
     this.color = rng.choice(['11201', '11203']);
     this.images = [`enemy_image_${this.color}`];
-    this.lore = FrenchLores.Creature_Golem;
+    this.lore = [FrenchLores.Creature_Golem, EnglishLore.Creature_Golem];
     this.gender = Gender.Neutral;
   }
 }

@@ -1,6 +1,7 @@
 import { Gender } from '../../objects/enums/Gender';
 import { FrenchLores } from '../../objects/enums/FrenchLores';
 import { Creature } from '../Creature';
+import { EnglishLore } from '../../objects/enums/EnglishLore';
 export default class Sylvia extends Creature {
   constructor() {
     super();
@@ -17,7 +18,7 @@ export default class Sylvia extends Creature {
   dealAttack(dmg: number) {
     this.hp -= dmg;
     if (this.hp <= 20) this.images = [`enemy_image_14501`];
-    this.lore = FrenchLores.Creature_Sylvia;
+    this.lore = [FrenchLores.Creature_Sylvia, EnglishLore.Creature_Sylvia];
     this.gender = Gender.Female;
   }
 }

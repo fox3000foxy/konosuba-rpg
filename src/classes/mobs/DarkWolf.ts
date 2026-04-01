@@ -2,6 +2,7 @@ import { Gender } from '../../objects/enums/Gender';
 import { FrenchLores } from '../../objects/enums/FrenchLores';
 import { GenericCreature, GenericCreatureInterface } from '../GenericCreature';
 import { Random } from '../Random';
+import { EnglishLore } from '../../objects/enums/EnglishLore';
 
 export default class DarkWolf
   extends GenericCreature
@@ -20,7 +21,7 @@ export default class DarkWolf
   pickColor(rng: Random) {
     this.color = rng.choice(['15800', '15801', '15803']);
     this.images = [`enemy_image_${this.color}`];
-    this.lore = FrenchLores.Creature_DarkWolf;
+    this.lore = [FrenchLores.Creature_DarkWolf, EnglishLore.Creature_DarkWolf];
     this.gender = Gender.Male;
   }
 }

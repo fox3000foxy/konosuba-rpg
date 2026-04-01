@@ -1,6 +1,7 @@
 import { Gender } from '../../objects/enums/Gender';
 import { FrenchLores } from '../../objects/enums/FrenchLores';
 import { Creature, CreatureInterface } from '../Creature';
+import { EnglishLore } from '../../objects/enums/EnglishLore';
 
 export default class GeneralWinter
   extends Creature
@@ -15,7 +16,7 @@ export default class GeneralWinter
     this.name = ['General Winter', 'Général Winter'];
     this.images = [`enemy_image_10900`];
     this.prefix = true;
-    this.lore = FrenchLores.Creature_GeneralWinter;
+    this.lore = [FrenchLores.Creature_GeneralWinter, EnglishLore.Creature_GeneralWinter];
     this.gender = Gender.Male;
   }
 }
