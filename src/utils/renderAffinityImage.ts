@@ -153,10 +153,10 @@ export async function buildAffinitySvg(
       return `
       <rect x="36" y="${rowY[idx] - 50}" width="1028" height="100" rx="14" fill="#0f1729" fill-opacity="0.74" />
       <text x="170" y="${rowY[idx] - 10}" fill="#f5f7ff" font-size="34" font-family="${fontFamily}">${escapeXml(row.label)}</text>
-      <text x="1030" y="${rowY[idx] - 10}" text-anchor="end" fill="#d8e1ff" font-size="24" font-family="${fontFamily}">${row.affinity} AP</text>
+      <text x="1030" y="${rowY[idx] - 10}" text-anchor="end" fill="#d8e1ff" font-size="24" font-family="${fontFamily}">${row.affinity}/100 AP</text>
       <text x="170" y="${rowY[idx] + 24}" fill="#9db0e8" font-size="20" font-family="${fontFamily}">${escapeXml(fr ? `Rang: ${getTierLabel(fr, tier)}` : `Tier: ${tier}`)}</text>
-      <text x="1030" y="${rowY[idx] + 24}" text-anchor="end" fill="#9db0e8" font-size="20" font-family="${fontFamily}">${stars}/${STAR_SLOT_COUNT}</text>
     `;
+          // <text x="1030" y="${rowY[idx] + 24}" text-anchor="end" fill="#9db0e8" font-size="20" font-family="${fontFamily}">${stars}/${STAR_SLOT_COUNT}</text>
     })
     .join('');
 
@@ -165,7 +165,6 @@ export async function buildAffinitySvg(
     <rect x="24" y="24" width="1052" height="${HEIGHT - 48}" rx="16" fill="#070c1b" fill-opacity="0.76" stroke="#34405e" stroke-opacity="0.9" />
     <text x="36" y="82" fill="#ffffff" font-size="42" font-family="${fontFamily}">${escapeXml(fr ? 'Affinite' : 'Affinity')}</text>
     <text x="36" y="116" fill="#b2bdd6" font-size="18" font-family="${fontFamily}">${escapeXml(fr ? `Total equipe: ${totalAffinity}` : `Team total: ${totalAffinity}`)}</text>
-    <text x="1030" y="116" text-anchor="end" fill="#8ea1d6" font-size="16" font-family="${fontFamily}">${escapeXml(fr ? 'basic: 1-3, or: 4, epique: 5' : 'basic: 1-3, gold: 4, epic: 5')}</text>
     ${rowText}
   </svg>`;
 }

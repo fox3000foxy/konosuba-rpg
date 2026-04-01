@@ -1,11 +1,17 @@
+import { AccessoryId } from '../objects/enums/AccessoryId';
 import { CharacterKey } from '../objects/enums/CharacterKey';
 import { GameState } from '../objects/enums/GameState';
 import { QuestConditionKey } from '../objects/enums/QuestConditionKey';
 import { RecordRunInput } from '../objects/types/RecordRunInput';
 import { getSupabaseAdminClient } from '../utils/supabaseClient';
+import { getItemById as getAccessoryById } from './accessoryService';
 import { syncAchievements } from './achievementService';
-import { addCharacterXp, ensureCharacterProgress } from './characterService';
 import {
+  addCharacterAffinity,
+  addCharacterXp,
+} from './characterService';
+import {
+  ACCESSORY_AFFINITY_POINTS_BY_RARITY,
   grantAccessoryDropRewards,
   grantConsumableDropRewards,
 } from './dropService';
@@ -17,23 +23,22 @@ export {
   addCharacterAffinity,
   addCharacterXp,
   computeLevelFromXp,
-  ensureCharacterProgress,
   getCharacterProgress,
   getCharacterProgresses,
   getCharacterStatsSnapshot,
-  getLevelFactor,
+  getLevelFactor
 } from './characterService';
 export {
   ensurePlayerProfile,
   getLeaderboard,
   getPlayerProfile,
-  getPlayerRunSummary,
+  getPlayerRunSummary
 } from './playerService';
 export {
   claimDailyQuestReward,
   getAllQuestStatuses,
   getDailyQuestStatus,
-  QUESTS,
+  QUESTS
 } from './questService';
 
 function currentQuestDay(): string {
@@ -72,6 +77,53 @@ function xpFromState(state: GameState): number {
   }
 }
 
+export type DonateAccessoryResult = {
+  success: boolean;
+  affinityPoints: number;
+  reason?: 'invalid-accessory' | 'out-of-stock';
+};
+
+export async function donateAccessoryToCharacter(
+  userId: string,
+  accessoryId: string,
+  characterKey: CharacterKey
+): Promise<DonateAccessoryResult> {
+  const accessory = getAccessoryById(accessoryId as AccessoryId);
+  if (!accessory) {
+    return {
+      success: false,
+      affinityPoints: 0,
+      reason: 'invalid-accessory',
+    };
+  }
+
+  const affinityPoints =
+    ACCESSORY_AFFINITY_POINTS_BY_RARITY[accessory.rarity] || 0;
+  if (affinityPoints <= 0) {
+    return {
+      success: false,
+      affinityPoints: 0,
+      reason: 'invalid-accessory',
+    };
+  }
+
+  // const consumed = await consumeInventoryItem(userId, accessory.id, 1);
+  // if (!consumed) {
+  //   return {
+  //     success: false,
+  //     affinityPoints: 0,
+  //     reason: 'out-of-stock',
+  //   };
+  // }
+
+  await addCharacterAffinity(userId, characterKey, affinityPoints);
+
+  return {
+    success: true,
+    affinityPoints,
+  };
+}
+
 export async function recordRunResult(input: RecordRunInput): Promise<void> {
   if (!shouldPersistRun(input.state)) {
     console.log(
@@ -86,7 +138,6 @@ export async function recordRunResult(input: RecordRunInput): Promise<void> {
 
   // Ensure player exists before recording run (foreign key constraint)
   await ensurePlayerProfile(input.userId);
-  await ensureCharacterProgress(input.userId);
 
   const supabase = getSupabaseAdminClient();
   if (!supabase) {

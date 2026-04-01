@@ -237,7 +237,7 @@ describe('recordRunResult integration-like flow', () => {
     });
 
     expect(mockedEnsurePlayerProfile).toHaveBeenCalledWith('user-1');
-    expect(mockedEnsureCharacterProgress).toHaveBeenCalledWith('user-1');
+    expect(mockedEnsureCharacterProgress).not.toHaveBeenCalled();
 
     expect(mockedAddCharacterXp).toHaveBeenCalledTimes(3);
     expect(mockedAddCharacterXp).toHaveBeenNthCalledWith(

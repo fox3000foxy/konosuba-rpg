@@ -16,30 +16,35 @@ export async function consumeInventoryItem(
   }
 
   try {
-    // First check if item exists and has sufficient quantity
-    const { data: existingItem, error: selectError } = await supabase
+    // Load all matching rows to handle historical duplicates safely.
+    const { data: existingItems, error: selectError } = await supabase
       .from('inventory_items')
-      .select('quantity')
+      .select('quantity, item_type')
       .eq('user_id', userId)
-      .eq('item_key', itemKey)
-      .single();
+      .eq('item_key', itemKey);
 
-    if (selectError || !existingItem) {
+    if (selectError || !existingItems || existingItems.length === 0) {
       console.error('Item not found in inventory:', selectError);
       return false;
     }
 
-    if (existingItem.quantity < quantity) {
+    const totalQuantity = existingItems.reduce(
+      (acc, row) => acc + Number(row.quantity || 0),
+      0
+    );
+
+    if (totalQuantity < quantity) {
       console.error('Insufficient quantity:', {
-        have: existingItem.quantity,
+        have: totalQuantity,
         need: quantity,
       });
       return false;
     }
 
-    // Decrement or delete if quantity becomes 0
-    const newQuantity = existingItem.quantity - quantity;
+    const newQuantity = totalQuantity - quantity;
+    const itemType = String(existingItems[0]?.item_type || 'unknown');
 
+    // Normalize to a single row for this (user,item), then write final quantity.
     if (newQuantity <= 0) {
       const { error: deleteError } = await supabase
         .from('inventory_items')
@@ -52,14 +57,29 @@ export async function consumeInventoryItem(
         return false;
       }
     } else {
-      const { error: updateError } = await supabase
+      const { error: resetError } = await supabase
         .from('inventory_items')
-        .update({ quantity: newQuantity })
+        .delete()
         .eq('user_id', userId)
         .eq('item_key', itemKey);
 
-      if (updateError) {
-        console.error('Failed to update inventory:', updateError);
+      if (resetError) {
+        console.error('Failed to normalize inventory rows:', resetError);
+        return false;
+      }
+
+      const { error: insertError } = await supabase
+        .from('inventory_items')
+        .insert({
+          user_id: userId,
+          item_key: itemKey,
+          item_type: itemType,
+          quantity: newQuantity,
+          updated_at: new Date().toISOString(),
+        });
+
+      if (insertError) {
+        console.error('Failed to update inventory:', insertError);
         return false;
       }
     }
