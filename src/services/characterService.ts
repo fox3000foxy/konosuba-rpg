@@ -192,8 +192,7 @@ export async function addCharacterXp(
     .from('character_progress')
     .update({
       xp: nextXp,
-      level: nextLevel,
-      affinity: 50
+      level: nextLevel
     })
     .eq('user_id', userId)
     .eq('character_key', characterKey)
