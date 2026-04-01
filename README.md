@@ -52,6 +52,26 @@ Game visual assets are sourced from **KonoSuba: Fantastic Days** and are used he
 - `pnpm test:leaks`
 - `pnpm lint`
 
+### Vercel deployment
+
+The repository has a GitHub Actions workflow that deploys to Vercel on pushes to `dev`.
+
+Required GitHub repository secrets:
+
+- `VERCEL_TOKEN`
+- `VERCEL_ORG_ID`
+- `VERCEL_PROJECT_ID`
+
+To create the Vercel token:
+
+1. Open the Vercel dashboard.
+2. Go to your account settings.
+3. Open the `Tokens` section.
+4. Create a new token and copy it once.
+5. Add it to GitHub under `Settings` > `Secrets and variables` > `Actions` > `New repository secret`.
+
+You can find `VERCEL_ORG_ID` and `VERCEL_PROJECT_ID` in the local `.vercel/project.json` after linking the project, or by running `vercel link` locally and reusing the generated values.
+
 ## License (Important)
 
 This repository uses a custom **source-available** license in [LICENSE](LICENSE).
