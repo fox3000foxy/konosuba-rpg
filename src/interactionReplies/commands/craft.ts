@@ -28,23 +28,36 @@ function recipesHelpText(fr: boolean): string {
     return `- ${resultName} x${recipe.resultQuantity} (${ingredients})`;
   });
 
-  return (fr
-    ? '# Recettes disponibles\n\nUtilise `/craft recipe:` puis sélectionne la recette\n\n'
-    : '# Available recipes\n\nUse `/craft recipe:` then select the recipe\n\n') + lines.join('\n');
+  return (
+    (fr
+      ? '# Recettes disponibles\n\nUtilise `/craft recipe:` puis sélectionne la recette\n\n'
+      : '# Available recipes\n\nUse `/craft recipe:` then select the recipe\n\n') +
+    lines.join('\n')
+  );
 }
 
 function failureMessage(
   reason: string,
   fr: boolean,
-  missingIngredients?: Array<{ itemId: string; required: number; available: number }>
+  missingIngredients?: Array<{
+    itemId: string;
+    required: number;
+    available: number;
+  }>
 ): string {
-  if (reason === 'insufficient_ingredients' && missingIngredients && missingIngredients.length > 0) {
+  if (
+    reason === 'insufficient_ingredients' &&
+    missingIngredients &&
+    missingIngredients.length > 0
+  ) {
     const recipes = getCraftingRecipes();
     const missingLines = missingIngredients.map(missing => {
       // Find the ingredient name from recipes
       let ingredientName = missing.itemId;
       for (const recipe of recipes) {
-        const found = recipe.ingredients.find(ing => ing.itemId === missing.itemId);
+        const found = recipe.ingredients.find(
+          ing => ing.itemId === missing.itemId
+        );
         if (found) {
           ingredientName = fr ? found.nameFr : found.nameEn;
           break;
@@ -58,8 +71,8 @@ function failureMessage(
     });
 
     const title = fr
-      ? "❌ Ingredients insuffisants:\n"
-      : "❌ Not enough ingredients:\n";
+      ? '❌ Ingredients insuffisants:\n'
+      : '❌ Not enough ingredients:\n';
 
     return title + missingLines.join('\n');
   }
@@ -117,7 +130,9 @@ export async function handleCraftCommand(
   }
 
   const recipes = getCraftingRecipes();
-  const crafted = recipes.find(recipe => recipe.resultItemId === result.craftedItemId);
+  const crafted = recipes.find(
+    recipe => recipe.resultItemId === result.craftedItemId
+  );
   const craftedName = crafted
     ? fr
       ? crafted.resultNameFr

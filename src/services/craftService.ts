@@ -140,11 +140,12 @@ export async function craftRecipe(
   }
 
   if (!row.success) {
-    const missingIngredients = row.missing_ingredients?.map(item => ({
-      itemId: item.item_key as ItemId,
-      required: item.required,
-      available: item.available,
-    })) || [];
+    const missingIngredients =
+      row.missing_ingredients?.map(item => ({
+        itemId: item.item_key as ItemId,
+        required: item.required,
+        available: item.available,
+      })) || [];
 
     return {
       success: false,

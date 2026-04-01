@@ -3,11 +3,11 @@ import { QuestAction } from '../../objects/enums/QuestAction';
 import { QuestClaimStatus } from '../../objects/enums/QuestClaimStatus';
 import { InteractionDataOption } from '../../objects/types/InteractionDataOption';
 import {
-    claimDailyQuestReward,
-    ensurePlayerProfile,
-    getAllQuestStatuses,
-    getQuestLabel,
-    QUESTS,
+  claimDailyQuestReward,
+  ensurePlayerProfile,
+  getAllQuestStatuses,
+  getQuestLabel,
+  QUESTS,
 } from '../../services/progressionService';
 
 const QUEST_ACTION_VIEW = QuestAction.View;
