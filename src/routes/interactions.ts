@@ -7,6 +7,7 @@ import { Lang } from '../objects/enums/Lang';
 import { verifySignature } from '../utils/discordUtils';
 
 export async function handleInteractions(c: Context) {
+  // const date1 = new Date();
   const body = await c.req.text();
   const isVerified = await verifySignature(c, body);
   if (!isVerified) {
@@ -22,6 +23,10 @@ export async function handleInteractions(c: Context) {
     : Lang.English;
   const userID = interaction?.member?.user?.id || interaction.user.id;
   const fr = lang === Lang.French;
+
+  // const date2 = new Date();
+  // const executionTime = date2.getTime() - date1.getTime();
+  // console.log(`Interaction received: type=${interaction.type}, userID=${userID}, lang=${lang}, executionTime=${executionTime}ms`)
 
   if (interaction.type === 1) {
     return c.json({ type: 1 });
