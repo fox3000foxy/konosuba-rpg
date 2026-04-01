@@ -25,12 +25,12 @@ function recipesHelpText(fr: boolean): string {
       })
       .join(', ');
 
-    return `- \`${recipe.key}\` -> ${resultName} x${recipe.resultQuantity} (${ingredients})`;
+    return `- ${resultName} x${recipe.resultQuantity} (${ingredients})`;
   });
 
   return (fr
-    ? '# Recettes disponibles\n\nUtilise `/craft recipe:<key>`\n\n'
-    : '# Available recipes\n\nUse `/craft recipe:<key>`\n\n') + lines.join('\n');
+    ? '# Recettes disponibles\n\nUtilise `/craft recipe:` puis sélectionne la recette\n\n'
+    : '# Available recipes\n\nUse `/craft recipe:` then select the recipe\n\n') + lines.join('\n');
 }
 
 function failureMessage(reason: string, fr: boolean): string {

@@ -1,13 +1,13 @@
 import { Context } from 'hono';
 import { QuestAction } from '../../objects/enums/QuestAction';
 import { QuestClaimStatus } from '../../objects/enums/QuestClaimStatus';
-import { QuestKey } from '../../objects/enums/QuestKey';
 import { InteractionDataOption } from '../../objects/types/InteractionDataOption';
 import {
-  claimDailyQuestReward,
-  ensurePlayerProfile,
-  getAllQuestStatuses,
-  QUESTS,
+    claimDailyQuestReward,
+    ensurePlayerProfile,
+    getAllQuestStatuses,
+    getQuestLabel,
+    QUESTS,
 } from '../../services/progressionService';
 
 const QUEST_ACTION_VIEW = QuestAction.View;
@@ -82,21 +82,7 @@ export async function handleQuestCommand(
           ? `${'█'.repeat(status.target)} — Terminée`
           : `${'█'.repeat(Math.max(0, status.progress))}${'░'.repeat(Math.max(0, status.target - status.progress))} [${status.progress}/${status.target}]`;
 
-      const questName = fr
-        ? status.questKey === QuestKey.Win1Run
-          ? 'Gagner 1 Victoire'
-          : status.questKey === QuestKey.Play3Runs
-            ? 'Jouer 3 Combats'
-            : status.questKey === QuestKey.LevelUpOnce
-              ? 'Monter de Niveau'
-              : status.questKey
-        : status.questKey === QuestKey.Win1Run
-          ? 'Win 1 Battle'
-          : status.questKey === QuestKey.Play3Runs
-            ? 'Play 3 Battles'
-            : status.questKey === QuestKey.LevelUpOnce
-              ? 'Level Up'
-              : status.questKey;
+      const questName = getQuestLabel(status.questKey, fr);
 
       const claimNotice =
         action === QUEST_ACTION_CLAIM && status.questKey === questId
@@ -108,8 +94,8 @@ export async function handleQuestCommand(
     .join('\n\n');
 
   const description = fr
-    ? `# Quetes du Jour\n\n${questTexts}\n\nUtilise \`/quest action:claim quest_id:{quest_id}\` pour recuperer la recompense.`
-    : `# Daily Quests\n\n${questTexts}\n\nUse \`/quest action:claim quest_id:{quest_id}\` to claim the reward.`;
+    ? `# Quetes du Jour\n\n${questTexts}\n\nUtilise \`/quest action:claim\` et sélectionne la quête pour recuperer la recompense.`
+    : `# Daily Quests\n\n${questTexts}\n\nUse \`/quest action:claim\` and select the quest to claim the reward.`;
 
   return c.json({
     type: 4,

@@ -8,9 +8,9 @@ import { getItemById as getAccessoryById } from './accessoryService';
 import { syncAchievements } from './achievementService';
 import { addCharacterAffinity, addCharacterXp } from './characterService';
 import {
-  ACCESSORY_AFFINITY_POINTS_BY_RARITY,
-  grantAccessoryDropRewards,
-  grantConsumableDropRewards,
+    ACCESSORY_AFFINITY_POINTS_BY_RARITY,
+    grantAccessoryDropRewards,
+    grantConsumableDropRewards,
 } from './dropService';
 import { consumeInventoryItem } from './inventoryConsumptionService';
 import { ensurePlayerProfile } from './playerService';
@@ -18,25 +18,26 @@ import { QUESTS } from './questService';
 
 export { ACHIEVEMENTS, getAchievementsOverview } from './achievementService';
 export {
-  addCharacterAffinity,
-  addCharacterXp,
-  computeLevelFromXp,
-  getCharacterProgress,
-  getCharacterProgresses,
-  getCharacterStatsSnapshot,
-  getLevelFactor,
+    addCharacterAffinity,
+    addCharacterXp,
+    computeLevelFromXp,
+    getCharacterProgress,
+    getCharacterProgresses,
+    getCharacterStatsSnapshot,
+    getLevelFactor
 } from './characterService';
 export {
-  ensurePlayerProfile,
-  getLeaderboard,
-  getPlayerProfile,
-  getPlayerRunSummary,
+    ensurePlayerProfile,
+    getLeaderboard,
+    getPlayerProfile,
+    getPlayerRunSummary
 } from './playerService';
 export {
-  claimDailyQuestReward,
-  getAllQuestStatuses,
-  getDailyQuestStatus,
-  QUESTS,
+    claimDailyQuestReward,
+    getAllQuestStatuses,
+    getDailyQuestStatus,
+    getQuestLabel,
+    QUESTS
 } from './questService';
 
 function currentQuestDay(): string {
