@@ -51,26 +51,11 @@ for (const dir of ASSET_DIRS) {
   console.log(`Found ${files.length} files in ${dir}`);
 
   for (const file of files) {
-    const ext = path.extname(file).toLowerCase().replace('.', '');
     const key = path.basename(file, path.extname(file));
     const fromAssetSubpath = path.relative('assets', path.dirname(file));
     const imageTsDir = path.join(IMAGE_TS_ROOT, fromAssetSubpath);
     const targetFile = path.join(imageTsDir, `${key}.ts`);
-
-    const buffer = fs.readFileSync(path.join(BASE_DIR, file));
-
-    // const dataUri = `data:image/${ext};base64,${buffer.toString('base64')}`;
-    // const content = `// Auto-generated. Regenerate with: pnpm ts-node scripts/generate-image-manifest.ts\nexport const uri = ${JSON.stringify(dataUri)};\n`;
-
     ensureDir(targetFile);
-    // fs.writeFileSync(targetFile, content, 'utf8');
-
-    // const modulePath = path.posix.join(
-    //   '..',
-    //   'images',
-    //   posixPath(fromAssetSubpath),
-    //   `${key}.ts`
-    // );
     const basePath = 'https://fox3000foxy.com/konosuba-rpg/';
     const modulePath = basePath + posixPath(file);
     loaders.push({ key, modulePath });
