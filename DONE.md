@@ -19,6 +19,7 @@
 - Targeted consumable usage works on a selected team member.
 - Item consumption on target character is wired.
 - Inventory read endpoints are available.
+- Component crafting loop (recipe validation, atomic consume/produce, and `/craft` command) is complete.
 
 ## Commands and UI
 - `/profile` shows player level, character progression, and related stats.
