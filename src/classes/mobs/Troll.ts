@@ -2,6 +2,7 @@ import { Gender } from '../../objects/enums/Gender';
 import { FrenchLores } from '../../objects/enums/FrenchLores';
 import { GenericCreature, GenericCreatureInterface } from '../GenericCreature';
 import { Random } from '../Random';
+import { EnglishLore } from '../../objects/enums/EnglishLore';
 
 export default class Troll
   extends GenericCreature
@@ -29,7 +30,7 @@ export default class Troll
       '11007',
     ]);
     this.images = [`enemy_image_${this.color}`];
-    this.lore = FrenchLores.Creature_Troll;
+    this.lore = [FrenchLores.Creature_Troll, EnglishLore.Creature_Troll];
     this.gender = Gender.Male;
     return this.color;
   }

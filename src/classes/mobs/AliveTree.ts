@@ -2,6 +2,7 @@ import { Gender } from '../../objects/enums/Gender';
 import { FrenchLores } from '../../objects/enums/FrenchLores';
 import { GenericCreature, GenericCreatureInterface } from '../GenericCreature';
 import { Random } from '../Random';
+import { EnglishLore } from '../../objects/enums/EnglishLore';
 
 export default class AliveTree
   extends GenericCreature
@@ -20,7 +21,7 @@ export default class AliveTree
   pickColor(rng: Random) {
     this.color = rng.choice(['16707', '17201', '17202', '17204', '17206']);
     this.images = [`enemy_image_${this.color}`];
-    this.lore = FrenchLores.Creature_AliveTree;
+    this.lore = [FrenchLores.Creature_AliveTree, EnglishLore.Creature_AliveTree];
     this.gender = Gender.Male;
   }
 }

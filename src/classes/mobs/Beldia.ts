@@ -1,6 +1,7 @@
 import { Gender } from '../../objects/enums/Gender';
 import { FrenchLores } from '../../objects/enums/FrenchLores';
 import { Creature, CreatureInterface } from '../Creature';
+import { EnglishLore } from '../../objects/enums/EnglishLore';
 
 export default class Beldia extends Creature implements CreatureInterface {
   constructor() {
@@ -12,7 +13,7 @@ export default class Beldia extends Creature implements CreatureInterface {
     this.name = ['Beldia', 'Beldia'];
     this.images = [`enemy_image_10300`];
     this.prefix = false;
-    this.lore = FrenchLores.Creature_Beldia;
+    this.lore = [FrenchLores.Creature_Beldia, EnglishLore.Creature_Beldia];
     this.gender = Gender.Male;
   }
 }

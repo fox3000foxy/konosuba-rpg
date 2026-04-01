@@ -2,6 +2,7 @@ import { Gender } from '../../objects/enums/Gender';
 import { FrenchLores } from '../../objects/enums/FrenchLores';
 import { GenericCreature, GenericCreatureInterface } from '../GenericCreature';
 import { Random } from '../Random';
+import { EnglishLore } from '../../objects/enums/EnglishLore';
 
 export default class MaidBot
   extends GenericCreature
@@ -20,7 +21,7 @@ export default class MaidBot
   pickColor(rng: Random) {
     this.color = rng.choice(['19400', '19401', '19403', '19404']);
     this.images = [`enemy_image_${this.color}`];
-    this.lore = FrenchLores.Creature_MaidBot;
+    this.lore = [FrenchLores.Creature_MaidBot, EnglishLore.Creature_MaidBot];
     this.gender = Gender.Female;
   }
 }

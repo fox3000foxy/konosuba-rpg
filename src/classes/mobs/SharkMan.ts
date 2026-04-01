@@ -2,6 +2,7 @@ import { Gender } from '../../objects/enums/Gender';
 import { FrenchLores } from '../../objects/enums/FrenchLores';
 import { GenericCreature, GenericCreatureInterface } from '../GenericCreature';
 import { Random } from '../Random';
+import { EnglishLore } from '../../objects/enums/EnglishLore';
 
 export default class SharkMan
   extends GenericCreature
@@ -20,7 +21,7 @@ export default class SharkMan
   pickColor(rng: Random): string {
     this.color = rng.choice(['15200', '15201']);
     this.images = [`enemy_image_${this.color}`];
-    this.lore = FrenchLores.Creature_SharkMan;
+    this.lore = [FrenchLores.Creature_SharkMan, EnglishLore.Creature_SharkMan];
     this.gender = Gender.Male;
     return this.color;
   }

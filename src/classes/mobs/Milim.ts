@@ -1,6 +1,7 @@
 import { Gender } from '../../objects/enums/Gender';
 import { FrenchLores } from '../../objects/enums/FrenchLores';
 import { Creature, CreatureInterface } from '../Creature';
+import { EnglishLore } from '../../objects/enums/EnglishLore';
 
 export default class Milim extends Creature implements CreatureInterface {
   constructor() {
@@ -16,7 +17,7 @@ export default class Milim extends Creature implements CreatureInterface {
       `enemy_image_22702`,
     ];
     this.prefix = false;
-    this.lore = FrenchLores.Creature_Milim;
+    this.lore = [FrenchLores.Creature_Milim, EnglishLore.Creature_Milim];
     this.gender = Gender.Female;
   }
 }

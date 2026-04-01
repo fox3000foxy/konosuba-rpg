@@ -2,6 +2,7 @@ import { Gender } from '../../objects/enums/Gender';
 import { FrenchLores } from '../../objects/enums/FrenchLores';
 import { GenericCreature, GenericCreatureInterface } from '../GenericCreature';
 import { Random } from '../Random';
+import { EnglishLore } from '../../objects/enums/EnglishLore';
 
 export default class Knight
   extends GenericCreature
@@ -20,7 +21,7 @@ export default class Knight
   pickColor(rng: Random) {
     this.color = rng.choice(['14800', '14802', '14803']);
     this.images = [`enemy_image_${this.color}`];
-    this.lore = FrenchLores.Creature_Knight;
+    this.lore = [FrenchLores.Creature_Knight, EnglishLore.Creature_Knight];
     this.gender = Gender.Male;
   }
 }

@@ -9,6 +9,6 @@ export interface CreatureInterface {
   images: string[];
   color?: string;
   prefix: boolean;
-  lore: string;
+  lore: string[];
   gender: Gender;
 }
