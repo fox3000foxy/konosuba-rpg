@@ -68,7 +68,7 @@ export async function buildComponents(
     ? characterStatsSnapshot.map(snapshot => snapshot.factor)
     : undefined;
 
-  const { state, team, embedDescription } = await processGame(
+  const { state, team, embedDescription, creature } = await processGame(
     rand,
     moves,
     monster,
@@ -80,6 +80,10 @@ export async function buildComponents(
     selectedConsumableItemId ? [selectedConsumableItemId as never] : undefined,
     selectedConsumableTargetId
   );
+
+  const disableHugForCreature =
+    creature.love <= 0 || creature.love === 100 || creature.prefix === false;
+
   const training = isTraining(cleanPayload);
   const fr = lang === Lang.French;
   const langIndex = fr ? 1 : 0;
@@ -138,18 +142,21 @@ export async function buildComponents(
             label: hugLabels[0],
             style: 1,
             custom_id: `${actionPrefix}h${userIdSuffix}`,
+            disabled: disableHugForCreature,
           },
           {
             type: 2,
             label: hugLabels[1],
             style: 1,
             custom_id: `${actionPrefix}h4${userIdSuffix}`,
+            disabled: disableHugForCreature,
           },
           {
             type: 2,
             label: hugLabels[2],
             style: 1,
             custom_id: `${actionPrefix}h10${userIdSuffix}`,
+            disabled: disableHugForCreature,
           },
         ],
       },
