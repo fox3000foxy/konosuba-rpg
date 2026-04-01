@@ -255,6 +255,56 @@ describe('recordRunResult integration-like flow', () => {
     );
   });
 
+  it('keeps player xp static and does not award characters xp on giveup', async () => {
+    const client = new SupabaseMockClient([
+      {
+        table: 'runs',
+        op: 'upsert',
+        data: null,
+      },
+      {
+        table: 'players',
+        op: 'select',
+        data: { xp: 42, level: 1 },
+      },
+      {
+        table: 'players',
+        op: 'update',
+        data: null,
+      },
+      {
+        table: 'daily_quests_progress',
+        op: 'select',
+        data: null,
+      },
+      {
+        table: 'daily_quests_progress',
+        op: 'insert',
+        data: null,
+      },
+    ]);
+
+    mockedGetSupabaseAdminClient.mockReturnValue(client as never);
+
+    await recordRunResult({
+      userId: 'user-2',
+      payload: 'seedgiveup/atk',
+      state: GameState.Giveup,
+      training: false,
+      monsterName: 'Goblin',
+    });
+
+    expect(mockedAddCharacterXp).not.toHaveBeenCalled();
+    expect(mockedGrantAccessoryDropRewards).not.toHaveBeenCalled();
+    expect(mockedGrantConsumableDropRewards).not.toHaveBeenCalled();
+
+    expect(client.queries[1].table).toBe('players');
+    expect(client.queries[1].op).toBe('select');
+    expect(client.queries[2].table).toBe('players');
+    expect(client.queries[2].op).toBe('update');
+    expect((client.queries[2].payload as { xp: number }).xp).toBe(42);
+  });
+
   it('triggers accessory drop rewards on winning runs', async () => {
     const client = new SupabaseMockClient([
       {
