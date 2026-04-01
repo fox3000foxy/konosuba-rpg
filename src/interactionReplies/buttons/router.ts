@@ -9,14 +9,15 @@ import {
   donateAccessoryToCharacter,
   recordRunResult,
 } from '../../services/progressionService';
-import { buildComponents } from '../../utils/componentsBuilder';
+import {
+  buildComponents,
+  getBattleMonsterNames,
+} from '../../utils/componentsBuilder';
 import { decompressMoves } from '../../utils/movesUtils';
 import {
   extractDifficulty,
   isTraining,
-  removeDifficultyFromPayload,
 } from '../../utils/payloadUtils';
-import { inferMonsterFromPayload } from '../../utils/runMonsterUtils';
 import {
   buildAffinityGiftComponents,
   buildAffinityMessageData,
@@ -328,26 +329,25 @@ export async function handleButtonInteraction(
       const targetId = Number.parseInt(targetIdRaw, 10);
       const nextPayload = `${payload}u`;
       const difficulty = extractDifficulty(nextPayload) ?? undefined;
-      const cleanPayload = removeDifficultyFromPayload(nextPayload);
-      const inferredMonsterName = inferMonsterFromPayload(cleanPayload);
-      const monsterName = inferredMonsterName || '';
-
-      const { buttons, embedDescription, gameState } = await buildComponents(
-        nextPayload,
-        userID,
-        lang,
-        false,
-        difficulty,
-        itemKey,
-        Number.isNaN(targetId) ? undefined : targetId
-      );
+      const { buttons, embedDescription, gameState, creature } =
+        await buildComponents(
+          nextPayload,
+          userID,
+          lang,
+          false,
+          difficulty,
+          itemKey,
+          Number.isNaN(targetId) ? undefined : targetId
+        );
+      const actualMonsterNames = getBattleMonsterNames(creature, lang);
+      const monsterName = actualMonsterNames.displayName;
 
       void recordRunResult({
         userId: userID,
         payload: nextPayload,
         state: gameState,
         training: isTraining(nextPayload),
-        monsterName: inferredMonsterName,
+        monsterName: actualMonsterNames.recordName,
       });
 
       return handleDefaultButton(
@@ -443,18 +443,17 @@ export async function handleButtonInteraction(
 
   const training = isTraining(payload);
   const difficulty = extractDifficulty(payload) ?? undefined;
-  const cleanPayload = removeDifficultyFromPayload(payload);
-  const inferredMonsterName = inferMonsterFromPayload(cleanPayload);
-  const monsterName = inferredMonsterName || '';
-  const { buttons, embedDescription, activePlayerName, gameState } =
+  const { buttons, embedDescription, activePlayerName, gameState, creature } =
     await buildComponents(payload, userID, lang, false, difficulty);
+  const actualMonsterNames = getBattleMonsterNames(creature, lang);
+  const monsterName = actualMonsterNames.displayName;
 
   void recordRunResult({
     userId: userID,
     payload,
     state: gameState,
     training,
-    monsterName: inferredMonsterName,
+    monsterName: actualMonsterNames.recordName,
   });
 
   const special = resolvedEncodedPayload.endsWith('p');
