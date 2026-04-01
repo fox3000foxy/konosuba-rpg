@@ -8,6 +8,9 @@
 - Phase 2 TypeScript services completed (XP model enforced, giveup/execution policies set).
 - Run processing feeds character progression and global XP, with level-up/quest integration.
 - Affinity DB fields and profile readouts are in place.
+- P1 completed: component crafting loop (inline recipe model, validation, atomic updates, `/craft`, tests).
+- P2 completed: progression/affinity policy decided and enforced with tests.
+- P3 completed: `/character` command + inventory UX polish + FR/EN text validation.
 
 ## Combat, drops, and inventory
 - Accessory drops are added at the end of combat.
