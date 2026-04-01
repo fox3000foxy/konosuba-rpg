@@ -5,10 +5,12 @@ import { Creature } from '../classes/Creature';
 import { Team } from '../classes/Player';
 import { imageManifest } from '../objects/data/imageManifest';
 import { EndMessages } from '../objects/enums/EndMessages';
+import { Gender } from '../objects/enums/Gender';
 import { HealthBarName } from '../objects/enums/HealthBarName';
 import { Lang } from '../objects/enums/Lang';
 import { Prefix } from '../objects/enums/Prefix';
 import { RetryMessages } from '../objects/enums/RetryMessages';
+import { TypeItem } from '../objects/enums/TypeItem';
 import { AquaImages } from '../objects/enums/player/AquaImages';
 import { DarknessImages } from '../objects/enums/player/DarknessImages';
 import { KazumaImages } from '../objects/enums/player/KazumaImages';
@@ -336,23 +338,21 @@ async function buildOverlayJsx(
     lang === Lang.French ? HealthBarName.French : HealthBarName.English;
   const langIndex = lang === Lang.French ? 1 : 0;
 
-  type ConsumableEffectType = 'potion' | 'chrono' | 'stone' | 'scroll';
-
   function detectConsumableEffectType(
     message: string
-  ): ConsumableEffectType | null {
+  ): TypeItem | null {
     const lower = message.toLowerCase();
     if (lower.includes('regagn') || lower.includes('healed for')) {
-      return 'potion';
+      return TypeItem.Potion;
     }
     if (lower.includes('pv max') || lower.includes('max hp')) {
-      return 'chrono';
+      return TypeItem.Chrono;
     }
     if (lower.includes('defense') || lower.includes('defense')) {
-      return 'stone';
+      return TypeItem.Stone;
     }
     if (lower.includes('attaque') || lower.includes('attack')) {
-      return 'scroll';
+      return TypeItem.Scroll;
     }
     return null;
   }
@@ -392,7 +392,7 @@ async function buildOverlayJsx(
   }
 
   function buildConsumableEffectBadge(
-    effectType: ConsumableEffectType,
+    effectType: TypeItem,
     playerId: number
   ): object {
     let label = '';
@@ -403,19 +403,19 @@ async function buildOverlayJsx(
     // - assets/ui/effects/chrono.png
     // - assets/ui/effects/stone.png
     // - assets/ui/effects/scroll.png
-    if (effectType === 'potion') {
+    if (effectType === TypeItem.Potion) {
       label = '✚';
       effectImageKey = 'ui_effect_potion';
     }
-    if (effectType === 'chrono') {
+    if (effectType === TypeItem.Chrono) {
       label = '↑♡';
       effectImageKey = 'ui_effect_chrono';
     }
-    if (effectType === 'stone') {
+    if (effectType === TypeItem.Stone) {
       label = '🛡';
       effectImageKey = 'ui_effect_stone';
     }
-    if (effectType === 'scroll') {
+    if (effectType === TypeItem.Scroll) {
       label = '⚔';
       effectImageKey = 'ui_effect_scroll';
     }
@@ -501,7 +501,7 @@ async function buildOverlayJsx(
   const name = creature.name[langIndex];
   const creaturePrefix = creature.prefix
     ? lang === Lang.French
-      ? creatureGender === 'female'
+      ? creatureGender === Gender.Female
         ? Prefix.French_Determined_Feminine
         : Prefix.French_Determined_Masculine
       : Prefix.English_Determined

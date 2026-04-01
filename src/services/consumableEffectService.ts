@@ -1,5 +1,6 @@
 import { Player } from '../classes/Player';
 import { ItemId } from '../objects/enums/ItemId';
+import { Rarity } from '../objects/enums/Rarity';
 import { TypeItem } from '../objects/enums/TypeItem';
 import { getItemById } from './consumableService';
 
@@ -76,14 +77,14 @@ export function applyConsumableEffect(
  */
 function applyPotionEffect(
   player: Player,
-  rarity: string
+  rarity: Rarity
 ): ConsumableEffectResult {
   const maxHp = player.hpMax;
   let healPercentage = 0.25; // default basic
 
-  if (rarity === 'gold') {
+  if (rarity === Rarity.Gold) {
     healPercentage = 0.5;
-  } else if (rarity === 'epic') {
+  } else if (rarity === Rarity.Epic) {
     healPercentage = 0.75;
   }
 
@@ -113,13 +114,13 @@ function applyPotionEffect(
  */
 function applyChronoEffect(
   player: Player,
-  rarity: string
+  rarity: Rarity
 ): ConsumableEffectResult {
   let increasePercentage = 0.1; // default basic
 
-  if (rarity === 'gold') {
+  if (rarity === Rarity.Gold) {
     increasePercentage = 0.2;
-  } else if (rarity === 'epic') {
+  } else if (rarity === Rarity.Epic) {
     increasePercentage = 0.3;
   }
 
@@ -152,13 +153,13 @@ function applyChronoEffect(
  */
 function applyStoneEffect(
   player: Player,
-  rarity: string
+  rarity: Rarity
 ): ConsumableEffectResult {
   let defenseIncrease = 1; // default basic
 
-  if (rarity === 'gold') {
+  if (rarity === Rarity.Gold) {
     defenseIncrease = 2;
-  } else if (rarity === 'epic') {
+  } else if (rarity === Rarity.Epic) {
     defenseIncrease = 3;
   }
 
@@ -184,13 +185,13 @@ function applyStoneEffect(
  */
 function applyScrollEffect(
   player: Player,
-  rarity: string
+  rarity: Rarity
 ): ConsumableEffectResult {
   let attackIncrease = 1; // default basic
 
-  if (rarity === 'gold') {
+  if (rarity === Rarity.Gold) {
     attackIncrease = 2;
-  } else if (rarity === 'epic') {
+  } else if (rarity === Rarity.Epic) {
     attackIncrease = 3;
   }
 

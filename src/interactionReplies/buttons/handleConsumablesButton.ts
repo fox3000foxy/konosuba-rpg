@@ -2,10 +2,8 @@ import { Button } from 'discord-interactions';
 import { Context } from 'hono';
 import { BASE_URL } from '../../objects/config/constants';
 import { TypeItem } from '../../objects/enums/TypeItem';
-import {
-  InventoryItemView,
-  getInventoryItems,
-} from '../../services/inventoryService';
+import { InventoryItemView } from '../../objects/types/InventoryItemView';
+import { getInventoryItems } from '../../services/inventoryService';
 
 const DISPLAY_LIMIT = 12;
 

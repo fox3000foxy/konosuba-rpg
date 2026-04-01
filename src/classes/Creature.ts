@@ -1,26 +1,12 @@
 import { Errors } from '../objects/enums/Errors';
+import { Gender } from '../objects/enums/Gender';
+import { MessagesTemplates } from '../objects/enums/MessagesTemplates';
 import { Prefix } from '../objects/enums/Prefix';
+import { CreatureInterface } from '../objects/types/CreatureInterface';
 import { Player } from './Player';
 
-export enum MessagesTemplates {
-  French_CreatureAttacks = '${NAME} attaque {PLAYER} et lui inflige {DMG} DMG.',
-  French_CreatureMisses = "${NAME} a essayé d'attaquer {PLAYER} mais l'a donc raté.",
-  English_CreatureAttacks = '${NAME} attacks {PLAYER} and deal {DMG} DMG.',
-  English_CreatureMisses = '${NAME} tried to attack {PLAYER} but missed.',
-}
-
-export interface CreatureInterface {
-  hpMax: number;
-  hp: number;
-  attack: number[];
-  love: number;
-  name: string[];
-  images: string[];
-  color?: string;
-  prefix: boolean;
-  lore: string;
-  gender: 'male' | 'female' | 'neutral';
-}
+export { MessagesTemplates } from '../objects/enums/MessagesTemplates';
+export type { CreatureInterface } from '../objects/types/CreatureInterface';
 
 export abstract class Creature implements CreatureInterface {
   public hpMax: number;
@@ -32,7 +18,7 @@ export abstract class Creature implements CreatureInterface {
   public color?: string;
   public prefix: boolean;
   public lore: string;
-  public gender: 'male' | 'female' | 'neutral';
+  public gender: Gender;
 
   constructor() {
     this.hpMax = 10;
@@ -43,7 +29,7 @@ export abstract class Creature implements CreatureInterface {
     this.images = ['frame'];
     this.prefix = true;
     this.lore = '';
-    this.gender = 'neutral';
+    this.gender = Gender.Neutral;
 
     if (new.target === Creature) {
       throw new Error(Errors.ABSTRACT_ERROR);
@@ -66,7 +52,7 @@ export abstract class Creature implements CreatureInterface {
     const name = this.name[langIndex];
     const creaturePrefix = this.prefix
       ? isFrench
-        ? creatureGender === 'female'
+        ? creatureGender === Gender.Female
           ? Prefix.French_Determined_Feminine
           : Prefix.French_Determined_Masculine
         : Prefix.English_Determined
