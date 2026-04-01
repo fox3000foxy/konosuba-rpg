@@ -24,7 +24,11 @@ const ASSET_BASE_URL = BASE_URL;
 const FONT_URL = `${ASSET_BASE_URL}/assets/swordgame/font/GintoNordMedium.otf`;
 const BOARD_PATH = '/assets/swordgame/art/board.webp';
 const WIDTH = 1100;
-const HEIGHT = 720;
+const HEIGHT = 920;
+const STAR_ENABLED_PATH = '/assets/star-enabled.webp';
+const STAR_DISABLED_PATH = '/assets/star-disabled.webp';
+const STAR_SLOT_COUNT = 5;
+const AFFINITY_POINTS_PER_STAR = 20;
 
 const MONSTER_ICON_DEFAULT_KEY = 'enemy_image_17700';
 const monsterIconKeyByName: Record<string, string> = {};
@@ -39,6 +43,17 @@ function normalizeMonsterName(name: string): string {
 export function getMonsterIconKey(name: string): string {
   const normalized = normalizeMonsterName(name);
   return monsterIconKeyByName[normalized] || MONSTER_ICON_DEFAULT_KEY;
+}
+
+function getAffinityStars(affinity: number): number {
+  const safeAffinity = Math.max(0, affinity);
+  const stars = Math.floor(safeAffinity / AFFINITY_POINTS_PER_STAR);
+  return Math.max(0, Math.min(STAR_SLOT_COUNT, stars));
+}
+
+function getCharacterBadgePath(key: CharacterKey, stars: number): string {
+  const badgeStars = Math.max(1, Math.min(5, stars || 1));
+  return `/assets/characters-emojis/${key}_${badgeStars}_star.webp`;
 }
 
 (function initMonsterIconMapping() {
@@ -123,24 +138,31 @@ export async function buildProfileSvg(
   fr: boolean,
   hasEmbeddedFont = false
 ): Promise<string> {
-  void userId;
   const fontFamily = hasEmbeddedFont ? 'GintoNordMedium' : 'Arial';
   const title = fr ? 'Profil' : 'Profile';
   const teamAffinity = progresses.reduce((sum, p) => sum + p.affinity, 0);
 
-  const rowY = [240, 300, 360, 420];
+  const rowY = [250, 355, 460];
   const keyRows = getRows(progresses);
   const characterLines = keyRows
     .map((row, idx) => {
+      const stars = getAffinityStars(row.affinity);
       return `
-      <text x="52" y="${rowY[idx]}" fill="#f5f7ff" font-size="24" font-family="${fontFamily}">${escapeXml(row.label)}: Lv ${row.level} | XP ${row.xp} | Aff ${row.affinity}</text>`;
+      <rect x="36" y="${rowY[idx] - 54}" width="1028" height="94" rx="14" fill="#0f1729" fill-opacity="0.74" />
+      <text x="170" y="${rowY[idx] - 12}" fill="#f5f7ff" font-size="32" font-family="${fontFamily}">${escapeXml(row.label)}</text>
+      <text x="170" y="${rowY[idx] + 18}" fill="#9db0e8" font-size="19" font-family="${fontFamily}">${escapeXml(fr ? `Niv. ${row.level} | XP ${row.xp}` : `Lv. ${row.level} | XP ${row.xp}`)}</text>
+      <text x="1030" y="${rowY[idx] - 12}" text-anchor="end" fill="#d8e1ff" font-size="22" font-family="${fontFamily}">${escapeXml(fr ? `Affinite: ${row.affinity}` : `Affinity: ${row.affinity}`)}</text>
+      <text x="1030" y="${rowY[idx] + 18}" text-anchor="end" fill="#9db0e8" font-size="19" font-family="${fontFamily}">${escapeXml(fr ? `${stars}/5 etoiles` : `${stars}/5 stars`)}</text>`;
     })
     .join('');
 
   const recentMonsters = runSummary.killedMonsters
     .slice(0, 4)
-    .map(m => `${m.name} x${m.count}`)
-    .join(', ') || (fr ? 'Aucun monstre battu' : 'No monsters defeated');
+    .map((m, idx) => {
+      const y = 545 + idx * 36;
+      return `<text x="84" y="${y}" fill="#e7ebff" font-size="18" font-family="${fontFamily}">${escapeXml(`${m.name} x${m.count}`)}</text>`;
+    })
+    .join('');
 
   const nextLevelXp = profile.level * 100;
   const levelFactor = (1 + 0.2 * (Math.max(profile.level, 1) - 1)).toFixed(1);
@@ -148,7 +170,8 @@ export async function buildProfileSvg(
   return `
   <svg xmlns="http://www.w3.org/2000/svg" width="${WIDTH}" height="${HEIGHT}" viewBox="0 0 ${WIDTH} ${HEIGHT}">
     <rect x="24" y="24" width="1052" height="${HEIGHT - 48}" rx="16" fill="#070c1b" fill-opacity="0.76" stroke="#34405e" stroke-opacity="0.9" />
-    <text x="52" y="80" fill="#ffffff" font-size="42" font-family="${fontFamily}">${escapeXml(title)} - ${escapeXml(userId)}</text>
+    <text x="36" y="78" fill="#ffffff" font-size="42" font-family="${fontFamily}">${escapeXml(title)}</text>
+    <text x="36" y="108" fill="#b2bdd6" font-size="17" font-family="${fontFamily}">${escapeXml(fr ? `Joueur: ${userId}` : `Player: ${userId}`)}</text>
     <text x="52" y="120" fill="#b2bdd6" font-size="18" font-family="${fontFamily}">${escapeXml(fr ? 'Stats de joueur' : 'Player stats')}</text>
 
     <text x="52" y="170" fill="#d8e1ff" font-size="24" font-family="${fontFamily}">${escapeXml(fr ? `Niveau: ${profile.level}` : `Level: ${profile.level}`)}</text>
@@ -161,8 +184,11 @@ export async function buildProfileSvg(
 
     ${characterLines}
 
-    <text x="52" y="500" fill="#9db0e8" font-size="20" font-family="${fontFamily}">${escapeXml(fr ? 'Monstres récemment battus:' : 'Recent defeated monsters:')}</text>
-    <text x="52" y="530" fill="#e7ebff" font-size="20" font-family="${fontFamily}">${escapeXml(fr ? 'Icônes en bas à gauche' : 'Icons in the lower-left')}</text>
+    <text x="52" y="510" fill="#9db0e8" font-size="20" font-family="${fontFamily}">${escapeXml(fr ? 'Monstres recemment battus:' : 'Recent defeated monsters:')}</text>
+    ${
+      recentMonsters ||
+      `<text x="52" y="545" fill="#e7ebff" font-size="18" font-family="${fontFamily}">${escapeXml(fr ? 'Aucun monstre battu' : 'No monsters defeated')}</text>`
+    }
   </svg>`;
 }
 
@@ -215,38 +241,85 @@ export async function renderProfileImage(
     canvas = overlay;
   }
 
-  // Render minified monster icons (instead of text names) in profile graphic
-  const iconSize = 24;
-  const monsterRowY = 545;
-  let iconX = 52;
+  const rows = getRows(progresses);
+  const [starEnabledBytes, starDisabledBytes] = await Promise.all([
+    getAssetBytes(STAR_ENABLED_PATH),
+    getAssetBytes(STAR_DISABLED_PATH),
+  ]);
 
-  for (const monster of runSummary.killedMonsters.slice(0, 6)) {
+  const badgeBuffers = await Promise.all(
+    rows.map(row =>
+      getAssetBytes(getCharacterBadgePath(row.key, getAffinityStars(row.affinity)))
+    )
+  );
+
+  const rowY = [250, 355, 460];
+  for (let rowIdx = 0; rowIdx < rows.length; rowIdx += 1) {
+    const stars = getAffinityStars(rows[rowIdx].affinity);
+    const badgeBuffer = badgeBuffers[rowIdx];
+    if (badgeBuffer) {
+      let badge: Photon.PhotonImage | null = null;
+      let badgeResized: Photon.PhotonImage | null = null;
+
+      try {
+        badge = Photon.PhotonImage.new_from_byteslice(new Uint8Array(badgeBuffer));
+        badgeResized = Photon.resize(badge, 84, 84, Photon.SamplingFilter.Lanczos3);
+        Photon.watermark(canvas, badgeResized, 48n, BigInt(rowY[rowIdx] - 64));
+      } catch {
+        // Keep row even if badge fails to decode
+      } finally {
+        badgeResized?.free();
+        badge?.free();
+      }
+    }
+
+    for (let starIdx = 0; starIdx < STAR_SLOT_COUNT; starIdx += 1) {
+      const shouldEnable = starIdx < stars;
+      const starBuffer = shouldEnable ? starEnabledBytes : starDisabledBytes;
+      if (!starBuffer) {
+        continue;
+      }
+
+      let star: Photon.PhotonImage | null = null;
+      let starResized: Photon.PhotonImage | null = null;
+      try {
+        star = Photon.PhotonImage.new_from_byteslice(new Uint8Array(starBuffer));
+        starResized = Photon.resize(star, 28, 28, Photon.SamplingFilter.Lanczos3);
+        Photon.watermark(
+          canvas,
+          starResized,
+          BigInt(170 + starIdx * 34),
+          BigInt(rowY[rowIdx] + 20)
+        );
+      } catch {
+        // Keep row text even if star icon fails to decode
+      } finally {
+        starResized?.free();
+        star?.free();
+      }
+    }
+  }
+
+  // Render mini monster icons before each monster name line.
+  const iconSize = 18;
+  const monsterStartY = 545;
+
+  for (const [idx, monster] of runSummary.killedMonsters.slice(0, 4).entries()) {
     const iconKey = getMonsterIconKey(monster.name);
+    const iconY = monsterStartY + idx * 36;
 
     try {
       const iconBytes = await getImageBytesFromManifest(iconKey);
       if (iconBytes) {
         const iconImage = Photon.PhotonImage.new_from_byteslice(new Uint8Array(iconBytes));
         const icon = Photon.resize(iconImage, iconSize, iconSize, Photon.SamplingFilter.Lanczos3);
-        Photon.watermark(canvas, icon, BigInt(iconX), BigInt(monsterRowY - iconSize));
+        Photon.watermark(canvas, icon, 52n, BigInt(iconY - 15));
         icon.free();
         iconImage.free();
-
-        // Draw count number with text in SVG running by doing on-canvas overlay with simple rectangle + text.
-        const countX = iconX + iconSize + 10;
-        const countText = `${monster.count}`;
-
-        const xScale = 1; // no transform needed for x, straightforward placement
-        const yScale = 1;
-
-        // Since Photon has no direct text rendering, we keep this text in base SVG; still, marker is as a text hint.
-        // For count overlay, we can keep using text in diagram by rendering in SVG directly if necessary.
       }
     } catch {
       // If icon missing or invalid, ignore and continue.
     }
-
-    iconX += iconSize + 60;
   }
 
   const output = new Uint8Array(canvas.get_bytes());
