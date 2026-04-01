@@ -1,5 +1,6 @@
 import { Context } from 'hono';
 import { RawButton } from '../../objects/enums/RawButton';
+import { buildBattleTitle } from '../../utils/battleTitle';
 import { buildImageUrl } from '../../utils/imageUtils';
 
 export async function handleDefaultButton(
@@ -13,9 +14,7 @@ export async function handleDefaultButton(
   buttons: RawButton[]
 ) {
   const imageUrl = buildImageUrl(payload, lang, undefined, userID);
-  const title = fr
-    ? `Entraînement contre ${monsterName}`
-    : `Training vs ${monsterName}`;
+  const title = buildBattleTitle(payload, fr, userID, monsterName);
   const description =
     embedDescription.length > 0
       ? `${title}\n\n${embedDescription.join('\n')}`

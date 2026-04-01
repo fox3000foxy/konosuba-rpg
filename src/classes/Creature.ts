@@ -1,8 +1,8 @@
 import { Errors } from '../objects/enums/Errors';
 import { Gender } from '../objects/enums/Gender';
 import { MessagesTemplates } from '../objects/enums/MessagesTemplates';
-import { Prefix } from '../objects/enums/Prefix';
 import { CreatureInterface } from '../objects/types/CreatureInterface';
+import { getCreatureNameAndPrefix } from '../utils/creatureText';
 import { Player } from './Player';
 
 export { MessagesTemplates } from '../objects/enums/MessagesTemplates';
@@ -48,15 +48,7 @@ export abstract class Creature implements CreatureInterface {
     const dmg = options.dmg;
     const isFrench = options.lang === 'fr';
     const langIndex = isFrench ? 1 : 0;
-    const creatureGender = this.gender;
-    const name = this.name[langIndex];
-    const creaturePrefix = this.prefix
-      ? isFrench
-        ? creatureGender === Gender.Female
-          ? Prefix.French_Determined_Feminine
-          : Prefix.French_Determined_Masculine
-        : Prefix.English_Determined
-      : Prefix.None;
+    const { name, prefix } = getCreatureNameAndPrefix(this, options.lang, true);
 
     const template = isFrench
       ? dmg
@@ -67,7 +59,7 @@ export abstract class Creature implements CreatureInterface {
         : MessagesTemplates.English_CreatureMisses;
 
     const message = template
-      .replace('${NAME}', `${creaturePrefix}${name}`)
+      .replace('${NAME}', `${prefix}${name}`)
       .replace('{DMG}', dmg.toString())
       .replace('{PLAYER}', options.player.name[langIndex]);
 

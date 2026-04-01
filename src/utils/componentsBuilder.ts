@@ -1,11 +1,13 @@
 /** Function to build Discord components */
 
+import { Creature } from '../classes/Creature';
 import { ButtonsLabels } from '../objects/enums/ButtonsLabels';
 import { GameState } from '../objects/enums/GameState';
 import { Lang } from '../objects/enums/Lang';
 import { RawButton } from '../objects/enums/RawButton';
 import { encodeGameplayButtons } from '../services/gameSessionService';
 import { getCharacterStatsSnapshot } from '../services/progressionService';
+import { getCreatureDisplayName } from './creatureText';
 import { makeid, restartId } from './idUtils';
 import { buildImageUrl } from './imageUtils';
 import { compressMoves } from './movesUtils';
@@ -35,6 +37,13 @@ const HUG_LABELS_EN = HUG_LABELS.map(value =>
   ButtonsLabels.Hug.replace('x', value)
 );
 
+export function getBattleMonsterNames(creature: Creature, lang: Lang) {
+  return {
+    displayName: getCreatureDisplayName(creature, lang),
+    recordName: creature.name[0] || creature.constructor.name,
+  };
+}
+
 export async function buildComponents(
   payload: string,
   userID: string,
@@ -49,6 +58,7 @@ export async function buildComponents(
   activePlayerName: string | null;
   gameState: GameState;
   alivePlayerIds: number[];
+  creature: Creature;
 }> {
   // Extraire la difficulté du payload si elle y est encodée
   const payloadDifficulty = extractDifficulty(payload);
@@ -248,5 +258,6 @@ export async function buildComponents(
     alivePlayerIds: team.players
       .filter(player => player.hp > 0)
       .map(player => player.playerId),
+    creature,
   };
 }
