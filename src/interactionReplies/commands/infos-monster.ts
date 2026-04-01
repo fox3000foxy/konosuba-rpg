@@ -86,10 +86,15 @@ function findMonster(monsterCandidate: string) {
 
   return (
     mobs.find(
-      m => normalizeMonsterIdentifier(m.constructor.name) === normalizedCandidate
+      m =>
+        normalizeMonsterIdentifier(m.constructor.name) === normalizedCandidate
     ) ||
-    mobs.find(m => normalizeMonsterIdentifier(m.name[0]) === normalizedCandidate) ||
-    mobs.find(m => normalizeMonsterIdentifier(m.name[1]) === normalizedCandidate) ||
+    mobs.find(
+      m => normalizeMonsterIdentifier(m.name[0]) === normalizedCandidate
+    ) ||
+    mobs.find(
+      m => normalizeMonsterIdentifier(m.name[1]) === normalizedCandidate
+    ) ||
     null
   );
 }

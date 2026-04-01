@@ -21,11 +21,11 @@ export function getCreatureDisplayName(
 }
 
 export function toTitleCase(value: string): string {
-    return value
-        .toLowerCase()
-        .split(' ')
-        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-        .join(' ');
+  return value
+    .toLowerCase()
+    .split(' ')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
 }
 
 export function getCreaturePrefix(
@@ -44,8 +44,12 @@ export function getCreaturePrefix(
   const name = getCreatureDisplayName(creature, lang);
   const article =
     creature.gender === Gender.Female
-      ? determined ? Prefix.French_Determined_Feminine : Prefix.French_Undetermined_Feminine
-      : determined ? Prefix.French_Determined_Masculine : Prefix.French_Undetermined_Masculine;
+      ? determined
+        ? Prefix.French_Determined_Feminine
+        : Prefix.French_Undetermined_Feminine
+      : determined
+        ? Prefix.French_Determined_Masculine
+        : Prefix.French_Undetermined_Masculine;
 
   return startsWithFrenchElisionLetter(name) ? "L'" : toTitleCase(article);
 }

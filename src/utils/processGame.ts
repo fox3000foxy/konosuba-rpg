@@ -325,7 +325,11 @@ export default async function processGame(
     creature.pickColor(rand);
   }
 
-  const { name, prefix } = getCreatureNameAndPrefix(creature as Creature, lang, false);
+  const { name, prefix } = getCreatureNameAndPrefix(
+    creature as Creature,
+    lang,
+    false
+  );
 
   const messages: string[] = [
     lang === Lang.French
@@ -429,7 +433,11 @@ export default async function processGame(
     });
 
     if (randomPlayer.defending) {
-      const { name, prefix } = getCreatureNameAndPrefix(creature as Creature, lang, true);
+      const { name, prefix } = getCreatureNameAndPrefix(
+        creature as Creature,
+        lang,
+        true
+      );
       const msg = generateMessage(
         MessagesTemplates[
           `${lang === Lang.French ? 'French' : 'English'}_CreatureMisses`

@@ -14,10 +14,7 @@ import {
   getBattleMonsterNames,
 } from '../../utils/componentsBuilder';
 import { decompressMoves } from '../../utils/movesUtils';
-import {
-  extractDifficulty,
-  isTraining,
-} from '../../utils/payloadUtils';
+import { extractDifficulty, isTraining } from '../../utils/payloadUtils';
 import {
   buildAffinityGiftComponents,
   buildAffinityMessageData,

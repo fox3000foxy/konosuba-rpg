@@ -337,9 +337,7 @@ async function buildOverlayJsx(
     lang === Lang.French ? HealthBarName.French : HealthBarName.English;
   const langIndex = lang === Lang.French ? 1 : 0;
 
-  function detectConsumableEffectType(
-    message: string
-  ): TypeItem | null {
+  function detectConsumableEffectType(message: string): TypeItem | null {
     const lower = message.toLowerCase();
     if (lower.includes('regagn') || lower.includes('healed for')) {
       return TypeItem.Potion;

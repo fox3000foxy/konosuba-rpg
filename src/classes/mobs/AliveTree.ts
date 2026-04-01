@@ -21,7 +21,10 @@ export default class AliveTree
   pickColor(rng: Random) {
     this.color = rng.choice(['16707', '17201', '17202', '17204', '17206']);
     this.images = [`enemy_image_${this.color}`];
-    this.lore = [FrenchLores.Creature_AliveTree, EnglishLore.Creature_AliveTree];
+    this.lore = [
+      FrenchLores.Creature_AliveTree,
+      EnglishLore.Creature_AliveTree,
+    ];
     this.gender = Gender.Male;
   }
 }
