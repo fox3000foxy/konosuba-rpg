@@ -1,19 +1,7 @@
-import {
-  ACCESSORY_DEFINITIONS,
-  AccessoryDefinition,
-} from '../objects/data/accessoriesCatalog';
+import { ACCESSORY_DEFINITIONS } from '../objects/data/accessoriesCatalog';
 import { AccessoryId } from '../objects/enums/AccessoryId';
-import { AccessoryType } from '../objects/enums/AccessoryType';
-import { Rarity } from '../objects/enums/Rarity';
-
-export type AccessoryQuery = {
-  rarity?: Rarity;
-  type?: AccessoryType;
-  name?: string;
-  id?: AccessoryId;
-  ids?: AccessoryId[];
-  limit?: number;
-};
+import { AccessoryDefinition } from '../objects/types/catalog/Accessory';
+import { AccessoryQuery } from './types/accessory';
 
 const normalizeText = (value: string): string =>
   value

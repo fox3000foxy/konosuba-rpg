@@ -1,19 +1,7 @@
-import {
-  CONSUMABLE_DEFINITIONS,
-  ConsumableDefinition,
-} from '../objects/data/consumablesCatalog';
+import { CONSUMABLE_DEFINITIONS } from '../objects/data/consumablesCatalog';
 import { ItemId } from '../objects/enums/ItemId';
-import { Rarity } from '../objects/enums/Rarity';
-import { TypeItem } from '../objects/enums/TypeItem';
-
-export type ConsumableQuery = {
-  rarity?: Rarity;
-  type?: TypeItem;
-  name?: string;
-  id?: ItemId;
-  ids?: ItemId[];
-  limit?: number;
-};
+import { ConsumableDefinition } from '../objects/types/catalog/Consumable';
+import { ConsumableQuery } from './types/consumable';
 
 const normalizeText = (value: string): string =>
   value
