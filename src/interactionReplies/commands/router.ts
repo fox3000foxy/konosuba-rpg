@@ -18,21 +18,13 @@ import { handleShopCommand } from './shop';
 import { handleStartCommand } from './start';
 import { handleTrainCommand } from './train';
 
-export async function handleSlashCommand(
-  c: Context,
-  interaction: Interaction,
-  userID: string,
-  lang: Lang,
-  fr: boolean
-) {
+export async function handleSlashCommand(c: Context, interaction: Interaction, userID: string, lang: Lang, fr: boolean) {
   void ensurePlayerProfile(userID);
 
   if (interaction.data?.name === 'start') {
     const options = interaction.data.options || [];
     const difficultyOption = options.find(opt => opt.name === 'difficulty');
-    const difficulty = difficultyOption
-      ? String(difficultyOption.value)
-      : undefined;
+    const difficulty = difficultyOption ? String(difficultyOption.value) : undefined;
     return handleStartCommand(c, userID, lang, fr, difficulty);
   }
 
@@ -77,9 +69,7 @@ export async function handleSlashCommand(
       return c.json({
         type: 4,
         data: {
-          content: fr
-            ? 'Veuillez spécifier un monstre. Exemple: /train goblin'
-            : 'Please specify a monster. Example: /train goblin',
+          content: fr ? 'Veuillez spécifier un monstre. Exemple: /train goblin' : 'Please specify a monster. Example: /train goblin',
         },
       });
     }
@@ -87,11 +77,7 @@ export async function handleSlashCommand(
   }
 
   if (interaction.data?.name === 'infos-player') {
-    const characterId = Number(
-      interaction.data.options?.find(
-        (o: InteractionDataOption) => o.name === 'character'
-      )?.value
-    );
+    const characterId = Number(interaction.data.options?.find((o: InteractionDataOption) => o.name === 'character')?.value);
     return handleInfosPlayerCommand(c, fr, characterId);
   }
 
@@ -100,9 +86,7 @@ export async function handleSlashCommand(
       return c.json({
         type: 4,
         data: {
-          content: fr
-            ? 'Veuillez spécifier un monstre. Exemple: /infos-monster goblin'
-            : 'Please specify a monster. Example: /infos-monster goblin',
+          content: fr ? 'Veuillez spécifier un monstre. Exemple: /infos-monster goblin' : 'Please specify a monster. Example: /infos-monster goblin',
         },
       });
     }

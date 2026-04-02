@@ -13,10 +13,7 @@ export default class MedusaMan extends Creature implements CreatureInterface {
     this.name = ['Medusa Man', 'Homme méduse'];
     this.images = [`enemy_image_22600`, `enemy_image_22601`];
     this.prefix = true;
-    this.lore = [
-      FrenchLores.Creature_MedusaMan,
-      EnglishLore.Creature_MedusaMan,
-    ];
+    this.lore = [FrenchLores.Creature_MedusaMan, EnglishLore.Creature_MedusaMan];
     this.gender = Gender.Male;
   }
 }

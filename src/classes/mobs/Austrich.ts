@@ -4,10 +4,7 @@ import { GenericCreature, GenericCreatureInterface } from '../GenericCreature';
 import { Random } from '../Random';
 import { EnglishLore } from '../../objects/enums/EnglishLore';
 
-export default class Troll
-  extends GenericCreature
-  implements GenericCreatureInterface
-{
+export default class Troll extends GenericCreature implements GenericCreatureInterface {
   constructor() {
     super();
     this.attack = [0, 10];
@@ -19,15 +16,7 @@ export default class Troll
   }
 
   pickColor(rng: Random) {
-    this.color = rng.choice([
-      '11000',
-      '11001',
-      '11002',
-      '11003',
-      '11004',
-      '11005',
-      '11006',
-    ]);
+    this.color = rng.choice(['11000', '11001', '11002', '11003', '11004', '11005', '11006']);
     this.images = [`enemy_image_${this.color}`];
     this.lore = [FrenchLores.Creature_Austrich, EnglishLore.Creature_Austrich];
     this.gender = Gender.Male;

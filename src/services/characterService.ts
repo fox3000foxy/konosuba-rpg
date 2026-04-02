@@ -4,11 +4,7 @@ import { CharacterStatsSnapshot } from '../objects/types/CharacterStatsSnapshot'
 import { getSupabaseAdminClient } from '../utils/supabaseClient';
 import { ensurePlayerProfile } from './playerService';
 
-const CHARACTER_KEYS: CharacterKey[] = [
-  CharacterKey.Darkness,
-  CharacterKey.Aqua,
-  CharacterKey.Megumin,
-];
+const CHARACTER_KEYS: CharacterKey[] = [CharacterKey.Darkness, CharacterKey.Aqua, CharacterKey.Megumin];
 
 const clampLevel = (level: number) => Math.max(1, level);
 const AFFINITY_POINTS_PER_STAR = 20;
@@ -42,26 +38,16 @@ export async function ensureCharacterProgress(userId: string): Promise<void> {
   // Ensure FK target exists before inserting character_progress rows.
   await ensurePlayerProfile(userId);
 
-  const { data: existingRows, error: loadError } = await supabase
-    .from('character_progress')
-    .select('character_key')
-    .eq('user_id', userId);
+  const { data: existingRows, error: loadError } = await supabase.from('character_progress').select('character_key').eq('user_id', userId);
 
   if (loadError) {
-    console.error(
-      '[db] ensureCharacterProgress load failed:',
-      loadError.message
-    );
+    console.error('[db] ensureCharacterProgress load failed:', loadError.message);
     return;
   }
 
-  const existingKeys = new Set(
-    (existingRows || []).map(row => String(row.character_key) as CharacterKey)
-  );
+  const existingKeys = new Set((existingRows || []).map(row => String(row.character_key) as CharacterKey));
 
-  const missingRows = CHARACTER_KEYS.filter(
-    characterKey => !existingKeys.has(characterKey)
-  ).map(characterKey => ({
+  const missingRows = CHARACTER_KEYS.filter(characterKey => !existingKeys.has(characterKey)).map(characterKey => ({
     user_id: userId,
     character_key: characterKey,
     xp: 0,
@@ -74,30 +60,20 @@ export async function ensureCharacterProgress(userId: string): Promise<void> {
     return;
   }
 
-  const { error } = await supabase
-    .from('character_progress')
-    .insert(missingRows);
+  const { error } = await supabase.from('character_progress').insert(missingRows);
 
   if (error) {
     console.error('[db] ensureCharacterProgress failed:', error.message);
   }
 }
 
-export async function getCharacterProgress(
-  userId: string,
-  characterKey: CharacterKey
-): Promise<CharacterProgress | null> {
+export async function getCharacterProgress(userId: string, characterKey: CharacterKey): Promise<CharacterProgress | null> {
   const supabase = getSupabaseAdminClient();
   if (!supabase) {
     return null;
   }
 
-  const { data, error } = await supabase
-    .from('character_progress')
-    .select('user_id, character_key, xp, level, affinity')
-    .eq('user_id', userId)
-    .eq('character_key', characterKey)
-    .maybeSingle();
+  const { data, error } = await supabase.from('character_progress').select('user_id, character_key, xp, level, affinity').eq('user_id', userId).eq('character_key', characterKey).maybeSingle();
 
   if (error) {
     console.error('[db] getCharacterProgress failed:', error.message);
@@ -117,27 +93,20 @@ export async function getCharacterProgress(
   };
 }
 
-export async function getCharacterProgresses(
-  userId: string
-): Promise<CharacterProgress[] | null> {
+export async function getCharacterProgresses(userId: string): Promise<CharacterProgress[] | null> {
   const supabase = getSupabaseAdminClient();
   if (!supabase) {
     return null;
   }
 
-  const { data, error } = await supabase
-    .from('character_progress')
-    .select('user_id, character_key, xp, level, affinity')
-    .eq('user_id', userId);
+  const { data, error } = await supabase.from('character_progress').select('user_id, character_key, xp, level, affinity').eq('user_id', userId);
 
   if (error) {
     console.error('[db] getCharacterProgresses failed:', error.message);
     return null;
   }
 
-  const byKey = new Map(
-    (data || []).map(row => [String(row.character_key) as CharacterKey, row])
-  );
+  const byKey = new Map((data || []).map(row => [String(row.character_key) as CharacterKey, row]));
 
   return CHARACTER_KEYS.map(characterKey => {
     const row = byKey.get(characterKey);
@@ -151,11 +120,7 @@ export async function getCharacterProgresses(
   });
 }
 
-export async function addCharacterXp(
-  userId: string,
-  characterKey: CharacterKey,
-  amount: number
-): Promise<void> {
+export async function addCharacterXp(userId: string, characterKey: CharacterKey, amount: number): Promise<void> {
   if (amount <= 0) {
     return;
   }
@@ -172,16 +137,14 @@ export async function addCharacterXp(
     const initialXp = amount;
     const initialLevel = computeLevelFromXp(initialXp);
 
-    const { error: insertError } = await supabase
-      .from('character_progress')
-      .insert({
-        user_id: userId,
-        character_key: characterKey,
-        xp: initialXp,
-        level: initialLevel,
-        affinity: 0,
-        updated_at: new Date().toISOString(),
-      });
+    const { error: insertError } = await supabase.from('character_progress').insert({
+      user_id: userId,
+      character_key: characterKey,
+      xp: initialXp,
+      level: initialLevel,
+      affinity: 0,
+      updated_at: new Date().toISOString(),
+    });
 
     if (insertError) {
       console.error('[db] addCharacterXp insert failed:', insertError.message);
@@ -210,17 +173,11 @@ export async function addCharacterXp(
   }
 
   if (!updatedRow) {
-    console.error(
-      `[db] addCharacterXp updated no rows: user=${userId} character=${characterKey}`
-    );
+    console.error(`[db] addCharacterXp updated no rows: user=${userId} character=${characterKey}`);
   }
 }
 
-export async function addCharacterAffinity(
-  userId: string,
-  characterKey: CharacterKey,
-  amount: number
-): Promise<void> {
+export async function addCharacterAffinity(userId: string, characterKey: CharacterKey, amount: number): Promise<void> {
   if (amount <= 0) {
     return;
   }
@@ -234,22 +191,17 @@ export async function addCharacterAffinity(
 
   const current = await getCharacterProgress(userId, characterKey);
   if (!current) {
-    const { error: insertError } = await supabase
-      .from('character_progress')
-      .insert({
-        user_id: userId,
-        character_key: characterKey,
-        xp: 0,
-        level: 1,
-        affinity: amount,
-        updated_at: new Date().toISOString(),
-      });
+    const { error: insertError } = await supabase.from('character_progress').insert({
+      user_id: userId,
+      character_key: characterKey,
+      xp: 0,
+      level: 1,
+      affinity: amount,
+      updated_at: new Date().toISOString(),
+    });
 
     if (insertError) {
-      console.error(
-        '[db] addCharacterAffinity insert failed:',
-        insertError.message
-      );
+      console.error('[db] addCharacterAffinity insert failed:', insertError.message);
     }
     return;
   }
@@ -273,31 +225,20 @@ export async function addCharacterAffinity(
   }
 
   if (!updatedRow) {
-    console.error(
-      `[db] addCharacterAffinity updated no rows: user=${userId} character=${characterKey}`
-    );
+    console.error(`[db] addCharacterAffinity updated no rows: user=${userId} character=${characterKey}`);
   }
 }
 
-export async function getCharacterStatsSnapshot(
-  userId: string
-): Promise<CharacterStatsSnapshot[] | null> {
+export async function getCharacterStatsSnapshot(userId: string): Promise<CharacterStatsSnapshot[] | null> {
   const supabase = getSupabaseAdminClient();
   if (!supabase) {
     return null;
   }
 
-  const { data: playerRow, error: playerError } = await supabase
-    .from('players')
-    .select('level')
-    .eq('user_id', userId)
-    .maybeSingle();
+  const { data: playerRow, error: playerError } = await supabase.from('players').select('level').eq('user_id', userId).maybeSingle();
 
   if (playerError) {
-    console.error(
-      '[db] getCharacterStatsSnapshot player load failed:',
-      playerError.message
-    );
+    console.error('[db] getCharacterStatsSnapshot player load failed:', playerError.message);
     return null;
   }
 
@@ -307,9 +248,7 @@ export async function getCharacterStatsSnapshot(
     return null;
   }
 
-  const byKey = new Map(
-    progresses.map(progress => [progress.characterKey, progress])
-  );
+  const byKey = new Map(progresses.map(progress => [progress.characterKey, progress]));
 
   return [
     {
@@ -320,27 +259,17 @@ export async function getCharacterStatsSnapshot(
     {
       characterKey: CharacterKey.Darkness,
       level: Number(byKey.get(CharacterKey.Darkness)?.level || 1),
-      factor:
-        getLevelFactor(Number(byKey.get(CharacterKey.Darkness)?.level || 1)) *
-        getAffinityFactor(
-          Number(byKey.get(CharacterKey.Darkness)?.affinity || 0)
-        ),
+      factor: getLevelFactor(Number(byKey.get(CharacterKey.Darkness)?.level || 1)) * getAffinityFactor(Number(byKey.get(CharacterKey.Darkness)?.affinity || 0)),
     },
     {
       characterKey: CharacterKey.Megumin,
       level: Number(byKey.get(CharacterKey.Megumin)?.level || 1),
-      factor:
-        getLevelFactor(Number(byKey.get(CharacterKey.Megumin)?.level || 1)) *
-        getAffinityFactor(
-          Number(byKey.get(CharacterKey.Megumin)?.affinity || 0)
-        ),
+      factor: getLevelFactor(Number(byKey.get(CharacterKey.Megumin)?.level || 1)) * getAffinityFactor(Number(byKey.get(CharacterKey.Megumin)?.affinity || 0)),
     },
     {
       characterKey: CharacterKey.Aqua,
       level: Number(byKey.get(CharacterKey.Aqua)?.level || 1),
-      factor:
-        getLevelFactor(Number(byKey.get(CharacterKey.Aqua)?.level || 1)) *
-        getAffinityFactor(Number(byKey.get(CharacterKey.Aqua)?.affinity || 0)),
+      factor: getLevelFactor(Number(byKey.get(CharacterKey.Aqua)?.level || 1)) * getAffinityFactor(Number(byKey.get(CharacterKey.Aqua)?.affinity || 0)),
     },
   ];
 }

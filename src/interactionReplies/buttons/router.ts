@@ -8,31 +8,17 @@ import { Lang } from '../../objects/enums/Lang';
 import { Rarity } from '../../objects/enums/Rarity';
 import { ShopItem } from '../../objects/types/ShopItem';
 import { decodeGameplayPayloadWithStatus } from '../../services/gameSessionService';
-import {
-  donateAccessoryToCharacter,
-  ensurePlayerProfile,
-  getAchievementsOverview,
-  recordRunResult,
-} from '../../services/progressionService';
+import { donateAccessoryToCharacter, ensurePlayerProfile, getAchievementsOverview, recordRunResult } from '../../services/progressionService';
 
 import { BASE_URL } from '../../objects/config';
 import { addInventoryItem } from '../../services/inventoryService';
-import {
-  getPlayerProfile,
-  updatePlayerGold,
-} from '../../services/playerService';
-import {
-  buildComponents,
-  getBattleMonsterNames,
-} from '../../utils/componentsBuilder';
+import { getPlayerProfile, updatePlayerGold } from '../../services/playerService';
+import { buildComponents, getBattleMonsterNames } from '../../utils/componentsBuilder';
 import { addImageVersion } from '../../utils/imageUtils';
 import { decompressMoves } from '../../utils/movesUtils';
 import { extractDifficulty, isTraining } from '../../utils/payloadUtils';
 import { buildAchievementsComponents } from '../commands/achievements';
-import {
-  buildAffinityGiftComponents,
-  buildAffinityMessageData,
-} from '../commands/affinity';
+import { buildAffinityGiftComponents, buildAffinityMessageData } from '../commands/affinity';
 import { buildShopComponents, getShopItem } from '../commands/shop';
 import { handleConsumablesButton } from './handleConsumablesButton';
 import { handleDefaultButton } from './handleDefaultButton';
@@ -40,27 +26,16 @@ import { handleSpecialButton } from './handleSpecialButton';
 
 function getPagedShopItems(page: number) {
   const pageSize = 16;
-  const allShopItems = [...Object.values(AccessoryId), ...Object.values(ItemId)]
-    .map(key => getShopItem(key))
-    .filter((item): item is ShopItem => Boolean(item));
+  const allShopItems = [...Object.values(AccessoryId), ...Object.values(ItemId)].map(key => getShopItem(key)).filter((item): item is ShopItem => Boolean(item));
 
   const pageCount = Math.max(1, Math.ceil(allShopItems.length / pageSize));
   const pageIndex = Math.min(pageCount - 1, Math.max(0, page - 1));
-  const pageItems = allShopItems.slice(
-    pageIndex * pageSize,
-    pageIndex * pageSize + pageSize
-  );
+  const pageItems = allShopItems.slice(pageIndex * pageSize, pageIndex * pageSize + pageSize);
 
   return { allShopItems, pageCount, pageItems };
 }
 
-export async function handleButtonInteraction(
-  c: Context,
-  interaction: Interaction,
-  userID: string,
-  lang: Lang,
-  fr: boolean
-) {
+export async function handleButtonInteraction(c: Context, interaction: Interaction, userID: string, lang: Lang, fr: boolean) {
   if (!interaction.data?.custom_id) {
     return c.json({ error: 'Unknown interaction' }, 400);
   }
@@ -106,11 +81,7 @@ export async function handleButtonInteraction(
       return c.json({ type: 6 });
     }
 
-    const selectedType =
-      selectedTypeRaw !== 'all' &&
-      Object.values(AccessoryType).includes(selectedTypeRaw as AccessoryType)
-        ? (selectedTypeRaw as AccessoryType)
-        : undefined;
+    const selectedType = selectedTypeRaw !== 'all' && Object.values(AccessoryType).includes(selectedTypeRaw as AccessoryType) ? (selectedTypeRaw as AccessoryType) : undefined;
 
     const components = await buildAffinityGiftComponents(userID, fr, {
       accessoryType: selectedType,
@@ -219,9 +190,7 @@ export async function handleButtonInteraction(
 
       const components = buildAchievementsComponents(page, pageCount, userID, fr);
 
-      const description = fr
-        ? `# Achievements de <@${userID}>\n\nProgression: **${unlockedCount}/${achievements.length}**\nPage: **${page}/${pageCount}**`
-        : `# <@${userID}> achievements\n\nProgress: **${unlockedCount}/${achievements.length}**\nPage: **${page}/${pageCount}**`;
+      const description = fr ? `# Achievements de <@${userID}>\n\nProgression: **${unlockedCount}/${achievements.length}**\nPage: **${page}/${pageCount}**` : `# <@${userID}> achievements\n\nProgress: **${unlockedCount}/${achievements.length}**\nPage: **${page}/${pageCount}**`;
 
       return c.json({
         type: 7,
@@ -230,9 +199,7 @@ export async function handleButtonInteraction(
             {
               description,
               image: {
-                url: addImageVersion(
-                  `${BASE_URL}/achievements/${userID}?lang=${fr ? 'fr' : 'en'}&page=${page}`
-                ),
+                url: addImageVersion(`${BASE_URL}/achievements/${userID}?lang=${fr ? 'fr' : 'en'}&page=${page}`),
               },
               color: 0x2b2d31,
             },
@@ -246,12 +213,7 @@ export async function handleButtonInteraction(
     }
   }
 
-  if (
-    customId.startsWith('shop_forward:') ||
-    customId.startsWith('shop_backward:') ||
-    customId.startsWith('shop_back:') ||
-    customId.startsWith('shop_page:')
-  ) {
+  if (customId.startsWith('shop_forward:') || customId.startsWith('shop_backward:') || customId.startsWith('shop_back:') || customId.startsWith('shop_page:')) {
     try {
       const parts = customId.split(':');
       const pageRaw = parts[1] || '1';
@@ -266,13 +228,7 @@ export async function handleButtonInteraction(
 
       const page = Math.max(1, Number(pageRaw) || 1);
       const { pageCount, pageItems } = getPagedShopItems(page);
-      const components = buildShopComponents(
-        pageItems,
-        page,
-        pageCount,
-        fr,
-        userID
-      );
+      const components = buildShopComponents(pageItems, page, pageCount, fr, userID);
 
       return c.json({
         type: 7,
@@ -280,13 +236,9 @@ export async function handleButtonInteraction(
           embeds: [
             {
               title: fr ? 'Boutique' : 'Shop',
-              description: fr
-                ? `Page ${page} / ${pageCount}`
-                : `Page ${page} / ${pageCount}`,
+              description: fr ? `Page ${page} / ${pageCount}` : `Page ${page} / ${pageCount}`,
               image: {
-                url: addImageVersion(
-                  `${BASE_URL}/shop/${page}?lang=${fr ? 'fr' : 'en'}`
-                ),
+                url: addImageVersion(`${BASE_URL}/shop/${page}?lang=${fr ? 'fr' : 'en'}`),
               },
               color: 0x2b2d31,
             },
@@ -312,26 +264,11 @@ export async function handleButtonInteraction(
       const selectedItemKey = interaction.data.values?.[0];
       const page = Math.max(1, Number(pageRaw) || 1);
       const { pageCount, pageItems } = getPagedShopItems(page);
-      const components = buildShopComponents(
-        pageItems,
-        page,
-        pageCount,
-        fr,
-        userID,
-        selectedItemKey
-      );
+      const components = buildShopComponents(pageItems, page, pageCount, fr, userID, selectedItemKey);
 
-      console.log(
-        addImageVersion(`${BASE_URL}/shop/${page}?lang=${fr ? 'fr' : 'en'}`)
-      );
-      const selectedItemName = selectedItemKey
-        ? getShopItem(selectedItemKey)?.nameEn || selectedItemKey
-        : fr
-          ? 'aucun'
-          : 'none';
-      const description = fr
-        ? `Page ${page} / ${pageCount}.\n\n Objet sélectionné : ${selectedItemName}`
-        : `Page ${page} / ${pageCount}.\n\n Selected item: ${selectedItemName}`;
+      console.log(addImageVersion(`${BASE_URL}/shop/${page}?lang=${fr ? 'fr' : 'en'}`));
+      const selectedItemName = selectedItemKey ? getShopItem(selectedItemKey)?.nameEn || selectedItemKey : fr ? 'aucun' : 'none';
+      const description = fr ? `Page ${page} / ${pageCount}.\n\n Objet sélectionné : ${selectedItemName}` : `Page ${page} / ${pageCount}.\n\n Selected item: ${selectedItemName}`;
       return c.json({
         type: 7,
         data: {
@@ -340,9 +277,7 @@ export async function handleButtonInteraction(
               title: fr ? 'Boutique' : 'Shop',
               description,
               image: {
-                url: addImageVersion(
-                  `${BASE_URL}/shop/${page}?lang=${fr ? 'fr' : 'en'}`
-                ),
+                url: addImageVersion(`${BASE_URL}/shop/${page}?lang=${fr ? 'fr' : 'en'}`),
               },
               color: 0x2b2d31,
             },
@@ -395,17 +330,9 @@ export async function handleButtonInteraction(
 
       const page = Math.max(1, Number(pageRaw) || 1);
       const { pageCount, pageItems } = getPagedShopItems(page);
-      const components = buildShopComponents(
-        pageItems,
-        page,
-        pageCount,
-        fr,
-        userID
-      );
+      const components = buildShopComponents(pageItems, page, pageCount, fr, userID);
 
-      const message = fr
-        ? `✅ Achat de ${shopItem.nameFr} réussi. Or restant : ${updatedGold}.`
-        : `✅ Bought ${shopItem.nameEn}. Remaining gold: ${updatedGold}.`;
+      const message = fr ? `✅ Achat de ${shopItem.nameFr} réussi. Or restant : ${updatedGold}.` : `✅ Bought ${shopItem.nameEn}. Remaining gold: ${updatedGold}.`;
 
       return c.json({
         type: 7,
@@ -415,9 +342,7 @@ export async function handleButtonInteraction(
               title: fr ? 'Achat réussi' : 'Purchase success',
               description: message,
               image: {
-                url: addImageVersion(
-                  `${BASE_URL}/shop/${page}?lang=${fr ? 'fr' : 'en'}`
-                ),
+                url: addImageVersion(`${BASE_URL}/shop/${page}?lang=${fr ? 'fr' : 'en'}`),
               },
               color: 0x2b2d31,
             },
@@ -441,37 +366,17 @@ export async function handleButtonInteraction(
       return c.json({ type: 6 });
     }
 
-    if (
-      !Object.values(CharacterKey).includes(characterKeyRaw as CharacterKey)
-    ) {
+    if (!Object.values(CharacterKey).includes(characterKeyRaw as CharacterKey)) {
       return c.json({ type: 6 });
     }
 
     const characterKey = characterKeyRaw as CharacterKey;
-    const donation = await donateAccessoryToCharacter(
-      userID,
-      itemKey,
-      characterKey
-    );
+    const donation = await donateAccessoryToCharacter(userID, itemKey, characterKey);
 
     if (!donation.success) {
-      const message =
-        donation.reason === 'out-of-stock'
-          ? fr
-            ? 'Accessoire indisponible ou stock insuffisant.'
-            : 'Accessory unavailable or insufficient stock.'
-          : fr
-            ? 'Accessoire invalide.'
-            : 'Invalid accessory.';
+      const message = donation.reason === 'out-of-stock' ? (fr ? 'Accessoire indisponible ou stock insuffisant.' : 'Accessory unavailable or insufficient stock.') : fr ? 'Accessoire invalide.' : 'Invalid accessory.';
 
-      const data = await buildAffinityMessageData(
-        userID,
-        userID,
-        fr,
-        message,
-        undefined,
-        false
-      );
+      const data = await buildAffinityMessageData(userID, userID, fr, message, undefined, false);
 
       return c.json({
         type: 7,
@@ -479,25 +384,11 @@ export async function handleButtonInteraction(
       });
     }
 
-    const targetLabel =
-      characterKey === CharacterKey.Darkness
-        ? 'Darkness'
-        : characterKey === CharacterKey.Megumin
-          ? 'Megumin'
-          : 'Aqua';
+    const targetLabel = characterKey === CharacterKey.Darkness ? 'Darkness' : characterKey === CharacterKey.Megumin ? 'Megumin' : 'Aqua';
 
-    const successMessage = fr
-      ? `Don effectue sur ${targetLabel}: +${donation.affinityPoints} affinite.`
-      : `Gift sent to ${targetLabel}: +${donation.affinityPoints} affinity.`;
+    const successMessage = fr ? `Don effectue sur ${targetLabel}: +${donation.affinityPoints} affinite.` : `Gift sent to ${targetLabel}: +${donation.affinityPoints} affinity.`;
 
-    const data = await buildAffinityMessageData(
-      userID,
-      userID,
-      fr,
-      successMessage,
-      undefined,
-      true
-    );
+    const data = await buildAffinityMessageData(userID, userID, fr, successMessage, undefined, true);
 
     return c.json({
       type: 7,
@@ -527,13 +418,7 @@ export async function handleButtonInteraction(
       ];
 
       const difficulty = extractDifficulty(payload) ?? undefined;
-      const { alivePlayerIds } = await buildComponents(
-        payload,
-        userID,
-        lang,
-        false,
-        difficulty
-      );
+      const { alivePlayerIds } = await buildComponents(payload, userID, lang, false, difficulty);
 
       const components = [
         {
@@ -592,16 +477,7 @@ export async function handleButtonInteraction(
       const targetId = Number.parseInt(targetIdRaw, 10);
       const nextPayload = `${payload}u`;
       const difficulty = extractDifficulty(nextPayload) ?? undefined;
-      const { buttons, embedDescription, gameState, creature } =
-        await buildComponents(
-          nextPayload,
-          userID,
-          lang,
-          false,
-          difficulty,
-          itemKey,
-          Number.isNaN(targetId) ? undefined : targetId
-        );
+      const { buttons, embedDescription, gameState, creature } = await buildComponents(nextPayload, userID, lang, false, difficulty, itemKey, Number.isNaN(targetId) ? undefined : targetId);
       const actualMonsterNames = getBattleMonsterNames(creature, lang);
       const monsterName = actualMonsterNames.displayName;
 
@@ -613,16 +489,7 @@ export async function handleButtonInteraction(
         monsterName: actualMonsterNames.recordName,
       });
 
-      return handleDefaultButton(
-        c,
-        nextPayload,
-        userID,
-        lang,
-        fr,
-        monsterName,
-        embedDescription,
-        buttons
-      );
+      return handleDefaultButton(c, nextPayload, userID, lang, fr, monsterName, embedDescription, buttons);
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       console.error('[consumable_apply] Interaction error:', message);
@@ -634,22 +501,11 @@ export async function handleButtonInteraction(
 
   // Handle combat-related custom_ids (require payload decoding)
   const colonIdx = customId.lastIndexOf(':');
-  const encodedPayload =
-    colonIdx !== -1 ? customId.slice(0, colonIdx) : customId;
-  const decodeResult = await decodeGameplayPayloadWithStatus(
-    encodedPayload,
-    userID
-  );
+  const encodedPayload = colonIdx !== -1 ? customId.slice(0, colonIdx) : customId;
+  const decodeResult = await decodeGameplayPayloadWithStatus(encodedPayload, userID);
 
   if (!decodeResult.payload) {
-    const content =
-      decodeResult.reason === 'stale'
-        ? fr
-          ? 'Ce bouton est obsolete. Utilise le dernier message de combat.'
-          : 'This button is outdated. Use the latest battle message.'
-        : fr
-          ? 'Session de combat invalide ou expirée. Utilise le dernier message de combat.'
-          : 'Battle session is invalid or expired. Use the latest battle message.';
+    const content = decodeResult.reason === 'stale' ? (fr ? 'Ce bouton est obsolete. Utilise le dernier message de combat.' : 'This button is outdated. Use the latest battle message.') : fr ? 'Session de combat invalide ou expirée. Utilise le dernier message de combat.' : 'Battle session is invalid or expired. Use the latest battle message.';
 
     return c.json({
       type: 4,
@@ -665,21 +521,14 @@ export async function handleButtonInteraction(
   // Check if this is a consumables menu action (ends with 'c')
   if (resolvedEncodedPayload.endsWith('c')) {
     try {
-      return await handleConsumablesButton(
-        c,
-        userID,
-        fr,
-        resolvedEncodedPayload
-      );
+      return await handleConsumablesButton(c, userID, fr, resolvedEncodedPayload);
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       console.error('[consumables] Interaction error:', message);
       return c.json({
         type: 4,
         data: {
-          content: fr
-            ? "Erreur lors de l'ouverture du menu consommables. Réessayez."
-            : 'Error opening consumables menu. Please try again.',
+          content: fr ? "Erreur lors de l'ouverture du menu consommables. Réessayez." : 'Error opening consumables menu. Please try again.',
           flags: 1 << 6,
         },
       });
@@ -699,15 +548,11 @@ export async function handleButtonInteraction(
     });
   }
 
-  console.log(
-    'Received button interaction with payload:',
-    resolvedEncodedPayload
-  );
+  console.log('Received button interaction with payload:', resolvedEncodedPayload);
 
   const training = isTraining(payload);
   const difficulty = extractDifficulty(payload) ?? undefined;
-  const { buttons, embedDescription, activePlayerName, gameState, creature } =
-    await buildComponents(payload, userID, lang, false, difficulty);
+  const { buttons, embedDescription, activePlayerName, gameState, creature } = await buildComponents(payload, userID, lang, false, difficulty);
   const actualMonsterNames = getBattleMonsterNames(creature, lang);
   const monsterName = actualMonsterNames.displayName;
 
@@ -721,28 +566,8 @@ export async function handleButtonInteraction(
 
   const special = resolvedEncodedPayload.endsWith('p');
   if (special) {
-    return handleSpecialButton(
-      interaction,
-      c,
-      payload,
-      userID,
-      lang,
-      fr,
-      monsterName,
-      activePlayerName,
-      embedDescription,
-      buttons
-    );
+    return handleSpecialButton(interaction, c, payload, userID, lang, fr, monsterName, activePlayerName, embedDescription, buttons);
   }
 
-  return handleDefaultButton(
-    c,
-    payload,
-    userID,
-    lang,
-    fr,
-    monsterName,
-    embedDescription,
-    buttons
-  );
+  return handleDefaultButton(c, payload, userID, lang, fr, monsterName, embedDescription, buttons);
 }

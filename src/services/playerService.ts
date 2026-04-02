@@ -24,19 +24,13 @@ export async function ensurePlayerProfile(userId: string): Promise<void> {
   }
 }
 
-export async function getPlayerProfile(
-  userId: string
-): Promise<PlayerProfile | null> {
+export async function getPlayerProfile(userId: string): Promise<PlayerProfile | null> {
   const supabase = getSupabaseAdminClient();
   if (!supabase) {
     return null;
   }
 
-  const { data, error } = await supabase
-    .from('players')
-    .select('user_id, level, xp, gold')
-    .eq('user_id', userId)
-    .maybeSingle();
+  const { data, error } = await supabase.from('players').select('user_id, level, xp, gold').eq('user_id', userId).maybeSingle();
 
   if (error) {
     console.error('[db] getPlayerProfile failed:', error.message);
@@ -55,10 +49,7 @@ export async function getPlayerProfile(
   };
 }
 
-export async function updatePlayerGold(
-  userId: string,
-  delta: number
-): Promise<number | null> {
+export async function updatePlayerGold(userId: string, delta: number): Promise<number | null> {
   const supabase = getSupabaseAdminClient();
   if (!supabase) {
     return null;
@@ -71,10 +62,7 @@ export async function updatePlayerGold(
 
   const newGold = Math.max(0, profile.gold + delta);
 
-  const { error } = await supabase
-    .from('players')
-    .update({ gold: newGold, updated_at: new Date().toISOString() })
-    .eq('user_id', userId);
+  const { error } = await supabase.from('players').update({ gold: newGold, updated_at: new Date().toISOString() }).eq('user_id', userId);
 
   if (error) {
     console.error('[db] updatePlayerGold failed:', error.message);
@@ -84,21 +72,14 @@ export async function updatePlayerGold(
   return newGold;
 }
 
-export async function getLeaderboard(
-  limit = 10
-): Promise<LeaderboardEntry[] | null> {
+export async function getLeaderboard(limit = 10): Promise<LeaderboardEntry[] | null> {
   const supabase = getSupabaseAdminClient();
   if (!supabase) {
     return null;
   }
 
   const safeLimit = Math.max(1, Math.min(limit, 25));
-  const { data, error } = await supabase
-    .from('players')
-    .select('user_id, level, xp')
-    .order('level', { ascending: false })
-    .order('xp', { ascending: false })
-    .limit(safeLimit);
+  const { data, error } = await supabase.from('players').select('user_id, level, xp').order('level', { ascending: false }).order('xp', { ascending: false }).limit(safeLimit);
 
   if (error) {
     console.error('[db] getLeaderboard failed:', error.message);
@@ -112,19 +93,13 @@ export async function getLeaderboard(
   }));
 }
 
-export async function getPlayerRunSummary(
-  userId: string
-): Promise<PlayerRunSummary | null> {
+export async function getPlayerRunSummary(userId: string): Promise<PlayerRunSummary | null> {
   const supabase = getSupabaseAdminClient();
   if (!supabase) {
     return null;
   }
 
-  const { data: runs, error } = await supabase
-    .from('runs')
-    .select('state, monster_name, completed_at, run_key')
-    .eq('user_id', userId)
-    .order('completed_at', { ascending: false });
+  const { data: runs, error } = await supabase.from('runs').select('state, monster_name, completed_at, run_key').eq('user_id', userId).order('completed_at', { ascending: false });
 
   if (error) {
     console.error('[db] getPlayerRunSummary failed:', error.message);
@@ -137,8 +112,7 @@ export async function getPlayerRunSummary(
 
   for (const row of rows) {
     const existingMonster = row.monster_name ? String(row.monster_name) : '';
-    const inferredMonster =
-      existingMonster || inferMonsterFromRunKey(String(row.run_key || ''));
+    const inferredMonster = existingMonster || inferMonsterFromRunKey(String(row.run_key || ''));
 
     if (!existingMonster && inferredMonster && row.run_key) {
       updates.push({
@@ -152,24 +126,14 @@ export async function getPlayerRunSummary(
       continue;
     }
 
-    killsByMonster.set(
-      inferredMonster,
-      (killsByMonster.get(inferredMonster) ?? 0) + 1
-    );
+    killsByMonster.set(inferredMonster, (killsByMonster.get(inferredMonster) ?? 0) + 1);
   }
 
   for (const update of updates) {
-    const { error: updateError } = await supabase
-      .from('runs')
-      .update({ monster_name: update.monsterName })
-      .eq('run_key', update.runKey)
-      .eq('user_id', userId);
+    const { error: updateError } = await supabase.from('runs').update({ monster_name: update.monsterName }).eq('run_key', update.runKey).eq('user_id', userId);
 
     if (updateError) {
-      console.error(
-        '[db] getPlayerRunSummary backfill failed:',
-        updateError.message
-      );
+      console.error('[db] getPlayerRunSummary backfill failed:', updateError.message);
     }
   }
 

@@ -1,10 +1,7 @@
 import { AccessoryId } from '../enums/AccessoryId';
 import { AccessoryType } from '../enums/AccessoryType';
 import { Rarity } from '../enums/Rarity';
-import {
-  AccessoryCombinationRule,
-  AccessoryDefinition,
-} from '../types/catalog/Accessory';
+import { AccessoryCombinationRule, AccessoryDefinition } from '../types/catalog/Accessory';
 
 type AccessoryDefinitionSeed = Omit<AccessoryDefinition, 'nameFr' | 'nameEn'>;
 
@@ -629,9 +626,7 @@ function localizedAccessoryName(seed: AccessoryDefinitionSeed): {
   const rarity = RARITY_LABEL[seed.rarity];
 
   if (seed.type === AccessoryType.Ring) {
-    const variant = id.endsWith('10')
-      ? { fr: 'cristal', en: 'crystal' }
-      : { fr: 'goutte', en: 'drop' };
+    const variant = id.endsWith('10') ? { fr: 'cristal', en: 'crystal' } : { fr: 'goutte', en: 'drop' };
     return {
       nameFr: `bague ${variant.fr} ${rarity.fr}`,
       nameEn: `${rarity.en} ${variant.en} ring`,
@@ -639,12 +634,7 @@ function localizedAccessoryName(seed: AccessoryDefinitionSeed): {
   }
 
   if (seed.type === AccessoryType.Earring) {
-    const style =
-      id.startsWith('2232') || id.startsWith('2242')
-        ? { fr: 'coquille', en: 'shell' }
-        : id.startsWith('2231') || id.startsWith('2241')
-          ? { fr: 'plume', en: 'feather' }
-          : { fr: 'pierre', en: 'stone' };
+    const style = id.startsWith('2232') || id.startsWith('2242') ? { fr: 'coquille', en: 'shell' } : id.startsWith('2231') || id.startsWith('2241') ? { fr: 'plume', en: 'feather' } : { fr: 'pierre', en: 'stone' };
     return {
       nameFr: `boucles ${style.fr} ${element.fr} ${rarity.fr}`,
       nameEn: `${rarity.en} ${element.en} ${style.en} earrings`,
@@ -671,15 +661,7 @@ function localizedAccessoryName(seed: AccessoryDefinitionSeed): {
   };
 }
 
-export const ACCESSORY_DEFINITIONS: AccessoryDefinition[] = [
-  ...RINGS,
-  ...EARRINGS_BASIC,
-  ...EARRINGS_GOLD,
-  ...EARRINGS_EPIC,
-  ...NECKLACES,
-  ...CHARMS,
-  ...ORNAMENTS,
-].map(seed => ({
+export const ACCESSORY_DEFINITIONS: AccessoryDefinition[] = [...RINGS, ...EARRINGS_BASIC, ...EARRINGS_GOLD, ...EARRINGS_EPIC, ...NECKLACES, ...CHARMS, ...ORNAMENTS].map(seed => ({
   ...seed,
   ...localizedAccessoryName(seed),
 }));
@@ -824,21 +806,13 @@ export const ACCESSORY_COMBINATION_RULES: AccessoryCombinationRule[] = [
   },
 ];
 
-const pairKey = (left: AccessoryId, right: AccessoryId): string =>
-  left < right ? `${left}+${right}` : `${right}+${left}`;
+const pairKey = (left: AccessoryId, right: AccessoryId): string => (left < right ? `${left}+${right}` : `${right}+${left}`);
 
-export const ACCESSORY_COMBINATION_MAP: Record<string, AccessoryId> =
-  ACCESSORY_COMBINATION_RULES.reduce<Record<string, AccessoryId>>(
-    (acc, rule) => {
-      acc[pairKey(rule.sourceA, rule.sourceB)] = rule.result;
-      return acc;
-    },
-    {}
-  );
+export const ACCESSORY_COMBINATION_MAP: Record<string, AccessoryId> = ACCESSORY_COMBINATION_RULES.reduce<Record<string, AccessoryId>>((acc, rule) => {
+  acc[pairKey(rule.sourceA, rule.sourceB)] = rule.result;
+  return acc;
+}, {});
 
-export function getAccessoryCombinationResult(
-  sourceA: AccessoryId,
-  sourceB: AccessoryId
-): AccessoryId | null {
+export function getAccessoryCombinationResult(sourceA: AccessoryId, sourceB: AccessoryId): AccessoryId | null {
   return ACCESSORY_COMBINATION_MAP[pairKey(sourceA, sourceB)] || null;
 }

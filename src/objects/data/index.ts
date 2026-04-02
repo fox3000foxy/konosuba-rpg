@@ -7,4 +7,3 @@ export * from './imageManifest';
 export * from './mobMap';
 export * from './monsterDifficultyMap';
 export * from './progressionCatalog';
-

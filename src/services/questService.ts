@@ -12,10 +12,7 @@ export const QUESTS: QuestDefinition[] = QUEST_DEFINITIONS;
 
 const DAILY_QUEST_KEY = QUESTS[0].key;
 
-export function getQuestLabel(
-  questKey: QuestKey | string,
-  fr: boolean
-): string {
+export function getQuestLabel(questKey: QuestKey | string, fr: boolean): string {
   if (questKey === QuestKey.Win1Run) {
     return fr ? 'Gagner 1 Victoire' : 'Win 1 Battle';
   }
@@ -28,9 +25,7 @@ export function getQuestLabel(
   return String(questKey);
 }
 
-function getQuestDefinition(
-  questKey: QuestKey | string
-): QuestDefinition | null {
+function getQuestDefinition(questKey: QuestKey | string): QuestDefinition | null {
   return QUESTS.find(q => q.key === questKey) ?? null;
 }
 
@@ -38,16 +33,11 @@ function currentQuestDay(): string {
   return new Date().toISOString().slice(0, 10);
 }
 
-export function getAllQuestStatuses(
-  userID: string
-): Promise<DailyQuestStatus[]> {
+export function getAllQuestStatuses(userID: string): Promise<DailyQuestStatus[]> {
   return Promise.all(QUESTS.map(q => getDailyQuestStatus(userID, q.key)));
 }
 
-export async function getDailyQuestStatus(
-  userId: string,
-  questKey: QuestKey | string = DAILY_QUEST_KEY
-): Promise<DailyQuestStatus> {
+export async function getDailyQuestStatus(userId: string, questKey: QuestKey | string = DAILY_QUEST_KEY): Promise<DailyQuestStatus> {
   const supabase = getSupabaseAdminClient();
   const questDef = getQuestDefinition(questKey);
 
@@ -74,13 +64,7 @@ export async function getDailyQuestStatus(
   }
 
   const questDay = currentQuestDay();
-  const { data, error } = await supabase
-    .from('daily_quests_progress')
-    .select('progress, claimed')
-    .eq('user_id', userId)
-    .eq('quest_day', questDay)
-    .eq('quest_key', questKey)
-    .maybeSingle();
+  const { data, error } = await supabase.from('daily_quests_progress').select('progress, claimed').eq('user_id', userId).eq('quest_day', questDay).eq('quest_key', questKey).maybeSingle();
 
   if (error) {
     console.error('[db] getDailyQuestStatus failed:', error.message);
@@ -96,10 +80,7 @@ export async function getDailyQuestStatus(
   };
 }
 
-export async function claimDailyQuestReward(
-  userId: string,
-  questKey: QuestKey | string = DAILY_QUEST_KEY
-): Promise<ClaimDailyQuestResult> {
+export async function claimDailyQuestReward(userId: string, questKey: QuestKey | string = DAILY_QUEST_KEY): Promise<ClaimDailyQuestResult> {
   await ensurePlayerProfile(userId);
 
   const supabase = getSupabaseAdminClient();
@@ -123,13 +104,7 @@ export async function claimDailyQuestReward(
     return { status: QuestClaimStatus.NotCompleted, rewardGold: 0 };
   }
 
-  const { error: markClaimedError } = await supabase
-    .from('daily_quests_progress')
-    .update({ claimed: true, updated_at: new Date().toISOString() })
-    .eq('user_id', userId)
-    .eq('quest_day', questStatus.questDay)
-    .eq('quest_key', questKey)
-    .eq('claimed', false);
+  const { error: markClaimedError } = await supabase.from('daily_quests_progress').update({ claimed: true, updated_at: new Date().toISOString() }).eq('user_id', userId).eq('quest_day', questStatus.questDay).eq('quest_key', questKey).eq('claimed', false);
 
   if (markClaimedError) {
     console.error('[db] claim quest failed:', markClaimedError.message);
@@ -137,38 +112,23 @@ export async function claimDailyQuestReward(
   }
 
   const rollbackClaimed = async () => {
-    const { error: rollbackError } = await supabase
-      .from('daily_quests_progress')
-      .update({ claimed: false, updated_at: new Date().toISOString() })
-      .eq('user_id', userId)
-      .eq('quest_day', questStatus.questDay)
-      .eq('quest_key', questKey);
+    const { error: rollbackError } = await supabase.from('daily_quests_progress').update({ claimed: false, updated_at: new Date().toISOString() }).eq('user_id', userId).eq('quest_day', questStatus.questDay).eq('quest_key', questKey);
 
     if (rollbackError) {
       console.error('[db] rollback quest claim failed:', rollbackError.message);
     }
   };
 
-  const { data: player, error: playerError } = await supabase
-    .from('players')
-    .select('gold')
-    .eq('user_id', userId)
-    .single();
+  const { data: player, error: playerError } = await supabase.from('players').select('gold').eq('user_id', userId).single();
 
   if (playerError || !player) {
-    console.error(
-      '[db] load player for quest reward failed:',
-      playerError?.message || 'missing row'
-    );
+    console.error('[db] load player for quest reward failed:', playerError?.message || 'missing row');
     await rollbackClaimed();
     return { status: QuestClaimStatus.Unavailable, rewardGold: 0 };
   }
 
   const nextGold = Number(player.gold || 0) + questDef.rewardGold;
-  const { error: goldError } = await supabase
-    .from('players')
-    .update({ gold: nextGold, updated_at: new Date().toISOString() })
-    .eq('user_id', userId);
+  const { error: goldError } = await supabase.from('players').update({ gold: nextGold, updated_at: new Date().toISOString() }).eq('user_id', userId);
 
   if (goldError) {
     console.error('[db] update gold failed:', goldError.message);

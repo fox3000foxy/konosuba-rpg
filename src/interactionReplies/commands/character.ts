@@ -1,19 +1,10 @@
 import { Context } from 'hono';
 import { BASE_URL } from '../../objects/config';
 import { InteractionDataOption } from '../../objects/types/InteractionDataOption';
-import {
-    ensurePlayerProfile,
-    getCharacterProgresses,
-    getCharacterStatsSnapshot,
-} from '../../services/progressionService';
+import { ensurePlayerProfile, getCharacterProgresses, getCharacterStatsSnapshot } from '../../services/progressionService';
 import { addImageVersion } from '../../utils/imageUtils';
 
-export async function handleCharacterCommand(
-  c: Context,
-  userID: string,
-  fr: boolean,
-  options?: InteractionDataOption[]
-) {
+export async function handleCharacterCommand(c: Context, userID: string, fr: boolean, options?: InteractionDataOption[]) {
   const mentioned = options?.find(option => option.name === 'mention')?.value;
   const targetUserId = mentioned ? String(mentioned) : userID;
 
@@ -28,17 +19,13 @@ export async function handleCharacterCommand(
     return c.json({
       type: 4,
       data: {
-        content: fr
-          ? `Profil de <@${targetUserId}> indisponible.`
-          : `<@${targetUserId}> profile unavailable.`,
+        content: fr ? `Profil de <@${targetUserId}> indisponible.` : `<@${targetUserId}> profile unavailable.`,
         flags: 1 << 6,
       },
     });
   }
 
-  const affinityImageUrl = addImageVersion(
-    `${BASE_URL}/affinity/${targetUserId}?lang=${fr ? 'fr' : 'en'}`
-  );
+  const affinityImageUrl = addImageVersion(`${BASE_URL}/affinity/${targetUserId}?lang=${fr ? 'fr' : 'en'}`);
 
   return c.json({
     type: 4,

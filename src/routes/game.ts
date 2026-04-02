@@ -1,9 +1,6 @@
 import { Context } from 'hono';
 import { Lang } from '../objects/enums/Lang';
-import {
-  calculateGameStateFromUrl,
-  serializeGameForApi,
-} from '../services/gameService';
+import { calculateGameStateFromUrl, serializeGameForApi } from '../services/gameService';
 
 export async function calculateGame(c: Context) {
   const { lang } = c.req.param() as { lang: Lang };

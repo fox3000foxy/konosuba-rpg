@@ -4,10 +4,7 @@ import { GenericCreature, GenericCreatureInterface } from '../GenericCreature';
 import { Random } from '../Random';
 import { EnglishLore } from '../../objects/enums/EnglishLore';
 
-export default class Destroyer
-  extends GenericCreature
-  implements GenericCreatureInterface
-{
+export default class Destroyer extends GenericCreature implements GenericCreatureInterface {
   constructor() {
     super();
     this.attack = [10, 18];
@@ -21,10 +18,7 @@ export default class Destroyer
   pickColor(rng: Random) {
     this.color = rng.choice(['19300', '19302']);
     this.images = [`enemy_image_${this.color}`];
-    this.lore = [
-      FrenchLores.Creature_Destroyer,
-      EnglishLore.Creature_Destroyer,
-    ];
+    this.lore = [FrenchLores.Creature_Destroyer, EnglishLore.Creature_Destroyer];
     this.gender = Gender.Neutral;
   }
 }

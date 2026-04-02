@@ -34,8 +34,7 @@ export const CRAFTING_RECIPES: CraftingRecipe[] = [
   },
 ];
 
-export const CRAFTING_RECIPE_BY_KEY: Record<string, CraftingRecipe> =
-  CRAFTING_RECIPES.reduce<Record<string, CraftingRecipe>>((acc, recipe) => {
-    acc[recipe.key] = recipe;
-    return acc;
-  }, {});
+export const CRAFTING_RECIPE_BY_KEY: Record<string, CraftingRecipe> = CRAFTING_RECIPES.reduce<Record<string, CraftingRecipe>>((acc, recipe) => {
+  acc[recipe.key] = recipe;
+  return acc;
+}, {});

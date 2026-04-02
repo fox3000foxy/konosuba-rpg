@@ -4,10 +4,7 @@ import { GenericCreature, GenericCreatureInterface } from '../GenericCreature';
 import { Random } from '../Random';
 import { EnglishLore } from '../../objects/enums/EnglishLore';
 
-export default class LoveBunny
-  extends GenericCreature
-  implements GenericCreatureInterface
-{
+export default class LoveBunny extends GenericCreature implements GenericCreatureInterface {
   constructor() {
     super();
     this.attack = [1, 6];
@@ -21,10 +18,7 @@ export default class LoveBunny
   pickColor(rng: Random) {
     this.color = rng.choice(['16001', '16002', '16003']);
     this.images = [`enemy_image_${this.color}`];
-    this.lore = [
-      FrenchLores.Creature_LoveBunny,
-      EnglishLore.Creature_LoveBunny,
-    ];
+    this.lore = [FrenchLores.Creature_LoveBunny, EnglishLore.Creature_LoveBunny];
     this.gender = Gender.Neutral;
   }
 }

@@ -40,28 +40,15 @@ export abstract class Creature implements CreatureInterface {
     this.love -= loveDecrease;
   }
 
-  turn(options: {
-    lang: string;
-    dmg: number;
-    player: Player;
-  }): [string, number] {
+  turn(options: { lang: string; dmg: number; player: Player }): [string, number] {
     const dmg = options.dmg;
     const isFrench = options.lang === 'fr';
     const langIndex = isFrench ? 1 : 0;
     const { name, prefix } = getCreatureNameAndPrefix(this, options.lang, true);
 
-    const template = isFrench
-      ? dmg
-        ? MessagesTemplates.French_CreatureAttacks
-        : MessagesTemplates.French_CreatureMisses
-      : dmg
-        ? MessagesTemplates.English_CreatureAttacks
-        : MessagesTemplates.English_CreatureMisses;
+    const template = isFrench ? (dmg ? MessagesTemplates.French_CreatureAttacks : MessagesTemplates.French_CreatureMisses) : dmg ? MessagesTemplates.English_CreatureAttacks : MessagesTemplates.English_CreatureMisses;
 
-    const message = template
-      .replace('${NAME}', `${prefix}${name}`)
-      .replace('{DMG}', dmg.toString())
-      .replace('{PLAYER}', options.player.name[langIndex]);
+    const message = template.replace('${NAME}', `${prefix}${name}`).replace('{DMG}', dmg.toString()).replace('{PLAYER}', options.player.name[langIndex]);
 
     return [message, dmg];
   }

@@ -22,10 +22,7 @@ export type ConsumableEffectResult = {
  * Consumables only affect players, never creatures
  * Returns effect result with messages and changes made
  */
-export function applyConsumableEffect(
-  itemId: ItemId,
-  player: Player
-): ConsumableEffectResult {
+export function applyConsumableEffect(itemId: ItemId, player: Player): ConsumableEffectResult {
   const item = getItemById(itemId);
   const playerName = player.name[0]; // English name
 
@@ -75,10 +72,7 @@ export function applyConsumableEffect(
  * Applies potion healing based on rarity
  * Basic = 25%, Gold = 50%, Epic = 75% of max HP
  */
-function applyPotionEffect(
-  player: Player,
-  rarity: Rarity
-): ConsumableEffectResult {
+function applyPotionEffect(player: Player, rarity: Rarity): ConsumableEffectResult {
   const maxHp = player.hpMax;
   let healPercentage = 0.25; // default basic
 
@@ -112,10 +106,7 @@ function applyPotionEffect(
  * Basic = +10%, Gold = +20%, Epic = +30% of current max HP
  * Also restores HP proportionally
  */
-function applyChronoEffect(
-  player: Player,
-  rarity: Rarity
-): ConsumableEffectResult {
+function applyChronoEffect(player: Player, rarity: Rarity): ConsumableEffectResult {
   let increasePercentage = 0.1; // default basic
 
   if (rarity === Rarity.Gold) {
@@ -151,10 +142,7 @@ function applyChronoEffect(
  * Applies stone effect to increase defense based on rarity
  * Basic = +1, Gold = +2, Epic = +3
  */
-function applyStoneEffect(
-  player: Player,
-  rarity: Rarity
-): ConsumableEffectResult {
+function applyStoneEffect(player: Player, rarity: Rarity): ConsumableEffectResult {
   let defenseIncrease = 1; // default basic
 
   if (rarity === Rarity.Gold) {
@@ -183,10 +171,7 @@ function applyStoneEffect(
  * Applies scroll effect to increase attack based on rarity
  * Basic = +1 on both min/max, Gold = +2, Epic = +3
  */
-function applyScrollEffect(
-  player: Player,
-  rarity: Rarity
-): ConsumableEffectResult {
+function applyScrollEffect(player: Player, rarity: Rarity): ConsumableEffectResult {
   let attackIncrease = 1; // default basic
 
   if (rarity === Rarity.Gold) {

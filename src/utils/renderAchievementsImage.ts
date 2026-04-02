@@ -20,12 +20,7 @@ const WIDTH = 1100;
 const HEIGHT = 620;
 
 function escapeXml(value: string): string {
-  return value
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&apos;');
+  return value.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&apos;');
 }
 
 async function getAssetBytes(path: string): Promise<ArrayBuffer | null> {
@@ -59,32 +54,19 @@ async function getEmbeddedFontBuffer(): Promise<Uint8Array | null> {
   return fontBytes;
 }
 
-export async function buildAchievementsSvg(
-  userId: string,
-  achievements: AchievementOverviewItem[],
-  fr: boolean,
-  hasEmbeddedFont = false
-): Promise<string> {
+export async function buildAchievementsSvg(userId: string, achievements: AchievementOverviewItem[], fr: boolean, hasEmbeddedFont = false): Promise<string> {
   void userId;
   const fontFamily = hasEmbeddedFont ? 'GintoNordMedium' : 'Arial';
   const unlockedCount = achievements.filter(item => item.unlocked).length;
   const title = fr ? 'Achievements' : 'Achievements';
-  const subtitle = fr
-    ? `Progression: ${unlockedCount}/${achievements.length}`
-    : `Progress: ${unlockedCount}/${achievements.length}`;
+  const subtitle = fr ? `Progression: ${unlockedCount}/${achievements.length}` : `Progress: ${unlockedCount}/${achievements.length}`;
 
   const rowY = [190, 280, 370, 460, 550];
   const rows = achievements.slice(0, 5);
 
   const rowText = rows
     .map((item, idx) => {
-      const statusLabel = item.unlocked
-        ? fr
-          ? 'DEBLOQUE'
-          : 'UNLOCKED'
-        : fr
-          ? 'VERROUILLE'
-          : 'LOCKED';
+      const statusLabel = item.unlocked ? (fr ? 'DEBLOQUE' : 'UNLOCKED') : fr ? 'VERROUILLE' : 'LOCKED';
       const statusColor = item.unlocked ? '#5EF38C' : '#9db0e8';
 
       return `
@@ -106,20 +88,11 @@ export async function buildAchievementsSvg(
   </svg>`;
 }
 
-export async function renderAchievementsImage(
-  userId: string,
-  achievements: AchievementOverviewItem[],
-  fr: boolean
-): Promise<Uint8Array> {
+export async function renderAchievementsImage(userId: string, achievements: AchievementOverviewItem[], fr: boolean): Promise<Uint8Array> {
   await ensureResvgWasm();
   const fontBuffer = await getEmbeddedFontBuffer();
 
-  const svg = await buildAchievementsSvg(
-    userId,
-    achievements,
-    fr,
-    Boolean(fontBuffer)
-  );
+  const svg = await buildAchievementsSvg(userId, achievements, fr, Boolean(fontBuffer));
   const options = fontBuffer
     ? {
         font: {
@@ -131,9 +104,7 @@ export async function renderAchievementsImage(
     : { font: { loadSystemFonts: true } };
 
   const png = new Resvg(svg, options).render().asPng();
-  const overlay = Photon.PhotonImage.new_from_byteslice(
-    new Uint8Array(png.buffer.slice(0) as ArrayBuffer)
-  );
+  const overlay = Photon.PhotonImage.new_from_byteslice(new Uint8Array(png.buffer.slice(0) as ArrayBuffer));
 
   let board: Photon.PhotonImage | null = null;
   let canvas: Photon.PhotonImage;
@@ -141,12 +112,7 @@ export async function renderAchievementsImage(
 
   if (boardBytes) {
     board = Photon.PhotonImage.new_from_byteslice(new Uint8Array(boardBytes));
-    canvas = Photon.resize(
-      board,
-      WIDTH,
-      HEIGHT,
-      Photon.SamplingFilter.Lanczos3
-    );
+    canvas = Photon.resize(board, WIDTH, HEIGHT, Photon.SamplingFilter.Lanczos3);
     Photon.watermark(canvas, overlay, 0n, 0n);
   } else {
     canvas = overlay;

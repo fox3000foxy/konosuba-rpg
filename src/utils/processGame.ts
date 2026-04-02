@@ -40,10 +40,7 @@ export function pascalCaseToString(pascalCaseWord: string): string {
     .join(' ');
 }
 
-function generateMessage(
-  template: MessagesTemplates,
-  replacements: Record<string, string | number>
-): string {
+function generateMessage(template: MessagesTemplates, replacements: Record<string, string | number>): string {
   let msg = template as string;
   for (const key in replacements) {
     if (Object.prototype.hasOwnProperty.call(replacements, key)) {
@@ -66,10 +63,7 @@ function applyTeamLevelFactors(team: Team, factors?: number[]): void {
     const factor = factors[index] ?? 1;
     const nextHpMax = scaleStat(player.hpMax, factor, 1);
     const nextAttackMin = Math.max(0, Math.round(player.attack[0] * factor));
-    const nextAttackMax = Math.max(
-      nextAttackMin,
-      scaleStat(player.attack[1], factor, 1)
-    );
+    const nextAttackMax = Math.max(nextAttackMin, scaleStat(player.attack[1], factor, 1));
 
     player.hpMax = nextHpMax;
     player.hp = nextHpMax;
@@ -77,39 +71,7 @@ function applyTeamLevelFactors(team: Team, factors?: number[]): void {
   });
 }
 
-async function handlePlayerAction({
-  move,
-  currentPlayer,
-  team,
-  creature,
-  rand,
-  lang,
-  linesTyped,
-  descriptionsTyped,
-  messages,
-  embedDescription,
-  userId,
-  itemIds,
-  consumedItemIds,
-  selectedUseTargetPlayerId,
-  isLastMove,
-}: {
-  move: string;
-  currentPlayer: Aqua | Player;
-  team: Team;
-  creature: Creature | Troll;
-  rand: Random;
-  lang: Lang;
-  linesTyped: LinesType;
-  descriptionsTyped: LinesType;
-  messages: string[];
-  embedDescription: string[];
-  userId?: string;
-  itemIds?: ItemId[];
-  consumedItemIds?: Set<ItemId>;
-  selectedUseTargetPlayerId?: number;
-  isLastMove?: boolean;
-}): Promise<void> {
+async function handlePlayerAction({ move, currentPlayer, team, creature, rand, lang, linesTyped, descriptionsTyped, messages, embedDescription, userId, itemIds, consumedItemIds, selectedUseTargetPlayerId, isLastMove }: { move: string; currentPlayer: Aqua | Player; team: Team; creature: Creature | Troll; rand: Random; lang: Lang; linesTyped: LinesType; descriptionsTyped: LinesType; messages: string[]; embedDescription: string[]; userId?: string; itemIds?: ItemId[]; consumedItemIds?: Set<ItemId>; selectedUseTargetPlayerId?: number; isLastMove?: boolean }): Promise<void> {
   const langIndex = lang === Lang.French ? 1 : 0;
   const langLines = linesTyped[lang];
   const langDescriptions = descriptionsTyped[lang];
@@ -117,53 +79,35 @@ async function handlePlayerAction({
 
   switch (action) {
     case PLAYER_DEF: {
-      const dmg = rand.randint(
-        currentPlayer.attack[0],
-        currentPlayer.attack[1]
-      );
+      const dmg = rand.randint(currentPlayer.attack[0], currentPlayer.attack[1]);
       const playerIndex = currentPlayer.playerId;
-      const rng = rand.randint(
-        0,
-        langLines.youDefendMsgs[playerIndex].length - 1
-      );
+      const rng = rand.randint(0, langLines.youDefendMsgs[playerIndex].length - 1);
       const msg = generateMessage(langLines.youDefendMsgs[playerIndex][rng], {
         CREATURE: creature.name[langIndex],
         DAMAGE: dmg,
       });
-      const desc = generateMessage(
-        langDescriptions.youDefendMsgs[playerIndex][rng],
-        {
-          CREATURE: creature.name[langIndex],
-          DAMAGE: dmg,
-        }
-      );
+      const desc = generateMessage(langDescriptions.youDefendMsgs[playerIndex][rng], {
+        CREATURE: creature.name[langIndex],
+        DAMAGE: dmg,
+      });
       messages.push(msg);
       embedDescription.push(desc);
       currentPlayer.performAction(PlayerAction.Def);
       break;
     }
     case PLAYER_ATK: {
-      const dmg = rand.randint(
-        currentPlayer.attack[0],
-        currentPlayer.attack[1]
-      );
+      const dmg = rand.randint(currentPlayer.attack[0], currentPlayer.attack[1]);
       creature.dealAttack(dmg);
       const playerIndex = currentPlayer.playerId;
-      const rng = rand.randint(
-        0,
-        langLines.youAttackMsgs[playerIndex].length - 1
-      );
+      const rng = rand.randint(0, langLines.youAttackMsgs[playerIndex].length - 1);
       const msg = generateMessage(langLines.youAttackMsgs[playerIndex][rng], {
         CREATURE: creature.name[langIndex],
         DAMAGE: dmg,
       });
-      const desc = generateMessage(
-        langDescriptions.youAttackMsgs[playerIndex][rng],
-        {
-          CREATURE: creature.name[langIndex],
-          DAMAGE: dmg,
-        }
-      );
+      const desc = generateMessage(langDescriptions.youAttackMsgs[playerIndex][rng], {
+        CREATURE: creature.name[langIndex],
+        DAMAGE: dmg,
+      });
       messages.push(msg);
       embedDescription.push(desc);
       currentPlayer.performAction(PlayerAction.Atk);
@@ -171,19 +115,13 @@ async function handlePlayerAction({
     }
     case PLAYER_HUG: {
       const playerIndex = currentPlayer.playerId;
-      const rng = rand.randint(
-        0,
-        langLines.youHugMsgs[playerIndex].length - 1
-      );
+      const rng = rand.randint(0, langLines.youHugMsgs[playerIndex].length - 1);
       const msg = generateMessage(langLines.youHugMsgs[playerIndex][rng], {
         CREATURE: creature.name[langIndex],
       });
-      const desc = generateMessage(
-        langDescriptions.youHugMsgs[playerIndex][rng],
-        {
-          CREATURE: creature.name[langIndex],
-        }
-      );
+      const desc = generateMessage(langDescriptions.youHugMsgs[playerIndex][rng], {
+        CREATURE: creature.name[langIndex],
+      });
       messages.push(msg);
       embedDescription.push(desc);
       const loveDecrease = rand.randint(1, 4);
@@ -205,33 +143,21 @@ async function handlePlayerAction({
     }
     case PLAYER_SPE: {
       if (currentPlayer.specialAttackReady) {
-        const dmg = rand.randint(
-          currentPlayer.attack[0],
-          currentPlayer.attack[1]
-        );
+        const dmg = rand.randint(currentPlayer.attack[0], currentPlayer.attack[1]);
         const specialDmgMultiplier = rand.randint(2, 4);
         const totalDmg = dmg * specialDmgMultiplier;
         creature.dealAttack(totalDmg);
         currentPlayer.performAction(PlayerAction.Spe);
         const playerIndex = currentPlayer.playerId;
-        const rng = rand.randint(
-          0,
-          langLines.youSpecialAttackMsgs[playerIndex].length - 1
-        );
-        const msg = generateMessage(
-          langLines.youSpecialAttackMsgs[playerIndex][rng],
-          {
-            CREATURE: creature.name[langIndex],
-            DAMAGE: totalDmg,
-          }
-        );
-        const desc = generateMessage(
-          langDescriptions.youSpecialAttackMsgs[playerIndex][rng],
-          {
-            CREATURE: creature.name[langIndex],
-            DAMAGE: totalDmg,
-          }
-        );
+        const rng = rand.randint(0, langLines.youSpecialAttackMsgs[playerIndex].length - 1);
+        const msg = generateMessage(langLines.youSpecialAttackMsgs[playerIndex][rng], {
+          CREATURE: creature.name[langIndex],
+          DAMAGE: totalDmg,
+        });
+        const desc = generateMessage(langDescriptions.youSpecialAttackMsgs[playerIndex][rng], {
+          CREATURE: creature.name[langIndex],
+          DAMAGE: totalDmg,
+        });
         messages.push(msg);
         embedDescription.push(desc);
       }
@@ -239,16 +165,8 @@ async function handlePlayerAction({
     }
     case PLAYER_USE: {
       // Use a consumable item on a selected player (fallback to current player)
-      const selectedTarget =
-        typeof selectedUseTargetPlayerId === 'number'
-          ? team.players.find(
-              player => player.playerId === selectedUseTargetPlayerId
-            )
-          : undefined;
-      const targetPlayer =
-        selectedTarget && selectedTarget.hp > 0
-          ? selectedTarget
-          : currentPlayer;
+      const selectedTarget = typeof selectedUseTargetPlayerId === 'number' ? team.players.find(player => player.playerId === selectedUseTargetPlayerId) : undefined;
+      const targetPlayer = selectedTarget && selectedTarget.hp > 0 ? selectedTarget : currentPlayer;
 
       // Prefer itemIds passed from URL, otherwise use a fixed set for testing
       const availableItems: ItemId[] =
@@ -266,86 +184,40 @@ async function handlePlayerAction({
 
       if (effect.applied) {
         targetPlayer.performAction(PlayerAction.Use);
-        messages.push(
-          lang === Lang.French ? effect.message.fr : effect.message.en
-        );
-        embedDescription.push(
-          lang === Lang.French ? effect.message.fr : effect.message.en
-        );
+        messages.push(lang === Lang.French ? effect.message.fr : effect.message.en);
+        embedDescription.push(lang === Lang.French ? effect.message.fr : effect.message.en);
 
         // Persist inventory consumption only once per item (track in consumedItemIds)
-        if (
-          isLastMove &&
-          userId &&
-          consumedItemIds &&
-          !consumedItemIds.has(selectedItemId)
-        ) {
+        if (isLastMove && userId && consumedItemIds && !consumedItemIds.has(selectedItemId)) {
           await consumeInventoryItem(userId, selectedItemId);
           consumedItemIds.add(selectedItemId);
         }
       } else {
-        messages.push(
-          lang === Lang.French
-            ? "Impossible d'utiliser cet item"
-            : 'Cannot use this item'
-        );
-        embedDescription.push(
-          lang === Lang.French
-            ? "Impossible d'utiliser cet item"
-            : 'Cannot use this item'
-        );
+        messages.push(lang === Lang.French ? "Impossible d'utiliser cet item" : 'Cannot use this item');
+        embedDescription.push(lang === Lang.French ? "Impossible d'utiliser cet item" : 'Cannot use this item');
       }
       break;
     }
   }
 }
 
-export default async function processGame(
-  rand: Random,
-  moves: string[],
-  monsterName: string | null = null,
-  lang: Lang = Lang.English,
-  renderingImage: boolean = true,
-  teamLevelFactors?: number[],
-  difficulty?: string | MonsterDifficulty | null,
-  userId?: string,
-  itemIds?: ItemId[],
-  selectedUseTargetPlayerId?: number
-): Promise<Game> {
+export default async function processGame(rand: Random, moves: string[], monsterName: string | null = null, lang: Lang = Lang.English, renderingImage: boolean = true, teamLevelFactors?: number[], difficulty?: string | MonsterDifficulty | null, userId?: string, itemIds?: ItemId[], selectedUseTargetPlayerId?: number): Promise<Game> {
   lang = lang === Lang.French ? Lang.French : Lang.English;
   const team = new Team();
   applyTeamLevelFactors(team, teamLevelFactors);
 
   // Precompute monster and team setup
-  const creature = monsterName
-    ? generateMob().find(
-        MobClass =>
-          MobClass.name[lang === Lang.French ? 1 : 0].toLowerCase() ===
-          monsterName.toLowerCase()
-      ) || new Troll()
-    : rand.choice(Object.values(getMonstersByDifficulty(difficulty || null)));
+  const creature = monsterName ? generateMob().find(MobClass => MobClass.name[lang === Lang.French ? 1 : 0].toLowerCase() === monsterName.toLowerCase()) || new Troll() : rand.choice(Object.values(getMonstersByDifficulty(difficulty || null)));
 
   if (creature instanceof GenericCreature) {
     creature.pickColor(rand);
   }
 
-  const { name, prefix } = getCreatureNameAndPrefix(
-    creature as Creature,
-    lang,
-    false
-  );
+  const { name, prefix } = getCreatureNameAndPrefix(creature as Creature, lang, false);
 
-  const messages: string[] = [
-    lang === Lang.French
-      ? `Attention, ${prefix.toLowerCase()}${name.toLowerCase()} !`
-      : `Watch out, ${prefix.toLowerCase()}${name.toLowerCase()}!`,
-  ];
+  const messages: string[] = [lang === Lang.French ? `Attention, ${prefix.toLowerCase()}${name.toLowerCase()} !` : `Watch out, ${prefix.toLowerCase()}${name.toLowerCase()}!`];
 
-  const embedDescription: string[] = [
-    lang === Lang.French
-      ? 'Utilisez les boutons pour attaquer, défendre ou faire un câlin à la créature. Essayez de réduire ses points de vie à zéro ou son amour à zéro pour gagner !'
-      : 'Use the buttons to attack, defend, or hug the creature. Try to reduce its HP to zero or its love to zero to win!',
-  ];
+  const embedDescription: string[] = [lang === Lang.French ? 'Utilisez les boutons pour attaquer, défendre ou faire un câlin à la créature. Essayez de réduire ses points de vie à zéro ou son amour à zéro pour gagner !' : 'Use the buttons to attack, defend, or hug the creature. Try to reduce its HP to zero or its love to zero to win!'];
 
   let state: GameState = GameState.Incomplete;
   let playerId: number;
@@ -436,37 +308,22 @@ export default async function processGame(
     });
 
     if (randomPlayer.defending) {
-      const { name, prefix } = getCreatureNameAndPrefix(
-        creature as Creature,
-        lang,
-        true
-      );
-      const msg = generateMessage(
-        MessagesTemplates[
-          `${lang === Lang.French ? 'French' : 'English'}_CreatureMisses`
-        ],
-        {
-          NAME: prefix + name,
-          DMG: creatureMove[1],
-          PLAYER: randomPlayer.name[langIndex],
-        }
-      );
+      const { name, prefix } = getCreatureNameAndPrefix(creature as Creature, lang, true);
+      const msg = generateMessage(MessagesTemplates[`${lang === Lang.French ? 'French' : 'English'}_CreatureMisses`], {
+        NAME: prefix + name,
+        DMG: creatureMove[1],
+        PLAYER: randomPlayer.name[langIndex],
+      });
       messages.push(msg);
       embedDescription.push(msg);
     } else {
       // Apply damage reduction from player defense
       const rawDamage = creatureMove[1];
-      const damageReduction = Math.min(
-        rawDamage,
-        Math.max(0, randomPlayer.defense * 0.2 * rawDamage)
-      );
+      const damageReduction = Math.min(rawDamage, Math.max(0, randomPlayer.defense * 0.2 * rawDamage));
       const finalDamage = Math.max(0, rawDamage - damageReduction);
       randomPlayer.hp -= finalDamage;
 
-      const msg =
-        randomPlayer.hp > 0
-          ? creatureMove[0]
-          : `${creatureMove[0]} ${randomPlayer.name[langIndex]} is down...`;
+      const msg = randomPlayer.hp > 0 ? creatureMove[0] : `${creatureMove[0]} ${randomPlayer.name[langIndex]} is down...`;
       messages.push(msg);
       embedDescription.push(msg);
     }
@@ -491,19 +348,11 @@ export default async function processGame(
   }
 
   if (state === GameState.Good || state === GameState.Best) {
-    embedDescription.push(
-      lang === Lang.French ? EndMessages.French_Good : EndMessages.English_Good
-    );
+    embedDescription.push(lang === Lang.French ? EndMessages.French_Good : EndMessages.English_Good);
   }
 
   if (renderingImage) {
-    const image = await renderImage(
-      state,
-      messages,
-      team,
-      creature as Creature,
-      lang
-    );
+    const image = await renderImage(state, messages, team, creature as Creature, lang);
     return {
       image,
       state,

@@ -13,10 +13,7 @@ export default class HansSlime extends Creature implements CreatureInterface {
     this.name = ['Hans', 'Hans'];
     this.images = [`enemy_image_14200`];
     this.prefix = true;
-    this.lore = [
-      FrenchLores.Creature_HansSlime,
-      EnglishLore.Creature_HansSlime,
-    ];
+    this.lore = [FrenchLores.Creature_HansSlime, EnglishLore.Creature_HansSlime];
     this.gender = Gender.Male;
   }
 }

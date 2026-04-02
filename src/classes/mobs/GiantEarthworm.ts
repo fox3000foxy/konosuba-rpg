@@ -4,10 +4,7 @@ import { GenericCreature, GenericCreatureInterface } from '../GenericCreature';
 import { Random } from '../Random';
 import { EnglishLore } from '../../objects/enums/EnglishLore';
 
-export default class GiantEarthworm
-  extends GenericCreature
-  implements GenericCreatureInterface
-{
+export default class GiantEarthworm extends GenericCreature implements GenericCreatureInterface {
   constructor() {
     super();
     this.attack = [4, 10];
@@ -21,10 +18,7 @@ export default class GiantEarthworm
   pickColor(rng: Random) {
     this.color = rng.choice(['11500', '11501', '11503']);
     this.images = [`enemy_image_${this.color}`];
-    this.lore = [
-      FrenchLores.Creature_GiantEarthworm,
-      EnglishLore.Creature_GiantEarthworm,
-    ];
+    this.lore = [FrenchLores.Creature_GiantEarthworm, EnglishLore.Creature_GiantEarthworm];
     this.gender = Gender.Male;
   }
 }

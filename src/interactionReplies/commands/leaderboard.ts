@@ -8,9 +8,7 @@ export async function handleLeaderboardCommand(c: Context, fr: boolean) {
     return c.json({
       type: 4,
       data: {
-        content: fr
-          ? 'Classement indisponible pour le moment.'
-          : 'Leaderboard is unavailable right now.',
+        content: fr ? 'Classement indisponible pour le moment.' : 'Leaderboard is unavailable right now.',
         flags: 1 << 6,
       },
     });
@@ -22,9 +20,7 @@ export async function handleLeaderboardCommand(c: Context, fr: boolean) {
       data: {
         embeds: [
           {
-            description: fr
-              ? '# Classement\n\nAucun joueur classe pour le moment.'
-              : '# Leaderboard\n\nNo ranked players yet.',
+            description: fr ? '# Classement\n\nAucun joueur classe pour le moment.' : '# Leaderboard\n\nNo ranked players yet.',
             color: 0x2b2d31,
           },
         ],

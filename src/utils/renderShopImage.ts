@@ -27,12 +27,7 @@ function getCanvasHeight(itemsCount: number): number {
 }
 
 function escapeXml(value: string): string {
-  return value
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&apos;');
+  return value.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&apos;');
 }
 
 async function getEmbeddedFontBuffer(): Promise<Uint8Array | null> {
@@ -70,20 +65,12 @@ async function getAssetBytes(path: string): Promise<ArrayBuffer | null> {
   return buf;
 }
 
-export async function buildShopSvg(
-  items: ShopItem[],
-  page: number,
-  pageCount: number,
-  fr: boolean,
-  hasEmbeddedFont = false
-): Promise<string> {
+export async function buildShopSvg(items: ShopItem[], page: number, pageCount: number, fr: boolean, hasEmbeddedFont = false): Promise<string> {
   const width = WIDTH;
   const lineHeight = LINE_HEIGHT;
   const height = getCanvasHeight(items.length);
   const title = fr ? 'Boutique' : 'Shop';
-  const subtitle = fr
-    ? `Page ${page}/${pageCount} - ${items.length} items`
-    : `Page ${page}/${pageCount} - ${items.length} items`;
+  const subtitle = fr ? `Page ${page}/${pageCount} - ${items.length} items` : `Page ${page}/${pageCount} - ${items.length} items`;
   const fontFamily = hasEmbeddedFont ? 'GintoNordMedium' : 'Arial';
 
   const lines = items.map((item, idx) => {
@@ -98,13 +85,7 @@ export async function buildShopSvg(
     `;
   });
 
-  const emptyState = !items.length
-    ? `<text x="36" y="190" fill="#d7deef" font-size="22" font-family="${fontFamily}">${escapeXml(
-        fr
-          ? 'Aucun objet disponible sur cette page.'
-          : 'No items available on this page.'
-      )}</text>`
-    : '';
+  const emptyState = !items.length ? `<text x="36" y="190" fill="#d7deef" font-size="22" font-family="${fontFamily}">${escapeXml(fr ? 'Aucun objet disponible sur cette page.' : 'No items available on this page.')}</text>` : '';
 
   return `
   <svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">
@@ -118,21 +99,10 @@ export async function buildShopSvg(
   </svg>`;
 }
 
-export async function renderShopImage(
-  items: ShopItem[],
-  page: number,
-  pageCount: number,
-  fr: boolean
-): Promise<Uint8Array> {
+export async function renderShopImage(items: ShopItem[], page: number, pageCount: number, fr: boolean): Promise<Uint8Array> {
   await ensureResvgWasm();
   const fontBuffer = await getEmbeddedFontBuffer();
-  const svg = await buildShopSvg(
-    items,
-    page,
-    pageCount,
-    fr,
-    Boolean(fontBuffer)
-  );
+  const svg = await buildShopSvg(items, page, pageCount, fr, Boolean(fontBuffer));
 
   const options = fontBuffer
     ? {
@@ -145,21 +115,14 @@ export async function renderShopImage(
     : { font: { loadSystemFonts: true } };
 
   const png = new Resvg(svg, options).render().asPng();
-  const overlay = Photon.PhotonImage.new_from_byteslice(
-    new Uint8Array(png.buffer.slice(0) as ArrayBuffer)
-  );
+  const overlay = Photon.PhotonImage.new_from_byteslice(new Uint8Array(png.buffer.slice(0) as ArrayBuffer));
 
   let board: Photon.PhotonImage | null = null;
   let canvas: Photon.PhotonImage;
   const boardBytes = await getAssetBytes(BOARD_PATH);
   if (boardBytes) {
     board = Photon.PhotonImage.new_from_byteslice(new Uint8Array(boardBytes));
-    canvas = Photon.resize(
-      board,
-      WIDTH,
-      getCanvasHeight(items.length),
-      Photon.SamplingFilter.Lanczos3
-    );
+    canvas = Photon.resize(board, WIDTH, getCanvasHeight(items.length), Photon.SamplingFilter.Lanczos3);
     Photon.watermark(canvas, overlay, 0n, 0n);
   } else {
     canvas = overlay;

@@ -16,13 +16,7 @@ export type CraftingRecipeView = {
 
 export type CraftRecipeResult = {
   success: boolean;
-  reason:
-    | 'crafted'
-    | 'recipe_not_found'
-    | 'recipe_disabled'
-    | 'insufficient_ingredients'
-    | 'service_unavailable'
-    | 'internal_error';
+  reason: 'crafted' | 'recipe_not_found' | 'recipe_disabled' | 'insufficient_ingredients' | 'service_unavailable' | 'internal_error';
   craftedItemId?: ItemId;
   craftedQuantity?: number;
   missingIngredients?: Array<{
