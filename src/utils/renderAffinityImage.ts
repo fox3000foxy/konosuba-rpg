@@ -2,7 +2,9 @@ import * as Photon from '@cf-wasm/photon';
 import { Resvg } from '@resvg/resvg-wasm';
 import { BASE_URL } from '../objects/config/constants';
 import { CharacterKey } from '../objects/enums/CharacterKey';
+import { PlayerStats } from '../objects/enums/player/PlayerStats';
 import { CharacterProgress } from '../objects/types/CharacterProgress';
+import { getAffinityFactor, getLevelFactor } from '../services/characterService';
 import { ensureResvgWasm } from './resvgWasm';
 
 type AffinityImageGlobals = {
@@ -31,7 +33,73 @@ type AffinityRow = {
   xp: number;
   level: number;
   affinity: number;
+  affinityBonusHp: number;
+  affinityBonusAttack: [number, number];
 };
+
+type BaseStats = {
+  hp: number;
+  attack: [number, number];
+};
+
+function scaleStat(value: number, factor: number, minimum: number): number {
+  return Math.max(minimum, Math.round(value * factor));
+}
+
+function getBaseStatsByCharacter(key: CharacterKey): BaseStats {
+  switch (key) {
+    case CharacterKey.Darkness:
+      return {
+        hp: PlayerStats.DarknessHp,
+        attack: [PlayerStats.DarknessAttackMin, PlayerStats.DarknessAttackMax],
+      };
+    case CharacterKey.Megumin:
+      return {
+        hp: PlayerStats.MeguminHp,
+        attack: [PlayerStats.MeguminAttackMin, PlayerStats.MeguminAttackMax],
+      };
+    case CharacterKey.Aqua:
+      return {
+        hp: PlayerStats.AquaHp,
+        attack: [PlayerStats.AquaAttackMin, PlayerStats.AquaAttackMax],
+      };
+  }
+}
+
+function getScaledStats(base: BaseStats, factor: number): BaseStats {
+  const nextHpMax = scaleStat(base.hp, factor, 1);
+  const nextAttackMin = Math.max(0, Math.round(base.attack[0] * factor));
+  const nextAttackMax = Math.max(
+    nextAttackMin,
+    scaleStat(base.attack[1], factor, 1)
+  );
+
+  return {
+    hp: nextHpMax,
+    attack: [nextAttackMin, nextAttackMax],
+  };
+}
+
+function getAffinityStatBonus(
+  key: CharacterKey,
+  level: number,
+  affinity: number
+): { hp: number; attack: [number, number] } {
+  const base = getBaseStatsByCharacter(key);
+  const levelFactor = getLevelFactor(level);
+  const affinityFactor = getAffinityFactor(affinity);
+
+  const withoutAffinity = getScaledStats(base, levelFactor);
+  const withAffinity = getScaledStats(base, levelFactor * affinityFactor);
+
+  return {
+    hp: withAffinity.hp - withoutAffinity.hp,
+    attack: [
+      withAffinity.attack[0] - withoutAffinity.attack[0],
+      withAffinity.attack[1] - withoutAffinity.attack[1],
+    ],
+  };
+}
 
 function escapeXml(value: string): string {
   return value
@@ -117,27 +185,61 @@ function getRows(progresses: CharacterProgress[]): AffinityRow[] {
     progresses.map(progress => [progress.characterKey, progress])
   );
 
+  const darknessLevel = Number(byKey.get(CharacterKey.Darkness)?.level || 1);
+  const darknessAffinity = Number(
+    byKey.get(CharacterKey.Darkness)?.affinity || 0
+  );
+  const darknessBonus = getAffinityStatBonus(
+    CharacterKey.Darkness,
+    darknessLevel,
+    darknessAffinity
+  );
+
+  const meguminLevel = Number(byKey.get(CharacterKey.Megumin)?.level || 1);
+  const meguminAffinity = Number(
+    byKey.get(CharacterKey.Megumin)?.affinity || 0
+  );
+  const meguminBonus = getAffinityStatBonus(
+    CharacterKey.Megumin,
+    meguminLevel,
+    meguminAffinity
+  );
+
+  const aquaLevel = Number(byKey.get(CharacterKey.Aqua)?.level || 1);
+  const aquaAffinity = Number(byKey.get(CharacterKey.Aqua)?.affinity || 0);
+  const aquaBonus = getAffinityStatBonus(
+    CharacterKey.Aqua,
+    aquaLevel,
+    aquaAffinity
+  );
+
   return [
     {
       key: CharacterKey.Darkness,
       label: 'Darkness',
       xp: Number(byKey.get(CharacterKey.Darkness)?.xp || 0),
-      level: Number(byKey.get(CharacterKey.Darkness)?.level || 1),
-      affinity: Number(byKey.get(CharacterKey.Darkness)?.affinity || 0),
+      level: darknessLevel,
+      affinity: darknessAffinity,
+      affinityBonusHp: darknessBonus.hp,
+      affinityBonusAttack: darknessBonus.attack,
     },
     {
       key: CharacterKey.Megumin,
       label: 'Megumin',
       xp: Number(byKey.get(CharacterKey.Megumin)?.xp || 0),
-      level: Number(byKey.get(CharacterKey.Megumin)?.level || 1),
-      affinity: Number(byKey.get(CharacterKey.Megumin)?.affinity || 0),
+      level: meguminLevel,
+      affinity: meguminAffinity,
+      affinityBonusHp: meguminBonus.hp,
+      affinityBonusAttack: meguminBonus.attack,
     },
     {
       key: CharacterKey.Aqua,
       label: 'Aqua',
       xp: Number(byKey.get(CharacterKey.Aqua)?.xp || 0),
-      level: Number(byKey.get(CharacterKey.Aqua)?.level || 1),
-      affinity: Number(byKey.get(CharacterKey.Aqua)?.affinity || 0),
+      level: aquaLevel,
+      affinity: aquaAffinity,
+      affinityBonusHp: aquaBonus.hp,
+      affinityBonusAttack: aquaBonus.attack,
     },
   ];
 }
@@ -158,13 +260,25 @@ export async function buildAffinitySvg(
     .map((row, idx) => {
       const stars = getAffinityStars(row.affinity);
       const tier = getAffinityTier(stars);
-      return `
-      <rect x="36" y="${rowY[idx] - 50}" width="1028" height="100" rx="14" fill="#0f1729" fill-opacity="0.74" />
+      const bonusHpLabel = fr
+        ? `+${row.affinityBonusHp} PV`
+        : `+${row.affinityBonusHp} HP`;
+      const bonusAtkLabel = `+${row.affinityBonusAttack[0]} to ${row.affinityBonusAttack[1]} ATK`;
+      const result = `
+      <rect x="36" y="${rowY[idx] - 50}" width="1028" height="108" rx="14" fill="#0f1729" fill-opacity="0.74" />
       <text x="170" y="${rowY[idx] - 10}" fill="#f5f7ff" font-size="34" font-family="${fontFamily}">${escapeXml(row.label)}</text>
       <text x="1030" y="${rowY[idx] - 10}" text-anchor="end" fill="#d8e1ff" font-size="24" font-family="${fontFamily}">${row.affinity}/100 AP</text>
       <text x="170" y="${rowY[idx] + 24}" fill="#9db0e8" font-size="20" font-family="${fontFamily}">${escapeXml(fr ? `Rang: ${getTierLabel(fr, tier)}` : `Tier: ${tier}`)}</text>
-      <text x="1030" y="${rowY[idx] + 24}" text-anchor="end" fill="#9db0e8" font-size="20" font-family="${fontFamily}">${escapeXml(fr ? `Niv. ${row.level} | XP ${row.xp}` : `Lv. ${row.level} | XP ${row.xp}`)}</text>
+      <text x="560" y="${rowY[idx] + 24}" fill="#9db0e8" font-size="20" font-family="${fontFamily}">${escapeXml(fr ? `Niv. ${row.level} | XP ${row.xp}` : `Lv. ${row.level} | XP ${row.xp}`)}</text>
     `;
+      if (row.affinityBonusHp > 0 || row.affinityBonusAttack.some(atk => atk > 0)) {
+        return result + `
+      <text x="1030" y="${rowY[idx] + 30}" text-anchor="end" fill="#5EF38C" font-size="17" font-family="${fontFamily}">${escapeXml(bonusHpLabel)}</text>
+      <text x="1030" y="${rowY[idx] + 46}" text-anchor="end" fill="#5EF38C" font-size="17" font-family="${fontFamily}">${escapeXml(bonusAtkLabel)}</text>
+        `;
+      }
+
+      return result;
     })
     .join('');
 
