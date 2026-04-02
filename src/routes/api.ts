@@ -15,6 +15,10 @@ import {
 } from '../services/progressionService';
 import { imageCacheHeaders } from '../utils/cacheHeaders';
 import {
+  buildAchievementsSvg,
+  renderAchievementsImage,
+} from '../utils/renderAchievementsImage';
+import {
   buildAffinitySvg,
   renderAffinityImage,
 } from '../utils/renderAffinityImage';
@@ -284,6 +288,49 @@ export function registerApiRoutes(app: Hono): void {
       fr
     );
 
+    const responseBody = image.buffer.slice(
+      image.byteOffset,
+      image.byteOffset + image.byteLength
+    );
+
+    return new Response(responseBody as ArrayBuffer, {
+      headers: imageCacheHeaders('image/png'),
+    });
+  });
+
+  app.get('/achievements/:userId', async (c: Context) => {
+    const fr = getApiLang(c);
+    const userId = requireUserId(c, fr);
+    if (!userId) {
+      return;
+    }
+
+    const achievements = await getAchievementsOverview(userId, fr);
+    if (!achievements) {
+      return c.text(
+        fr
+          ? 'Achievements indisponibles pour le moment.'
+          : 'Achievements are unavailable right now.',
+        404
+      );
+    }
+
+    const pageSize = 5;
+    const page = Math.max(1, Number(c.req.query('page')) || 1);
+    const pageCount = Math.max(1, Math.ceil(achievements.length / pageSize));
+    const safePage = Math.min(pageCount, page);
+    const start = (safePage - 1) * pageSize;
+    const pageItems = achievements.slice(start, start + pageSize);
+
+    const renderSvg = c.req.query('renderSvg') === 'true';
+    if (renderSvg) {
+      const image = await buildAchievementsSvg(userId, pageItems, fr);
+      return c.text(image, 200, {
+        ...imageCacheHeaders('image/svg+xml'),
+      });
+    }
+
+    const image = await renderAchievementsImage(userId, pageItems, fr);
     const responseBody = image.buffer.slice(
       image.byteOffset,
       image.byteOffset + image.byteLength
