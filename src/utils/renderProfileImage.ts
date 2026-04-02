@@ -66,7 +66,7 @@ function getCharacterBadgePath(key: CharacterKey, stars: number): string {
 
     const rng = new Random(0);
     if (mob instanceof GenericCreature) {
-        mob.pickColor(rng);
+      mob.pickColor(rng);
     }
 
     const key = mob.images?.[0];
@@ -101,7 +101,9 @@ async function getEmbeddedFontBuffer(): Promise<Uint8Array | null> {
 }
 
 function getRows(progresses: CharacterProgress[]) {
-  const byKey = new Map(progresses.map(progress => [progress.characterKey, progress]));
+  const byKey = new Map(
+    progresses.map(progress => [progress.characterKey, progress])
+  );
 
   return [
     {
@@ -237,7 +239,12 @@ export async function renderProfileImage(
 
   if (boardBytes) {
     board = Photon.PhotonImage.new_from_byteslice(new Uint8Array(boardBytes));
-    canvas = Photon.resize(board, WIDTH, HEIGHT, Photon.SamplingFilter.Lanczos3);
+    canvas = Photon.resize(
+      board,
+      WIDTH,
+      HEIGHT,
+      Photon.SamplingFilter.Lanczos3
+    );
     Photon.watermark(canvas, overlay, 0n, 0n);
   } else {
     canvas = overlay;
@@ -251,7 +258,9 @@ export async function renderProfileImage(
 
   const badgeBuffers = await Promise.all(
     rows.map(row =>
-      getAssetBytes(getCharacterBadgePath(row.key, getAffinityStars(row.affinity)))
+      getAssetBytes(
+        getCharacterBadgePath(row.key, getAffinityStars(row.affinity))
+      )
     )
   );
 
@@ -264,8 +273,15 @@ export async function renderProfileImage(
       let badgeResized: Photon.PhotonImage | null = null;
 
       try {
-        badge = Photon.PhotonImage.new_from_byteslice(new Uint8Array(badgeBuffer));
-        badgeResized = Photon.resize(badge, 84, 84, Photon.SamplingFilter.Lanczos3);
+        badge = Photon.PhotonImage.new_from_byteslice(
+          new Uint8Array(badgeBuffer)
+        );
+        badgeResized = Photon.resize(
+          badge,
+          84,
+          84,
+          Photon.SamplingFilter.Lanczos3
+        );
         Photon.watermark(canvas, badgeResized, 48n, BigInt(rowY[rowIdx] - 64));
       } catch {
         // Keep row even if badge fails to decode
@@ -285,8 +301,15 @@ export async function renderProfileImage(
       let star: Photon.PhotonImage | null = null;
       let starResized: Photon.PhotonImage | null = null;
       try {
-        star = Photon.PhotonImage.new_from_byteslice(new Uint8Array(starBuffer));
-        starResized = Photon.resize(star, 28, 28, Photon.SamplingFilter.Lanczos3);
+        star = Photon.PhotonImage.new_from_byteslice(
+          new Uint8Array(starBuffer)
+        );
+        starResized = Photon.resize(
+          star,
+          28,
+          28,
+          Photon.SamplingFilter.Lanczos3
+        );
         Photon.watermark(
           canvas,
           starResized,
@@ -306,15 +329,24 @@ export async function renderProfileImage(
   const iconSize = 18;
   const monsterStartY = 738;
 
-  for (const [idx, monster] of runSummary.killedMonsters.slice(0, 4).entries()) {
+  for (const [idx, monster] of runSummary.killedMonsters
+    .slice(0, 4)
+    .entries()) {
     const iconKey = getMonsterIconKey(monster.name);
     const iconY = monsterStartY + idx * 36;
 
     try {
       const iconBytes = await getImageBytesFromManifest(iconKey);
       if (iconBytes) {
-        const iconImage = Photon.PhotonImage.new_from_byteslice(new Uint8Array(iconBytes));
-        const icon = Photon.resize(iconImage, iconSize, iconSize, Photon.SamplingFilter.Lanczos3);
+        const iconImage = Photon.PhotonImage.new_from_byteslice(
+          new Uint8Array(iconBytes)
+        );
+        const icon = Photon.resize(
+          iconImage,
+          iconSize,
+          iconSize,
+          Photon.SamplingFilter.Lanczos3
+        );
         Photon.watermark(canvas, icon, 52n, BigInt(iconY - 15));
         icon.free();
         iconImage.free();

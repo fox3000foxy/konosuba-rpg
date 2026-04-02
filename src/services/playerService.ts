@@ -55,6 +55,35 @@ export async function getPlayerProfile(
   };
 }
 
+export async function updatePlayerGold(
+  userId: string,
+  delta: number
+): Promise<number | null> {
+  const supabase = getSupabaseAdminClient();
+  if (!supabase) {
+    return null;
+  }
+
+  const profile = await getPlayerProfile(userId);
+  if (!profile) {
+    return null;
+  }
+
+  const newGold = Math.max(0, profile.gold + delta);
+
+  const { error } = await supabase
+    .from('players')
+    .update({ gold: newGold, updated_at: new Date().toISOString() })
+    .eq('user_id', userId);
+
+  if (error) {
+    console.error('[db] updatePlayerGold failed:', error.message);
+    return null;
+  }
+
+  return newGold;
+}
+
 export async function getLeaderboard(
   limit = 10
 ): Promise<LeaderboardEntry[] | null> {

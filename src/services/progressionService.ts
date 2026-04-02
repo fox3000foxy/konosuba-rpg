@@ -24,20 +24,20 @@ export {
   getCharacterProgress,
   getCharacterProgresses,
   getCharacterStatsSnapshot,
-  getLevelFactor
+  getLevelFactor,
 } from './characterService';
 export {
   ensurePlayerProfile,
   getLeaderboard,
   getPlayerProfile,
-  getPlayerRunSummary
+  getPlayerRunSummary,
 } from './playerService';
 export {
   claimDailyQuestReward,
   getAllQuestStatuses,
   getDailyQuestStatus,
   getQuestLabel,
-  QUESTS
+  QUESTS,
 } from './questService';
 
 function currentQuestDay(): string {

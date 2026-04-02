@@ -1,9 +1,11 @@
 /** Utility functions for Discord interactions */
 
 import { verifyKey } from 'discord-interactions';
+import { config } from 'dotenv';
 import { Context } from 'vm';
 import { DISCORD_API_URL } from '../objects/config/constants';
 import { Interaction } from '../objects/enums/Interaction';
+config();
 
 export function followUpTimeout(
   interaction: Interaction,
@@ -37,7 +39,7 @@ export async function verifySignature(
   const signature = c.req.header('x-signature-ed25519');
   const timestamp = c.req.header('x-signature-timestamp');
   const PUBLIC_KEY =
-    c.env?.PUBLIC_KEY ||
+    process.env?.PUBLIC_KEY ||
     '8d61a524ccac360a3fd47de09c8df98487e7bec67884e4004feee5b1eb81062d';
 
   if (!signature || !timestamp || !PUBLIC_KEY) {
