@@ -15,6 +15,7 @@ import {
 import { consumeInventoryItem } from './inventoryConsumptionService';
 import { ensurePlayerProfile } from './playerService';
 import { QUESTS } from './questService';
+import { DonateAccessoryResult } from './types/progression';
 
 export { ACHIEVEMENTS, getAchievementsOverview } from './achievementService';
 export {
@@ -75,12 +76,6 @@ function xpFromState(state: GameState): number {
       return 0;
   }
 }
-
-export type DonateAccessoryResult = {
-  success: boolean;
-  affinityPoints: number;
-  reason?: 'invalid-accessory' | 'out-of-stock';
-};
 
 export async function donateAccessoryToCharacter(
   userId: string,

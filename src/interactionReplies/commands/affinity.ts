@@ -1,5 +1,5 @@
 import { Context } from 'hono';
-import { BASE_URL } from '../../objects/config/constants';
+import { BASE_URL } from '../../objects/config';
 import { AccessoryType } from '../../objects/enums/AccessoryType';
 import { Rarity } from '../../objects/enums/Rarity';
 import { InteractionDataOption } from '../../objects/types/InteractionDataOption';

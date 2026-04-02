@@ -1,23 +1,12 @@
 import { AccessoryId } from '../enums/AccessoryId';
 import { AccessoryType } from '../enums/AccessoryType';
 import { Rarity } from '../enums/Rarity';
-
-export type AccessoryDefinition = {
-  id: AccessoryId;
-  fileName: string;
-  rarity: Rarity;
-  type: AccessoryType;
-  nameFr: string;
-  nameEn: string;
-};
+import {
+  AccessoryCombinationRule,
+  AccessoryDefinition,
+} from '../types/catalog/Accessory';
 
 type AccessoryDefinitionSeed = Omit<AccessoryDefinition, 'nameFr' | 'nameEn'>;
-
-export type AccessoryCombinationRule = {
-  sourceA: AccessoryId;
-  sourceB: AccessoryId;
-  result: AccessoryId;
-};
 
 const RINGS: AccessoryDefinitionSeed[] = [
   {

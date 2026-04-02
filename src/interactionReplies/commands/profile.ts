@@ -1,5 +1,5 @@
 import { Context } from 'hono';
-import { BASE_URL } from '../../objects/config/constants';
+import { BASE_URL } from '../../objects/config';
 import { InteractionDataOption } from '../../objects/types/InteractionDataOption';
 import {
   ensurePlayerProfile,

@@ -1,13 +1,5 @@
-import { Random } from '../classes/Random';
 import processUrl from '../utils/processUrl';
-
-export type ParsedGameUrl = {
-  rand: Random;
-  moves: string[];
-  seed: string;
-  monster: string | null;
-  difficulty: string | null;
-};
+import { ParsedGameUrl } from './types/url';
 
 export function parseGameUrl(url: string): ParsedGameUrl {
   const [rand, moves, seed, monster, difficulty] = processUrl(url);

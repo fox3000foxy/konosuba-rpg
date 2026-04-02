@@ -1,5 +1,5 @@
 import { Context } from 'hono';
-import { BASE_URL } from '../../objects/config/constants';
+import { BASE_URL } from '../../objects/config';
 import { AccessoryId } from '../../objects/enums/AccessoryId';
 import { Button } from '../../objects/enums/Button';
 import { ItemId } from '../../objects/enums/ItemId';
