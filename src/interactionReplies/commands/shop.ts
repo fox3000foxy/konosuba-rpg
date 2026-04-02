@@ -26,6 +26,7 @@ import {
   getPlayerProfile,
   updatePlayerGold,
 } from '../../services/playerService';
+import { addImageVersion } from '../../utils/imageUtils';
 
 const SHOP_CATALOG_KEYS: Array<AccessoryId | ItemId> = [
   ...Object.values(AccessoryId),
@@ -257,7 +258,9 @@ export async function handleShopCommand(
     );
 
     if (format === 'image') {
-      const imageUrl = `${BASE_URL}/shop/${page}?lang=${fr ? 'fr' : 'en'}`;
+      const imageUrl = addImageVersion(
+        `${BASE_URL}/shop/${page}?lang=${fr ? 'fr' : 'en'}`
+      );
       console.log(`[ShopCommand] Generated shop image URL: ${imageUrl}`);
       const description = fr
         ? `Voici la page ${page} de la boutique (${pageCount}).`

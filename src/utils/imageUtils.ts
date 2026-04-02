@@ -2,12 +2,23 @@
 
 import { BASE_URL } from '../objects/config/constants';
 import {
-  customIdToPath,
-  extractDifficulty,
-  extractMonster,
-  isTraining,
-  removeDifficultyFromPayload,
+    customIdToPath,
+    extractDifficulty,
+    extractMonster,
+    isTraining,
+    removeDifficultyFromPayload,
 } from './payloadUtils';
+
+export function addImageVersion(url: string, version = Date.now()): string {
+  try {
+    const parsed = new URL(url);
+    parsed.searchParams.set('v', String(version));
+    return parsed.toString();
+  } catch {
+    const joiner = url.includes('?') ? '&' : '?';
+    return `${url}${joiner}v=${version}`;
+  }
+}
 
 /** Construit l'URL d'image pour un payload donné */
 export function buildImageUrl(
@@ -38,6 +49,8 @@ export function buildImageUrl(
   if (effectiveDifficulty) {
     queryParams.append('difficulty', effectiveDifficulty);
   }
+
+  queryParams.append('v', String(Date.now()));
 
   const query = queryParams.toString() ? `/?${queryParams.toString()}` : '';
   return `${BASE_URL}/konosuba-rpg/${lang}/${path}${query}`;
