@@ -7,7 +7,7 @@ on:
 
 jobs:
   create-pull-request:
-    if: github.ref != 'refs/heads/main' && github.ref != 'refs/heads/dev'
+    if: github.ref == 'refs/heads/dev'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -19,8 +19,8 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           commit-message: 'chore: create pull request from feature branch'
           branch: ${{ github.ref_name }}
-          base: dev
-          title: 'chore: auto PR from ${{ github.ref_name }}'
+          base: main
+          title: 'chore: auto PR from dev to main'
           body: |-
             This pull request was created automatically by GitHub Actions.
             
