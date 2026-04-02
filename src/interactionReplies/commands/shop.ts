@@ -1,6 +1,7 @@
 import { Context } from 'hono';
 import { BASE_URL } from '../../objects/config/constants';
 import { AccessoryId } from '../../objects/enums/AccessoryId';
+import { Button } from '../../objects/enums/Button';
 import { ItemId } from '../../objects/enums/ItemId';
 import { Rarity } from '../../objects/enums/Rarity';
 import { InteractionDataOption } from '../../objects/types/InteractionDataOption';
@@ -64,7 +65,7 @@ function toShopItemFromConsumable(consumable: NonNullable<ReturnType<typeof getC
   };
 }
 
-function getShopItem(itemKeyOrName: string | AccessoryId | ItemId): ShopItem | null {
+export function getShopItem(itemKeyOrName: string | AccessoryId | ItemId): ShopItem | null {
   const normalized = normalizeShopInput(itemKeyOrName);
 
   const accessory =
@@ -104,6 +105,73 @@ function getOptionValue(options: InteractionDataOption[] | undefined, name: stri
   return option ? String(option.value).trim() : '';
 }
 
+export function buildShopComponents(
+  items: ShopItem[],
+  page: number,
+  pageCount: number,
+  fr: boolean,
+  userId: string,
+  selectedItemKey?: string
+) {
+  const arrowBack = {
+    type: 2,
+    label: '<',
+    style: 2,
+    custom_id: `shop_page:${Math.max(1, page - 1)}:${userId}`,
+    disabled: page <= 1,
+  };
+  const arrowForward = {
+    type: 2,
+    label: '>',
+    style: 2,
+    custom_id: `shop_page:${Math.min(pageCount, page + 1)}:${userId}`,
+    disabled: page >= pageCount,
+  };
+
+  const options = items.map(item => ({
+    label: fr ? item.nameFr : item.nameEn,
+    value: String(item.itemKey),
+    description: `${item.price} gold`,
+  }));
+
+  const selectComponent = {
+    type: 3,
+    custom_id: `shop_select:${page}:${userId}`,
+    options: options.slice(0, 25),
+    placeholder: fr ? 'Choisir un objet' : 'Choose an item',
+    min_values: 1,
+    max_values: 1,
+  };
+
+  const mainButtons: Button[] = [arrowBack, arrowForward];
+
+  const bottomButtons: Button[] = [
+    {
+      type: 2,
+      label: fr ? 'Retour' : 'Back',
+      style: 2,
+      custom_id: `shop_page:${page}:${userId}`,
+    },
+  ];
+
+  if (selectedItemKey) {
+    bottomButtons.unshift({
+      type: 2,
+      label: fr ? 'Acheter' : 'Buy',
+      style: 3,
+      custom_id: `shop_buy:${selectedItemKey}:${page}:${userId}`,
+    });
+  }
+
+  const components = [
+    { type: 1, components: mainButtons },
+    { type: 1, components: [selectComponent] },
+    { type: 1, components: bottomButtons },
+  ];
+
+  return components;
+}
+
 export async function handleShopCommand(
   c: Context,
   userId: string,
@@ -137,19 +205,20 @@ export async function handleShopCommand(
         ? `Voici la page ${page} de la boutique (${pageCount}).`
         : `Page ${page} of shop (${pageCount}).`;
 
+      const components = buildShopComponents(itemsOnPage, page, pageCount, fr, userId);
+
       return c.json({
         type: 4,
         data: {
           embeds: [
             {
-              title: fr ? 'Boutique (image)' : 'Shop (image)',
+              title: fr ? 'Boutique' : 'Shop',
               description,
-              image: {
-                url: imageUrl,
-              },
+              image: { url: imageUrl },
               color: 0x2b2d31,
             },
           ],
+          components,
         },
       });
     }
