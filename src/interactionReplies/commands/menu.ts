@@ -54,19 +54,13 @@ function buildMenuComponents(userID: string, fr: boolean): RawButton[] {
   ];
 }
 
-export async function handleMenuCommand(
-  c: Context,
-  userID: string,
-  fr: boolean
-) {
+export async function handleMenuCommand(c: Context, userID: string, fr: boolean) {
   return c.json({
     type: 4,
     data: {
       embeds: [
         {
-          description: fr
-            ? `# Menu RPG\n\nChoisis une action pour lancer une partie rapidement ou consulter des infos.`
-            : `# RPG Menu\n\nChoose an action to quickly start a game or inspect data.`,
+          description: fr ? `# Menu RPG\n\nChoisis une action pour lancer une partie rapidement ou consulter des infos.` : `# RPG Menu\n\nChoose an action to quickly start a game or inspect data.`,
           color: 0x2b2d31,
         },
       ],

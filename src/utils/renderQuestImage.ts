@@ -21,12 +21,7 @@ const WIDTH = 1100;
 const HEIGHT = 560;
 
 function escapeXml(value: string): string {
-  return value
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&apos;');
+  return value.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&apos;');
 }
 
 function progressBar(progress: number, target: number): string {
@@ -66,18 +61,11 @@ async function getEmbeddedFontBuffer(): Promise<Uint8Array | null> {
   return fontBytes;
 }
 
-export async function buildQuestSvg(
-  userId: string,
-  statuses: DailyQuestStatus[],
-  fr: boolean,
-  hasEmbeddedFont = false
-): Promise<string> {
+export async function buildQuestSvg(userId: string, statuses: DailyQuestStatus[], fr: boolean, hasEmbeddedFont = false): Promise<string> {
   void userId;
   const fontFamily = hasEmbeddedFont ? 'GintoNordMedium' : 'Arial';
   const title = fr ? 'Quetes du Jour' : 'Daily Quests';
-  const subtitle = fr
-    ? 'Progression et recompenses'
-    : 'Progress and rewards';
+  const subtitle = fr ? 'Progression et recompenses' : 'Progress and rewards';
 
   const rowY = [190, 305, 420];
   const rows = statuses.slice(0, 3);
@@ -85,33 +73,9 @@ export async function buildQuestSvg(
   const rowText = rows
     .map((status, idx) => {
       const completed = status.progress >= status.target;
-      const statusLabel = status.claimed
-        ? fr
-          ? 'OK'
-          : 'DONE'
-        : completed
-          ? fr
-            ? 'PRET'
-            : 'READY'
-          : fr
-            ? 'EN COURS'
-            : 'IN PROGRESS';
-      const statusColor = status.claimed
-        ? '#5EF38C'
-        : completed
-          ? '#F7C948'
-          : '#9db0e8';
-      const claimState = status.claimed
-        ? fr
-          ? 'Recuperee'
-          : 'Claimed'
-        : completed
-          ? fr
-            ? 'A recuperer'
-            : 'Ready to claim'
-          : fr
-            ? 'En cours'
-            : 'In progress';
+      const statusLabel = status.claimed ? (fr ? 'OK' : 'DONE') : completed ? (fr ? 'PRET' : 'READY') : fr ? 'EN COURS' : 'IN PROGRESS';
+      const statusColor = status.claimed ? '#5EF38C' : completed ? '#F7C948' : '#9db0e8';
+      const claimState = status.claimed ? (fr ? 'Recuperee' : 'Claimed') : completed ? (fr ? 'A recuperer' : 'Ready to claim') : fr ? 'En cours' : 'In progress';
 
       return `
       <rect x="36" y="${rowY[idx] - 54}" width="1028" height="94" rx="14" fill="#0f1729" fill-opacity="0.74" />
@@ -134,11 +98,7 @@ export async function buildQuestSvg(
   </svg>`;
 }
 
-export async function renderQuestImage(
-  userId: string,
-  statuses: DailyQuestStatus[],
-  fr: boolean
-): Promise<Uint8Array> {
+export async function renderQuestImage(userId: string, statuses: DailyQuestStatus[], fr: boolean): Promise<Uint8Array> {
   await ensureResvgWasm();
   const fontBuffer = await getEmbeddedFontBuffer();
 
@@ -154,9 +114,7 @@ export async function renderQuestImage(
     : { font: { loadSystemFonts: true } };
 
   const png = new Resvg(svg, options).render().asPng();
-  const overlay = Photon.PhotonImage.new_from_byteslice(
-    new Uint8Array(png.buffer.slice(0) as ArrayBuffer)
-  );
+  const overlay = Photon.PhotonImage.new_from_byteslice(new Uint8Array(png.buffer.slice(0) as ArrayBuffer));
 
   let board: Photon.PhotonImage | null = null;
   let canvas: Photon.PhotonImage;
@@ -164,12 +122,7 @@ export async function renderQuestImage(
 
   if (boardBytes) {
     board = Photon.PhotonImage.new_from_byteslice(new Uint8Array(boardBytes));
-    canvas = Photon.resize(
-      board,
-      WIDTH,
-      HEIGHT,
-      Photon.SamplingFilter.Lanczos3
-    );
+    canvas = Photon.resize(board, WIDTH, HEIGHT, Photon.SamplingFilter.Lanczos3);
     Photon.watermark(canvas, overlay, 0n, 0n);
   } else {
     canvas = overlay;

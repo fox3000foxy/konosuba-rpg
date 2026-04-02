@@ -2,16 +2,10 @@ import { Context } from 'hono';
 import { Lang } from '../../objects/enums/Lang';
 import { RawButton } from '../../objects/enums/RawButton';
 import { buildBattleTitle } from '../../utils/battleTitle';
-import {
-  buildComponents,
-  getBattleMonsterNames,
-} from '../../utils/componentsBuilder';
+import { buildComponents, getBattleMonsterNames } from '../../utils/componentsBuilder';
 import { makeid } from '../../utils/idUtils';
 import { buildImageUrl } from '../../utils/imageUtils';
-import {
-  generateMonsterInfosByConstructorName,
-  getMonsterCatalog,
-} from '../commands/infos-monster';
+import { generateMonsterInfosByConstructorName, getMonsterCatalog } from '../commands/infos-monster';
 import { generatePlayerInfos } from '../commands/infos-player';
 
 const MONSTERS_PAGE_SIZE = 5;
@@ -116,29 +110,17 @@ function playerMenuComponents(userID: string, fr: boolean): RawButton[] {
   ];
 }
 
-function monsterMenuComponents(
-  userID: string,
-  fr: boolean,
-  page: number
-): RawButton[] {
+function monsterMenuComponents(userID: string, fr: boolean, page: number): RawButton[] {
   const owner = `:${userID}`;
   const catalog = getMonsterCatalog(fr).map(item => ({
     ...item,
-    name:
-      typeof item.name === 'string' && item.name.trim().length > 0
-        ? item.name.trim()
-        : item.id,
+    name: typeof item.name === 'string' && item.name.trim().length > 0 ? item.name.trim() : item.id,
   }));
-  const totalPages = Math.max(
-    1,
-    Math.ceil(catalog.length / MONSTERS_PAGE_SIZE)
-  );
+  const totalPages = Math.max(1, Math.ceil(catalog.length / MONSTERS_PAGE_SIZE));
   const safePage = Math.min(Math.max(page, 0), totalPages - 1);
   const start = safePage * MONSTERS_PAGE_SIZE;
   const pageItems = catalog.slice(start, start + MONSTERS_PAGE_SIZE);
-  console.log(
-    `Displaying monsters page ${safePage + 1}/${totalPages} (items ${start + 1}-${start + pageItems.length} of ${catalog.length})`
-  );
+  console.log(`Displaying monsters page ${safePage + 1}/${totalPages} (items ${start + 1}-${start + pageItems.length} of ${catalog.length})`);
 
   const monsterRows: RawButton[] = [];
   for (let i = 0; i < pageItems.length; i += 5) {
@@ -198,9 +180,7 @@ function monsterMenuComponents(
 
 function baseMenuEmbed(fr: boolean) {
   return {
-    description: fr
-      ? '# Menu RPG\n\nChoisis une action pour lancer une partie rapidement ou consulter des infos.'
-      : '# RPG Menu\n\nChoose an action to quickly start a game or inspect data.',
+    description: fr ? '# Menu RPG\n\nChoisis une action pour lancer une partie rapidement ou consulter des infos.' : '# RPG Menu\n\nChoose an action to quickly start a game or inspect data.',
     color: 0x2b2d31,
   };
 }
@@ -211,8 +191,7 @@ function resolveMonsterName(monsterIdentifier: string, fr: boolean): string {
     return fr ? 'Troll' : 'Troll';
   }
 
-  return getBattleMonsterNames(info.creature, fr ? Lang.French : Lang.English)
-    .displayName;
+  return getBattleMonsterNames(info.creature, fr ? Lang.French : Lang.English).displayName;
 }
 
 async function buildStartData(userID: string, lang: Lang, fr: boolean) {
@@ -224,11 +203,7 @@ async function buildStartData(userID: string, lang: Lang, fr: boolean) {
     embeds: [
       {
         image: { url: imageUrl },
-        description:
-          (fr ? `**Partie de <@${userID}>**` : `**<@${userID}> game**`) +
-          (embedDescription.length > 0
-            ? `\n\n${embedDescription.join('\n')}`
-            : ''),
+        description: (fr ? `**Partie de <@${userID}>**` : `**<@${userID}> game**`) + (embedDescription.length > 0 ? `\n\n${embedDescription.join('\n')}` : ''),
         color: 0x2b2d31,
       },
     ],
@@ -236,31 +211,18 @@ async function buildStartData(userID: string, lang: Lang, fr: boolean) {
   };
 }
 
-async function buildTrainData(
-  userID: string,
-  lang: Lang,
-  fr: boolean,
-  monsterIdentifier: string
-) {
+async function buildTrainData(userID: string, lang: Lang, fr: boolean, monsterIdentifier: string) {
   const monsterName = resolveMonsterName(monsterIdentifier, fr);
   const payload = `train.${monsterName}.${makeid(10)}`;
   const imageUrl = buildImageUrl(payload, lang);
-  const { embedDescription, buttons } = await buildComponents(
-    payload,
-    userID,
-    lang
-  );
+  const { embedDescription, buttons } = await buildComponents(payload, userID, lang);
   const title = buildBattleTitle(payload, fr, userID, monsterName);
 
   return {
     embeds: [
       {
         image: { url: imageUrl },
-        description:
-          `${title} ${fr ? `(joueur <@${userID}>)` : `(player <@${userID}>)`}` +
-          (embedDescription.length > 0
-            ? `\n\n${embedDescription.join('\n')}`
-            : ''),
+        description: `${title} ${fr ? `(joueur <@${userID}>)` : `(player <@${userID}>)`}` + (embedDescription.length > 0 ? `\n\n${embedDescription.join('\n')}` : ''),
         color: 0x2b2d31,
       },
     ],
@@ -268,13 +230,7 @@ async function buildTrainData(
   };
 }
 
-export async function handleMenuButton(
-  c: Context,
-  menuAction: string,
-  userID: string,
-  lang: Lang,
-  fr: boolean
-) {
+export async function handleMenuButton(c: Context, menuAction: string, userID: string, lang: Lang, fr: boolean) {
   if (menuAction === 'menu.home') {
     return c.json({
       type: 7,
@@ -297,9 +253,7 @@ export async function handleMenuButton(
       data: {
         embeds: [
           {
-            description: fr
-              ? '# Infos personnages\n\nChoisis un personnage pour voir ses stats et son lore.'
-              : '# Player infos\n\nChoose a character to inspect stats and lore.',
+            description: fr ? '# Infos personnages\n\nChoisis un personnage pour voir ses stats et son lore.' : '# Player infos\n\nChoose a character to inspect stats and lore.',
             color: 0x2b2d31,
           },
         ],
@@ -317,9 +271,7 @@ export async function handleMenuButton(
       data: {
         embeds: [
           {
-            description: fr
-              ? '# Infos monstres\n\nChoisis un monstre pour voir sa fiche. Navigation par pages.'
-              : '# Monster infos\n\nChoose a monster to inspect stats and lore. Browse with pages.',
+            description: fr ? '# Infos monstres\n\nChoisis un monstre pour voir sa fiche. Navigation par pages.' : '# Monster infos\n\nChoose a monster to inspect stats and lore. Browse with pages.',
             color: 0x2b2d31,
           },
         ],
@@ -335,9 +287,7 @@ export async function handleMenuButton(
       data: {
         embeds: [
           {
-            description: fr
-              ? '# Infos monstres\n\nChoisis un monstre pour voir sa fiche. Navigation par pages.'
-              : '# Monster infos\n\nChoose a monster to inspect stats and lore. Browse with pages.',
+            description: fr ? '# Infos monstres\n\nChoisis un monstre pour voir sa fiche. Navigation par pages.' : '# Monster infos\n\nChoose a monster to inspect stats and lore. Browse with pages.',
             color: 0x2b2d31,
           },
         ],
@@ -352,9 +302,7 @@ export async function handleMenuButton(
       data: {
         embeds: [
           {
-            description: fr
-              ? '# Aide rapide\n\n- Utilise **Jouer maintenant** pour une partie complete.\n- Utilise **Train** pour farmer contre un monstre cible.\n- Les fiches persos/monstres sont la pour preparer les combats.'
-              : '# Quick help\n\n- Use **Play now** for a full game loop.\n- Use **Train** to practice against a focused target.\n- Player/monster cards help you prepare your strategy.',
+            description: fr ? '# Aide rapide\n\n- Utilise **Jouer maintenant** pour une partie complete.\n- Utilise **Train** pour farmer contre un monstre cible.\n- Les fiches persos/monstres sont la pour preparer les combats.' : '# Quick help\n\n- Use **Play now** for a full game loop.\n- Use **Train** to practice against a focused target.\n- Player/monster cards help you prepare your strategy.',
             color: 0x2b2d31,
           },
         ],
@@ -396,9 +344,7 @@ export async function handleMenuButton(
         data: {
           embeds: [
             {
-              description: fr
-                ? '# Infos monstres\n\nAucun monstre disponible pour le moment.'
-                : '# Monster infos\n\nNo monsters are currently available.',
+              description: fr ? '# Infos monstres\n\nAucun monstre disponible pour le moment.' : '# Monster infos\n\nNo monsters are currently available.',
               color: 0x2b2d31,
             },
           ],
@@ -433,10 +379,7 @@ export async function handleMenuButton(
 
   if (menuAction.startsWith('menu.monster.')) {
     const legacyMonsterIdentifier = menuAction.slice('menu.monster.'.length);
-    const info = generateMonsterInfosByConstructorName(
-      legacyMonsterIdentifier,
-      fr
-    );
+    const info = generateMonsterInfosByConstructorName(legacyMonsterIdentifier, fr);
 
     return c.json({
       type: 7,
@@ -455,9 +398,7 @@ export async function handleMenuButton(
         data: {
           embeds: [
             {
-              description: fr
-                ? '# Menu RPG\n\nAucun monstre disponible pour lancer un entrainement.'
-                : '# RPG Menu\n\nNo monsters are available to start training.',
+              description: fr ? '# Menu RPG\n\nAucun monstre disponible pour lancer un entrainement.' : '# RPG Menu\n\nNo monsters are available to start training.',
               color: 0x2b2d31,
             },
           ],

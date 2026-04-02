@@ -24,11 +24,7 @@ const DIFFICULTY_AUTOCOMPLETE_CHOICES = [
   { name: 'Legendary', value: MonsterDifficulty.Legendary },
 ];
 
-export function handleAutocomplete(
-  c: Context,
-  interaction: Interaction,
-  fr: boolean
-) {
+export function handleAutocomplete(c: Context, interaction: Interaction, fr: boolean) {
   if (interaction.data?.name === 'quest') {
     const options = interaction.data.options || [];
     const focused = options.find(option => option.focused);
@@ -121,13 +117,7 @@ export function handleAutocomplete(
         name: item.nameFr || item.id,
         value: item.id,
       }));
-      const allChoices = [...accessoryChoices, ...consumableChoices]
-        .filter(
-          choice =>
-            choice.name.toLowerCase().includes(focusedValue) ||
-            String(choice.value).toLowerCase().includes(focusedValue)
-        )
-        .slice(0, 25);
+      const allChoices = [...accessoryChoices, ...consumableChoices].filter(choice => choice.name.toLowerCase().includes(focusedValue) || String(choice.value).toLowerCase().includes(focusedValue)).slice(0, 25);
 
       return c.json({ type: 8, data: { choices: allChoices } });
     }
@@ -142,9 +132,7 @@ export function handleAutocomplete(
       const recipes = getCraftingRecipes();
       const choices = recipes
         .filter(recipe => {
-          const recipeName = (
-            fr ? recipe.resultNameFr : recipe.resultNameEn
-          ).toLowerCase();
+          const recipeName = (fr ? recipe.resultNameFr : recipe.resultNameEn).toLowerCase();
           return recipeName.includes(focusedValue);
         })
         .slice(0, 25)

@@ -84,35 +84,19 @@ function findMonster(monsterCandidate: string) {
     return mobs[idIndex] || null;
   }
 
-  return (
-    mobs.find(
-      m =>
-        normalizeMonsterIdentifier(m.constructor.name) === normalizedCandidate
-    ) ||
-    mobs.find(
-      m => normalizeMonsterIdentifier(m.name[0]) === normalizedCandidate
-    ) ||
-    mobs.find(
-      m => normalizeMonsterIdentifier(m.name[1]) === normalizedCandidate
-    ) ||
-    null
-  );
+  return mobs.find(m => normalizeMonsterIdentifier(m.constructor.name) === normalizedCandidate) || mobs.find(m => normalizeMonsterIdentifier(m.name[0]) === normalizedCandidate) || mobs.find(m => normalizeMonsterIdentifier(m.name[1]) === normalizedCandidate) || null;
 }
 
 function buildInvalidMonsterResponse(fr: boolean, mobs = generateMob()) {
   const langIndex = fr ? 1 : 0;
-  const allMobs = Array.from(
-    new Set(mobs.map(m => m.name[langIndex].trim()).filter(Boolean))
-  ).sort((a, b) => a.localeCompare(b, fr ? 'fr' : 'en'));
+  const allMobs = Array.from(new Set(mobs.map(m => m.name[langIndex].trim()).filter(Boolean))).sort((a, b) => a.localeCompare(b, fr ? 'fr' : 'en'));
 
   return {
     type: 4,
     data: {
       embeds: [
         {
-          description: fr
-            ? `Ce monstre est invalide. Voici les monstres valides: ${allMobs.join(', ')}`
-            : `Invalid monster. Valid monsters: ${allMobs.join(', ')}`,
+          description: fr ? `Ce monstre est invalide. Voici les monstres valides: ${allMobs.join(', ')}` : `Invalid monster. Valid monsters: ${allMobs.join(', ')}`,
         },
       ],
     },
@@ -153,11 +137,7 @@ export function generateMonsterInfos(
       data: {
         embeds: [
           {
-            description: fr
-              ? `# Informations de monstre:\n\n**Nom**: ${preparedMonster.name[langIndex]}\n**PV de base**: ${preparedMonster.hp} PV\n**ATK de base**: ${preparedMonster.attack[0]}-${preparedMonster.attack[1]} points de dégâts.\n**LP**: ${preparedMonster.love !== 100 ? preparedMonster.love + " points d'amour" : 'Ne peut pas être ami'}` +
-                `\n\n${lore}`
-              : `# Monster infos:\n\n**Name**: ${preparedMonster.name[langIndex]}\n**Basic HP**: ${preparedMonster.hp} HP\n**Basic ATK**: ${preparedMonster.attack[0]}-${preparedMonster.attack[1]} damage points.\n**LP**: ${preparedMonster.love !== 100 ? preparedMonster.love + ' love points' : "Can't be friends"}` +
-                `\n\n${lore}`,
+            description: fr ? `# Informations de monstre:\n\n**Nom**: ${preparedMonster.name[langIndex]}\n**PV de base**: ${preparedMonster.hp} PV\n**ATK de base**: ${preparedMonster.attack[0]}-${preparedMonster.attack[1]} points de dégâts.\n**LP**: ${preparedMonster.love !== 100 ? preparedMonster.love + " points d'amour" : 'Ne peut pas être ami'}` + `\n\n${lore}` : `# Monster infos:\n\n**Name**: ${preparedMonster.name[langIndex]}\n**Basic HP**: ${preparedMonster.hp} HP\n**Basic ATK**: ${preparedMonster.attack[0]}-${preparedMonster.attack[1]} damage points.\n**LP**: ${preparedMonster.love !== 100 ? preparedMonster.love + ' love points' : "Can't be friends"}` + `\n\n${lore}`,
             image: { url: imgUrl },
             color: 0x2b2d31,
           },
@@ -193,16 +173,9 @@ export function generateMonsterInfosByConstructorName(
   return generateMonsterInfos(monster.constructor.name, fr);
 }
 
-export async function handleInfosMonsterCommand(
-  c: Context,
-  fr: boolean,
-  options: InteractionDataOption[]
-) {
+export async function handleInfosMonsterCommand(c: Context, fr: boolean, options: InteractionDataOption[]) {
   const commandMonster = options.find(o => o.name === 'monster')?.value;
-  const monsterCandidate =
-    typeof commandMonster === 'string'
-      ? commandMonster.trim().toLowerCase()
-      : '';
+  const monsterCandidate = typeof commandMonster === 'string' ? commandMonster.trim().toLowerCase() : '';
 
   return c.json(generateMonsterInfos(monsterCandidate, fr).command);
 }

@@ -53,32 +53,12 @@ const lines = {
       ],
     ],
     youHugMsgs: [
-      [
-        'Kazuma fait un câlin au **CREATURE** avec un sourire suspect. Il lui a sûrement volé quelque chose.',
-        "Kazuma serre le **CREATURE** dans ses bras. 'Tu sais, t'es pas si terrible.' Il vérifie ses poches après.",
-        'Kazuma enlace le **CREATURE**. Darkness est jalouse. Aqua est dégoûtée. Megumin ne lève pas les yeux de son grimoire.',
-      ],
-      [
-        "Darkness étreint le **CREATURE** avec une ferveur chevaleresque. 'Je protégerai même mes ennemis !' Le **CREATURE** a l'air déstabilisé.",
-        "Darkness serre le **CREATURE** très fort contre elle. 'Tu peux résister si tu veux.' Il ne résiste pas. Elle est déçue.",
-        "Darkness fait un câlin au **CREATURE** en lui murmurant une prière. Kazuma soupire depuis l'arrière-plan.",
-      ],
-      [
-        "Megumin pose son bâton et enlace le **CREATURE** avec une solennité inattendue. 'Même les ennemis méritent l'Explosion de l'amour.'",
-        "Megumin fait un câlin au **CREATURE**, les yeux fermés, très sérieusement. Elle appelle ça 'le rituel de réconciliation'. Personne ne la contredit.",
-        "Megumin serre le **CREATURE** dans ses bras. 'Sois honoré — je ne fais ça qu'une fois par jour. Et j'ai déjà utilisé mon Explosion.'",
-      ],
-      [
-        "Aqua fait un câlin au **CREATURE** en pleurant. 'Même les monstres ont une âme !' Elle pleure vraiment beaucoup.",
-        'Aqua enlace le **CREATURE** avec générosité divine. Elle lui fait passer un bénéfice de purification dans la foulée. Non demandé.',
-        "Aqua serre le **CREATURE** dans ses bras, puis réclame que Kazuma l'ait ordonné pour éviter de perdre la face.",
-      ],
+      ['Kazuma fait un câlin au **CREATURE** avec un sourire suspect. Il lui a sûrement volé quelque chose.', "Kazuma serre le **CREATURE** dans ses bras. 'Tu sais, t'es pas si terrible.' Il vérifie ses poches après.", 'Kazuma enlace le **CREATURE**. Darkness est jalouse. Aqua est dégoûtée. Megumin ne lève pas les yeux de son grimoire.'],
+      ["Darkness étreint le **CREATURE** avec une ferveur chevaleresque. 'Je protégerai même mes ennemis !' Le **CREATURE** a l'air déstabilisé.", "Darkness serre le **CREATURE** très fort contre elle. 'Tu peux résister si tu veux.' Il ne résiste pas. Elle est déçue.", "Darkness fait un câlin au **CREATURE** en lui murmurant une prière. Kazuma soupire depuis l'arrière-plan."],
+      ["Megumin pose son bâton et enlace le **CREATURE** avec une solennité inattendue. 'Même les ennemis méritent l'Explosion de l'amour.'", "Megumin fait un câlin au **CREATURE**, les yeux fermés, très sérieusement. Elle appelle ça 'le rituel de réconciliation'. Personne ne la contredit.", "Megumin serre le **CREATURE** dans ses bras. 'Sois honoré — je ne fais ça qu'une fois par jour. Et j'ai déjà utilisé mon Explosion.'"],
+      ["Aqua fait un câlin au **CREATURE** en pleurant. 'Même les monstres ont une âme !' Elle pleure vraiment beaucoup.", 'Aqua enlace le **CREATURE** avec générosité divine. Elle lui fait passer un bénéfice de purification dans la foulée. Non demandé.', "Aqua serre le **CREATURE** dans ses bras, puis réclame que Kazuma l'ait ordonné pour éviter de perdre la face."],
     ],
-    aquaHealMsgs: [
-      "Aqua soigne l'équipe de 15 PV, puis exige des remerciements formels et une mention de son titre de déesse.",
-      "Aqua invoque ses pouvoirs divins et restaure 15 PV. 'Vous voyez ? Indispensable. Notez-le.' Personne ne note.",
-      "Aqua pleure un peu, prie beaucoup, et finit par soigner l'équipe de 15 PV. 'Je veux du saké ce soir.'",
-    ],
+    aquaHealMsgs: ["Aqua soigne l'équipe de 15 PV, puis exige des remerciements formels et une mention de son titre de déesse.", "Aqua invoque ses pouvoirs divins et restaure 15 PV. 'Vous voyez ? Indispensable. Notez-le.' Personne ne note.", "Aqua pleure un peu, prie beaucoup, et finit par soigner l'équipe de 15 PV. 'Je veux du saké ce soir.'"],
     youSpecialAttackMsgs: [
       [
         // Kazuma
@@ -160,32 +140,12 @@ const lines = {
       ],
     ],
     youHugMsgs: [
-      [
-        'Kazuma hugs the **CREATURE** with a suspicious smile. He definitely pickpocketed it.',
-        "Kazuma holds the **CREATURE** close. 'You know, you're not so bad.' He checks its pockets afterward.",
-        "Kazuma hugs the **CREATURE**. Darkness is jealous. Aqua is disgusted. Megumin doesn't look up from her grimoire.",
-      ],
-      [
-        "Darkness embraces the **CREATURE** with chivalric intensity. 'I protect even my enemies!' The **CREATURE** looks confused.",
-        "Darkness hugs the **CREATURE** very tightly. 'Feel free to resist.' It doesn't resist. She's disappointed.",
-        'Darkness hugs the **CREATURE** and whispers a prayer over it. Kazuma sighs from the background.',
-      ],
-      [
-        "Megumin sets down her staff and hugs the **CREATURE** with unexpected solemnity. 'Even enemies deserve the Explosion of love.'",
-        "Megumin hugs the **CREATURE** with her eyes closed, very seriously. She calls it 'the reconciliation ritual'. Nobody argues.",
-        "Megumin holds the **CREATURE** close. 'Be honored — I only do this once a day. And I've already used my Explosion.'",
-      ],
-      [
-        "Aqua hugs the **CREATURE** while crying. 'Even monsters have souls!' She is crying a lot.",
-        'Aqua generously embraces the **CREATURE** and accidentally purifies it in the process. It did not ask to be purified.',
-        "Aqua hugs the **CREATURE**, then insists Kazuma ordered her to do it so she doesn't lose face.",
-      ],
+      ['Kazuma hugs the **CREATURE** with a suspicious smile. He definitely pickpocketed it.', "Kazuma holds the **CREATURE** close. 'You know, you're not so bad.' He checks its pockets afterward.", "Kazuma hugs the **CREATURE**. Darkness is jealous. Aqua is disgusted. Megumin doesn't look up from her grimoire."],
+      ["Darkness embraces the **CREATURE** with chivalric intensity. 'I protect even my enemies!' The **CREATURE** looks confused.", "Darkness hugs the **CREATURE** very tightly. 'Feel free to resist.' It doesn't resist. She's disappointed.", 'Darkness hugs the **CREATURE** and whispers a prayer over it. Kazuma sighs from the background.'],
+      ["Megumin sets down her staff and hugs the **CREATURE** with unexpected solemnity. 'Even enemies deserve the Explosion of love.'", "Megumin hugs the **CREATURE** with her eyes closed, very seriously. She calls it 'the reconciliation ritual'. Nobody argues.", "Megumin holds the **CREATURE** close. 'Be honored — I only do this once a day. And I've already used my Explosion.'"],
+      ["Aqua hugs the **CREATURE** while crying. 'Even monsters have souls!' She is crying a lot.", 'Aqua generously embraces the **CREATURE** and accidentally purifies it in the process. It did not ask to be purified.', "Aqua hugs the **CREATURE**, then insists Kazuma ordered her to do it so she doesn't lose face."],
     ],
-    aquaHealMsgs: [
-      'Aqua heals the party for 15 HP, then demands formal thanks and acknowledgment of her divine title.',
-      "Aqua calls upon her divine powers and restores 15 HP. 'See? Indispensable. Write that down.' Nobody writes it down.",
-      "Aqua cries a little, prays a lot, and eventually heals the party for 15 HP. 'I want sake tonight.'",
-    ],
+    aquaHealMsgs: ['Aqua heals the party for 15 HP, then demands formal thanks and acknowledgment of her divine title.', "Aqua calls upon her divine powers and restores 15 HP. 'See? Indispensable. Write that down.' Nobody writes it down.", "Aqua cries a little, prays a lot, and eventually heals the party for 15 HP. 'I want sake tonight.'"],
     youSpecialAttackMsgs: [
       [
         // Kazuma

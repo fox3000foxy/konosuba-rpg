@@ -4,10 +4,7 @@ import { GenericCreature, GenericCreatureInterface } from '../GenericCreature';
 import { Random } from '../Random';
 import { EnglishLore } from '../../objects/enums/EnglishLore';
 
-export default class DarkBear
-  extends GenericCreature
-  implements GenericCreatureInterface
-{
+export default class DarkBear extends GenericCreature implements GenericCreatureInterface {
   constructor() {
     super();
     this.attack = [4, 12];

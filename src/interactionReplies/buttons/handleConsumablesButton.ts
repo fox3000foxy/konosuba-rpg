@@ -85,17 +85,11 @@ function emojiForConsumableType(type: TypeItem | null): string {
   }
 }
 
-export function buildConsumablesDescription(
-  items: InventoryItemView[],
-  fr: boolean,
-  userId: string
-): string {
+export function buildConsumablesDescription(items: InventoryItemView[], fr: boolean, userId: string): string {
   const consumables = items.filter(item => item.category === 'consumable');
 
   if (consumables.length === 0) {
-    return fr
-      ? `# Consommables\n\nAucun consommable disponible pour le moment.\n\nTu peux consulter ton inventaire complet ici:\n${BASE_URL}/inventory/${userId}?lang=fr`
-      : `# Consumables\n\nNo consumables available right now.\n\nYou can view your full inventory here:\n${BASE_URL}/inventory/${userId}?lang=en`;
+    return fr ? `# Consommables\n\nAucun consommable disponible pour le moment.\n\nTu peux consulter ton inventaire complet ici:\n${BASE_URL}/inventory/${userId}?lang=fr` : `# Consumables\n\nNo consumables available right now.\n\nYou can view your full inventory here:\n${BASE_URL}/inventory/${userId}?lang=en`;
   }
 
   const rows = consumables.slice(0, DISPLAY_LIMIT).map(item => {
@@ -106,29 +100,15 @@ export function buildConsumablesDescription(
   });
 
   const moreCount = Math.max(0, consumables.length - DISPLAY_LIMIT);
-  const moreLine =
-    moreCount > 0
-      ? fr
-        ? `\n... et ${moreCount} autre(s)`
-        : `\n... and ${moreCount} more`
-      : '';
+  const moreLine = moreCount > 0 ? (fr ? `\n... et ${moreCount} autre(s)` : `\n... and ${moreCount} more`) : '';
 
-  const header = fr
-    ? `# Consommables (${consumables.length})`
-    : `# Consumables (${consumables.length})`;
-  const footer = fr
-    ? `\n\nInventaire complet:\n${BASE_URL}/inventory/${userId}?lang=fr`
-    : `\n\nFull inventory:\n${BASE_URL}/inventory/${userId}?lang=en`;
+  const header = fr ? `# Consommables (${consumables.length})` : `# Consumables (${consumables.length})`;
+  const footer = fr ? `\n\nInventaire complet:\n${BASE_URL}/inventory/${userId}?lang=fr` : `\n\nFull inventory:\n${BASE_URL}/inventory/${userId}?lang=en`;
 
   return `${header}\n\n${rows.join('\n')}${moreLine}${footer}`;
 }
 
-export async function handleConsumablesButton(
-  c: Context,
-  userId: string,
-  fr: boolean,
-  payload: string
-) {
+export async function handleConsumablesButton(c: Context, userId: string, fr: boolean, payload: string) {
   const items = await getInventoryItems(userId);
   const consumables = items.filter(item => item.category === 'consumable');
 
