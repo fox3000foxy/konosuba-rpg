@@ -1,14 +1,15 @@
 import { Context } from 'hono';
+import { BASE_URL } from '../../objects/config';
 import { QuestAction } from '../../objects/enums/QuestAction';
 import { QuestClaimStatus } from '../../objects/enums/QuestClaimStatus';
 import { InteractionDataOption } from '../../objects/types/InteractionDataOption';
 import {
   claimDailyQuestReward,
   ensurePlayerProfile,
-  getAllQuestStatuses,
   getQuestLabel,
   QUESTS,
 } from '../../services/progressionService';
+import { addImageVersion } from '../../utils/imageUtils';
 
 const QUEST_ACTION_VIEW = QuestAction.View;
 const QUEST_ACTION_CLAIM = QuestAction.Claim;
@@ -50,52 +51,36 @@ export async function handleQuestCommand(
     const claimResult = await claimDailyQuestReward(userID, questId);
     if (claimResult.status === QuestClaimStatus.Claimed) {
       claimMessage = fr
-        ? `\n\n✅ Recompense recuperee: +${claimResult.rewardGold} or.`
-        : `\n\n✅ Reward claimed: +${claimResult.rewardGold} gold.`;
+        ? `✅ Recompense recuperee: +${claimResult.rewardGold} or.`
+        : `✅ Reward claimed: +${claimResult.rewardGold} gold.`;
     } else if (claimResult.status === QuestClaimStatus.AlreadyClaimed) {
       claimMessage = fr
-        ? "\n\n⚠️ Recompense deja recuperee aujourd'hui."
-        : '\n\n⚠️ Reward already claimed today.';
+        ? "⚠️ Recompense deja recuperee aujourd'hui."
+        : '⚠️ Reward already claimed today.';
     } else if (claimResult.status === QuestClaimStatus.NotCompleted) {
       claimMessage = fr
-        ? '\n\n❌ Quete non terminee, impossible de recuperer la recompense.'
-        : '\n\n❌ Quest not completed yet, reward cannot be claimed.';
+        ? '❌ Quete non terminee, impossible de recuperer la recompense.'
+        : '❌ Quest not completed yet, reward cannot be claimed.';
     } else {
       claimMessage = fr
-        ? '\n\n❌ Service de quete indisponible pour le moment.'
-        : '\n\n❌ Quest service is unavailable right now.';
+        ? '❌ Service de quete indisponible pour le moment.'
+        : '❌ Quest service is unavailable right now.';
     }
   }
 
-  const allStatuses = await getAllQuestStatuses(userID);
+  const imageUrl = addImageVersion(
+    `${BASE_URL}/quest/${userID}?lang=${fr ? 'fr' : 'en'}`
+  );
 
-  const questTexts = allStatuses
-    .map(status => {
-      const statusEmoji = status.claimed
-        ? '✅'
-        : status.progress >= status.target
-          ? '🎯'
-          : '⏳';
-
-      const progressBar =
-        status.progress >= status.target
-          ? `${'█'.repeat(status.target)} — Terminée`
-          : `${'█'.repeat(Math.max(0, status.progress))}${'░'.repeat(Math.max(0, status.target - status.progress))} [${status.progress}/${status.target}]`;
-
-      const questName = getQuestLabel(status.questKey, fr);
-
-      const claimNotice =
-        action === QUEST_ACTION_CLAIM && status.questKey === questId
-          ? claimMessage
-          : '';
-
-      return `${statusEmoji} **${questName}** ${progressBar}\n💰 ${status.rewardGold} or${claimNotice}`;
-    })
-    .join('\n\n');
+  const selectedQuestLabel = getQuestLabel(questId, fr);
+  const claimInfo =
+    action === QUEST_ACTION_CLAIM && claimMessage
+      ? `\n\n${claimMessage}\n${fr ? 'Quete: ' : 'Quest: '}${selectedQuestLabel}`
+      : '';
 
   const description = fr
-    ? `# Quetes du Jour\n\n${questTexts}\n\nUtilise \`/quest action:claim\` et sélectionne la quête pour recuperer la recompense.`
-    : `# Daily Quests\n\n${questTexts}\n\nUse \`/quest action:claim\` and select the quest to claim the reward.`;
+    ? `# Quetes du Jour${claimInfo}\n\nUtilise \`/quest action:claim\` et sélectionne la quête pour recuperer la recompense.`
+    : `# Daily Quests${claimInfo}\n\nUse \`/quest action:claim\` and select the quest to claim the reward.`;
 
   return c.json({
     type: 4,
@@ -103,6 +88,7 @@ export async function handleQuestCommand(
       embeds: [
         {
           description,
+          image: { url: imageUrl },
           color: 0x2b2d31,
         },
       ],
