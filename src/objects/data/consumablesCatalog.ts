@@ -1,10 +1,7 @@
 import { ItemId } from '../enums/ItemId';
 import { Rarity } from '../enums/Rarity';
 import { TypeItem } from '../enums/TypeItem';
-import {
-  ConsumableCombinationRule,
-  ConsumableDefinition,
-} from '../types/catalog/Consumable';
+import { ConsumableCombinationRule, ConsumableDefinition } from '../types/catalog/Consumable';
 
 type ConsumableDefinitionSeed = Omit<ConsumableDefinition, 'nameFr' | 'nameEn'>;
 
@@ -320,12 +317,7 @@ function localizedConsumableName(seed: ConsumableDefinitionSeed): {
   };
 }
 
-export const CONSUMABLE_DEFINITIONS: ConsumableDefinition[] = [
-  ...ELEMENTAL_POTION_BASIC,
-  ...ELEMENTAL_POTION_GOLD,
-  ...CHRONO_AND_SPECIAL_GOLD,
-  ...STONES_AND_SCROLLS_EPIC,
-].map(seed => ({
+export const CONSUMABLE_DEFINITIONS: ConsumableDefinition[] = [...ELEMENTAL_POTION_BASIC, ...ELEMENTAL_POTION_GOLD, ...CHRONO_AND_SPECIAL_GOLD, ...STONES_AND_SCROLLS_EPIC].map(seed => ({
   ...seed,
   ...localizedConsumableName(seed),
 }));
@@ -448,18 +440,13 @@ export const CONSUMABLE_COMBINATION_RULES: ConsumableCombinationRule[] = [
   },
 ];
 
-const pairKey = (left: ItemId, right: ItemId): string =>
-  left < right ? `${left}+${right}` : `${right}+${left}`;
+const pairKey = (left: ItemId, right: ItemId): string => (left < right ? `${left}+${right}` : `${right}+${left}`);
 
-export const CONSUMABLE_COMBINATION_MAP: Record<string, ItemId> =
-  CONSUMABLE_COMBINATION_RULES.reduce<Record<string, ItemId>>((acc, rule) => {
-    acc[pairKey(rule.sourceA, rule.sourceB)] = rule.result;
-    return acc;
-  }, {});
+export const CONSUMABLE_COMBINATION_MAP: Record<string, ItemId> = CONSUMABLE_COMBINATION_RULES.reduce<Record<string, ItemId>>((acc, rule) => {
+  acc[pairKey(rule.sourceA, rule.sourceB)] = rule.result;
+  return acc;
+}, {});
 
-export function getConsumableCombinationResult(
-  sourceA: ItemId,
-  sourceB: ItemId
-): ItemId | null {
+export function getConsumableCombinationResult(sourceA: ItemId, sourceB: ItemId): ItemId | null {
   return CONSUMABLE_COMBINATION_MAP[pairKey(sourceA, sourceB)] || null;
 }

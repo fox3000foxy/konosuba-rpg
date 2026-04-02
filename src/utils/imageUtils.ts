@@ -1,13 +1,7 @@
 /** Utility functions for image URL generation */
 
 import { BASE_URL } from '../objects/config/constants';
-import {
-    customIdToPath,
-    extractDifficulty,
-    extractMonster,
-    isTraining,
-    removeDifficultyFromPayload,
-} from './payloadUtils';
+import { customIdToPath, extractDifficulty, extractMonster, isTraining, removeDifficultyFromPayload } from './payloadUtils';
 
 export function addImageVersion(url: string, version = Date.now()): string {
   try {
@@ -21,12 +15,7 @@ export function addImageVersion(url: string, version = Date.now()): string {
 }
 
 /** Construit l'URL d'image pour un payload donné */
-export function buildImageUrl(
-  payload: string,
-  lang: string,
-  difficulty?: string | null,
-  userId?: string
-): string {
+export function buildImageUrl(payload: string, lang: string, difficulty?: string | null, userId?: string): string {
   // Extraire la difficulté du payload si elle n'est pas fournie
   const cleanPayload = removeDifficultyFromPayload(payload);
   const payloadDifficulty = extractDifficulty(payload);

@@ -76,12 +76,7 @@ function getCharacterBadgePath(key: CharacterKey, stars: number): string {
   });
 })();
 function escapeXml(value: string): string {
-  return value
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&apos;');
+  return value.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&apos;');
 }
 
 async function getEmbeddedFontBuffer(): Promise<Uint8Array | null> {
@@ -101,9 +96,7 @@ async function getEmbeddedFontBuffer(): Promise<Uint8Array | null> {
 }
 
 function getRows(progresses: CharacterProgress[]) {
-  const byKey = new Map(
-    progresses.map(progress => [progress.characterKey, progress])
-  );
+  const byKey = new Map(progresses.map(progress => [progress.characterKey, progress]));
 
   return [
     {
@@ -130,16 +123,7 @@ function getRows(progresses: CharacterProgress[]) {
   ];
 }
 
-export async function buildProfileSvg(
-  userId: string,
-  profile: PlayerProfile,
-  progresses: CharacterProgress[],
-  runSummary: PlayerRunSummary,
-  achievementsCount: number,
-  totalAchievements: number,
-  fr: boolean,
-  hasEmbeddedFont = false
-): Promise<string> {
+export async function buildProfileSvg(userId: string, profile: PlayerProfile, progresses: CharacterProgress[], runSummary: PlayerRunSummary, achievementsCount: number, totalAchievements: number, fr: boolean, hasEmbeddedFont = false): Promise<string> {
   const fontFamily = hasEmbeddedFont ? 'GintoNordMedium' : 'Arial';
   const title = fr ? 'Profil' : 'Profile';
   const teamAffinity = progresses.reduce((sum, p) => sum + p.affinity, 0);
@@ -188,35 +172,14 @@ export async function buildProfileSvg(
 
     <rect x="36" y="650" width="1028" height="220" rx="14" fill="#0f1729" fill-opacity="0.74" />
     <text x="52" y="688" fill="#9db0e8" font-size="20" font-family="${fontFamily}">${escapeXml(fr ? 'Monstres recemment battus:' : 'Recent defeated monsters:')}</text>
-    ${
-      recentMonsters.length > 0
-        ? recentMonsterRows
-        : `<text x="52" y="738" fill="#e7ebff" font-size="18" font-family="${fontFamily}">${escapeXml(fr ? 'Aucun monstre battu' : 'No monsters defeated')}</text>`
-    }
+    ${recentMonsters.length > 0 ? recentMonsterRows : `<text x="52" y="738" fill="#e7ebff" font-size="18" font-family="${fontFamily}">${escapeXml(fr ? 'Aucun monstre battu' : 'No monsters defeated')}</text>`}
   </svg>`;
 }
 
-export async function renderProfileImage(
-  userId: string,
-  profile: PlayerProfile,
-  progresses: CharacterProgress[],
-  runSummary: PlayerRunSummary,
-  achievementsCount: number,
-  totalAchievements: number,
-  fr: boolean
-): Promise<Uint8Array> {
+export async function renderProfileImage(userId: string, profile: PlayerProfile, progresses: CharacterProgress[], runSummary: PlayerRunSummary, achievementsCount: number, totalAchievements: number, fr: boolean): Promise<Uint8Array> {
   await ensureResvgWasm();
   const fontBuffer = await getEmbeddedFontBuffer();
-  const svg = await buildProfileSvg(
-    userId,
-    profile,
-    progresses,
-    runSummary,
-    achievementsCount,
-    totalAchievements,
-    fr,
-    Boolean(fontBuffer)
-  );
+  const svg = await buildProfileSvg(userId, profile, progresses, runSummary, achievementsCount, totalAchievements, fr, Boolean(fontBuffer));
 
   const options = fontBuffer
     ? {
@@ -229,9 +192,7 @@ export async function renderProfileImage(
     : { font: { loadSystemFonts: true } };
 
   const png = new Resvg(svg, options).render().asPng();
-  const overlay = Photon.PhotonImage.new_from_byteslice(
-    new Uint8Array(png.buffer.slice(0) as ArrayBuffer)
-  );
+  const overlay = Photon.PhotonImage.new_from_byteslice(new Uint8Array(png.buffer.slice(0) as ArrayBuffer));
 
   let board: Photon.PhotonImage | null = null;
   let canvas: Photon.PhotonImage;
@@ -239,30 +200,16 @@ export async function renderProfileImage(
 
   if (boardBytes) {
     board = Photon.PhotonImage.new_from_byteslice(new Uint8Array(boardBytes));
-    canvas = Photon.resize(
-      board,
-      WIDTH,
-      HEIGHT,
-      Photon.SamplingFilter.Lanczos3
-    );
+    canvas = Photon.resize(board, WIDTH, HEIGHT, Photon.SamplingFilter.Lanczos3);
     Photon.watermark(canvas, overlay, 0n, 0n);
   } else {
     canvas = overlay;
   }
 
   const rows = getRows(progresses);
-  const [starEnabledBytes, starDisabledBytes] = await Promise.all([
-    getAssetBytes(STAR_ENABLED_PATH),
-    getAssetBytes(STAR_DISABLED_PATH),
-  ]);
+  const [starEnabledBytes, starDisabledBytes] = await Promise.all([getAssetBytes(STAR_ENABLED_PATH), getAssetBytes(STAR_DISABLED_PATH)]);
 
-  const badgeBuffers = await Promise.all(
-    rows.map(row =>
-      getAssetBytes(
-        getCharacterBadgePath(row.key, getAffinityStars(row.affinity))
-      )
-    )
-  );
+  const badgeBuffers = await Promise.all(rows.map(row => getAssetBytes(getCharacterBadgePath(row.key, getAffinityStars(row.affinity)))));
 
   const rowY = [320, 435, 550];
   for (let rowIdx = 0; rowIdx < rows.length; rowIdx += 1) {
@@ -273,15 +220,8 @@ export async function renderProfileImage(
       let badgeResized: Photon.PhotonImage | null = null;
 
       try {
-        badge = Photon.PhotonImage.new_from_byteslice(
-          new Uint8Array(badgeBuffer)
-        );
-        badgeResized = Photon.resize(
-          badge,
-          84,
-          84,
-          Photon.SamplingFilter.Lanczos3
-        );
+        badge = Photon.PhotonImage.new_from_byteslice(new Uint8Array(badgeBuffer));
+        badgeResized = Photon.resize(badge, 84, 84, Photon.SamplingFilter.Lanczos3);
         Photon.watermark(canvas, badgeResized, 48n, BigInt(rowY[rowIdx] - 64));
       } catch {
         // Keep row even if badge fails to decode
@@ -301,21 +241,9 @@ export async function renderProfileImage(
       let star: Photon.PhotonImage | null = null;
       let starResized: Photon.PhotonImage | null = null;
       try {
-        star = Photon.PhotonImage.new_from_byteslice(
-          new Uint8Array(starBuffer)
-        );
-        starResized = Photon.resize(
-          star,
-          28,
-          28,
-          Photon.SamplingFilter.Lanczos3
-        );
-        Photon.watermark(
-          canvas,
-          starResized,
-          BigInt(170 + starIdx * 34),
-          BigInt(rowY[rowIdx] + 20)
-        );
+        star = Photon.PhotonImage.new_from_byteslice(new Uint8Array(starBuffer));
+        starResized = Photon.resize(star, 28, 28, Photon.SamplingFilter.Lanczos3);
+        Photon.watermark(canvas, starResized, BigInt(170 + starIdx * 34), BigInt(rowY[rowIdx] + 20));
       } catch {
         // Keep row text even if star icon fails to decode
       } finally {
@@ -329,24 +257,15 @@ export async function renderProfileImage(
   const iconSize = 18;
   const monsterStartY = 738;
 
-  for (const [idx, monster] of runSummary.killedMonsters
-    .slice(0, 4)
-    .entries()) {
+  for (const [idx, monster] of runSummary.killedMonsters.slice(0, 4).entries()) {
     const iconKey = getMonsterIconKey(monster.name);
     const iconY = monsterStartY + idx * 36;
 
     try {
       const iconBytes = await getImageBytesFromManifest(iconKey);
       if (iconBytes) {
-        const iconImage = Photon.PhotonImage.new_from_byteslice(
-          new Uint8Array(iconBytes)
-        );
-        const icon = Photon.resize(
-          iconImage,
-          iconSize,
-          iconSize,
-          Photon.SamplingFilter.Lanczos3
-        );
+        const iconImage = Photon.PhotonImage.new_from_byteslice(new Uint8Array(iconBytes));
+        const icon = Photon.resize(iconImage, iconSize, iconSize, Photon.SamplingFilter.Lanczos3);
         Photon.watermark(canvas, icon, 52n, BigInt(iconY - 15));
         icon.free();
         iconImage.free();

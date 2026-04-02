@@ -42,12 +42,7 @@ function getNormalizedFields(item: SearchableItem): NormalizedFields {
 export function matchesName(item: SearchableItem, normalizedName: string): boolean {
   const fields = getNormalizedFields(item);
 
-  return (
-    fields.id.includes(normalizedName) ||
-    fields.fileName.includes(normalizedName) ||
-    fields.nameFr.includes(normalizedName) ||
-    fields.nameEn.includes(normalizedName)
-  );
+  return fields.id.includes(normalizedName) || fields.fileName.includes(normalizedName) || fields.nameFr.includes(normalizedName) || fields.nameEn.includes(normalizedName);
 }
 
 export function findItemByName<T extends SearchableItem>(items: T[], name: string): T | null {
@@ -58,12 +53,7 @@ export function findItemByName<T extends SearchableItem>(items: T[], name: strin
 
   for (const item of items) {
     const fields = getNormalizedFields(item);
-    if (
-      fields.nameFr === normalized ||
-      fields.nameEn === normalized ||
-      fields.id === normalized ||
-      fields.fileName === normalized
-    ) {
+    if (fields.nameFr === normalized || fields.nameEn === normalized || fields.id === normalized || fields.fileName === normalized) {
       return item;
     }
   }

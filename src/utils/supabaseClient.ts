@@ -10,10 +10,7 @@ function normalizeSecret(raw: string | undefined): string {
   let value = raw.trim();
 
   // Common copy/paste issue from dashboards: wrapping quotes.
-  if (
-    (value.startsWith('"') && value.endsWith('"')) ||
-    (value.startsWith("'") && value.endsWith("'"))
-  ) {
+  if ((value.startsWith('"') && value.endsWith('"')) || (value.startsWith("'") && value.endsWith("'"))) {
     value = value.slice(1, -1).trim();
   }
 
@@ -60,9 +57,7 @@ export function getSupabaseAdminClient(): SupabaseClient | null {
 
   const payload = decodeJwtPayload(serviceRoleKey);
   if (payload && payload.role !== 'service_role') {
-    console.warn(
-      `[db] SUPABASE_SERVICE_ROLE_KEY role is "${String(payload.role)}" instead of "service_role".`
-    );
+    console.warn(`[db] SUPABASE_SERVICE_ROLE_KEY role is "${String(payload.role)}" instead of "service_role".`);
   }
 
   supabaseAdminClient = createClient(supabaseUrl, serviceRoleKey, {

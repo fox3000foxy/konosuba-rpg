@@ -8,24 +8,16 @@ export function logEnvironmentStatus(): void {
 
   console.log('[startup] Environment variables status:');
   console.log(`  SUPABASE_URL: ${supabaseUrl ? '✅ set' : '❌ MISSING'}`);
-  console.log(
-    `  SUPABASE_SERVICE_ROLE_KEY: ${supabaseKey ? '✅ set' : '❌ MISSING'}`
-  );
+  console.log(`  SUPABASE_SERVICE_ROLE_KEY: ${supabaseKey ? '✅ set' : '❌ MISSING'}`);
   console.log(`  DISCORD_TOKEN: ${discordToken ? '✅ set' : '❌ MISSING'}`);
-  console.log(
-    `  DISCORD_APPLICATION_ID: ${discordAppId ? '✅ set' : '❌ MISSING'}`
-  );
+  console.log(`  DISCORD_APPLICATION_ID: ${discordAppId ? '✅ set' : '❌ MISSING'}`);
 
   if (!supabaseUrl || !supabaseKey) {
-    console.warn(
-      '[startup] ⚠️  Database progression (quests, profile, leaderboard) will NOT work without SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY'
-    );
+    console.warn('[startup] ⚠️  Database progression (quests, profile, leaderboard) will NOT work without SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY');
   }
 
   if (!discordToken || !discordAppId) {
-    console.error(
-      '[startup] ❌ Discord bot requires DISCORD_TOKEN and DISCORD_APPLICATION_ID'
-    );
+    console.error('[startup] ❌ Discord bot requires DISCORD_TOKEN and DISCORD_APPLICATION_ID');
   }
 }
 

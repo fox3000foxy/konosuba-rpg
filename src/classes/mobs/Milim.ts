@@ -11,11 +11,7 @@ export default class Milim extends Creature implements CreatureInterface {
     this.hpMax = 2000;
     this.hp = this.hpMax;
     this.name = ['Milim Nava', 'Milim Nava'];
-    this.images = [
-      `enemy_image_22700`,
-      `enemy_image_22701`,
-      `enemy_image_22702`,
-    ];
+    this.images = [`enemy_image_22700`, `enemy_image_22701`, `enemy_image_22702`];
     this.prefix = false;
     this.lore = [FrenchLores.Creature_Milim, EnglishLore.Creature_Milim];
     this.gender = Gender.Female;

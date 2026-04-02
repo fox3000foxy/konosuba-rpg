@@ -24,11 +24,7 @@ type LootTable = {
   rarityWeights: LootRarityWeight[];
 };
 
-const DROP_CHARACTERS: CharacterKey[] = [
-  CharacterKey.Darkness,
-  CharacterKey.Megumin,
-  CharacterKey.Aqua,
-];
+const DROP_CHARACTERS: CharacterKey[] = [CharacterKey.Darkness, CharacterKey.Megumin, CharacterKey.Aqua];
 
 export const ACCESSORY_AFFINITY_POINTS_BY_RARITY: Record<Rarity, number> = {
   [Rarity.Bronze]: 3,
@@ -107,10 +103,7 @@ const LOOT_TABLE_BY_DIFFICULTY: Record<MonsterDifficulty, LootTable> = {
   },
 };
 
-const CONSUMABLE_LOOT_TABLE_BY_DIFFICULTY: Record<
-  MonsterDifficulty,
-  LootTable
-> = {
+const CONSUMABLE_LOOT_TABLE_BY_DIFFICULTY: Record<MonsterDifficulty, LootTable> = {
   [MonsterDifficulty.Easy]: {
     baseRolls: 1,
     bonusRollChance: 0.08,
@@ -174,17 +167,11 @@ const CONSUMABLE_LOOT_TABLE_BY_DIFFICULTY: Record<
 };
 
 function getLootTable(difficulty: MonsterDifficulty): LootTable {
-  return (
-    LOOT_TABLE_BY_DIFFICULTY[difficulty] ||
-    LOOT_TABLE_BY_DIFFICULTY[MonsterDifficulty.Medium]
-  );
+  return LOOT_TABLE_BY_DIFFICULTY[difficulty] || LOOT_TABLE_BY_DIFFICULTY[MonsterDifficulty.Medium];
 }
 
 function getConsumableLootTable(difficulty: MonsterDifficulty): LootTable {
-  return (
-    CONSUMABLE_LOOT_TABLE_BY_DIFFICULTY[difficulty] ||
-    CONSUMABLE_LOOT_TABLE_BY_DIFFICULTY[MonsterDifficulty.Medium]
-  );
+  return CONSUMABLE_LOOT_TABLE_BY_DIFFICULTY[difficulty] || CONSUMABLE_LOOT_TABLE_BY_DIFFICULTY[MonsterDifficulty.Medium];
 }
 
 function seedFromRunKey(runKey: string): number {
@@ -222,10 +209,7 @@ function computeDropCount(rand: Random, lootTable: LootTable): number {
   return Math.min(4, Math.max(2, count));
 }
 
-function computeConsumableDropCount(
-  rand: Random,
-  lootTable: LootTable
-): number {
+function computeConsumableDropCount(rand: Random, lootTable: LootTable): number {
   let count = lootTable.baseRolls;
 
   for (let i = 0; i < lootTable.maxBonusRolls; i += 1) {
@@ -237,10 +221,7 @@ function computeConsumableDropCount(
   return Math.min(3, Math.max(1, count));
 }
 
-function pickAccessoryByRarity(
-  rarity: Rarity,
-  rand: Random
-): AccessoryDefinition {
+function pickAccessoryByRarity(rarity: Rarity, rand: Random): AccessoryDefinition {
   const byRarity = getItems({ rarity });
   const pool = byRarity.length > 0 ? byRarity : getItems();
   return rand.choice(pool);
@@ -248,21 +229,15 @@ function pickAccessoryByRarity(
 
 function pickConsumableByRarity(rarity: Rarity, rand: Random): ItemId {
   const byRarity = getConsumableItems({ rarity }).map(item => item.id);
-  const pool =
-    byRarity.length > 0 ? byRarity : getConsumableItems().map(item => item.id);
+  const pool = byRarity.length > 0 ? byRarity : getConsumableItems().map(item => item.id);
   return rand.choice(pool) as ItemId;
 }
 
-function inventoryTypeForConsumableType(
-  type: TypeItem
-): 'potion' | 'component' {
+function inventoryTypeForConsumableType(type: TypeItem): 'potion' | 'component' {
   return type === TypeItem.Potion ? 'potion' : 'component';
 }
 
-export function rollAccessoryDrop(
-  runKey: string,
-  monsterName?: string | null
-): AccessoryDropResult[] {
+export function rollAccessoryDrop(runKey: string, monsterName?: string | null): AccessoryDropResult[] {
   const rand = new Random(seedFromRunKey(runKey));
   const difficulty = getMonsterDifficulty(monsterName ?? null);
   const lootTable = getLootTable(difficulty);
@@ -285,10 +260,7 @@ export function rollAccessoryDrop(
   return drops;
 }
 
-export function rollConsumableDrop(
-  runKey: string,
-  monsterName?: string | null
-): ConsumableDropResult[] {
+export function rollConsumableDrop(runKey: string, monsterName?: string | null): ConsumableDropResult[] {
   const rand = new Random(seedFromRunKey(`${runKey}:consumable`));
   const difficulty = getMonsterDifficulty(monsterName ?? null);
   const lootTable = getConsumableLootTable(difficulty);
@@ -314,11 +286,7 @@ export function rollConsumableDrop(
   return drops;
 }
 
-export async function grantAccessoryDropRewards(
-  userId: string,
-  runKey: string,
-  monsterName?: string | null
-): Promise<AccessoryDropResult[] | null> {
+export async function grantAccessoryDropRewards(userId: string, runKey: string, monsterName?: string | null): Promise<AccessoryDropResult[] | null> {
   const supabase = getSupabaseAdminClient();
   if (!supabase) {
     return null;
@@ -327,37 +295,24 @@ export async function grantAccessoryDropRewards(
   const drops = rollAccessoryDrop(runKey, monsterName);
 
   for (const drop of drops) {
-    const { data: current, error: loadError } = await supabase
-      .from('inventory_items')
-      .select('quantity')
-      .eq('user_id', userId)
-      .eq('item_key', drop.accessoryId)
-      .maybeSingle();
+    const { data: current, error: loadError } = await supabase.from('inventory_items').select('quantity').eq('user_id', userId).eq('item_key', drop.accessoryId).maybeSingle();
 
     if (loadError) {
-      console.error(
-        '[db] load inventory item for drop failed:',
-        loadError.message
-      );
+      console.error('[db] load inventory item for drop failed:', loadError.message);
       return null;
     }
 
     if (!current) {
-      const { error: insertError } = await supabase
-        .from('inventory_items')
-        .insert({
-          user_id: userId,
-          item_key: drop.accessoryId,
-          item_type: 'affinity',
-          quantity: 1,
-          updated_at: new Date().toISOString(),
-        });
+      const { error: insertError } = await supabase.from('inventory_items').insert({
+        user_id: userId,
+        item_key: drop.accessoryId,
+        item_type: 'affinity',
+        quantity: 1,
+        updated_at: new Date().toISOString(),
+      });
 
       if (insertError) {
-        console.error(
-          '[db] insert dropped accessory failed:',
-          insertError.message
-        );
+        console.error('[db] insert dropped accessory failed:', insertError.message);
         return null;
       }
     } else {
@@ -371,10 +326,7 @@ export async function grantAccessoryDropRewards(
         .eq('item_key', drop.accessoryId);
 
       if (updateError) {
-        console.error(
-          '[db] update dropped accessory quantity failed:',
-          updateError.message
-        );
+        console.error('[db] update dropped accessory quantity failed:', updateError.message);
         return null;
       }
     }
@@ -385,11 +337,7 @@ export async function grantAccessoryDropRewards(
   return drops;
 }
 
-export async function grantConsumableDropRewards(
-  userId: string,
-  runKey: string,
-  monsterName?: string | null
-): Promise<ConsumableDropResult[] | null> {
+export async function grantConsumableDropRewards(userId: string, runKey: string, monsterName?: string | null): Promise<ConsumableDropResult[] | null> {
   const supabase = getSupabaseAdminClient();
   if (!supabase) {
     return null;
@@ -398,37 +346,24 @@ export async function grantConsumableDropRewards(
   const drops = rollConsumableDrop(runKey, monsterName);
 
   for (const drop of drops) {
-    const { data: current, error: loadError } = await supabase
-      .from('inventory_items')
-      .select('quantity')
-      .eq('user_id', userId)
-      .eq('item_key', drop.itemId)
-      .maybeSingle();
+    const { data: current, error: loadError } = await supabase.from('inventory_items').select('quantity').eq('user_id', userId).eq('item_key', drop.itemId).maybeSingle();
 
     if (loadError) {
-      console.error(
-        '[db] load inventory item for consumable drop failed:',
-        loadError.message
-      );
+      console.error('[db] load inventory item for consumable drop failed:', loadError.message);
       return null;
     }
 
     if (!current) {
-      const { error: insertError } = await supabase
-        .from('inventory_items')
-        .insert({
-          user_id: userId,
-          item_key: drop.itemId,
-          item_type: drop.inventoryItemType,
-          quantity: 1,
-          updated_at: new Date().toISOString(),
-        });
+      const { error: insertError } = await supabase.from('inventory_items').insert({
+        user_id: userId,
+        item_key: drop.itemId,
+        item_type: drop.inventoryItemType,
+        quantity: 1,
+        updated_at: new Date().toISOString(),
+      });
 
       if (insertError) {
-        console.error(
-          '[db] insert dropped consumable failed:',
-          insertError.message
-        );
+        console.error('[db] insert dropped consumable failed:', insertError.message);
         return null;
       }
     } else {
@@ -442,10 +377,7 @@ export async function grantConsumableDropRewards(
         .eq('item_key', drop.itemId);
 
       if (updateError) {
-        console.error(
-          '[db] update dropped consumable quantity failed:',
-          updateError.message
-        );
+        console.error('[db] update dropped consumable quantity failed:', updateError.message);
         return null;
       }
     }

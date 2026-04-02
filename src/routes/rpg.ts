@@ -13,13 +13,7 @@ export async function calculateRPG(c: Context) {
   }
 
   c.header('Content-Type', 'image/webp');
-  const responseBody =
-    image instanceof Uint8Array
-      ? image.buffer.slice(
-          image.byteOffset,
-          image.byteOffset + image.byteLength
-        )
-      : image;
+  const responseBody = image instanceof Uint8Array ? image.buffer.slice(image.byteOffset, image.byteOffset + image.byteLength) : image;
 
   return new Response(responseBody as ArrayBuffer, {
     headers: imageCacheHeaders('image/webp'),

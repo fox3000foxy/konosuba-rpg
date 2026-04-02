@@ -69,10 +69,7 @@ export function getCraftingRecipes(): CraftingRecipeView[] {
     .filter((entry): entry is NonNullable<typeof entry> => entry !== null);
 }
 
-export async function craftRecipe(
-  userId: string,
-  recipeKey: string
-): Promise<CraftRecipeResult> {
+export async function craftRecipe(userId: string, recipeKey: string): Promise<CraftRecipeResult> {
   const supabase = getSupabaseAdminClient();
   if (!supabase) {
     return {
@@ -94,11 +91,7 @@ export async function craftRecipe(
     };
   }
 
-  const rows = Array.isArray(data)
-    ? (data as CraftRecipeRpcRow[])
-    : data
-      ? [data as CraftRecipeRpcRow]
-      : [];
+  const rows = Array.isArray(data) ? (data as CraftRecipeRpcRow[]) : data ? [data as CraftRecipeRpcRow] : [];
 
   const row = rows[0];
   if (!row) {

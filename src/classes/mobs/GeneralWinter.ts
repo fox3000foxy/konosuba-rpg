@@ -3,10 +3,7 @@ import { FrenchLores } from '../../objects/enums/FrenchLores';
 import { Creature, CreatureInterface } from '../Creature';
 import { EnglishLore } from '../../objects/enums/EnglishLore';
 
-export default class GeneralWinter
-  extends Creature
-  implements CreatureInterface
-{
+export default class GeneralWinter extends Creature implements CreatureInterface {
   constructor() {
     super();
     this.attack = [9, 17];
@@ -16,10 +13,7 @@ export default class GeneralWinter
     this.name = ['General Winter', 'Général Winter'];
     this.images = [`enemy_image_10900`];
     this.prefix = true;
-    this.lore = [
-      FrenchLores.Creature_GeneralWinter,
-      EnglishLore.Creature_GeneralWinter,
-    ];
+    this.lore = [FrenchLores.Creature_GeneralWinter, EnglishLore.Creature_GeneralWinter];
     this.gender = Gender.Male;
   }
 }

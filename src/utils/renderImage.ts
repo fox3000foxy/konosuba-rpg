@@ -93,8 +93,7 @@ const pendingFontFetches = new Map<string, Promise<ArrayBuffer>>();
 
 // ─── Image / Font helpers ────────────────────────────────────────────────────
 
-const BASE_URL =
-  'https://fox3000foxy.com/konosuba-rpg'; /* Should match the base path used in src/index.ts for /assets/ */
+const BASE_URL = 'https://fox3000foxy.com/konosuba-rpg'; /* Should match the base path used in src/index.ts for /assets/ */
 
 export async function getImageBytes(key: string): Promise<ArrayBuffer> {
   if (imageCache[key]) return imageCache[key];
@@ -148,9 +147,7 @@ function getBase64Cached(key: string, buf: ArrayBuffer): string {
   const chunkSize = 0x8000;
   let binary = '';
   for (let i = 0; i < bytes.length; i += chunkSize) {
-    binary += String.fromCharCode(
-      ...bytes.subarray(i, Math.min(i + chunkSize, bytes.length))
-    );
+    binary += String.fromCharCode(...bytes.subarray(i, Math.min(i + chunkSize, bytes.length)));
   }
   const b64 = btoa(binary);
   base64Cache[key] = b64;
@@ -164,11 +161,7 @@ function toPhoton(buf: ArrayBuffer): Photon.PhotonImage {
 }
 
 function clonePhoton(img: Photon.PhotonImage): Photon.PhotonImage {
-  return new Photon.PhotonImage(
-    new Uint8Array(img.get_raw_pixels()),
-    img.get_width(),
-    img.get_height()
-  );
+  return new Photon.PhotonImage(new Uint8Array(img.get_raw_pixels()), img.get_width(), img.get_height());
 }
 
 function flipX(img: Photon.PhotonImage): Photon.PhotonImage {
@@ -189,12 +182,7 @@ function flipX(img: Photon.PhotonImage): Photon.PhotonImage {
   return new Photon.PhotonImage(flipped, w, h);
 }
 
-async function getImageReadOnly(
-  key: string,
-  w?: number,
-  h?: number,
-  flipped = false
-): Promise<Photon.PhotonImage> {
+async function getImageReadOnly(key: string, w?: number, h?: number, flipped = false): Promise<Photon.PhotonImage> {
   const cacheKey = `${key}_${w ?? 0}_${h ?? 0}_${flipped}`;
   const cached = photonCache.get(cacheKey);
   if (cached) return cached;
@@ -213,12 +201,7 @@ async function getImageReadOnly(
     img = r;
   } else if (!w && h) {
     const ratio = img.get_width() / img.get_height();
-    const r = Photon.resize(
-      img,
-      Math.round(h * ratio),
-      h,
-      Photon.SamplingFilter.Lanczos3
-    );
+    const r = Photon.resize(img, Math.round(h * ratio), h, Photon.SamplingFilter.Lanczos3);
     img.free();
     img = r;
   }
@@ -229,18 +212,12 @@ async function getImageReadOnly(
 
 // ─── Background layer ─────────────────────────────────────────────────────────
 
-async function getBackground(
-  W: number,
-  H: number
-): Promise<Photon.PhotonImage> {
+async function getBackground(W: number, H: number): Promise<Photon.PhotonImage> {
   const key = `bg_${W}_${H}`;
   const cached = layerCache.get(key);
   if (cached) return clonePhoton(cached);
 
-  const [boardSource, frame] = await Promise.all([
-    getImageReadOnly('board', W, H),
-    getImageReadOnly('frameless', W, H),
-  ]);
+  const [boardSource, frame] = await Promise.all([getImageReadOnly('board', W, H), getImageReadOnly('frameless', W, H)]);
   const board = clonePhoton(boardSource);
   Photon.watermark(board, frame, 0n, 0n);
 
@@ -250,32 +227,13 @@ async function getBackground(
 
 // ─── Characters layer ─────────────────────────────────────────────────────────
 
-function buildCharactersKey(
-  playerImages: string[][],
-  playerHp: number[],
-  creatureImages: string[],
-  creatureHp: number
-): string {
-  const players = playerImages
-    .map((imgs, i) => `${imgs[0]}:${playerHp[i] > 0 ? 1 : 0}`)
-    .join('|');
+function buildCharactersKey(playerImages: string[][], playerHp: number[], creatureImages: string[], creatureHp: number): string {
+  const players = playerImages.map((imgs, i) => `${imgs[0]}:${playerHp[i] > 0 ? 1 : 0}`).join('|');
   return `chars::${players}::${creatureImages[0]}:${creatureHp > 0 ? 1 : 0}`;
 }
 
-async function getCharactersLayer(
-  playerImages: string[][],
-  playerHp: number[],
-  creatureImages: string[],
-  creatureHp: number,
-  W: number,
-  H: number
-): Promise<Photon.PhotonImage> {
-  const key = buildCharactersKey(
-    playerImages,
-    playerHp,
-    creatureImages,
-    creatureHp
-  );
+async function getCharactersLayer(playerImages: string[][], playerHp: number[], creatureImages: string[], creatureHp: number, W: number, H: number): Promise<Photon.PhotonImage> {
+  const key = buildCharactersKey(playerImages, playerHp, creatureImages, creatureHp);
   const cached = layerCache.get(key);
   if (cached) return cached;
 
@@ -289,21 +247,10 @@ async function getCharactersLayer(
   ];
 
   const activeSlots = slots.filter(s => playerHp[s.i] > 0);
-  const sprites = await Promise.all(
-    activeSlots.map(s =>
-      getImageReadOnly(playerImages[s.i][0], undefined, 184, true).then(
-        img => ({ s, img })
-      )
-    )
-  );
+  const sprites = await Promise.all(activeSlots.map(s => getImageReadOnly(playerImages[s.i][0], undefined, 184, true).then(img => ({ s, img }))));
 
   for (const { s, img } of sprites) {
-    Photon.watermark(
-      layer,
-      img,
-      BigInt(Math.round(s.x)),
-      BigInt(Math.round(s.y))
-    );
+    Photon.watermark(layer, img, BigInt(Math.round(s.x)), BigInt(Math.round(s.y)));
   }
 
   if (creatureHp > 0) {
@@ -317,17 +264,8 @@ async function getCharactersLayer(
 
 // ─── UI Overlay ───────────────────────────────────────────────────────────────
 
-async function buildOverlayJsx(
-  team: Team,
-  creature: Creature,
-  messages: string[],
-  state: string | null,
-  lang: string,
-  W: number,
-  H: number
-): Promise<object> {
-  const hp =
-    lang === Lang.French ? HealthBarName.French : HealthBarName.English;
+async function buildOverlayJsx(team: Team, creature: Creature, messages: string[], state: string | null, lang: string, W: number, H: number): Promise<object> {
+  const hp = lang === Lang.French ? HealthBarName.French : HealthBarName.English;
   const langIndex = lang === Lang.French ? 1 : 0;
 
   function detectConsumableEffectType(message: string): TypeItem | null {
@@ -381,10 +319,7 @@ async function buildOverlayJsx(
     return { left: 38 * 2 + 173.5 * 2 - 34, top: 46.25 * 2 - 38 - 20 };
   }
 
-  function buildConsumableEffectBadge(
-    effectType: TypeItem,
-    playerId: number
-  ): object {
+  function buildConsumableEffectBadge(effectType: TypeItem, playerId: number): object {
     let label = '';
     let effectImageKey = '';
 
@@ -410,10 +345,7 @@ async function buildOverlayJsx(
       effectImageKey = 'ui_effect_scroll';
     }
 
-    const effectImageSrc =
-      effectImageKey && imageCache[effectImageKey]
-        ? `data:image/png;base64,${getBase64Cached(effectImageKey, imageCache[effectImageKey])}`
-        : null;
+    const effectImageSrc = effectImageKey && imageCache[effectImageKey] ? `data:image/png;base64,${getBase64Cached(effectImageKey, imageCache[effectImageKey])}` : null;
 
     const { left, top } = playerEffectAnchor(playerId);
     return {
@@ -451,14 +383,7 @@ async function buildOverlayJsx(
     };
   }
 
-  function healthBar(
-    current: number,
-    max: number,
-    x: number,
-    y: number,
-    w: number,
-    h: number
-  ) {
+  function healthBar(current: number, max: number, x: number, y: number, w: number, h: number) {
     const pct = Math.max(0, Math.min(1, current / max));
     return {
       type: 'div',
@@ -487,31 +412,15 @@ async function buildOverlayJsx(
     };
   }
 
-  const { name, prefix: creaturePrefix } = getCreatureNameAndPrefix(
-    creature,
-    lang,
-    true
-  );
+  const { name, prefix: creaturePrefix } = getCreatureNameAndPrefix(creature, lang, true);
 
   const endMsg = state
     ? (
         {
-          good:
-            lang === Lang.French
-              ? `${EndMessages.French_Good}${creaturePrefix}${name}${EndMessages.French_ExclamationMark}`
-              : `${EndMessages.English_Good}${creaturePrefix}${name}${EndMessages.English_ExclamationMark}`,
-          bad:
-            lang === Lang.French
-              ? EndMessages.French_Bad
-              : EndMessages.English_Bad,
-          giveup:
-            lang === Lang.French
-              ? EndMessages.French_Giveup
-              : EndMessages.English_Giveup,
-          best:
-            lang === Lang.French
-              ? `${EndMessages.French_Best}${creaturePrefix}${name}${EndMessages.French_ExclamationMark}`
-              : `${EndMessages.English_Best}${creaturePrefix}${name}${EndMessages.English_ExclamationMark}`,
+          good: lang === Lang.French ? `${EndMessages.French_Good}${creaturePrefix}${name}${EndMessages.French_ExclamationMark}` : `${EndMessages.English_Good}${creaturePrefix}${name}${EndMessages.English_ExclamationMark}`,
+          bad: lang === Lang.French ? EndMessages.French_Bad : EndMessages.English_Bad,
+          giveup: lang === Lang.French ? EndMessages.French_Giveup : EndMessages.English_Giveup,
+          best: lang === Lang.French ? `${EndMessages.French_Best}${creaturePrefix}${name}${EndMessages.French_ExclamationMark}` : `${EndMessages.English_Best}${creaturePrefix}${name}${EndMessages.English_ExclamationMark}`,
         } as Record<string, string>
       )[state]
     : null;
@@ -519,31 +428,16 @@ async function buildOverlayJsx(
   const endMsg2 = state
     ? (
         {
-          good:
-            lang === Lang.French
-              ? RetryMessages.French_Good
-              : RetryMessages.English_Good,
-          bad:
-            lang === Lang.French
-              ? RetryMessages.French_Bad
-              : RetryMessages.English_Bad,
-          giveup:
-            lang === Lang.French
-              ? RetryMessages.French_Giveup
-              : RetryMessages.English_Giveup,
-          best:
-            lang === Lang.French
-              ? RetryMessages.French_Best
-              : RetryMessages.English_Best,
+          good: lang === Lang.French ? RetryMessages.French_Good : RetryMessages.English_Good,
+          bad: lang === Lang.French ? RetryMessages.French_Bad : RetryMessages.English_Bad,
+          giveup: lang === Lang.French ? RetryMessages.French_Giveup : RetryMessages.English_Giveup,
+          best: lang === Lang.French ? RetryMessages.French_Best : RetryMessages.English_Best,
         } as Record<string, string>
       )[state]
     : null;
 
   // Résolution synchrone depuis le cache — pas d'await dans la construction JSX
-  const endImgSrc =
-    endMsg && imageCache['end_' + state]
-      ? `data:image/png;base64,${getBase64Cached('end_' + state, imageCache['end_' + state])}`
-      : null;
+  const endImgSrc = endMsg && imageCache['end_' + state] ? `data:image/png;base64,${getBase64Cached('end_' + state, imageCache['end_' + state])}` : null;
 
   let pid = 0;
   switch (team.activePlayer?.name[0]) {
@@ -562,13 +456,9 @@ async function buildOverlayJsx(
   }
   team.setActivePlayer(team.players[pid]);
 
-  const latestMessage =
-    messages.length > 0 ? messages[messages.length - 1] : '';
+  const latestMessage = messages.length > 0 ? messages[messages.length - 1] : '';
   const latestConsumableEffect = detectConsumableEffectType(latestMessage);
-  const latestConsumableTargetId =
-    latestMessage && latestConsumableEffect
-      ? detectConsumableTargetPlayerId(latestMessage)
-      : null;
+  const latestConsumableTargetId = latestMessage && latestConsumableEffect ? detectConsumableTargetPlayerId(latestMessage) : null;
 
   return {
     type: 'div',
@@ -642,14 +532,7 @@ async function buildOverlayJsx(
             children: `${team.activePlayer?.attack[0]}-${team.activePlayer?.attack[1]}ATK`,
           },
         },
-        healthBar(
-          team.activePlayer?.hp || 0,
-          team.activePlayer?.hpMax || 0,
-          38 * 2,
-          46.25 * 2 - 38,
-          173.5 * 2,
-          8.5 * 2
-        ),
+        healthBar(team.activePlayer?.hp || 0, team.activePlayer?.hpMax || 0, 38 * 2, 46.25 * 2 - 38, 173.5 * 2, 8.5 * 2),
 
         // ── Player info (secondary x3) ─────────────────────────────────
         ...[1, 2, 3].flatMap(offset => {
@@ -691,14 +574,7 @@ async function buildOverlayJsx(
           ];
         }),
 
-        ...(latestConsumableEffect !== null && latestConsumableTargetId !== null
-          ? [
-              buildConsumableEffectBadge(
-                latestConsumableEffect,
-                latestConsumableTargetId
-              ),
-            ]
-          : []),
+        ...(latestConsumableEffect !== null && latestConsumableTargetId !== null ? [buildConsumableEffectBadge(latestConsumableEffect, latestConsumableTargetId)] : []),
 
         // ── Creature info ──────────────────────────────────────────────
         {
@@ -729,14 +605,7 @@ async function buildOverlayJsx(
             children: `${creature.attack[0]}-${creature.attack[1]}ATK`,
           },
         },
-        healthBar(
-          creature.hp,
-          creature.hpMax,
-          286.5 * 2,
-          152 * 2 + 139,
-          173.5 * 2,
-          8.5 * 2
-        ),
+        healthBar(creature.hp, creature.hpMax, 286.5 * 2, 152 * 2 + 139, 173.5 * 2, 8.5 * 2),
 
         // ── End-state overlay ──────────────────────────────────────────
         ...(endMsg && endImgSrc
@@ -803,63 +672,23 @@ function hashString(value: string): string {
   return hash.toString(16);
 }
 
-function buildUiCacheKey(
-  team: Team,
-  creature: Creature,
-  messages: string[],
-  state: string | null,
-  lang: string
-): string {
-  return [
-    team.players
-      .map(
-        p =>
-          `${p.name}:${Math.max(p.hp, 0)}/${p.hpMax}:${p.attack[0]}-${p.attack[1]}`
-      )
-      .join(','),
-    team.activePlayer?.name ?? '',
-    `${creature.name}:${creature.hp}/${creature.hpMax}:${creature.attack[0]}-${creature.attack[1]}`,
-    hashString(messages.join('\x00')),
-    state ?? '',
-    lang,
-  ].join('|');
+function buildUiCacheKey(team: Team, creature: Creature, messages: string[], state: string | null, lang: string): string {
+  return [team.players.map(p => `${p.name}:${Math.max(p.hp, 0)}/${p.hpMax}:${p.attack[0]}-${p.attack[1]}`).join(','), team.activePlayer?.name ?? '', `${creature.name}:${creature.hp}/${creature.hpMax}:${creature.attack[0]}-${creature.attack[1]}`, hashString(messages.join('\x00')), state ?? '', lang].join('|');
 }
 
-async function getUIOverlay(
-  uiCacheKey: string,
-  team: Team,
-  creature: Creature,
-  messages: string[],
-  state: string | null,
-  lang: string,
-  fontMediumBuf: ArrayBuffer,
-  W: number,
-  H: number
-): Promise<Photon.PhotonImage> {
+async function getUIOverlay(uiCacheKey: string, team: Team, creature: Creature, messages: string[], state: string | null, lang: string, fontMediumBuf: ArrayBuffer, W: number, H: number): Promise<Photon.PhotonImage> {
   const cached = uiPhotonCache.get(uiCacheKey);
   if (cached) return cached;
 
-  const overlayJsx = await buildOverlayJsx(
-    team,
-    creature,
-    messages,
-    state,
-    lang,
-    W,
-    H
-  );
+  const overlayJsx = await buildOverlayJsx(team, creature, messages, state, lang, W, H);
 
   const svg = await satori(overlayJsx, {
     width: W,
     height: H,
-    fonts: [
-      { name: 'Sans-Serif', data: fontMediumBuf, weight: 400, style: 'normal' },
-    ],
+    fonts: [{ name: 'Sans-Serif', data: fontMediumBuf, weight: 400, style: 'normal' }],
   });
 
-  const png = new Resvg(svg, { fitTo: { mode: 'width', value: W } })
-    .render()
-    .asPng();
+  const png = new Resvg(svg, { fitTo: { mode: 'width', value: W } }).render().asPng();
   const img = toPhoton(png.buffer.slice(0) as ArrayBuffer);
 
   uiPhotonCache.set(uiCacheKey, img);
@@ -872,17 +701,7 @@ const END_STATES = ['good', 'bad', 'giveup', 'best'];
 
 export async function warmup(): Promise<void> {
   const fontUrl = `${BASE_URL}/assets/swordgame/font/GintoNordMedium.otf`;
-  await Promise.all([
-    ensureResvgWasm(),
-    getFontBytes(fontUrl),
-    ...END_STATES.map(s => getImageBytes('end_' + s)),
-    getImageBytes('board'),
-    getImageBytes('frameless'),
-    getImageBytes('ui_effect_potion').catch(() => undefined),
-    getImageBytes('ui_effect_chrono').catch(() => undefined),
-    getImageBytes('ui_effect_stone').catch(() => undefined),
-    getImageBytes('ui_effect_scroll').catch(() => undefined),
-  ]);
+  await Promise.all([ensureResvgWasm(), getFontBytes(fontUrl), ...END_STATES.map(s => getImageBytes('end_' + s)), getImageBytes('board'), getImageBytes('frameless'), getImageBytes('ui_effect_potion').catch(() => undefined), getImageBytes('ui_effect_chrono').catch(() => undefined), getImageBytes('ui_effect_stone').catch(() => undefined), getImageBytes('ui_effect_scroll').catch(() => undefined)]);
 }
 
 // Appeler warmup au démarrage pour précharger les ressources nécessaires
@@ -890,13 +709,7 @@ warmup().catch(err => console.error('Warmup failed:', err));
 
 // ─── Main render ──────────────────────────────────────────────────────────────
 
-export default async function renderImage(
-  state: string | null,
-  messages: string[],
-  team: Team,
-  creature: Creature,
-  lang = 'en'
-): Promise<Uint8Array> {
+export default async function renderImage(state: string | null, messages: string[], team: Team, creature: Creature, lang = 'en'): Promise<Uint8Array> {
   const perfEnabled = process.env.RENDER_PERF === '1';
   const startedAt = perfEnabled ? performance.now() : 0;
   const spans: PerfSpan[] = [];
@@ -921,12 +734,7 @@ export default async function renderImage(
   const uiCacheKey = buildUiCacheKey(team, creature, messages, state, lang);
   const playerImages = team.players.map(p => p.images);
   const teamHp = team.players.map(p => p.hp);
-  const charsKey = buildCharactersKey(
-    playerImages,
-    teamHp,
-    creature.images,
-    creature.hp
-  );
+  const charsKey = buildCharactersKey(playerImages, teamHp, creature.images, creature.hp);
   const renderCacheKey = `render::${uiCacheKey}::${charsKey}`;
 
   const cachedOutput = renderOutputCache.get(renderCacheKey);
@@ -946,38 +754,11 @@ export default async function renderImage(
   }
 
   const tFetch = perfEnabled ? performance.now() : 0;
-  const [fontMediumBuf] = await Promise.all([
-    getFontBytes(`${BASE_URL}/assets/swordgame/font/GintoNordMedium.otf`),
-    getImageBytes('ui_effect_potion').catch(() => undefined),
-    getImageBytes('ui_effect_chrono').catch(() => undefined),
-    getImageBytes('ui_effect_stone').catch(() => undefined),
-    getImageBytes('ui_effect_scroll').catch(() => undefined),
-  ]);
+  const [fontMediumBuf] = await Promise.all([getFontBytes(`${BASE_URL}/assets/swordgame/font/GintoNordMedium.otf`), getImageBytes('ui_effect_potion').catch(() => undefined), getImageBytes('ui_effect_chrono').catch(() => undefined), getImageBytes('ui_effect_stone').catch(() => undefined), getImageBytes('ui_effect_scroll').catch(() => undefined)]);
   mark('assets.fetch', tFetch);
 
   const tLayers = perfEnabled ? performance.now() : 0;
-  const [canvas, chars, uiImg] = await Promise.all([
-    getBackground(W, H),
-    getCharactersLayer(
-      playerImages,
-      teamHp,
-      creature.images,
-      creature.hp,
-      W,
-      H
-    ),
-    getUIOverlay(
-      uiCacheKey,
-      team,
-      creature,
-      messages,
-      state,
-      lang,
-      fontMediumBuf,
-      W,
-      H
-    ),
-  ]);
+  const [canvas, chars, uiImg] = await Promise.all([getBackground(W, H), getCharactersLayer(playerImages, teamHp, creature.images, creature.hp, W, H), getUIOverlay(uiCacheKey, team, creature, messages, state, lang, fontMediumBuf, W, H)]);
   mark('layers.build', tLayers);
 
   const tComposite = perfEnabled ? performance.now() : 0;

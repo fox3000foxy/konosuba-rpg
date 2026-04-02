@@ -11,37 +11,22 @@ import { getCreatureDisplayName } from './creatureText';
 import { makeid, restartId } from './idUtils';
 import { buildImageUrl } from './imageUtils';
 import { compressMoves } from './movesUtils';
-import {
-  addDifficultyToPayload,
-  extractDifficulty,
-  extractMonster,
-  isTraining,
-  removeDifficultyFromPayload,
-} from './payloadUtils';
+import { addDifficultyToPayload, extractDifficulty, extractMonster, isTraining, removeDifficultyFromPayload } from './payloadUtils';
 import processGame from './processGame';
 import processUrl from './processUrl';
 
 const ATTACK_LABELS = ['1', '4', '10'];
 const HUG_LABELS = ['1', '4', '10'];
 
-const ATTACK_LABELS_FR = ATTACK_LABELS.map(value =>
-  ButtonsLabels.AttackFr.replace('x', value)
-);
-const ATTACK_LABELS_EN = ATTACK_LABELS.map(value =>
-  ButtonsLabels.Attack.replace('x', value)
-);
-const HUG_LABELS_FR = HUG_LABELS.map(value =>
-  ButtonsLabels.HugFr.replace('x', value)
-);
-const HUG_LABELS_EN = HUG_LABELS.map(value =>
-  ButtonsLabels.Hug.replace('x', value)
-);
+const ATTACK_LABELS_FR = ATTACK_LABELS.map(value => ButtonsLabels.AttackFr.replace('x', value));
+const ATTACK_LABELS_EN = ATTACK_LABELS.map(value => ButtonsLabels.Attack.replace('x', value));
+const HUG_LABELS_FR = HUG_LABELS.map(value => ButtonsLabels.HugFr.replace('x', value));
+const HUG_LABELS_EN = HUG_LABELS.map(value => ButtonsLabels.Hug.replace('x', value));
 
 export function getBattleMonsterNames(creature: Creature, lang: Lang) {
   return {
     displayName: getCreatureDisplayName(creature, lang),
-    recordName:
-      creature.name[lang === Lang.French ? 1 : 0] || creature.constructor.name,
+    recordName: creature.name[lang === Lang.French ? 1 : 0] || creature.constructor.name,
   };
 }
 
@@ -66,57 +51,31 @@ export async function buildComponents(
   const cleanPayload = removeDifficultyFromPayload(payload);
   const effectiveDifficulty = difficulty || payloadDifficulty;
 
-  const imageUrl = buildImageUrl(
-    cleanPayload,
-    lang,
-    effectiveDifficulty,
-    userID
-  );
+  const imageUrl = buildImageUrl(cleanPayload, lang, effectiveDifficulty, userID);
   console.log(imageUrl);
   const [rand, moves, , monster, difficultyFromUrl] = processUrl(imageUrl);
   const characterStatsSnapshot = await getCharacterStatsSnapshot(userID);
-  const characterFactors = characterStatsSnapshot
-    ? characterStatsSnapshot.map(snapshot => snapshot.factor)
-    : undefined;
+  const characterFactors = characterStatsSnapshot ? characterStatsSnapshot.map(snapshot => snapshot.factor) : undefined;
 
-  const { state, team, embedDescription, creature } = await processGame(
-    rand,
-    moves,
-    monster,
-    lang,
-    false,
-    characterFactors,
-    difficultyFromUrl || effectiveDifficulty,
-    userID,
-    selectedConsumableItemId ? [selectedConsumableItemId as never] : undefined,
-    selectedConsumableTargetId
-  );
+  const { state, team, embedDescription, creature } = await processGame(rand, moves, monster, lang, false, characterFactors, difficultyFromUrl || effectiveDifficulty, userID, selectedConsumableItemId ? [selectedConsumableItemId as never] : undefined, selectedConsumableTargetId);
 
-  const disableHugForCreature =
-    creature.love <= 0 || creature.love === 100 || creature.prefix === false;
+  const disableHugForCreature = creature.love <= 0 || creature.love === 100 || creature.prefix === false;
 
   const training = isTraining(cleanPayload);
   const fr = lang === Lang.French;
   const langIndex = fr ? 1 : 0;
 
   const compressedPayload = compressMoves(cleanPayload);
-  const compressedPayloadWithDifficulty = addDifficultyToPayload(
-    compressedPayload,
-    effectiveDifficulty
-  );
+  const compressedPayloadWithDifficulty = addDifficultyToPayload(compressedPayload, effectiveDifficulty);
   const restartPayload = restartId(cleanPayload);
-  const restartPayloadWithDifficulty = addDifficultyToPayload(
-    restartPayload,
-    effectiveDifficulty
-  );
+  const restartPayloadWithDifficulty = addDifficultyToPayload(restartPayload, effectiveDifficulty);
   const userIdSuffix = `:${userID}`;
   const actionPrefix = `${compressedPayloadWithDifficulty}`;
   const activePlayerName = team.activePlayer?.name[langIndex] ?? null;
   const attackLabels = fr ? ATTACK_LABELS_FR : ATTACK_LABELS_EN;
   const hugLabels = fr ? HUG_LABELS_FR : HUG_LABELS_EN;
 
-  const showAquaHealButton =
-    activePlayerName === 'Megumin' && state === GameState.Incomplete;
+  const showAquaHealButton = activePlayerName === 'Megumin' && state === GameState.Incomplete;
 
   let buttons: RawButton[] = [];
   if (state === GameState.Incomplete) {
@@ -189,9 +148,7 @@ export async function buildComponents(
           },
           {
             type: 2,
-            label: fr
-              ? ButtonsLabels.SpecialAttackFr
-              : ButtonsLabels.SpecialAttack,
+            label: fr ? ButtonsLabels.SpecialAttackFr : ButtonsLabels.SpecialAttack,
             style: 3,
             custom_id: `${actionPrefix}p${userIdSuffix}`,
             disabled: !team.activePlayer?.specialAttackReady,
@@ -232,17 +189,9 @@ export async function buildComponents(
         },*/
         {
           type: 2,
-          label: fr
-            ? ButtonsLabels.ChangeMonsterFr
-            : ButtonsLabels.ChangeMonster,
+          label: fr ? ButtonsLabels.ChangeMonsterFr : ButtonsLabels.ChangeMonster,
           style: 2,
-          custom_id: training
-            ? addDifficultyToPayload(
-                `train.${extractMonster(cleanPayload)}.${makeid(10)}`,
-                effectiveDifficulty
-              ) + userIdSuffix
-            : addDifficultyToPayload(`${makeid(15)}`, effectiveDifficulty) +
-              userIdSuffix,
+          custom_id: training ? addDifficultyToPayload(`train.${extractMonster(cleanPayload)}.${makeid(10)}`, effectiveDifficulty) + userIdSuffix : addDifficultyToPayload(`${makeid(15)}`, effectiveDifficulty) + userIdSuffix,
           disabled: disableChangeMonster || training,
         },
       ],
@@ -256,9 +205,7 @@ export async function buildComponents(
     embedDescription,
     activePlayerName,
     gameState: state,
-    alivePlayerIds: team.players
-      .filter(player => player.hp > 0)
-      .map(player => player.playerId),
+    alivePlayerIds: team.players.filter(player => player.hp > 0).map(player => player.playerId),
     creature,
   };
 }

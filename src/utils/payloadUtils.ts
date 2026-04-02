@@ -69,10 +69,7 @@ export function extractDifficulty(payload: string): string | null {
 }
 
 /** Ajoute la difficulté à un payload */
-export function addDifficultyToPayload(
-  payload: string,
-  difficulty?: string | null
-): string {
+export function addDifficultyToPayload(payload: string, difficulty?: string | null): string {
   if (!difficulty) {
     return payload;
   }
