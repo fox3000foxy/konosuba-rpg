@@ -45,8 +45,10 @@ function generateMessage(
   replacements: Record<string, string | number>
 ): string {
   let msg = template as string;
-  for (const [key, value] of Object.entries(replacements)) {
-    msg = msg.replace(String(key), String(value));
+  for (const key in replacements) {
+    if (Object.prototype.hasOwnProperty.call(replacements, key)) {
+      msg = msg.replace(key, String(replacements[key]));
+    }
   }
   return msg;
 }
@@ -355,7 +357,7 @@ export default async function processGame(
 
   // Precompute reusable values
   const langIndex = lang === Lang.French ? 1 : 0;
-  let activePlayers: Player[] = team.players.filter(player => player.hp > 0);
+  const activePlayers: Player[] = team.players.filter(player => player.hp > 0);
 
   // Reducing the creature HP by dividing it per 2
   creature.hpMax = Math.ceil(creature.hpMax / 2);
@@ -469,7 +471,12 @@ export default async function processGame(
       embedDescription.push(msg);
     }
 
-    activePlayers = team.players.filter(player => player.hp > 0);
+    if (randomPlayer.hp <= 0) {
+      const downIndex = activePlayers.indexOf(randomPlayer);
+      if (downIndex !== -1) {
+        activePlayers.splice(downIndex, 1);
+      }
+    }
 
     // Check if all players are down
     if (activePlayers.length === 0) {
