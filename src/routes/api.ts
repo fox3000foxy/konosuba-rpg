@@ -12,6 +12,7 @@ import {
   getPlayerProfile,
   getPlayerRunSummary,
 } from '../services/progressionService';
+import { imageCacheHeaders } from '../utils/cacheHeaders';
 import {
   buildAffinitySvg,
   renderAffinityImage,
@@ -32,6 +33,15 @@ const PLAYER_ID_BY_NAME: Record<string, number> = {
 
 function getApiLang(c: Context) {
   return c.req.query('lang') === 'fr';
+}
+
+function requireUserId(c: Context, fr: boolean): string | null {
+  const userId = (c.req.param('userId') || '').trim();
+  if (!userId) {
+    c.text(fr ? 'Utilisateur invalide.' : 'Invalid user.', 400);
+    return null;
+  }
+  return userId;
 }
 
 function getAllShopItems(): ShopItem[] {
@@ -102,11 +112,10 @@ export function registerApiRoutes(app: Hono): void {
   });
 
   app.get('/inventory/:userId', async (c: Context) => {
-    const userId = (c.req.param('userId') || '').trim();
     const fr = getApiLang(c);
-
+    const userId = requireUserId(c, fr);
     if (!userId) {
-      return c.text(fr ? 'Utilisateur invalide.' : 'Invalid user.', 400);
+      return;
     }
 
     // if path contains "?renderSvg=true", return the svg instead of the png
@@ -115,12 +124,7 @@ export function registerApiRoutes(app: Hono): void {
       const items = await getInventoryItems(userId);
       const image = await buildSvg(userId, items, fr);
       return c.text(image, 200, {
-        'Content-Type': 'image/svg+xml',
-        'Cache-Control':
-          'public, max-age=0, s-maxage=15, stale-while-revalidate=60',
-        'CDN-Cache-Control': 'public, s-maxage=15, stale-while-revalidate=60',
-        'Vercel-CDN-Cache-Control':
-          'public, s-maxage=15, stale-while-revalidate=60',
+        ...imageCacheHeaders('image/svg+xml'),
       });
     }
     const items = await getInventoryItems(userId);
@@ -131,23 +135,15 @@ export function registerApiRoutes(app: Hono): void {
     );
 
     return new Response(responseBody as ArrayBuffer, {
-      headers: {
-        'Content-Type': 'image/png',
-        'Cache-Control':
-          'public, max-age=0, s-maxage=15, stale-while-revalidate=60',
-        'CDN-Cache-Control': 'public, s-maxage=15, stale-while-revalidate=60',
-        'Vercel-CDN-Cache-Control':
-          'public, s-maxage=15, stale-while-revalidate=60',
-      },
+      headers: imageCacheHeaders('image/png'),
     });
   });
 
   app.get('/affinity/:userId', async (c: Context) => {
-    const userId = (c.req.param('userId') || '').trim();
     const fr = getApiLang(c);
-
+    const userId = requireUserId(c, fr);
     if (!userId) {
-      return c.text(fr ? 'Utilisateur invalide.' : 'Invalid user.', 400);
+      return;
     }
 
     const progresses = await getCharacterProgresses(userId);
@@ -164,12 +160,7 @@ export function registerApiRoutes(app: Hono): void {
     if (renderSvg) {
       const image = await buildAffinitySvg(userId, progresses, fr);
       return c.text(image, 200, {
-        'Content-Type': 'image/svg+xml',
-        'Cache-Control':
-          'public, max-age=0, s-maxage=15, stale-while-revalidate=60',
-        'CDN-Cache-Control': 'public, s-maxage=15, stale-while-revalidate=60',
-        'Vercel-CDN-Cache-Control':
-          'public, s-maxage=15, stale-while-revalidate=60',
+        ...imageCacheHeaders('image/svg+xml'),
       });
     }
 
@@ -180,14 +171,7 @@ export function registerApiRoutes(app: Hono): void {
     );
 
     return new Response(responseBody as ArrayBuffer, {
-      headers: {
-        'Content-Type': 'image/png',
-        'Cache-Control':
-          'public, max-age=0, s-maxage=15, stale-while-revalidate=60',
-        'CDN-Cache-Control': 'public, s-maxage=15, stale-while-revalidate=60',
-        'Vercel-CDN-Cache-Control':
-          'public, s-maxage=15, stale-while-revalidate=60',
-      },
+      headers: imageCacheHeaders('image/png'),
     });
   });
 
@@ -211,23 +195,15 @@ export function registerApiRoutes(app: Hono): void {
     );
 
     return new Response(responseBody as ArrayBuffer, {
-      headers: {
-        'Content-Type': 'image/png',
-        'Cache-Control':
-          'public, max-age=0, s-maxage=15, stale-while-revalidate=60',
-        'CDN-Cache-Control': 'public, s-maxage=15, stale-while-revalidate=60',
-        'Vercel-CDN-Cache-Control':
-          'public, s-maxage=15, stale-while-revalidate=60',
-      },
+      headers: imageCacheHeaders('image/png'),
     });
   });
 
   app.get('/profile/:userId', async (c: Context) => {
-    const userId = (c.req.param('userId') || '').trim();
     const fr = getApiLang(c);
-
+    const userId = requireUserId(c, fr);
     if (!userId) {
-      return c.text(fr ? 'Utilisateur invalide.' : 'Invalid user.', 400);
+      return;
     }
 
     const profile = await getPlayerProfile(userId);
@@ -264,12 +240,7 @@ export function registerApiRoutes(app: Hono): void {
         fr
       );
       return c.text(image, 200, {
-        'Content-Type': 'image/svg+xml',
-        'Cache-Control':
-          'public, max-age=0, s-maxage=15, stale-while-revalidate=60',
-        'CDN-Cache-Control': 'public, s-maxage=15, stale-while-revalidate=60',
-        'Vercel-CDN-Cache-Control':
-          'public, s-maxage=15, stale-while-revalidate=60',
+        ...imageCacheHeaders('image/svg+xml'),
       });
     }
 
@@ -289,14 +260,7 @@ export function registerApiRoutes(app: Hono): void {
     );
 
     return new Response(responseBody as ArrayBuffer, {
-      headers: {
-        'Content-Type': 'image/png',
-        'Cache-Control':
-          'public, max-age=0, s-maxage=15, stale-while-revalidate=60',
-        'CDN-Cache-Control': 'public, s-maxage=15, stale-while-revalidate=60',
-        'Vercel-CDN-Cache-Control':
-          'public, s-maxage=15, stale-while-revalidate=60',
-      },
+      headers: imageCacheHeaders('image/png'),
     });
   });
 }

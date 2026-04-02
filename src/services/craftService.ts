@@ -2,38 +2,7 @@ import { CRAFTING_RECIPES } from '../objects/data/craftingCatalog';
 import { ItemId } from '../objects/enums/ItemId';
 import { getSupabaseAdminClient } from '../utils/supabaseClient';
 import { getItemById } from './consumableService';
-
-export type CraftingRecipeView = {
-  key: string;
-  resultItemId: ItemId;
-  resultNameFr: string;
-  resultNameEn: string;
-  resultQuantity: number;
-  ingredients: Array<{
-    itemId: ItemId;
-    nameFr: string;
-    nameEn: string;
-    quantity: number;
-  }>;
-};
-
-export type CraftRecipeResult = {
-  success: boolean;
-  reason:
-    | 'crafted'
-    | 'recipe_not_found'
-    | 'recipe_disabled'
-    | 'insufficient_ingredients'
-    | 'service_unavailable'
-    | 'internal_error';
-  craftedItemId?: ItemId;
-  craftedQuantity?: number;
-  missingIngredients?: Array<{
-    itemId: ItemId;
-    required: number;
-    available: number;
-  }>;
-};
+import { CraftingRecipeView, CraftRecipeResult } from './types/craft';
 
 type CraftRecipeRpcRow = {
   success: boolean;

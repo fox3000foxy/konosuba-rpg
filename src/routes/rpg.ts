@@ -1,6 +1,7 @@
 import { Context } from 'hono';
 import { Lang } from '../objects/enums/Lang';
 import { calculateGameImageFromUrl } from '../services/gameService';
+import { imageCacheHeaders } from '../utils/cacheHeaders';
 
 export async function calculateRPG(c: Context) {
   const { lang } = c.req.param() as { lang: Lang };
@@ -21,13 +22,6 @@ export async function calculateRPG(c: Context) {
       : image;
 
   return new Response(responseBody as ArrayBuffer, {
-    headers: {
-      'Content-Type': 'image/webp',
-      'Cache-Control':
-        'public, max-age=0, s-maxage=15, stale-while-revalidate=60',
-      'CDN-Cache-Control': 'public, s-maxage=15, stale-while-revalidate=60',
-      'Vercel-CDN-Cache-Control':
-        'public, s-maxage=15, stale-while-revalidate=60',
-    },
+    headers: imageCacheHeaders('image/webp'),
   });
 }

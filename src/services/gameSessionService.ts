@@ -1,5 +1,6 @@
 import { RawButton } from '../objects/enums/RawButton';
 import { getSupabaseAdminClient } from '../utils/supabaseClient';
+import { DecodeGameplayPayloadResult } from './types/gameSession';
 
 const TOKEN_PREFIX = 'gs.';
 const TOKEN_SIZE = 10;
@@ -7,18 +8,6 @@ const TOKEN_CHARS =
   'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
 const SESSION_TTL_MS = 7 * 24 * 60 * 60 * 1000;
 const PRUNE_INTERVAL_MS = 10 * 60 * 1000;
-
-export type DecodeGameplayPayloadFailureReason =
-  | 'invalid-token'
-  | 'not-found'
-  | 'forbidden'
-  | 'expired'
-  | 'stale';
-
-export type DecodeGameplayPayloadResult = {
-  payload: string | null;
-  reason?: DecodeGameplayPayloadFailureReason;
-};
 
 type SessionTokenRow = {
   token: string;

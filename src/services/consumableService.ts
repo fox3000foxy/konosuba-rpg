@@ -1,59 +1,15 @@
-import {
-  CONSUMABLE_DEFINITIONS,
-  ConsumableDefinition,
-} from '../objects/data/consumablesCatalog';
+import { CONSUMABLE_DEFINITIONS } from '../objects/data/consumablesCatalog';
 import { ItemId } from '../objects/enums/ItemId';
-import { Rarity } from '../objects/enums/Rarity';
-import { TypeItem } from '../objects/enums/TypeItem';
-
-export type ConsumableQuery = {
-  rarity?: Rarity;
-  type?: TypeItem;
-  name?: string;
-  id?: ItemId;
-  ids?: ItemId[];
-  limit?: number;
-};
-
-const normalizeText = (value: string): string =>
-  value
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .toLowerCase()
-    .trim();
-
-const matchesName = (item: ConsumableDefinition, name: string): boolean => {
-  const n = normalizeText(name);
-  const fields = [item.id, item.fileName, item.nameFr, item.nameEn].map(value =>
-    normalizeText(String(value))
-  );
-
-  return fields.some(field => field.includes(n));
-};
+import { ConsumableDefinition } from '../objects/types/catalog/Consumable';
+import { findItemByName, matchesName } from '../utils/itemSearch';
+import { ConsumableQuery } from './types/consumable';
 
 export function getItemById(id: ItemId): ConsumableDefinition | null {
   return CONSUMABLE_DEFINITIONS.find(item => item.id === id) || null;
 }
 
 export function getItemByName(name: string): ConsumableDefinition | null {
-  const normalized = normalizeText(name);
-  if (!normalized) {
-    return null;
-  }
-
-  const exact = CONSUMABLE_DEFINITIONS.find(item =>
-    [item.nameFr, item.nameEn, item.id, item.fileName].some(
-      field => normalizeText(String(field)) === normalized
-    )
-  );
-
-  if (exact) {
-    return exact;
-  }
-
-  return (
-    CONSUMABLE_DEFINITIONS.find(item => matchesName(item, normalized)) || null
-  );
+  return findItemByName(CONSUMABLE_DEFINITIONS, name);
 }
 
 export function getItems(query: ConsumableQuery = {}): ConsumableDefinition[] {

@@ -1,59 +1,15 @@
-import {
-  ACCESSORY_DEFINITIONS,
-  AccessoryDefinition,
-} from '../objects/data/accessoriesCatalog';
+import { ACCESSORY_DEFINITIONS } from '../objects/data/accessoriesCatalog';
 import { AccessoryId } from '../objects/enums/AccessoryId';
-import { AccessoryType } from '../objects/enums/AccessoryType';
-import { Rarity } from '../objects/enums/Rarity';
-
-export type AccessoryQuery = {
-  rarity?: Rarity;
-  type?: AccessoryType;
-  name?: string;
-  id?: AccessoryId;
-  ids?: AccessoryId[];
-  limit?: number;
-};
-
-const normalizeText = (value: string): string =>
-  value
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .toLowerCase()
-    .trim();
-
-const matchesName = (item: AccessoryDefinition, name: string): boolean => {
-  const n = normalizeText(name);
-  const fields = [item.id, item.fileName, item.nameFr, item.nameEn].map(value =>
-    normalizeText(String(value))
-  );
-
-  return fields.some(field => field.includes(n));
-};
+import { AccessoryDefinition } from '../objects/types/catalog/Accessory';
+import { findItemByName, matchesName } from '../utils/itemSearch';
+import { AccessoryQuery } from './types/accessory';
 
 export function getItemById(id: AccessoryId): AccessoryDefinition | null {
   return ACCESSORY_DEFINITIONS.find(item => item.id === id) || null;
 }
 
 export function getItemByName(name: string): AccessoryDefinition | null {
-  const normalized = normalizeText(name);
-  if (!normalized) {
-    return null;
-  }
-
-  const exact = ACCESSORY_DEFINITIONS.find(item =>
-    [item.nameFr, item.nameEn, item.id, item.fileName].some(
-      field => normalizeText(String(field)) === normalized
-    )
-  );
-
-  if (exact) {
-    return exact;
-  }
-
-  return (
-    ACCESSORY_DEFINITIONS.find(item => matchesName(item, normalized)) || null
-  );
+  return findItemByName(ACCESSORY_DEFINITIONS, name);
 }
 
 export function getItems(query: AccessoryQuery = {}): AccessoryDefinition[] {

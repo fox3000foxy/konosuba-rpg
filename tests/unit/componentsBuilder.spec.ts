@@ -9,11 +9,11 @@ describe('getBattleMonsterNames', () => {
 
     expect(getBattleMonsterNames(dragon, Lang.English)).toEqual({
       displayName: 'dragon',
-      recordName: 'dragon',
+      recordName: 'Dragon',
     });
     expect(getBattleMonsterNames(dragon, Lang.French)).toEqual({
       displayName: 'dragon',
-      recordName: 'dragon',
+      recordName: 'Dragon',
     });
   });
 

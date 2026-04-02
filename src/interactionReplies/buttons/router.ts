@@ -13,7 +13,7 @@ import {
   recordRunResult,
 } from '../../services/progressionService';
 
-import { BASE_URL } from '../../objects/config/constants';
+import { BASE_URL } from '../../objects/config';
 import { addInventoryItem } from '../../services/inventoryService';
 import {
   getPlayerProfile,

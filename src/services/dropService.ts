@@ -1,29 +1,16 @@
 import { Random } from '../classes/Random';
-import { AccessoryDefinition } from '../objects/data/accessoriesCatalog';
 import { getMonsterDifficulty } from '../objects/data/monsterDifficultyMap';
 import { CharacterKey } from '../objects/enums/CharacterKey';
 import { ItemId } from '../objects/enums/ItemId';
 import { MonsterDifficulty } from '../objects/enums/MonsterDifficulty';
 import { Rarity } from '../objects/enums/Rarity';
 import { TypeItem } from '../objects/enums/TypeItem';
+import { AccessoryDefinition } from '../objects/types/catalog/Accessory';
 import { getSupabaseAdminClient } from '../utils/supabaseClient';
 import { getItems } from './accessoryService';
 import { addCharacterAffinity } from './characterService';
 import { getItems as getConsumableItems } from './consumableService';
-
-export type AccessoryDropResult = {
-  accessoryId: string;
-  rarity: Rarity;
-  characterKey: CharacterKey;
-  affinityPoints: number;
-};
-
-export type ConsumableDropResult = {
-  itemId: string;
-  rarity: Rarity;
-  itemType: TypeItem;
-  inventoryItemType: 'potion' | 'component';
-};
+import { AccessoryDropResult, ConsumableDropResult } from './types/drop';
 
 type LootRarityWeight = {
   rarity: Rarity;
