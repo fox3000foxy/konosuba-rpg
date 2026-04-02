@@ -10,6 +10,8 @@ import { ShopItem } from '../../objects/types/ShopItem';
 import { decodeGameplayPayloadWithStatus } from '../../services/gameSessionService';
 import {
   donateAccessoryToCharacter,
+  ensurePlayerProfile,
+  getAchievementsOverview,
   recordRunResult,
 } from '../../services/progressionService';
 
@@ -26,6 +28,7 @@ import {
 import { addImageVersion } from '../../utils/imageUtils';
 import { decompressMoves } from '../../utils/movesUtils';
 import { extractDifficulty, isTraining } from '../../utils/payloadUtils';
+import { buildAchievementsComponents } from '../commands/achievements';
 import {
   buildAffinityGiftComponents,
   buildAffinityMessageData,
@@ -191,6 +194,56 @@ export async function handleButtonInteraction(
         components,
       },
     });
+  }
+
+  if (customId.startsWith('achievements_page:')) {
+    try {
+      const parts = customId.split(':');
+      const pageRaw = parts[1] || '1';
+      const requestUserId = parts[2] || '';
+
+      if (requestUserId !== userID) {
+        return c.json({ type: 6 });
+      }
+
+      await ensurePlayerProfile(userID);
+      const achievements = await getAchievementsOverview(userID, fr);
+      if (!achievements) {
+        return c.json({ type: 6 });
+      }
+
+      const pageSize = 5;
+      const pageCount = Math.max(1, Math.ceil(achievements.length / pageSize));
+      const page = Math.min(pageCount, Math.max(1, Number(pageRaw) || 1));
+      const unlockedCount = achievements.filter(item => item.unlocked).length;
+
+      const components = buildAchievementsComponents(page, pageCount, userID, fr);
+
+      const description = fr
+        ? `# Achievements de <@${userID}>\n\nProgression: **${unlockedCount}/${achievements.length}**\nPage: **${page}/${pageCount}**`
+        : `# <@${userID}> achievements\n\nProgress: **${unlockedCount}/${achievements.length}**\nPage: **${page}/${pageCount}**`;
+
+      return c.json({
+        type: 7,
+        data: {
+          embeds: [
+            {
+              description,
+              image: {
+                url: addImageVersion(
+                  `${BASE_URL}/achievements/${userID}?lang=${fr ? 'fr' : 'en'}&page=${page}`
+                ),
+              },
+              color: 0x2b2d31,
+            },
+          ],
+          components,
+        },
+      });
+    } catch (error) {
+      console.error('[achievements_page] error:', error);
+      return c.json({ type: 6 });
+    }
   }
 
   if (
