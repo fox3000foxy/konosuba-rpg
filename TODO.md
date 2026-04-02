@@ -19,6 +19,20 @@ Completed work is tracked in [DONE.md](DONE.md).
 - Allowed during freeze: bug fixes, tests, balancing, docs.
 - Not allowed during freeze: PVP, new command families outside inventory/use/craft loop.
 
+## Current focus (post-optimization, non-PVP)
+
+### P0 - Release readiness
+- Keep perf and regressions stable on Vercel: monitor `processGame` and `renderImage` hot paths with targeted checks.
+- Complete docs alignment pass (`TODO.md`, `DONE.md`, `README.md`) before reopening roadmap scope.
+- Validate command/route compatibility for progression and inventory endpoints after latest optimizations.
+
+### P1 - Product completion (still in freeze)
+- Economy balancing pass (prices, sinks, progression pacing).
+- UX polish on inventory/crafting flows (messages and edge cases).
+
+### Deferred explicitly
+- PVP remains in long-term backlog and is not part of the current execution window.
+
 ### Release gates before new feature development
 - Gate A: P0 completed + green tests (`pnpm test`, targeted perf checks).
 - Gate B: P1 completed + transactional guarantees verified.
@@ -32,7 +46,7 @@ Completed work is tracked in [DONE.md](DONE.md).
 ## Phase 8 - Profile and commands (partial)
 
 ### Remaining
-- `/shop` (buy/sell and gold sinks, later)
+- Shop balancing and long-term gold-sink tuning (no new command needed).
 
 ## Phase 9 - PVP (long-term backlog)
 - Design 1v1 player format

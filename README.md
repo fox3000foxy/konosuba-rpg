@@ -27,13 +27,10 @@ Fan-made RPG project inspired by the Konosuba universe, built for Discord intera
 
 ### Remaining work (high level)
 
-- Consumables integration in real combat flow.
-- Item consumption on target character.
-- Crafting system (components to potions).
+- Economy and progression balancing pass.
 - Expanded affinity gameplay effects.
-- More character-focused commands (`/character`, `/use-item`, `/craft`).
-- Long-term PVP backlog.
-- XP distribution rule finalization ("used characters only" and win/giveup policy).
+- Documentation alignment and release-gate tracking (TODO/DONE/README consistency).
+- Long-term PVP backlog (explicitly deferred).
 
 Roadmap status is tracked in [TODO.md](TODO.md) and updated as features are validated.
 
