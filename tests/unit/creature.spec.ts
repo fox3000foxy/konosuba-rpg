@@ -31,8 +31,8 @@ describe('Creature base mechanics', () => {
     });
 
     expect(dmgEn).toBe(2);
-    expect(msgEn).toContain('Troll');
-    expect(msgFr).toContain('Troll');
+    expect(msgEn).toContain('troll');
+    expect(msgFr).toContain('troll');
     expect(dmgFr).toBe(2);
   });
 
