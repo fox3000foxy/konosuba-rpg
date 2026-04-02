@@ -142,7 +142,7 @@ export async function buildProfileSvg(
   const title = fr ? 'Profil' : 'Profile';
   const teamAffinity = progresses.reduce((sum, p) => sum + p.affinity, 0);
 
-  const rowY = [290, 405, 520];
+  const rowY = [320, 435, 550];
   const keyRows = getRows(progresses);
   const characterLines = keyRows
     .map((row, idx) => {
@@ -156,11 +156,12 @@ export async function buildProfileSvg(
     })
     .join('');
 
-  const recentMonsters = runSummary.killedMonsters
-    .slice(0, 4)
-    .map((m, idx) => {
-      const y = 675 + idx * 38;
-      return `<text x="84" y="${y}" fill="#e7ebff" font-size="18" font-family="${fontFamily}">${escapeXml(`${m.name} x${m.count}`)}</text>`;
+  const recentMonsters = runSummary.killedMonsters.slice(0, 4);
+  const recentMonsterRows = recentMonsters
+    .map((monster, idx) => {
+      const y = 738 + idx * 38;
+      return `
+      <text x="84" y="${y}" fill="#e7ebff" font-size="18" font-family="${fontFamily}">${escapeXml(`${monster.name} x${monster.count}`)}</text>`;
     })
     .join('');
 
@@ -173,20 +174,22 @@ export async function buildProfileSvg(
     <text x="36" y="78" fill="#ffffff" font-size="42" font-family="${fontFamily}">${escapeXml(title)}</text>
     <text x="36" y="112" fill="#b2bdd6" font-size="18" font-family="${fontFamily}">${escapeXml(fr ? 'Stats de joueur' : 'Player stats')}</text>
 
-    <text x="52" y="165" fill="#d8e1ff" font-size="24" font-family="${fontFamily}">${escapeXml(fr ? `Niveau: ${profile.level}` : `Level: ${profile.level}`)}</text>
-    <text x="300" y="165" fill="#d8e1ff" font-size="24" font-family="${fontFamily}">${escapeXml(fr ? `XP: ${profile.xp}/${nextLevelXp}` : `XP: ${profile.xp}/${nextLevelXp}`)}</text>
-    <text x="560" y="165" fill="#d8e1ff" font-size="24" font-family="${fontFamily}">${escapeXml(fr ? `Or: ${profile.gold}` : `Gold: ${profile.gold}`)}</text>
-    <text x="840" y="165" fill="#d8e1ff" font-size="24" font-family="${fontFamily}">${escapeXml(fr ? `Facteur: x${levelFactor}` : `Factor: x${levelFactor}`)}</text>
-    <text x="52" y="202" fill="#9db0e8" font-size="20" font-family="${fontFamily}">${escapeXml(fr ? `Parties jouées: ${runSummary.totalRuns}` : `Games played: ${runSummary.totalRuns}`)}</text>
-    <text x="300" y="202" fill="#9db0e8" font-size="20" font-family="${fontFamily}">${escapeXml(fr ? `Affinite équipe: ${teamAffinity}` : `Team affinity: ${teamAffinity}`)}</text>
-    <text x="580" y="202" fill="#9db0e8" font-size="20" font-family="${fontFamily}">${escapeXml(fr ? `Succès: ${achievementsCount}/${totalAchievements}` : `Achievements: ${achievementsCount}/${totalAchievements}`)}</text>
+    <text x="52" y="160" fill="#d8e1ff" font-size="24" font-family="${fontFamily}">${escapeXml(fr ? `Niveau: ${profile.level}` : `Level: ${profile.level}`)}</text>
+    <text x="300" y="160" fill="#d8e1ff" font-size="24" font-family="${fontFamily}">${escapeXml(fr ? `XP: ${profile.xp}/${nextLevelXp}` : `XP: ${profile.xp}/${nextLevelXp}`)}</text>
+    <text x="560" y="160" fill="#d8e1ff" font-size="24" font-family="${fontFamily}">${escapeXml(fr ? `Or: ${profile.gold}` : `Gold: ${profile.gold}`)}</text>
+    <text x="840" y="160" fill="#d8e1ff" font-size="24" font-family="${fontFamily}">${escapeXml(fr ? `Facteur: x${levelFactor}` : `Factor: x${levelFactor}`)}</text>
+    <text x="52" y="196" fill="#9db0e8" font-size="20" font-family="${fontFamily}">${escapeXml(fr ? `Parties jouées: ${runSummary.totalRuns}` : `Games played: ${runSummary.totalRuns}`)}</text>
+    <text x="300" y="196" fill="#9db0e8" font-size="20" font-family="${fontFamily}">${escapeXml(fr ? `Affinite équipe: ${teamAffinity}` : `Team affinity: ${teamAffinity}`)}</text>
+    <text x="580" y="196" fill="#9db0e8" font-size="20" font-family="${fontFamily}">${escapeXml(fr ? `Succès: ${achievementsCount}/${totalAchievements}` : `Achievements: ${achievementsCount}/${totalAchievements}`)}</text>
 
     ${characterLines}
 
-    <text x="52" y="640" fill="#9db0e8" font-size="20" font-family="${fontFamily}">${escapeXml(fr ? 'Monstres recemment battus:' : 'Recent defeated monsters:')}</text>
+    <rect x="36" y="650" width="1028" height="220" rx="14" fill="#0f1729" fill-opacity="0.74" />
+    <text x="52" y="688" fill="#9db0e8" font-size="20" font-family="${fontFamily}">${escapeXml(fr ? 'Monstres recemment battus:' : 'Recent defeated monsters:')}</text>
     ${
-      recentMonsters ||
-      `<text x="52" y="675" fill="#e7ebff" font-size="18" font-family="${fontFamily}">${escapeXml(fr ? 'Aucun monstre battu' : 'No monsters defeated')}</text>`
+      recentMonsters.length > 0
+        ? recentMonsterRows
+        : `<text x="52" y="738" fill="#e7ebff" font-size="18" font-family="${fontFamily}">${escapeXml(fr ? 'Aucun monstre battu' : 'No monsters defeated')}</text>`
     }
   </svg>`;
 }
@@ -252,7 +255,7 @@ export async function renderProfileImage(
     )
   );
 
-  const rowY = [290, 405, 520];
+  const rowY = [320, 435, 550];
   for (let rowIdx = 0; rowIdx < rows.length; rowIdx += 1) {
     const stars = getAffinityStars(rows[rowIdx].affinity);
     const badgeBuffer = badgeBuffers[rowIdx];
@@ -301,7 +304,7 @@ export async function renderProfileImage(
 
   // Render mini monster icons before each monster name line.
   const iconSize = 18;
-  const monsterStartY = 675;
+  const monsterStartY = 738;
 
   for (const [idx, monster] of runSummary.killedMonsters.slice(0, 4).entries()) {
     const iconKey = getMonsterIconKey(monster.name);
