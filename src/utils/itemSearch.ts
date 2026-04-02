@@ -13,11 +13,13 @@ export function normalizeText(value: string): string {
     .trim();
 }
 
-export function matchesName(item: SearchableItem, name: string): boolean {
-  const normalizedName = normalizeText(name);
-  const fields = [item.id, item.fileName, item.nameFr, item.nameEn].map(value =>
-    normalizeText(String(value))
-  );
+export function matchesName(item: SearchableItem, normalizedName: string): boolean {
+  const fields = [
+    normalizeText(String(item.id)),
+    normalizeText(item.fileName),
+    normalizeText(item.nameFr),
+    normalizeText(item.nameEn),
+  ];
 
   return fields.some(field => field.includes(normalizedName));
 }
@@ -28,15 +30,31 @@ export function findItemByName<T extends SearchableItem>(items: T[], name: strin
     return null;
   }
 
-  const exact = items.find(item =>
-    [item.nameFr, item.nameEn, item.id, item.fileName].some(
-      field => normalizeText(String(field)) === normalized
-    )
-  );
+  // Pré-calculer les chaînes normalisées pour éviter les conversions répétées
+  type ItemIndex = {
+    item: T;
+    exact: string[];
+    fuzzy: string[];
+  };
 
+  const indexed: ItemIndex[] = items.map(item => {
+    const idNorm = normalizeText(String(item.id));
+    const fileNameNorm = normalizeText(item.fileName);
+    const nameFrNorm = normalizeText(item.nameFr);
+    const nameEnNorm = normalizeText(item.nameEn);
+
+    return {
+      item,
+      exact: [nameFrNorm, nameEnNorm, idNorm, fileNameNorm],
+      fuzzy: [idNorm, fileNameNorm, nameFrNorm, nameEnNorm],
+    };
+  });
+
+  const exact = indexed.find(i => i.exact.some(field => field === normalized));
   if (exact) {
-    return exact;
+    return exact.item;
   }
 
-  return items.find(item => matchesName(item, normalized)) || null;
+  const fuzzy = indexed.find(i => i.fuzzy.some(field => field.includes(normalized)));
+  return fuzzy ? fuzzy.item : null;
 }
