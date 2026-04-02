@@ -1,5 +1,5 @@
 import { Context } from 'hono';
-import { BASE_URL, DISCORD_API_URL } from '../../objects/config/constants';
+import { BASE_URL, DISCORD_API_URL } from '../../objects/config';
 import { Interaction } from '../../objects/enums/Interaction';
 import { Lang } from '../../objects/enums/Lang';
 import { RawButton } from '../../objects/enums/RawButton';
