@@ -4,8 +4,11 @@ on:
   push:
     branches:
       - '**'
-    branches-ignore:
-      - main
+
+jobs:
+  create-pull-request:
+    if: github.ref != 'refs/heads/main'
+    runs-on: ubuntu-latest
 
 jobs:
   create-pull-request:
