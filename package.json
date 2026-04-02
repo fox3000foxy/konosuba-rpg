@@ -5,7 +5,7 @@
     "@supabase/supabase-js": "^2.100.1",
     "discord-interactions": "^4.4.0",
     "dotenv": "^17.3.1",
-    "express": "^4.22.1",
+    "express": "^5.2.1",
     "hono": "^4.12.9",
     "satori": "^0.26.0",
     "sharp": "^0.34.5"
