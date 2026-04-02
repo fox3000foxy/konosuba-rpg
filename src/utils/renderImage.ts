@@ -802,6 +802,14 @@ async function buildOverlayJsx(
   };
 }
 
+function hashString(value: string): string {
+  let hash = 0;
+  for (let i = 0; i < value.length; i += 1) {
+    hash = (Math.imul(31, hash) + value.charCodeAt(i)) | 0;
+  }
+  return hash.toString(16);
+}
+
 function buildUiCacheKey(
   team: Team,
   creature: Creature,
@@ -818,7 +826,7 @@ function buildUiCacheKey(
       .join(','),
     team.activePlayer?.name ?? '',
     `${creature.name}:${creature.hp}/${creature.hpMax}:${creature.attack[0]}-${creature.attack[1]}`,
-    messages.join('\x00'),
+    hashString(messages.join('\x00')),
     state ?? '',
     lang,
   ].join('|');
