@@ -5,6 +5,7 @@ import { Rarity } from '../../objects/enums/Rarity';
 import { InteractionDataOption } from '../../objects/types/InteractionDataOption';
 import { getInventoryItems } from '../../services/inventoryService';
 import { ensurePlayerProfile } from '../../services/progressionService';
+import { addImageVersion } from '../../utils/imageUtils';
 
 type AffinityMessageData = {
   embeds: Array<{
@@ -115,8 +116,10 @@ export async function buildAffinityMessageData(
   forceImageRefresh = true
 ): Promise<AffinityMessageData> {
   const lang = fr ? 'fr' : 'en';
-  const imageVersion = forceImageRefresh ? `&v=${Date.now()}` : '';
-  const imageUrl = `${BASE_URL}/affinity/${targetUserId}?lang=${lang}${imageVersion}`;
+  const baseImageUrl = `${BASE_URL}/affinity/${targetUserId}?lang=${lang}`;
+  const imageUrl = forceImageRefresh
+    ? addImageVersion(baseImageUrl)
+    : baseImageUrl;
   console.log(`Generated affinity image URL: ${imageUrl}`);
 
   const starsRule = fr
