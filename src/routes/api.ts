@@ -35,6 +35,15 @@ function getApiLang(c: Context) {
   return c.req.query('lang') === 'fr';
 }
 
+function requireUserId(c: Context, fr: boolean): string | null {
+  const userId = (c.req.param('userId') || '').trim();
+  if (!userId) {
+    c.text(fr ? 'Utilisateur invalide.' : 'Invalid user.', 400);
+    return null;
+  }
+  return userId;
+}
+
 function getAllShopItems(): ShopItem[] {
   const accessoryItems: ShopItem[] = getAccessoryItems().map(item => ({
     itemKey: item.id,
@@ -103,11 +112,10 @@ export function registerApiRoutes(app: Hono): void {
   });
 
   app.get('/inventory/:userId', async (c: Context) => {
-    const userId = (c.req.param('userId') || '').trim();
     const fr = getApiLang(c);
-
+    const userId = requireUserId(c, fr);
     if (!userId) {
-      return c.text(fr ? 'Utilisateur invalide.' : 'Invalid user.', 400);
+      return;
     }
 
     // if path contains "?renderSvg=true", return the svg instead of the png
@@ -132,11 +140,10 @@ export function registerApiRoutes(app: Hono): void {
   });
 
   app.get('/affinity/:userId', async (c: Context) => {
-    const userId = (c.req.param('userId') || '').trim();
     const fr = getApiLang(c);
-
+    const userId = requireUserId(c, fr);
     if (!userId) {
-      return c.text(fr ? 'Utilisateur invalide.' : 'Invalid user.', 400);
+      return;
     }
 
     const progresses = await getCharacterProgresses(userId);
@@ -193,11 +200,10 @@ export function registerApiRoutes(app: Hono): void {
   });
 
   app.get('/profile/:userId', async (c: Context) => {
-    const userId = (c.req.param('userId') || '').trim();
     const fr = getApiLang(c);
-
+    const userId = requireUserId(c, fr);
     if (!userId) {
-      return c.text(fr ? 'Utilisateur invalide.' : 'Invalid user.', 400);
+      return;
     }
 
     const profile = await getPlayerProfile(userId);
