@@ -31,3 +31,7 @@ jobs:
           assignees: ''
           draft: false
           delete-branch: false
+
+permissions:
+  contents: write
+  pull-requests: write
