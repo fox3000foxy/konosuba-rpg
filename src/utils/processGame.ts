@@ -38,10 +38,11 @@ function generateMessage(
   template: MessagesTemplates,
   replacements: Record<string, string | number>
 ): string {
-  return Object.keys(replacements).reduce(
-    (msg, key) => msg.replace(String(key), String(replacements[key])),
-    template
-  );
+  let msg = template as string;
+  for (const [key, value] of Object.entries(replacements)) {
+    msg = msg.replace(String(key), String(value));
+  }
+  return msg;
 }
 
 function scaleStat(value: number, factor: number, minimum: number): number {
@@ -102,8 +103,16 @@ async function handlePlayerAction({
   isLastMove?: boolean;
 }): Promise<void> {
   const langIndex = lang === Lang.French ? 1 : 0;
-  switch (move) {
-    case PlayerAction.Def.toLocaleUpperCase(): {
+  const action = move.toUpperCase();
+  const PLAYER_DEF = PlayerAction.Def.toUpperCase();
+  const PLAYER_ATK = PlayerAction.Atk.toUpperCase();
+  const PLAYER_HUG = PlayerAction.Hug.toUpperCase();
+  const PLAYER_HEA = PlayerAction.Hea.toUpperCase();
+  const PLAYER_SPE = PlayerAction.Spe.toUpperCase();
+  const PLAYER_USE = PlayerAction.Use.toUpperCase();
+
+  switch (action) {
+    case PLAYER_DEF: {
       const dmg = rand.randint(
         currentPlayer.attack[0],
         currentPlayer.attack[1]
@@ -132,7 +141,7 @@ async function handlePlayerAction({
       currentPlayer.performAction(PlayerAction.Def);
       break;
     }
-    case PlayerAction.Atk.toLocaleUpperCase(): {
+    case PLAYER_ATK: {
       const dmg = rand.randint(
         currentPlayer.attack[0],
         currentPlayer.attack[1]
@@ -162,7 +171,7 @@ async function handlePlayerAction({
       currentPlayer.performAction(PlayerAction.Atk);
       break;
     }
-    case PlayerAction.Hug.toLocaleUpperCase(): {
+    case PLAYER_HUG: {
       const playerIndex = currentPlayer.playerId;
       const rng = rand.randint(
         0,
@@ -187,7 +196,7 @@ async function handlePlayerAction({
       currentPlayer.performAction(PlayerAction.Hug);
       break;
     }
-    case PlayerAction.Hea.toLocaleUpperCase(): {
+    case PLAYER_HEA: {
       if (currentPlayer.name[langIndex] === 'Aqua') {
         currentPlayer.performAction(PlayerAction.Hea);
         (currentPlayer as Aqua).heal();
@@ -199,7 +208,7 @@ async function handlePlayerAction({
       }
       break;
     }
-    case PlayerAction.Spe.toLocaleUpperCase(): {
+    case PLAYER_SPE: {
       if (currentPlayer.specialAttackReady) {
         const dmg = rand.randint(
           currentPlayer.attack[0],
@@ -233,7 +242,7 @@ async function handlePlayerAction({
       }
       break;
     }
-    case PlayerAction.Use.toLocaleUpperCase(): {
+    case PLAYER_USE: {
       // Use a consumable item on a selected player (fallback to current player)
       const selectedTarget =
         typeof selectedUseTargetPlayerId === 'number'
@@ -353,7 +362,7 @@ export default async function processGame(
 
   // Precompute reusable values
   const langIndex = lang === Lang.French ? 1 : 0;
-  let activePlayers: Player[];
+  let activePlayers: Player[] = team.players.filter(player => player.hp > 0);
 
   // Reducing the creature HP by dividing it per 2
   creature.hpMax = Math.ceil(creature.hpMax / 2);
@@ -373,7 +382,6 @@ export default async function processGame(
 
   for (let moveIndex = 0; moveIndex < moves.length; moveIndex += 1) {
     const move = moves[moveIndex];
-    activePlayers = team.players.filter(player => player.hp > 0);
     if (state !== GameState.Incomplete) break; // Early exit if game state is resolved
 
     if (move === 'GIV') {
