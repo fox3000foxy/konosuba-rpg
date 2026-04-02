@@ -8,6 +8,7 @@ import { getItems as getConsumableItems } from '../services/consumableService';
 import { getInventoryItems } from '../services/inventoryService';
 import {
   getAchievementsOverview,
+  getAllQuestStatuses,
   getCharacterProgresses,
   getPlayerProfile,
   getPlayerRunSummary,
@@ -22,6 +23,7 @@ import {
   buildProfileSvg,
   renderProfileImage,
 } from '../utils/renderProfileImage';
+import { buildQuestSvg, renderQuestImage } from '../utils/renderQuestImage';
 import { renderShopImage } from '../utils/renderShopImage';
 
 const PLAYER_ID_BY_NAME: Record<string, number> = {
@@ -165,6 +167,34 @@ export function registerApiRoutes(app: Hono): void {
     }
 
     const image = await renderAffinityImage(userId, progresses, fr);
+    const responseBody = image.buffer.slice(
+      image.byteOffset,
+      image.byteOffset + image.byteLength
+    );
+
+    return new Response(responseBody as ArrayBuffer, {
+      headers: imageCacheHeaders('image/png'),
+    });
+  });
+
+  app.get('/quest/:userId', async (c: Context) => {
+    const fr = getApiLang(c);
+    const userId = requireUserId(c, fr);
+    if (!userId) {
+      return;
+    }
+
+    const statuses = await getAllQuestStatuses(userId);
+    const renderSvg = c.req.query('renderSvg') === 'true';
+
+    if (renderSvg) {
+      const image = await buildQuestSvg(userId, statuses, fr);
+      return c.text(image, 200, {
+        ...imageCacheHeaders('image/svg+xml'),
+      });
+    }
+
+    const image = await renderQuestImage(userId, statuses, fr);
     const responseBody = image.buffer.slice(
       image.byteOffset,
       image.byteOffset + image.byteLength
