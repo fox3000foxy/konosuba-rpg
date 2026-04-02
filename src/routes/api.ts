@@ -12,6 +12,7 @@ import {
   getPlayerProfile,
   getPlayerRunSummary,
 } from '../services/progressionService';
+import { imageCacheHeaders } from '../utils/cacheHeaders';
 import {
   buildAffinitySvg,
   renderAffinityImage,
@@ -115,12 +116,7 @@ export function registerApiRoutes(app: Hono): void {
       const items = await getInventoryItems(userId);
       const image = await buildSvg(userId, items, fr);
       return c.text(image, 200, {
-        'Content-Type': 'image/svg+xml',
-        'Cache-Control':
-          'public, max-age=0, s-maxage=15, stale-while-revalidate=60',
-        'CDN-Cache-Control': 'public, s-maxage=15, stale-while-revalidate=60',
-        'Vercel-CDN-Cache-Control':
-          'public, s-maxage=15, stale-while-revalidate=60',
+        ...imageCacheHeaders('image/svg+xml'),
       });
     }
     const items = await getInventoryItems(userId);
@@ -131,14 +127,7 @@ export function registerApiRoutes(app: Hono): void {
     );
 
     return new Response(responseBody as ArrayBuffer, {
-      headers: {
-        'Content-Type': 'image/png',
-        'Cache-Control':
-          'public, max-age=0, s-maxage=15, stale-while-revalidate=60',
-        'CDN-Cache-Control': 'public, s-maxage=15, stale-while-revalidate=60',
-        'Vercel-CDN-Cache-Control':
-          'public, s-maxage=15, stale-while-revalidate=60',
-      },
+      headers: imageCacheHeaders('image/png'),
     });
   });
 
@@ -164,12 +153,7 @@ export function registerApiRoutes(app: Hono): void {
     if (renderSvg) {
       const image = await buildAffinitySvg(userId, progresses, fr);
       return c.text(image, 200, {
-        'Content-Type': 'image/svg+xml',
-        'Cache-Control':
-          'public, max-age=0, s-maxage=15, stale-while-revalidate=60',
-        'CDN-Cache-Control': 'public, s-maxage=15, stale-while-revalidate=60',
-        'Vercel-CDN-Cache-Control':
-          'public, s-maxage=15, stale-while-revalidate=60',
+        ...imageCacheHeaders('image/svg+xml'),
       });
     }
 
@@ -180,14 +164,7 @@ export function registerApiRoutes(app: Hono): void {
     );
 
     return new Response(responseBody as ArrayBuffer, {
-      headers: {
-        'Content-Type': 'image/png',
-        'Cache-Control':
-          'public, max-age=0, s-maxage=15, stale-while-revalidate=60',
-        'CDN-Cache-Control': 'public, s-maxage=15, stale-while-revalidate=60',
-        'Vercel-CDN-Cache-Control':
-          'public, s-maxage=15, stale-while-revalidate=60',
-      },
+      headers: imageCacheHeaders('image/png'),
     });
   });
 
@@ -211,14 +188,7 @@ export function registerApiRoutes(app: Hono): void {
     );
 
     return new Response(responseBody as ArrayBuffer, {
-      headers: {
-        'Content-Type': 'image/png',
-        'Cache-Control':
-          'public, max-age=0, s-maxage=15, stale-while-revalidate=60',
-        'CDN-Cache-Control': 'public, s-maxage=15, stale-while-revalidate=60',
-        'Vercel-CDN-Cache-Control':
-          'public, s-maxage=15, stale-while-revalidate=60',
-      },
+      headers: imageCacheHeaders('image/png'),
     });
   });
 
@@ -264,12 +234,7 @@ export function registerApiRoutes(app: Hono): void {
         fr
       );
       return c.text(image, 200, {
-        'Content-Type': 'image/svg+xml',
-        'Cache-Control':
-          'public, max-age=0, s-maxage=15, stale-while-revalidate=60',
-        'CDN-Cache-Control': 'public, s-maxage=15, stale-while-revalidate=60',
-        'Vercel-CDN-Cache-Control':
-          'public, s-maxage=15, stale-while-revalidate=60',
+        ...imageCacheHeaders('image/svg+xml'),
       });
     }
 
@@ -289,14 +254,7 @@ export function registerApiRoutes(app: Hono): void {
     );
 
     return new Response(responseBody as ArrayBuffer, {
-      headers: {
-        'Content-Type': 'image/png',
-        'Cache-Control':
-          'public, max-age=0, s-maxage=15, stale-while-revalidate=60',
-        'CDN-Cache-Control': 'public, s-maxage=15, stale-while-revalidate=60',
-        'Vercel-CDN-Cache-Control':
-          'public, s-maxage=15, stale-while-revalidate=60',
-      },
+      headers: imageCacheHeaders('image/png'),
     });
   });
 }
