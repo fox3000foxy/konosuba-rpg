@@ -29,6 +29,7 @@
 ## Commands and UI
 - `/profile` shows player level, character progression, and related stats.
 - `/character` command shows per-character level, XP, affinity, and factor.
+- `/shop` command is implemented with catalog browsing, pagination, and buy flow.
 - `/use-item` was abandoned in favor of the button-driven consumable flow.
 - Discord interaction routing is extracted from the main entrypoint.
 - Monster info output is stabilized with deterministic generic creature rendering.
