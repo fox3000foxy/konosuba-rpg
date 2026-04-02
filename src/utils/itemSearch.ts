@@ -5,6 +5,15 @@ export type SearchableItem = {
   nameEn: string;
 };
 
+type NormalizedFields = {
+  id: string;
+  fileName: string;
+  nameFr: string;
+  nameEn: string;
+};
+
+const normalizedFieldsCache = new WeakMap<SearchableItem, NormalizedFields>();
+
 export function normalizeText(value: string): string {
   return value
     .normalize('NFD')
@@ -13,15 +22,32 @@ export function normalizeText(value: string): string {
     .trim();
 }
 
-export function matchesName(item: SearchableItem, normalizedName: string): boolean {
-  const fields = [
-    normalizeText(String(item.id)),
-    normalizeText(item.fileName),
-    normalizeText(item.nameFr),
-    normalizeText(item.nameEn),
-  ];
+function getNormalizedFields(item: SearchableItem): NormalizedFields {
+  const cached = normalizedFieldsCache.get(item);
+  if (cached) {
+    return cached;
+  }
 
-  return fields.some(field => field.includes(normalizedName));
+  const normalized: NormalizedFields = {
+    id: normalizeText(String(item.id)),
+    fileName: normalizeText(item.fileName),
+    nameFr: normalizeText(item.nameFr),
+    nameEn: normalizeText(item.nameEn),
+  };
+
+  normalizedFieldsCache.set(item, normalized);
+  return normalized;
+}
+
+export function matchesName(item: SearchableItem, normalizedName: string): boolean {
+  const fields = getNormalizedFields(item);
+
+  return (
+    fields.id.includes(normalizedName) ||
+    fields.fileName.includes(normalizedName) ||
+    fields.nameFr.includes(normalizedName) ||
+    fields.nameEn.includes(normalizedName)
+  );
 }
 
 export function findItemByName<T extends SearchableItem>(items: T[], name: string): T | null {
@@ -30,31 +56,23 @@ export function findItemByName<T extends SearchableItem>(items: T[], name: strin
     return null;
   }
 
-  // Pré-calculer les chaînes normalisées pour éviter les conversions répétées
-  type ItemIndex = {
-    item: T;
-    exact: string[];
-    fuzzy: string[];
-  };
-
-  const indexed: ItemIndex[] = items.map(item => {
-    const idNorm = normalizeText(String(item.id));
-    const fileNameNorm = normalizeText(item.fileName);
-    const nameFrNorm = normalizeText(item.nameFr);
-    const nameEnNorm = normalizeText(item.nameEn);
-
-    return {
-      item,
-      exact: [nameFrNorm, nameEnNorm, idNorm, fileNameNorm],
-      fuzzy: [idNorm, fileNameNorm, nameFrNorm, nameEnNorm],
-    };
-  });
-
-  const exact = indexed.find(i => i.exact.some(field => field === normalized));
-  if (exact) {
-    return exact.item;
+  for (const item of items) {
+    const fields = getNormalizedFields(item);
+    if (
+      fields.nameFr === normalized ||
+      fields.nameEn === normalized ||
+      fields.id === normalized ||
+      fields.fileName === normalized
+    ) {
+      return item;
+    }
   }
 
-  const fuzzy = indexed.find(i => i.fuzzy.some(field => field.includes(normalized)));
-  return fuzzy ? fuzzy.item : null;
+  for (const item of items) {
+    if (matchesName(item, normalized)) {
+      return item;
+    }
+  }
+
+  return null;
 }
