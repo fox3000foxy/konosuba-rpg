@@ -31,6 +31,25 @@ import { handleConsumablesButton } from './handleConsumablesButton';
 import { handleDefaultButton } from './handleDefaultButton';
 import { handleSpecialButton } from './handleSpecialButton';
 
+function getPagedShopItems(page: number) {
+  const pageSize = 16;
+  const allShopItems = [
+    ...Object.values(AccessoryId),
+    ...Object.values(ItemId),
+  ]
+    .map(key => getShopItem(key))
+    .filter((item): item is ShopItem => Boolean(item));
+
+  const pageCount = Math.max(1, Math.ceil(allShopItems.length / pageSize));
+  const pageIndex = Math.min(pageCount - 1, Math.max(0, page - 1));
+  const pageItems = allShopItems.slice(
+    pageIndex * pageSize,
+    pageIndex * pageSize + pageSize
+  );
+
+  return { allShopItems, pageCount, pageItems };
+}
+
 export async function handleButtonInteraction(
   c: Context,
   interaction: Interaction,
@@ -174,147 +193,144 @@ export async function handleButtonInteraction(
   }
 
   if (customId.startsWith('shop_page:')) {
-    const parts = customId.split(':');
-    const pageRaw = parts[1] || '1';
-    const requestUserId = parts[2] || '';
-    if (requestUserId !== userID) {
+    try {
+      const parts = customId.split(':');
+      const pageRaw = parts[1] || '1';
+      const requestUserId = parts[2] || '';
+      if (requestUserId !== userID) {
+        return c.json({ type: 6 });
+      }
+
+      const page = Math.max(1, Number(pageRaw) || 1);
+      const { pageCount, pageItems } = getPagedShopItems(page);
+      const components = buildShopComponents(pageItems, page, pageCount, fr, userID);
+
+      return c.json({
+        type: 7,
+        data: {
+          embeds: [
+            {
+              title: fr ? 'Boutique' : 'Shop',
+              description: fr
+                ? `Page ${page} / ${pageCount}`
+                : `Page ${page} / ${pageCount}`,
+              image: {
+                url: `${BASE_URL}/shop/${page}?lang=${fr ? 'fr' : 'en'}`,
+              },
+              color: 0x2b2d31,
+            },
+          ],
+          components,
+        },
+      });
+    } catch (error) {
+      console.error('[shop_page] error:', error);
       return c.json({ type: 6 });
     }
-    const page = Math.max(1, Number(pageRaw) || 1);
-    const pageSize = 16;
-    const allShopItems = [
-      ...Object.values(AccessoryId),
-      ...Object.values(ItemId),
-    ]
-      .map(key => getShopItem(key))
-      .filter((item): item is ShopItem => Boolean(item));
-    const pageCount = Math.max(1, Math.ceil(allShopItems.length / pageSize));
-    const pageIndex = Math.min(pageCount - 1, page - 1);
-    const pageItems = allShopItems.slice(pageIndex * pageSize, pageIndex * pageSize + pageSize);
-    const components = buildShopComponents(pageItems, page, pageCount, fr, userID);
-
-    return c.json({
-      type: 7,
-      data: {
-        embeds: [
-          {
-            title: fr ? 'Boutique' : 'Shop',
-            description: fr
-              ? `Page ${page} / ${pageCount}`
-              : `Page ${page} / ${pageCount}`,
-            image: {
-              url: `${BASE_URL}/shop/${page}?lang=${fr ? 'fr' : 'en'}`,
-            },
-            color: 0x2b2d31,
-          },
-        ],
-        components,
-      },
-    });
   }
 
   if (customId.startsWith('shop_select:')) {
-    const parts = customId.split(':');
-    const pageRaw = parts[1] || '1';
-    const requestUserId = parts[2] || '';
-    if (requestUserId !== userID) {
+    try {
+      const parts = customId.split(':');
+      const pageRaw = parts[1] || '1';
+      const requestUserId = parts[2] || '';
+      if (requestUserId !== userID) {
+        return c.json({ type: 6 });
+      }
+
+      const selectedItemKey = interaction.data.values?.[0];
+      const page = Math.max(1, Number(pageRaw) || 1);
+      const { pageCount, pageItems } = getPagedShopItems(page);
+      const components = buildShopComponents(
+        pageItems,
+        page,
+        pageCount,
+        fr,
+        userID,
+        selectedItemKey
+      );
+
+      console.log(`${BASE_URL}/shop/${page}?lang=${fr ? 'fr' : 'en'}`);
+      return c.json({
+        type: 7,
+        data: {
+          embeds: [
+            {
+              title: fr ? 'Boutique' : 'Shop',
+              description: fr
+                ? `Objet sélectionné : ${selectedItemKey || 'aucun'}`
+                : `Selected item: ${selectedItemKey || 'none'}`,
+              image: {
+                url: `${BASE_URL}/shop/${page}?lang=${fr ? 'fr' : 'en'}`,
+              },
+              color: 0x2b2d31,
+            },
+          ],
+          components,
+        },
+      });
+    } catch (error) {
+      console.error('[shop_select] error:', error);
       return c.json({ type: 6 });
     }
-
-    const selectedItemKey = interaction.data.values?.[0];
-    const page = Math.max(1, Number(pageRaw) || 1);
-    const pageSize = 16;
-    const allShopItems = [
-      ...Object.values(AccessoryId),
-      ...Object.values(ItemId),
-    ]
-      .map(key => getShopItem(key))
-      .filter((item): item is ShopItem => Boolean(item));
-    const pageCount = Math.max(1, Math.ceil(allShopItems.length / pageSize));
-    const pageIndex = Math.min(pageCount - 1, page - 1);
-    const pageItems = allShopItems.slice(pageIndex * pageSize, pageIndex * pageSize + pageSize);
-    const components = buildShopComponents(pageItems, page, pageCount, fr, userID, selectedItemKey);
-
-    return c.json({
-      type: 7,
-      data: {
-        embeds: [
-          {
-            title: fr ? 'Boutique' : 'Shop',
-            description: fr
-              ? `Objet sélectionné : ${selectedItemKey || 'aucun'}`
-              : `Selected item: ${selectedItemKey || 'none'}`,
-            image: {
-              url: `${BASE_URL}/shop/${page}?lang=${fr ? 'fr' : 'en'}`,
-            },
-            color: 0x2b2d31,
-          },
-        ],
-        components,
-      },
-    });
   }
 
   if (customId.startsWith('shop_buy:')) {
-    const parts = customId.split(':');
-    const itemKey = parts[1] || '';
-    const pageRaw = parts[2] || '1';
-    const requestUserId = parts[3] || '';
-    if (requestUserId !== userID) {
+    try {
+      const parts = customId.split(':');
+      const itemKey = parts[1] || '';
+      const pageRaw = parts[2] || '1';
+      const requestUserId = parts[3] || '';
+      if (requestUserId !== userID) {
+        return c.json({ type: 6 });
+      }
+
+      const shopItem = getShopItem(itemKey);
+      if (!shopItem) {
+        return c.json({ type: 7, data: { content: fr ? 'Item invalide' : 'Invalid item' } });
+      }
+
+      const profile = await getPlayerProfile(userID);
+      if (!profile) {
+        return c.json({ type: 7, data: { content: fr ? 'Profil indisponible' : 'Profile unavailable' } });
+      }
+
+      const cost = shopItem.price;
+      if (profile.gold < cost) {
+        return c.json({ type: 7, data: { content: fr ? 'Or insuffisant' : 'Not enough gold' } });
+      }
+
+      const updatedGold = await updatePlayerGold(userID, -cost);
+      await addInventoryItem(userID, shopItem.itemKey, shopItem.itemType, 1);
+
+      const page = Math.max(1, Number(pageRaw) || 1);
+      const { pageCount, pageItems } = getPagedShopItems(page);
+      const components = buildShopComponents(pageItems, page, pageCount, fr, userID);
+
+      const message = fr
+        ? `✅ Achat de ${shopItem.nameFr} réussi. Or restant : ${updatedGold}.`
+        : `✅ Bought ${shopItem.nameEn}. Remaining gold: ${updatedGold}.`;
+
+      return c.json({
+        type: 7,
+        data: {
+          embeds: [
+            {
+              title: fr ? 'Achat réussi' : 'Purchase success',
+              description: message,
+              image: {
+                url: `${BASE_URL}/shop/${page}?lang=${fr ? 'fr' : 'en'}`,
+              },
+              color: 0x2b2d31,
+            },
+          ],
+          components,
+        },
+      });
+    } catch (error) {
+      console.error('[shop_buy] error:', error);
       return c.json({ type: 6 });
     }
-
-    const shopItem = getShopItem(itemKey);
-    if (!shopItem) {
-      return c.json({ type: 7, data: { content: fr ? 'Item invalide' : 'Invalid item' } });
-    }
-
-    const profile = await getPlayerProfile(userID);
-    if (!profile) {
-      return c.json({ type: 7, data: { content: fr ? 'Profil indisponible' : 'Profile unavailable' } });
-    }
-
-    const cost = shopItem.price;
-    if (profile.gold < cost) {
-      return c.json({ type: 7, data: { content: fr ? 'Or insuffisant' : 'Not enough gold' } });
-    }
-
-    const updatedGold = await updatePlayerGold(userID, -cost);
-    await addInventoryItem(userID, shopItem.itemKey, shopItem.itemType, 1);
-
-    const page = Math.max(1, Number(pageRaw) || 1);
-    const pageSize = 16;
-    const allShopItems = [
-      ...Object.values(AccessoryId),
-      ...Object.values(ItemId),
-    ]
-      .map(key => getShopItem(key))
-      .filter((item): item is ShopItem => Boolean(item));
-    const pageCount = Math.max(1, Math.ceil(allShopItems.length / pageSize));
-    const pageIndex = Math.min(pageCount - 1, page - 1);
-    const pageItems = allShopItems.slice(pageIndex * pageSize, pageIndex * pageSize + pageSize);
-    const components = buildShopComponents(pageItems, page, pageCount, fr, userID);
-
-    const message = fr
-      ? `✅ Achat de ${shopItem.nameFr} réussi. Or restant : ${updatedGold}.`
-      : `✅ Bought ${shopItem.nameEn}. Remaining gold: ${updatedGold}.`;
-
-    return c.json({
-      type: 7,
-      data: {
-        embeds: [
-          {
-            title: fr ? 'Achat réussi' : 'Purchase success',
-            description: message,
-            image: {
-              url: `${BASE_URL}/shop/${page}?lang=${fr ? 'fr' : 'en'}`,
-            },
-            color: 0x2b2d31,
-          },
-        ],
-        components,
-      },
-    });
   }
 
   if (customId.startsWith('consumable_item:')) {

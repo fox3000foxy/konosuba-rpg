@@ -183,7 +183,7 @@ export async function handleShopCommand(
   console.log(`[ShopCommand] userId=${userId} options=${JSON.stringify(options)}`);
 
   const action = (getOptionValue(options, 'action') || 'items').toLowerCase();
-  const format = (getOptionValue(options, 'format') || 'text').toLowerCase();
+  const format = (getOptionValue(options, 'format') || 'image').toLowerCase();
   const pageValue = Number(getOptionValue(options, 'page')) || 1;
   const page = Math.max(1, pageValue);
   const itemInput = getOptionValue(options, 'item');
@@ -201,11 +201,17 @@ export async function handleShopCommand(
 
     if (format === 'image') {
       const imageUrl = `${BASE_URL}/shop/${page}?lang=${fr ? 'fr' : 'en'}`;
+      console.log(`[ShopCommand] Generated shop image URL: ${imageUrl}`);
       const description = fr
         ? `Voici la page ${page} de la boutique (${pageCount}).`
         : `Page ${page} of shop (${pageCount}).`;
 
-      const components = buildShopComponents(itemsOnPage, page, pageCount, fr, userId);
+      let components: unknown = [];
+      try {
+        components = buildShopComponents(itemsOnPage, page, pageCount, fr, userId);
+      } catch (eventError) {
+        console.error('[ShopCommand] buildShopComponents failed:', eventError);
+      }
 
       return c.json({
         type: 4,
