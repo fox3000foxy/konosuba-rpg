@@ -10,31 +10,45 @@ jobs:
     if: github.ref == 'refs/heads/dev'
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 1
-          ref: ${{ github.ref }}
-          persist-credentials: true
-
       - name: Create pull request if none exists
-        uses: peter-evans/create-pull-request@v5
+        uses: actions/github-script@v7
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          commit-message: 'chore: create pull request from feature branch'
-          branch: ${{ github.ref_name }}
-          base: main
-          title: 'chore: auto PR from dev to main'
-          body: |-
-            This pull request was created automatically by GitHub Actions.
-            
-            - source branch: `${{ github.ref_name }}`
-            - target branch: `main`
-            - triggered by commit `${{ github.sha }}`
-          labels: automated-pr
-          assignees: ''
-          draft: false
-          delete-branch: false
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const head = `${owner}:dev`;
+            const base = 'main';
+
+            const { data: existingPullRequests } = await github.rest.pulls.list({
+              owner,
+              repo,
+              state: 'open',
+              head,
+              base,
+            });
+
+            if (existingPullRequests.length > 0) {
+              core.info(`Pull request already exists: #${existingPullRequests[0].number}`);
+              return;
+            }
+
+            const { data: pullRequest } = await github.rest.pulls.create({
+              owner,
+              repo,
+              head: 'dev',
+              base,
+              title: 'chore: auto PR from dev to main',
+              body: [
+                'This pull request was created automatically by GitHub Actions.',
+                '',
+                `- source branch: \`dev\``,
+                `- target branch: \`main\``,
+                `- triggered by commit \`${context.sha}\``,
+              ].join('\n'),
+            });
+
+            core.info(`Created pull request #${pullRequest.number}: ${pullRequest.html_url}`);
 
 permissions:
   contents: write
