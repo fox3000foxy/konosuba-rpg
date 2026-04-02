@@ -12,6 +12,10 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+          ref: ${{ github.ref }}
+          persist-credentials: true
 
       - name: Create pull request if none exists
         uses: peter-evans/create-pull-request@v5
