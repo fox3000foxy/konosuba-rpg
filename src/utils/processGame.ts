@@ -24,6 +24,12 @@ import renderImage from './renderImage';
 
 const linesTyped = lines as LinesType;
 const descriptionsTyped = descriptions as LinesType;
+const PLAYER_DEF = PlayerAction.Def.toUpperCase();
+const PLAYER_ATK = PlayerAction.Atk.toUpperCase();
+const PLAYER_HUG = PlayerAction.Hug.toUpperCase();
+const PLAYER_HEA = PlayerAction.Hea.toUpperCase();
+const PLAYER_SPE = PlayerAction.Spe.toUpperCase();
+const PLAYER_USE = PlayerAction.Use.toUpperCase();
 
 export function pascalCaseToString(pascalCaseWord: string): string {
   const regex = /([a-z])([A-Z])/g;
@@ -103,13 +109,9 @@ async function handlePlayerAction({
   isLastMove?: boolean;
 }): Promise<void> {
   const langIndex = lang === Lang.French ? 1 : 0;
+  const langLines = linesTyped[lang];
+  const langDescriptions = descriptionsTyped[lang];
   const action = move.toUpperCase();
-  const PLAYER_DEF = PlayerAction.Def.toUpperCase();
-  const PLAYER_ATK = PlayerAction.Atk.toUpperCase();
-  const PLAYER_HUG = PlayerAction.Hug.toUpperCase();
-  const PLAYER_HEA = PlayerAction.Hea.toUpperCase();
-  const PLAYER_SPE = PlayerAction.Spe.toUpperCase();
-  const PLAYER_USE = PlayerAction.Use.toUpperCase();
 
   switch (action) {
     case PLAYER_DEF: {
@@ -120,17 +122,14 @@ async function handlePlayerAction({
       const playerIndex = currentPlayer.playerId;
       const rng = rand.randint(
         0,
-        linesTyped[lang].youDefendMsgs[playerIndex].length - 1
+        langLines.youDefendMsgs[playerIndex].length - 1
       );
-      const msg = generateMessage(
-        linesTyped[lang].youDefendMsgs[playerIndex][rng],
-        {
-          CREATURE: creature.name[langIndex],
-          DAMAGE: dmg,
-        }
-      );
+      const msg = generateMessage(langLines.youDefendMsgs[playerIndex][rng], {
+        CREATURE: creature.name[langIndex],
+        DAMAGE: dmg,
+      });
       const desc = generateMessage(
-        descriptionsTyped[lang].youDefendMsgs[playerIndex][rng],
+        langDescriptions.youDefendMsgs[playerIndex][rng],
         {
           CREATURE: creature.name[langIndex],
           DAMAGE: dmg,
@@ -150,17 +149,14 @@ async function handlePlayerAction({
       const playerIndex = currentPlayer.playerId;
       const rng = rand.randint(
         0,
-        linesTyped[lang].youAttackMsgs[playerIndex].length - 1
+        langLines.youAttackMsgs[playerIndex].length - 1
       );
-      const msg = generateMessage(
-        linesTyped[lang].youAttackMsgs[playerIndex][rng],
-        {
-          CREATURE: creature.name[langIndex],
-          DAMAGE: dmg,
-        }
-      );
+      const msg = generateMessage(langLines.youAttackMsgs[playerIndex][rng], {
+        CREATURE: creature.name[langIndex],
+        DAMAGE: dmg,
+      });
       const desc = generateMessage(
-        descriptionsTyped[lang].youAttackMsgs[playerIndex][rng],
+        langDescriptions.youAttackMsgs[playerIndex][rng],
         {
           CREATURE: creature.name[langIndex],
           DAMAGE: dmg,
@@ -175,16 +171,13 @@ async function handlePlayerAction({
       const playerIndex = currentPlayer.playerId;
       const rng = rand.randint(
         0,
-        linesTyped[lang].youHugMsgs[playerIndex].length - 1
+        langLines.youHugMsgs[playerIndex].length - 1
       );
-      const msg = generateMessage(
-        linesTyped[lang].youHugMsgs[playerIndex][rng],
-        {
-          CREATURE: creature.name[langIndex],
-        }
-      );
+      const msg = generateMessage(langLines.youHugMsgs[playerIndex][rng], {
+        CREATURE: creature.name[langIndex],
+      });
       const desc = generateMessage(
-        descriptionsTyped[lang].youHugMsgs[playerIndex][rng],
+        langDescriptions.youHugMsgs[playerIndex][rng],
         {
           CREATURE: creature.name[langIndex],
         }
@@ -200,9 +193,9 @@ async function handlePlayerAction({
       if (currentPlayer.name[langIndex] === 'Aqua') {
         currentPlayer.performAction(PlayerAction.Hea);
         (currentPlayer as Aqua).heal();
-        const rng = rand.randint(0, linesTyped[lang].aquaHealMsgs.length - 1);
-        const msg = linesTyped[lang].aquaHealMsgs[rng];
-        const desc = descriptionsTyped[lang].aquaHealMsgs[rng];
+        const rng = rand.randint(0, langLines.aquaHealMsgs.length - 1);
+        const msg = langLines.aquaHealMsgs[rng];
+        const desc = langDescriptions.aquaHealMsgs[rng];
         messages.push(msg);
         embedDescription.push(desc);
       }
@@ -221,17 +214,17 @@ async function handlePlayerAction({
         const playerIndex = currentPlayer.playerId;
         const rng = rand.randint(
           0,
-          linesTyped[lang].youSpecialAttackMsgs[playerIndex].length - 1
+          langLines.youSpecialAttackMsgs[playerIndex].length - 1
         );
         const msg = generateMessage(
-          linesTyped[lang].youSpecialAttackMsgs[playerIndex][rng],
+          langLines.youSpecialAttackMsgs[playerIndex][rng],
           {
             CREATURE: creature.name[langIndex],
             DAMAGE: totalDmg,
           }
         );
         const desc = generateMessage(
-          descriptionsTyped[lang].youSpecialAttackMsgs[playerIndex][rng],
+          langDescriptions.youSpecialAttackMsgs[playerIndex][rng],
           {
             CREATURE: creature.name[langIndex],
             DAMAGE: totalDmg,
@@ -346,7 +339,7 @@ export default async function processGame(
       : `Watch out, ${prefix.toLowerCase()}${name.toLowerCase()}!`,
   ];
 
-  let embedDescription: string[] = [
+  const embedDescription: string[] = [
     lang === Lang.French
       ? 'Utilisez les boutons pour attaquer, défendre ou faire un câlin à la créature. Essayez de réduire ses points de vie à zéro ou son amour à zéro pour gagner !'
       : 'Use the buttons to attack, defend, or hug the creature. Try to reduce its HP to zero or its love to zero to win!',
@@ -389,7 +382,7 @@ export default async function processGame(
       break;
     }
 
-    embedDescription = [];
+    embedDescription.length = 0;
     messages.length = 0;
 
     counter += 1;
@@ -433,7 +426,7 @@ export default async function processGame(
     }
 
     // Creature's turn
-    const randomPlayer = rand.choice(activePlayers.filter(p => p.hp > 0));
+    const randomPlayer = rand.choice(activePlayers);
     const creatureMove = creature.turn({
       lang,
       dmg: rand.randint(creature.attack[0], creature.attack[1]),

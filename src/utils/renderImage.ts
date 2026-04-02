@@ -79,7 +79,7 @@ G.__fontCache ??= {} as Record<string, ArrayBuffer>;
 G.__photonCache ??= new LRUCache<string, Photon.PhotonImage>(40, freePhoton);
 G.__layerCache ??= new LRUCache<string, Photon.PhotonImage>(12, freePhoton);
 G.__uiPhotonCache ??= new LRUCache<string, Photon.PhotonImage>(30, freePhoton);
-G.__renderOutputCache ??= new LRUCache<string, Uint8Array>(80);
+G.__renderOutputCache ??= new LRUCache<string, Uint8Array>(120);
 
 const imageCache: Record<string, ArrayBuffer> = G.__imageCache;
 const base64Cache: Record<string, string> = G.__base64Cache;
@@ -159,44 +159,6 @@ function flipX(img: Photon.PhotonImage): Photon.PhotonImage {
   return new Photon.PhotonImage(flipped, w, h);
 }
 
-async function getImage(
-  key: string,
-  w?: number,
-  h?: number,
-  flipped = false
-): Promise<Photon.PhotonImage> {
-  const cacheKey = `${key}_${w ?? 0}_${h ?? 0}_${flipped}`;
-  const cached = photonCache.get(cacheKey);
-  if (cached) return clonePhoton(cached);
-
-  let img = toPhoton(await getImageBytes(key));
-
-  if (flipped) {
-    const f = flipX(img);
-    img.free();
-    img = f;
-  }
-
-  if (w && h) {
-    const r = Photon.resize(img, w, h, Photon.SamplingFilter.Lanczos3);
-    img.free();
-    img = r;
-  } else if (!w && h) {
-    const ratio = img.get_width() / img.get_height();
-    const r = Photon.resize(
-      img,
-      Math.round(h * ratio),
-      h,
-      Photon.SamplingFilter.Lanczos3
-    );
-    img.free();
-    img = r;
-  }
-
-  photonCache.set(cacheKey, img);
-  return clonePhoton(img);
-}
-
 async function getImageReadOnly(
   key: string,
   w?: number,
@@ -245,10 +207,11 @@ async function getBackground(
   const cached = layerCache.get(key);
   if (cached) return clonePhoton(cached);
 
-  const [board, frame] = await Promise.all([
-    getImage('board', W, H),
+  const [boardSource, frame] = await Promise.all([
+    getImageReadOnly('board', W, H),
     getImageReadOnly('frameless', W, H),
   ]);
+  const board = clonePhoton(boardSource);
   Photon.watermark(board, frame, 0n, 0n);
 
   layerCache.set(key, board);
