@@ -40,7 +40,8 @@ const HUG_LABELS_EN = HUG_LABELS.map(value =>
 export function getBattleMonsterNames(creature: Creature, lang: Lang) {
   return {
     displayName: getCreatureDisplayName(creature, lang),
-    recordName: creature.name[lang === Lang.French ? 1 : 0] || creature.constructor.name,
+    recordName:
+      creature.name[lang === Lang.French ? 1 : 0] || creature.constructor.name,
   };
 }
 

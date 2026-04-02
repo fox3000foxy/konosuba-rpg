@@ -15,7 +15,10 @@ import {
 
 import { BASE_URL } from '../../objects/config/constants';
 import { addInventoryItem } from '../../services/inventoryService';
-import { getPlayerProfile, updatePlayerGold } from '../../services/playerService';
+import {
+  getPlayerProfile,
+  updatePlayerGold,
+} from '../../services/playerService';
 import {
   buildComponents,
   getBattleMonsterNames,
@@ -33,10 +36,7 @@ import { handleSpecialButton } from './handleSpecialButton';
 
 function getPagedShopItems(page: number) {
   const pageSize = 16;
-  const allShopItems = [
-    ...Object.values(AccessoryId),
-    ...Object.values(ItemId),
-  ]
+  const allShopItems = [...Object.values(AccessoryId), ...Object.values(ItemId)]
     .map(key => getShopItem(key))
     .filter((item): item is ShopItem => Boolean(item));
 
@@ -192,22 +192,33 @@ export async function handleButtonInteraction(
     });
   }
 
-  if (customId.startsWith('shop_forward:') || 
-    customId.startsWith('shop_backward:') || 
-    customId.startsWith('shop_back:') || 
-    customId.startsWith('shop_page:')) {
+  if (
+    customId.startsWith('shop_forward:') ||
+    customId.startsWith('shop_backward:') ||
+    customId.startsWith('shop_back:') ||
+    customId.startsWith('shop_page:')
+  ) {
     try {
       const parts = customId.split(':');
       const pageRaw = parts[1] || '1';
       const requestUserId = parts[2] || '';
       if (requestUserId !== userID) {
-        console.log('Unauthorized shop navigation attempt', { customId, userID });
+        console.log('Unauthorized shop navigation attempt', {
+          customId,
+          userID,
+        });
         return c.json({ type: 6 });
       }
 
       const page = Math.max(1, Number(pageRaw) || 1);
       const { pageCount, pageItems } = getPagedShopItems(page);
-      const components = buildShopComponents(pageItems, page, pageCount, fr, userID);
+      const components = buildShopComponents(
+        pageItems,
+        page,
+        pageCount,
+        fr,
+        userID
+      );
 
       return c.json({
         type: 7,
@@ -255,7 +266,8 @@ export async function handleButtonInteraction(
       );
 
       console.log(`${BASE_URL}/shop/${page}?lang=${fr ? 'fr' : 'en'}`);
-      const selectedItemName = selectedItemKey        ? getShopItem(selectedItemKey)?.nameEn || selectedItemKey
+      const selectedItemName = selectedItemKey
+        ? getShopItem(selectedItemKey)?.nameEn || selectedItemKey
         : fr
           ? 'aucun'
           : 'none';
@@ -296,17 +308,26 @@ export async function handleButtonInteraction(
 
       const shopItem = getShopItem(itemKey);
       if (!shopItem) {
-        return c.json({ type: 7, data: { content: fr ? 'Item invalide' : 'Invalid item' } });
+        return c.json({
+          type: 7,
+          data: { content: fr ? 'Item invalide' : 'Invalid item' },
+        });
       }
 
       const profile = await getPlayerProfile(userID);
       if (!profile) {
-        return c.json({ type: 7, data: { content: fr ? 'Profil indisponible' : 'Profile unavailable' } });
+        return c.json({
+          type: 7,
+          data: { content: fr ? 'Profil indisponible' : 'Profile unavailable' },
+        });
       }
 
       const cost = shopItem.price;
       if (profile.gold < cost) {
-        return c.json({ type: 7, data: { content: fr ? 'Or insuffisant' : 'Not enough gold' } });
+        return c.json({
+          type: 7,
+          data: { content: fr ? 'Or insuffisant' : 'Not enough gold' },
+        });
       }
 
       const updatedGold = await updatePlayerGold(userID, -cost);
@@ -314,7 +335,13 @@ export async function handleButtonInteraction(
 
       const page = Math.max(1, Number(pageRaw) || 1);
       const { pageCount, pageItems } = getPagedShopItems(page);
-      const components = buildShopComponents(pageItems, page, pageCount, fr, userID);
+      const components = buildShopComponents(
+        pageItems,
+        page,
+        pageCount,
+        fr,
+        userID
+      );
 
       const message = fr
         ? `✅ Achat de ${shopItem.nameFr} réussi. Or restant : ${updatedGold}.`

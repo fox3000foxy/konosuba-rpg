@@ -7,29 +7,35 @@ import { Rarity } from '../../objects/enums/Rarity';
 import { InteractionDataOption } from '../../objects/types/InteractionDataOption';
 import { ShopItem } from '../../objects/types/ShopItem';
 import {
-    getItemById as getAccessoryById,
-    getItemByName as getAccessoryByName,
-    getItems as getAllAccessories,
+  getItemById as getAccessoryById,
+  getItemByName as getAccessoryByName,
+  getItems as getAllAccessories,
 } from '../../services/accessoryService';
 import {
-    getItems as getAllConsumables,
-    getItemById as getConsumableById,
-    getItemByName as getConsumableByName,
+  getItems as getAllConsumables,
+  getItemById as getConsumableById,
+  getItemByName as getConsumableByName,
 } from '../../services/consumableService';
 import {
-    consumeInventoryItem,
-    getInventoryItemQuantity,
+  consumeInventoryItem,
+  getInventoryItemQuantity,
 } from '../../services/inventoryConsumptionService';
 import { addInventoryItem } from '../../services/inventoryService';
-import { ensurePlayerProfile, getPlayerProfile, updatePlayerGold } from '../../services/playerService';
+import {
+  ensurePlayerProfile,
+  getPlayerProfile,
+  updatePlayerGold,
+} from '../../services/playerService';
 
 const SHOP_CATALOG_KEYS: Array<AccessoryId | ItemId> = [
   ...Object.values(AccessoryId),
   ...Object.values(ItemId),
 ];
 
-
-export function getPriceFromRarity(rarity: Rarity, itemType: 'accessory' | 'consumable'): number {
+export function getPriceFromRarity(
+  rarity: Rarity,
+  itemType: 'accessory' | 'consumable'
+): number {
   const base = itemType === 'accessory' ? 90 : 40;
   const multiplier: Record<Rarity, number> = {
     [Rarity.Basic]: 1,
@@ -45,7 +51,9 @@ function normalizeShopInput(input: string | AccessoryId | ItemId): string {
   return String(input).trim().toLowerCase();
 }
 
-function toShopItemFromAccessory(accessory: NonNullable<ReturnType<typeof getAccessoryById>>): ShopItem {
+function toShopItemFromAccessory(
+  accessory: NonNullable<ReturnType<typeof getAccessoryById>>
+): ShopItem {
   return {
     itemKey: accessory.id,
     itemType: 'accessory',
@@ -55,7 +63,9 @@ function toShopItemFromAccessory(accessory: NonNullable<ReturnType<typeof getAcc
   };
 }
 
-function toShopItemFromConsumable(consumable: NonNullable<ReturnType<typeof getConsumableById>>): ShopItem {
+function toShopItemFromConsumable(
+  consumable: NonNullable<ReturnType<typeof getConsumableById>>
+): ShopItem {
   return {
     itemKey: consumable.id,
     itemType: 'consumable',
@@ -65,7 +75,9 @@ function toShopItemFromConsumable(consumable: NonNullable<ReturnType<typeof getC
   };
 }
 
-export function getShopItem(itemKeyOrName: string | AccessoryId | ItemId): ShopItem | null {
+export function getShopItem(
+  itemKeyOrName: string | AccessoryId | ItemId
+): ShopItem | null {
   const normalized = normalizeShopInput(itemKeyOrName);
 
   const accessory =
@@ -76,8 +88,7 @@ export function getShopItem(itemKeyOrName: string | AccessoryId | ItemId): ShopI
   }
 
   const consumable =
-    getConsumableById(normalized as ItemId) ||
-    getConsumableByName(normalized);
+    getConsumableById(normalized as ItemId) || getConsumableByName(normalized);
   if (consumable) {
     return toShopItemFromConsumable(consumable);
   }
@@ -86,12 +97,16 @@ export function getShopItem(itemKeyOrName: string | AccessoryId | ItemId): ShopI
     key => normalizeShopInput(key) === normalized
   );
   if (directFromCatalog) {
-    const accessoryFromCatalog = getAccessoryById(directFromCatalog as AccessoryId);
+    const accessoryFromCatalog = getAccessoryById(
+      directFromCatalog as AccessoryId
+    );
     if (accessoryFromCatalog) {
       return toShopItemFromAccessory(accessoryFromCatalog);
     }
 
-    const consumableFromCatalog = getConsumableById(directFromCatalog as ItemId);
+    const consumableFromCatalog = getConsumableById(
+      directFromCatalog as ItemId
+    );
     if (consumableFromCatalog) {
       return toShopItemFromConsumable(consumableFromCatalog);
     }
@@ -100,7 +115,10 @@ export function getShopItem(itemKeyOrName: string | AccessoryId | ItemId): ShopI
   return null;
 }
 
-function getOptionValue(options: InteractionDataOption[] | undefined, name: string) {
+function getOptionValue(
+  options: InteractionDataOption[] | undefined,
+  name: string
+) {
   const option = options?.find(o => o.name === name);
   return option ? String(option.value).trim() : '';
 }
@@ -138,14 +156,18 @@ export function buildShopComponents(
     type: 2,
     label: '<',
     style: 2,
-    custom_id: sanitizeComponentId(`shop_backward:${Math.max(1, safePage - 1)}:${safeUserId}`),
+    custom_id: sanitizeComponentId(
+      `shop_backward:${Math.max(1, safePage - 1)}:${safeUserId}`
+    ),
     disabled: safePage <= 1,
   };
   const arrowForward = {
     type: 2,
     label: '>',
     style: 2,
-    custom_id: sanitizeComponentId(`shop_forward:${Math.min(safePageCount, safePage + 1)}:${safeUserId}`),
+    custom_id: sanitizeComponentId(
+      `shop_forward:${Math.min(safePageCount, safePage + 1)}:${safeUserId}`
+    ),
     disabled: safePage >= safePageCount,
   };
 
@@ -185,11 +207,13 @@ export function buildShopComponents(
       type: 2,
       label: fr ? 'Acheter' : 'Buy',
       style: 3,
-      custom_id: sanitizeComponentId(`shop_buy:${sanitizeOptionValue(selectedItemKey)}:${safePage}:${safeUserId}`),
+      custom_id: sanitizeComponentId(
+        `shop_buy:${sanitizeOptionValue(selectedItemKey)}:${safePage}:${safeUserId}`
+      ),
       disabled: !selectHasOptions,
     });
 
-    bottomButtons.push ({
+    bottomButtons.push({
       type: 2,
       label: fr ? 'Retour' : 'Back',
       style: 2,
@@ -227,7 +251,10 @@ export async function handleShopCommand(
     const pageSize = 16;
     const pageCount = Math.max(1, Math.ceil(allShopItems.length / pageSize));
     const pageIndex = Math.min(pageCount - 1, page - 1);
-    const itemsOnPage = allShopItems.slice(pageIndex * pageSize, pageIndex * pageSize + pageSize);
+    const itemsOnPage = allShopItems.slice(
+      pageIndex * pageSize,
+      pageIndex * pageSize + pageSize
+    );
 
     if (format === 'image') {
       const imageUrl = `${BASE_URL}/shop/${page}?lang=${fr ? 'fr' : 'en'}`;
@@ -238,7 +265,13 @@ export async function handleShopCommand(
 
       let components: unknown = [];
       try {
-        components = buildShopComponents(itemsOnPage, page, pageCount, fr, userId);
+        components = buildShopComponents(
+          itemsOnPage,
+          page,
+          pageCount,
+          fr,
+          userId
+        );
       } catch (eventError) {
         console.error('[ShopCommand] buildShopComponents failed:', eventError);
       }
@@ -260,7 +293,10 @@ export async function handleShopCommand(
     }
 
     const list = itemsOnPage
-      .map(item => `${fr ? item.nameFr : item.nameEn} (${item.itemKey}) - ${item.price} gold`)
+      .map(
+        item =>
+          `${fr ? item.nameFr : item.nameEn} (${item.itemKey}) - ${item.price} gold`
+      )
       .join('\n');
 
     return c.json({
@@ -268,9 +304,7 @@ export async function handleShopCommand(
       data: {
         embeds: [
           {
-            description: fr
-              ? `# Boutique\n\n${list}`
-              : `# Shop\n\n${list}`,
+            description: fr ? `# Boutique\n\n${list}` : `# Shop\n\n${list}`,
             color: 0x2b2d31,
           },
         ],
@@ -387,7 +421,11 @@ export async function handleShopCommand(
       });
     }
 
-    const consumed = await consumeInventoryItem(userId, shopItem.itemKey, quantity);
+    const consumed = await consumeInventoryItem(
+      userId,
+      shopItem.itemKey,
+      quantity
+    );
     if (!consumed) {
       return c.json({
         type: 4,

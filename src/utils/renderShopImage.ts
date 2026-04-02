@@ -82,7 +82,7 @@ export async function buildShopSvg(
   const height = getCanvasHeight(items.length);
   const title = fr ? 'Boutique' : 'Shop';
   const subtitle = fr
-    ? `Page ${page}/${pageCount} - ${items.length} items`   
+    ? `Page ${page}/${pageCount} - ${items.length} items`
     : `Page ${page}/${pageCount} - ${items.length} items`;
   const fontFamily = hasEmbeddedFont ? 'GintoNordMedium' : 'Arial';
 
@@ -126,7 +126,13 @@ export async function renderShopImage(
 ): Promise<Uint8Array> {
   await ensureResvgWasm();
   const fontBuffer = await getEmbeddedFontBuffer();
-  const svg = await buildShopSvg(items, page, pageCount, fr, Boolean(fontBuffer));
+  const svg = await buildShopSvg(
+    items,
+    page,
+    pageCount,
+    fr,
+    Boolean(fontBuffer)
+  );
 
   const options = fontBuffer
     ? {
@@ -148,7 +154,12 @@ export async function renderShopImage(
   const boardBytes = await getAssetBytes(BOARD_PATH);
   if (boardBytes) {
     board = Photon.PhotonImage.new_from_byteslice(new Uint8Array(boardBytes));
-    canvas = Photon.resize(board, WIDTH, getCanvasHeight(items.length), Photon.SamplingFilter.Lanczos3);
+    canvas = Photon.resize(
+      board,
+      WIDTH,
+      getCanvasHeight(items.length),
+      Photon.SamplingFilter.Lanczos3
+    );
     Photon.watermark(canvas, overlay, 0n, 0n);
   } else {
     canvas = overlay;

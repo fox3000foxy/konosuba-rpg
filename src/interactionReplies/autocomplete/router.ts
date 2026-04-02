@@ -122,9 +122,10 @@ export function handleAutocomplete(
         value: item.id,
       }));
       const allChoices = [...accessoryChoices, ...consumableChoices]
-        .filter(choice =>
-          choice.name.toLowerCase().includes(focusedValue) ||
-          String(choice.value).toLowerCase().includes(focusedValue)
+        .filter(
+          choice =>
+            choice.name.toLowerCase().includes(focusedValue) ||
+            String(choice.value).toLowerCase().includes(focusedValue)
         )
         .slice(0, 25);
 

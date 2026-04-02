@@ -199,17 +199,25 @@ export function registerApiRoutes(app: Hono): void {
     const allItems = getAllShopItems();
     const pageCount = Math.max(1, Math.ceil(allItems.length / pageSize));
     const pageIndex = Math.min(pageCount - 1, page - 1);
-    const itemsOnPage = allItems.slice(pageIndex * pageSize, pageIndex * pageSize + pageSize);
+    const itemsOnPage = allItems.slice(
+      pageIndex * pageSize,
+      pageIndex * pageSize + pageSize
+    );
 
     const image = await renderShopImage(itemsOnPage, page, pageCount, fr);
-    const responseBody = image.buffer.slice(image.byteOffset, image.byteOffset + image.byteLength);
+    const responseBody = image.buffer.slice(
+      image.byteOffset,
+      image.byteOffset + image.byteLength
+    );
 
     return new Response(responseBody as ArrayBuffer, {
       headers: {
         'Content-Type': 'image/png',
-        'Cache-Control': 'public, max-age=0, s-maxage=15, stale-while-revalidate=60',
+        'Cache-Control':
+          'public, max-age=0, s-maxage=15, stale-while-revalidate=60',
         'CDN-Cache-Control': 'public, s-maxage=15, stale-while-revalidate=60',
-        'Vercel-CDN-Cache-Control': 'public, s-maxage=15, stale-while-revalidate=60',
+        'Vercel-CDN-Cache-Control':
+          'public, s-maxage=15, stale-while-revalidate=60',
       },
     });
   });
@@ -238,9 +246,7 @@ export function registerApiRoutes(app: Hono): void {
 
     if (!progresses || !runSummary || !achievements) {
       return c.text(
-        fr
-          ? 'Données de profil incomplètes.'
-          : 'Incomplete profile data.',
+        fr ? 'Données de profil incomplètes.' : 'Incomplete profile data.',
         404
       );
     }

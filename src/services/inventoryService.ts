@@ -109,21 +109,29 @@ export async function addInventoryItem(
       .maybeSingle();
 
     if (existingError) {
-      console.error('[db] addInventoryItem select failed:', existingError.message);
+      console.error(
+        '[db] addInventoryItem select failed:',
+        existingError.message
+      );
       return false;
     }
 
     if (!existing) {
-      const { error: insertError } = await supabase.from('inventory_items').insert({
-        user_id: userId,
-        item_key: itemKey,
-        item_type: itemType,
-        quantity,
-        updated_at: new Date().toISOString(),
-      });
+      const { error: insertError } = await supabase
+        .from('inventory_items')
+        .insert({
+          user_id: userId,
+          item_key: itemKey,
+          item_type: itemType,
+          quantity,
+          updated_at: new Date().toISOString(),
+        });
 
       if (insertError) {
-        console.error('[db] addInventoryItem insert failed:', insertError.message);
+        console.error(
+          '[db] addInventoryItem insert failed:',
+          insertError.message
+        );
         return false;
       }
 
@@ -138,7 +146,10 @@ export async function addInventoryItem(
       .eq('item_key', itemKey);
 
     if (updateError) {
-      console.error('[db] addInventoryItem update failed:', updateError.message);
+      console.error(
+        '[db] addInventoryItem update failed:',
+        updateError.message
+      );
       return false;
     }
 
