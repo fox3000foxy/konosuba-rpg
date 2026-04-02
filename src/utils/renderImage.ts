@@ -88,6 +88,8 @@ const photonCache: LRUCache<string, Photon.PhotonImage> = G.__photonCache;
 const layerCache: LRUCache<string, Photon.PhotonImage> = G.__layerCache;
 const uiPhotonCache: LRUCache<string, Photon.PhotonImage> = G.__uiPhotonCache;
 const renderOutputCache: LRUCache<string, Uint8Array> = G.__renderOutputCache;
+const pendingImageFetches = new Map<string, Promise<ArrayBuffer>>();
+const pendingFontFetches = new Map<string, Promise<ArrayBuffer>>();
 
 // ─── Image / Font helpers ────────────────────────────────────────────────────
 
@@ -96,20 +98,48 @@ const BASE_URL =
 
 export async function getImageBytes(key: string): Promise<ArrayBuffer> {
   if (imageCache[key]) return imageCache[key];
+  const pending = pendingImageFetches.get(key);
+  if (pending) return pending;
+
   const path: string = imageManifest[key];
   if (!path) throw new Error(`Image key not found in manifest: ${key}`);
-  const r = await fetch(`${BASE_URL}${path}`);
-  if (!r.ok) throw new Error(`Failed to fetch image "${key}": ${r.status}`);
-  const buf = await r.arrayBuffer();
-  imageCache[key] = buf;
-  return buf;
+
+  const request = fetch(`${BASE_URL}${path}`)
+    .then(r => {
+      if (!r.ok) {
+        throw new Error(`Failed to fetch image "${key}": ${r.status}`);
+      }
+      return r.arrayBuffer();
+    })
+    .then(buf => {
+      imageCache[key] = buf;
+      return buf;
+    })
+    .finally(() => {
+      pendingImageFetches.delete(key);
+    });
+
+  pendingImageFetches.set(key, request);
+  return request;
 }
 
 async function getFontBytes(url: string): Promise<ArrayBuffer> {
   if (fontCache[url]) return fontCache[url];
-  const buf = await fetch(url).then(r => r.arrayBuffer());
-  fontCache[url] = buf;
-  return buf;
+  const pending = pendingFontFetches.get(url);
+  if (pending) return pending;
+
+  const request = fetch(url)
+    .then(r => r.arrayBuffer())
+    .then(buf => {
+      fontCache[url] = buf;
+      return buf;
+    })
+    .finally(() => {
+      pendingFontFetches.delete(url);
+    });
+
+  pendingFontFetches.set(url, request);
+  return request;
 }
 
 function getBase64Cached(key: string, buf: ArrayBuffer): string {
@@ -841,9 +871,17 @@ async function getUIOverlay(
 const END_STATES = ['good', 'bad', 'giveup', 'best'];
 
 export async function warmup(): Promise<void> {
+  const fontUrl = `${BASE_URL}/assets/swordgame/font/GintoNordMedium.otf`;
   await Promise.all([
     ensureResvgWasm(),
+    getFontBytes(fontUrl),
     ...END_STATES.map(s => getImageBytes('end_' + s)),
+    getImageBytes('board'),
+    getImageBytes('frameless'),
+    getImageBytes('ui_effect_potion').catch(() => undefined),
+    getImageBytes('ui_effect_chrono').catch(() => undefined),
+    getImageBytes('ui_effect_stone').catch(() => undefined),
+    getImageBytes('ui_effect_scroll').catch(() => undefined),
   ]);
 }
 
@@ -859,6 +897,14 @@ export default async function renderImage(
   creature: Creature,
   lang = 'en'
 ): Promise<Uint8Array> {
+  const perfEnabled = process.env.RENDER_PERF === '1';
+  const startedAt = perfEnabled ? performance.now() : 0;
+  const spans: PerfSpan[] = [];
+  const mark = (label: string, t0: number): void => {
+    if (!perfEnabled) return;
+    spans.push({ label, ms: performance.now() - t0 });
+  };
+
   await ensureResvgWasm();
 
   const W = 1000,
@@ -884,8 +930,22 @@ export default async function renderImage(
   const renderCacheKey = `render::${uiCacheKey}::${charsKey}`;
 
   const cachedOutput = renderOutputCache.get(renderCacheKey);
-  if (cachedOutput) return new Uint8Array(cachedOutput);
+  if (cachedOutput) {
+    if (perfEnabled) {
+      _perfReport = {
+        totalMs: performance.now() - startedAt,
+        spans,
+        cacheHits: {
+          renderOutput: true,
+          uiOverlay: uiPhotonCache.has(uiCacheKey),
+          charactersLayer: layerCache.has(charsKey),
+        },
+      };
+    }
+    return new Uint8Array(cachedOutput);
+  }
 
+  const tFetch = perfEnabled ? performance.now() : 0;
   const [fontMediumBuf] = await Promise.all([
     getFontBytes(`${BASE_URL}/assets/swordgame/font/GintoNordMedium.otf`),
     getImageBytes('ui_effect_potion').catch(() => undefined),
@@ -893,7 +953,9 @@ export default async function renderImage(
     getImageBytes('ui_effect_stone').catch(() => undefined),
     getImageBytes('ui_effect_scroll').catch(() => undefined),
   ]);
+  mark('assets.fetch', tFetch);
 
+  const tLayers = perfEnabled ? performance.now() : 0;
   const [canvas, chars, uiImg] = await Promise.all([
     getBackground(W, H),
     getCharactersLayer(
@@ -916,14 +978,32 @@ export default async function renderImage(
       H
     ),
   ]);
+  mark('layers.build', tLayers);
 
+  const tComposite = perfEnabled ? performance.now() : 0;
   Photon.watermark(canvas, chars, 0n, 0n);
   Photon.watermark(canvas, uiImg, 0n, 0n);
+  mark('layers.composite', tComposite);
 
+  const tEncode = perfEnabled ? performance.now() : 0;
   const output = new Uint8Array(canvas.get_bytes_webp());
   canvas.free();
+  mark('webp.encode', tEncode);
 
   renderOutputCache.set(renderCacheKey, new Uint8Array(output));
+
+  if (perfEnabled) {
+    _perfReport = {
+      totalMs: performance.now() - startedAt,
+      spans,
+      cacheHits: {
+        renderOutput: false,
+        uiOverlay: uiPhotonCache.has(uiCacheKey),
+        charactersLayer: layerCache.has(charsKey),
+      },
+    };
+  }
+
   return output;
 }
 
@@ -954,7 +1034,7 @@ export interface PerfReport {
   cacheHits: Record<string, boolean>;
 }
 
-const _perfReport: PerfReport | null = null;
+let _perfReport: PerfReport | null = null;
 
 export function getLastPerfReport(): PerfReport | null {
   return _perfReport;
