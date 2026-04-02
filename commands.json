@@ -238,6 +238,48 @@
 		"global_popularity_rank": 11
 	},
 	{
+		"name": "shop",
+		"description": "Afficher la boutique et acheter/vendre des objets",
+		"description_localizations": {
+			"fr": "Afficher la boutique et acheter/vendre des objets",
+			"en-US": "Show shop and buy/sell items",
+			"en-GB": "Show shop and buy/sell items"
+		},
+		"options": [
+			{
+				"name": "action",
+				"description": "items/buy/sell",
+				"type": "STRING",
+				"required": false,
+				"autocomplete": true
+			},
+			{
+				"name": "item",
+				"description": "Nom ou ID de l'objet",
+				"type": "STRING",
+				"required": false,
+				"autocomplete": true
+			},
+			{
+				"name": "quantity",
+				"description": "Nombre d'objets",
+				"type": "INTEGER",
+				"required": false
+			}
+		],
+		"dm_permission": true,
+		"contexts": [
+			0,
+			1,
+			2
+		],
+		"integration_types": [
+			0,
+			1
+		],
+		"global_popularity_rank": 12
+	},
+	{
 		"name": "craft",
 		"description": "Fabriquer une potion via une recette",
 		"description_localizations": {

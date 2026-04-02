@@ -2,6 +2,8 @@ import { Context } from 'hono';
 import { Interaction } from '../../objects/enums/Interaction';
 import { MonsterDifficulty } from '../../objects/enums/MonsterDifficulty';
 import { QuestAction } from '../../objects/enums/QuestAction';
+import { getItems as getAccessoryItems } from '../../services/accessoryService';
+import { getItems as getConsumableItems } from '../../services/consumableService';
 import { getCraftingRecipes } from '../../services/craftService';
 import { getQuestLabel, QUESTS } from '../../services/progressionService';
 import { getMonsterCatalog } from '../commands/infos-monster';
@@ -84,6 +86,40 @@ export function handleAutocomplete(
         .map(monster => ({ name: monster.name, value: monster.id }));
 
       return c.json({ type: 8, data: { choices } });
+    }
+  }
+
+  if (interaction.data?.name === 'shop') {
+    const options = interaction.data.options || [];
+    const focused = options.find(option => option.focused);
+    const focusedValue = String(focused?.value || '').toLowerCase();
+
+    if (focused?.name === 'action') {
+      const actionChoices = ['items', 'buy', 'sell']
+        .filter(a => a.startsWith(focusedValue))
+        .slice(0, 25)
+        .map(a => ({ name: a, value: a }));
+
+      return c.json({ type: 8, data: { choices: actionChoices } });
+    }
+
+    if (focused?.name === 'item') {
+      const accessoryChoices = getAccessoryItems().map(item => ({
+        name: item.nameFr || item.id,
+        value: item.id,
+      }));
+      const consumableChoices = getConsumableItems().map(item => ({
+        name: item.nameFr || item.id,
+        value: item.id,
+      }));
+      const allChoices = [...accessoryChoices, ...consumableChoices]
+        .filter(choice =>
+          choice.name.toLowerCase().includes(focusedValue) ||
+          String(choice.value).toLowerCase().includes(focusedValue)
+        )
+        .slice(0, 25);
+
+      return c.json({ type: 8, data: { choices: allChoices } });
     }
   }
 
