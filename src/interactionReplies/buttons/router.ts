@@ -23,6 +23,7 @@ import {
   buildComponents,
   getBattleMonsterNames,
 } from '../../utils/componentsBuilder';
+import { addImageVersion } from '../../utils/imageUtils';
 import { decompressMoves } from '../../utils/movesUtils';
 import { extractDifficulty, isTraining } from '../../utils/payloadUtils';
 import {
@@ -230,7 +231,9 @@ export async function handleButtonInteraction(
                 ? `Page ${page} / ${pageCount}`
                 : `Page ${page} / ${pageCount}`,
               image: {
-                url: `${BASE_URL}/shop/${page}?lang=${fr ? 'fr' : 'en'}`,
+                url: addImageVersion(
+                  `${BASE_URL}/shop/${page}?lang=${fr ? 'fr' : 'en'}`
+                ),
               },
               color: 0x2b2d31,
             },
@@ -265,7 +268,9 @@ export async function handleButtonInteraction(
         selectedItemKey
       );
 
-      console.log(`${BASE_URL}/shop/${page}?lang=${fr ? 'fr' : 'en'}`);
+      console.log(
+        addImageVersion(`${BASE_URL}/shop/${page}?lang=${fr ? 'fr' : 'en'}`)
+      );
       const selectedItemName = selectedItemKey
         ? getShopItem(selectedItemKey)?.nameEn || selectedItemKey
         : fr
@@ -282,7 +287,9 @@ export async function handleButtonInteraction(
               title: fr ? 'Boutique' : 'Shop',
               description,
               image: {
-                url: `${BASE_URL}/shop/${page}?lang=${fr ? 'fr' : 'en'}`,
+                url: addImageVersion(
+                  `${BASE_URL}/shop/${page}?lang=${fr ? 'fr' : 'en'}`
+                ),
               },
               color: 0x2b2d31,
             },
@@ -355,7 +362,9 @@ export async function handleButtonInteraction(
               title: fr ? 'Achat réussi' : 'Purchase success',
               description: message,
               image: {
-                url: `${BASE_URL}/shop/${page}?lang=${fr ? 'fr' : 'en'}`,
+                url: addImageVersion(
+                  `${BASE_URL}/shop/${page}?lang=${fr ? 'fr' : 'en'}`
+                ),
               },
               color: 0x2b2d31,
             },

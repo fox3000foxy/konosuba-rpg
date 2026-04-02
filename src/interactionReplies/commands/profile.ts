@@ -2,9 +2,10 @@ import { Context } from 'hono';
 import { BASE_URL } from '../../objects/config';
 import { InteractionDataOption } from '../../objects/types/InteractionDataOption';
 import {
-  ensurePlayerProfile,
-  getPlayerProfile,
+    ensurePlayerProfile,
+    getPlayerProfile,
 } from '../../services/progressionService';
+import { addImageVersion } from '../../utils/imageUtils';
 
 export async function handleProfileCommand(
   c: Context,
@@ -33,7 +34,9 @@ export async function handleProfileCommand(
     });
   }
 
-  const profileImageUrl = `${BASE_URL}/profile/${targetUserId}?lang=${fr ? 'fr' : 'en'}`;
+  const profileImageUrl = addImageVersion(
+    `${BASE_URL}/profile/${targetUserId}?lang=${fr ? 'fr' : 'en'}`
+  );
 
   const description = fr
     ? `# Profil de <@${targetUserId}>`

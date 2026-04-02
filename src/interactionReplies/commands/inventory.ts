@@ -1,6 +1,7 @@
 import { Context } from 'hono';
 import { BASE_URL } from '../../objects/config';
 import { InteractionDataOption } from '../../objects/types/InteractionDataOption';
+import { addImageVersion } from '../../utils/imageUtils';
 
 export async function handleInventoryCommand(
   c: Context,
@@ -11,7 +12,9 @@ export async function handleInventoryCommand(
   const mentioned = options?.find(option => option.name === 'mention')?.value;
   const targetUserId = mentioned ? String(mentioned) : userID;
   const lang = fr ? 'fr' : 'en';
-  const imageUrl = `${BASE_URL}/inventory/${targetUserId}?lang=${lang}&v=${Date.now()}`;
+  const imageUrl = addImageVersion(
+    `${BASE_URL}/inventory/${targetUserId}?lang=${lang}`
+  );
 
   return c.json({
     type: 4,

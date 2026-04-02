@@ -2,10 +2,11 @@ import { Context } from 'hono';
 import { BASE_URL } from '../../objects/config';
 import { InteractionDataOption } from '../../objects/types/InteractionDataOption';
 import {
-  ensurePlayerProfile,
-  getCharacterProgresses,
-  getCharacterStatsSnapshot,
+    ensurePlayerProfile,
+    getCharacterProgresses,
+    getCharacterStatsSnapshot,
 } from '../../services/progressionService';
+import { addImageVersion } from '../../utils/imageUtils';
 
 export async function handleCharacterCommand(
   c: Context,
@@ -35,7 +36,9 @@ export async function handleCharacterCommand(
     });
   }
 
-  const affinityImageUrl = `${BASE_URL}/affinity/${targetUserId}?lang=${fr ? 'fr' : 'en'}`;
+  const affinityImageUrl = addImageVersion(
+    `${BASE_URL}/affinity/${targetUserId}?lang=${fr ? 'fr' : 'en'}`
+  );
 
   return c.json({
     type: 4,
