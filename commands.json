@@ -265,6 +265,19 @@
 				"description": "Nombre d'objets",
 				"type": "INTEGER",
 				"required": false
+			},
+			{
+				"name": "page",
+				"description": "Page de la boutique à afficher",
+				"type": "INTEGER",
+				"required": false
+			},
+			{
+				"name": "format",
+				"description": "text/image",
+				"type": "STRING",
+				"required": false,
+				"autocomplete": true
 			}
 		],
 		"dm_permission": true,

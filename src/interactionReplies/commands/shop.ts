@@ -1,8 +1,10 @@
 import { Context } from 'hono';
+import { BASE_URL } from '../../objects/config/constants';
 import { AccessoryId } from '../../objects/enums/AccessoryId';
 import { ItemId } from '../../objects/enums/ItemId';
 import { Rarity } from '../../objects/enums/Rarity';
 import { InteractionDataOption } from '../../objects/types/InteractionDataOption';
+import { ShopItem } from '../../objects/types/ShopItem';
 import {
     getItemById as getAccessoryById,
     getItemByName as getAccessoryByName,
@@ -25,15 +27,8 @@ const SHOP_CATALOG_KEYS: Array<AccessoryId | ItemId> = [
   ...Object.values(ItemId),
 ];
 
-type ShopItem = {
-  itemKey: AccessoryId | ItemId;
-  itemType: 'accessory' | 'consumable' | 'unknown';
-  nameFr: string;
-  nameEn: string;
-  price: number;
-};
 
-function getPriceFromRarity(rarity: Rarity, itemType: 'accessory' | 'consumable'): number {
+export function getPriceFromRarity(rarity: Rarity, itemType: 'accessory' | 'consumable'): number {
   const base = itemType === 'accessory' ? 90 : 40;
   const multiplier: Record<Rarity, number> = {
     [Rarity.Basic]: 1,
@@ -120,6 +115,9 @@ export async function handleShopCommand(
   console.log(`[ShopCommand] userId=${userId} options=${JSON.stringify(options)}`);
 
   const action = (getOptionValue(options, 'action') || 'items').toLowerCase();
+  const format = (getOptionValue(options, 'format') || 'text').toLowerCase();
+  const pageValue = Number(getOptionValue(options, 'page')) || 1;
+  const page = Math.max(1, pageValue);
   const itemInput = getOptionValue(options, 'item');
   const quantityValue = Number(getOptionValue(options, 'quantity')) || 1;
   const quantity = Math.max(1, Math.min(quantityValue, 99));
@@ -128,8 +126,35 @@ export async function handleShopCommand(
     const accessoryItems = getAllAccessories().map(toShopItemFromAccessory);
     const consumableItems = getAllConsumables().map(toShopItemFromConsumable);
     const allShopItems = [...accessoryItems, ...consumableItems];
+    const pageSize = 16;
+    const pageCount = Math.max(1, Math.ceil(allShopItems.length / pageSize));
+    const pageIndex = Math.min(pageCount - 1, page - 1);
+    const itemsOnPage = allShopItems.slice(pageIndex * pageSize, pageIndex * pageSize + pageSize);
 
-    const list = allShopItems
+    if (format === 'image') {
+      const imageUrl = `${BASE_URL}/shop/${page}?lang=${fr ? 'fr' : 'en'}`;
+      const description = fr
+        ? `Voici la page ${page} de la boutique (${pageCount}).`
+        : `Page ${page} of shop (${pageCount}).`;
+
+      return c.json({
+        type: 4,
+        data: {
+          embeds: [
+            {
+              title: fr ? 'Boutique (image)' : 'Shop (image)',
+              description,
+              image: {
+                url: imageUrl,
+              },
+              color: 0x2b2d31,
+            },
+          ],
+        },
+      });
+    }
+
+    const list = itemsOnPage
       .map(item => `${fr ? item.nameFr : item.nameEn} (${item.itemKey}) - ${item.price} gold`)
       .join('\n');
 

@@ -1,6 +1,10 @@
 import { Context, Hono } from 'hono';
 import { generateMonsterInfosByConstructorName } from '../interactionReplies/commands/infos-monster';
 import { generatePlayerInfos } from '../interactionReplies/commands/infos-player';
+import { getPriceFromRarity } from '../interactionReplies/commands/shop';
+import { ShopItem } from '../objects/types/ShopItem';
+import { getItems as getAccessoryItems } from '../services/accessoryService';
+import { getItems as getConsumableItems } from '../services/consumableService';
 import { getInventoryItems } from '../services/inventoryService';
 import {
   getAchievementsOverview,
@@ -17,6 +21,7 @@ import {
   buildProfileSvg,
   renderProfileImage,
 } from '../utils/renderProfileImage';
+import { renderShopImage } from '../utils/renderShopImage';
 
 const PLAYER_ID_BY_NAME: Record<string, number> = {
   kazuma: 0,
@@ -27,6 +32,27 @@ const PLAYER_ID_BY_NAME: Record<string, number> = {
 
 function getApiLang(c: Context) {
   return c.req.query('lang') === 'fr';
+}
+
+function getAllShopItems(): ShopItem[] {
+  const accessoryItems: ShopItem[] = getAccessoryItems().map(item => ({
+    itemKey: item.id,
+    itemType: 'accessory',
+    nameFr: item.nameFr,
+    nameEn: item.nameEn,
+    rarity: item.rarity,
+    price: getPriceFromRarity(item.rarity, 'accessory'),
+  }));
+  const consumableItems: ShopItem[] = getConsumableItems().map(item => ({
+    itemKey: item.id,
+    itemType: 'consumable',
+    nameFr: item.nameFr,
+    nameEn: item.nameEn,
+    rarity: item.rarity,
+    price: getPriceFromRarity(item.rarity, 'consumable'),
+  }));
+
+  return [...accessoryItems, ...consumableItems];
 }
 
 export function registerApiRoutes(app: Hono): void {
@@ -161,6 +187,29 @@ export function registerApiRoutes(app: Hono): void {
         'CDN-Cache-Control': 'public, s-maxage=15, stale-while-revalidate=60',
         'Vercel-CDN-Cache-Control':
           'public, s-maxage=15, stale-while-revalidate=60',
+      },
+    });
+  });
+
+  app.get('/shop/:page', async (c: Context) => {
+    const fr = getApiLang(c);
+    const page = Math.max(1, Number(c.req.param('page')) || 1);
+    const pageSize = 16;
+
+    const allItems = getAllShopItems();
+    const pageCount = Math.max(1, Math.ceil(allItems.length / pageSize));
+    const pageIndex = Math.min(pageCount - 1, page - 1);
+    const itemsOnPage = allItems.slice(pageIndex * pageSize, pageIndex * pageSize + pageSize);
+
+    const image = await renderShopImage(itemsOnPage, page, pageCount, fr);
+    const responseBody = image.buffer.slice(image.byteOffset, image.byteOffset + image.byteLength);
+
+    return new Response(responseBody as ArrayBuffer, {
+      headers: {
+        'Content-Type': 'image/png',
+        'Cache-Control': 'public, max-age=0, s-maxage=15, stale-while-revalidate=60',
+        'CDN-Cache-Control': 'public, s-maxage=15, stale-while-revalidate=60',
+        'Vercel-CDN-Cache-Control': 'public, s-maxage=15, stale-while-revalidate=60',
       },
     });
   });

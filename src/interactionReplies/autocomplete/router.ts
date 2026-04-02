@@ -103,6 +103,15 @@ export function handleAutocomplete(
       return c.json({ type: 8, data: { choices: actionChoices } });
     }
 
+    if (focused?.name === 'format') {
+      const formatChoices = ['text', 'image']
+        .filter(a => a.startsWith(focusedValue))
+        .slice(0, 25)
+        .map(a => ({ name: a, value: a }));
+
+      return c.json({ type: 8, data: { choices: formatChoices } });
+    }
+
     if (focused?.name === 'item') {
       const accessoryChoices = getAccessoryItems().map(item => ({
         name: item.nameFr || item.id,
