@@ -378,7 +378,7 @@ export async function handleButtonInteraction(
     }
   }
 
-  if (customId.startsWith('consumable_item:')) {
+  if (customId.startsWith('affinity_gift_apply:')) {
     const parts = customId.split(':');
     const itemKey = parts[1] || '';
     const characterKeyRaw = parts[2] || '';
