@@ -104,11 +104,7 @@ async function loadCommands(): Promise<JsonObject[]> {
   return parsed.map(normalizeCommand);
 }
 
-async function discordApi<T>(
-  url: string,
-  token: string,
-  init?: RequestInit
-): Promise<T> {
+async function discordApi<T>(url: string, token: string, init?: RequestInit): Promise<T> {
   const maxAttempts = 6;
 
   for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
@@ -135,11 +131,7 @@ async function discordApi<T>(
       if (bodyText) {
         try {
           const parsed = JSON.parse(bodyText) as DiscordRateLimitBody;
-          if (
-            typeof parsed.retry_after === 'number' &&
-            Number.isFinite(parsed.retry_after) &&
-            parsed.retry_after > 0
-          ) {
+          if (typeof parsed.retry_after === 'number' && Number.isFinite(parsed.retry_after) && parsed.retry_after > 0) {
             waitMs = Math.ceil(parsed.retry_after * 1000);
           }
         } catch {
@@ -149,9 +141,7 @@ async function discordApi<T>(
 
       // Add a small safety buffer to reduce chance of immediate re-limit.
       waitMs += 250;
-      console.warn(
-        `[commandsUpdater] Rate limited on ${init?.method || 'GET'} ${url}. Retrying in ${waitMs}ms (attempt ${attempt}/${maxAttempts}).`
-      );
+      console.warn(`[commandsUpdater] Rate limited on ${init?.method || 'GET'} ${url}. Retrying in ${waitMs}ms (attempt ${attempt}/${maxAttempts}).`);
       await new Promise(resolve => setTimeout(resolve, waitMs));
       continue;
     }
@@ -190,9 +180,7 @@ export async function patchCommands(): Promise<void> {
   }
 
   if (guildId) {
-    console.warn(
-      '[commandsUpdater] DISCORD_GUILD_ID is set but ignored. This updater patches global commands only.'
-    );
+    console.warn('[commandsUpdater] DISCORD_GUILD_ID is set but ignored. This updater patches global commands only.');
   }
 
   const commands = await loadCommands();
@@ -201,9 +189,7 @@ export async function patchCommands(): Promise<void> {
   const existing = await discordApi<DiscordCommand[]>(baseUrl, token, {
     method: 'GET',
   });
-  const existingByName = new Map(
-    existing.map(command => [command.name, command])
-  );
+  const existingByName = new Map(existing.map(command => [command.name, command]));
 
   let created = 0;
   let updated = 0;
@@ -211,9 +197,7 @@ export async function patchCommands(): Promise<void> {
   for (const command of commands) {
     const name = typeof command.name === 'string' ? command.name : '';
     if (!name) {
-      throw new Error(
-        'Each command in commands.json must have a non-empty name'
-      );
+      throw new Error('Each command in commands.json must have a non-empty name');
     }
 
     const previous = existingByName.get(name);
@@ -233,9 +217,7 @@ export async function patchCommands(): Promise<void> {
     created += 1;
   }
 
-  console.log(
-    `[commandsUpdater] Synced ${commands.length} commands (${updated} updated, ${created} created) on global scope.`
-  );
+  console.log(`[commandsUpdater] Synced ${commands.length} commands (${updated} updated, ${created} created) on global scope.`);
 }
 
 if (require.main === module) {

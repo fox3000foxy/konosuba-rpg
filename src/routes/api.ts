@@ -6,27 +6,12 @@ import { ShopItem } from '../objects/types/ShopItem';
 import { getItems as getAccessoryItems } from '../services/accessoryService';
 import { getItems as getConsumableItems } from '../services/consumableService';
 import { getInventoryItems } from '../services/inventoryService';
-import {
-  getAchievementsOverview,
-  getAllQuestStatuses,
-  getCharacterProgresses,
-  getPlayerProfile,
-  getPlayerRunSummary,
-} from '../services/progressionService';
+import { getAchievementsOverview, getAllQuestStatuses, getCharacterProgresses, getPlayerProfile, getPlayerRunSummary } from '../services/progressionService';
 import { imageCacheHeaders } from '../utils/cacheHeaders';
-import {
-  buildAchievementsSvg,
-  renderAchievementsImage,
-} from '../utils/renderAchievementsImage';
-import {
-  buildAffinitySvg,
-  renderAffinityImage,
-} from '../utils/renderAffinityImage';
+import { buildAchievementsSvg, renderAchievementsImage } from '../utils/renderAchievementsImage';
+import { buildAffinitySvg, renderAffinityImage } from '../utils/renderAffinityImage';
 import { buildSvg, renderInventoryImage } from '../utils/renderInventoryImage';
-import {
-  buildProfileSvg,
-  renderProfileImage,
-} from '../utils/renderProfileImage';
+import { buildProfileSvg, renderProfileImage } from '../utils/renderProfileImage';
 import { buildQuestSvg, renderQuestImage } from '../utils/renderQuestImage';
 import { renderShopImage } from '../utils/renderShopImage';
 
@@ -85,9 +70,7 @@ export function registerApiRoutes(app: Hono): void {
     if (characterId === undefined) {
       return c.json(
         {
-          error: fr
-            ? 'Personnage invalide. Utilisez Kazuma, Darkness, Megumin ou Aqua.'
-            : 'Invalid player. Use Kazuma, Darkness, Megumin, or Aqua.',
+          error: fr ? 'Personnage invalide. Utilisez Kazuma, Darkness, Megumin ou Aqua.' : 'Invalid player. Use Kazuma, Darkness, Megumin, or Aqua.',
         },
         400
       );
@@ -100,10 +83,7 @@ export function registerApiRoutes(app: Hono): void {
     const fr = getApiLang(c);
 
     const monsterConstructorName = c.req.param('monsterConstructorName') || '';
-    const infos = generateMonsterInfosByConstructorName(
-      monsterConstructorName,
-      fr
-    );
+    const infos = generateMonsterInfosByConstructorName(monsterConstructorName, fr);
     if (!infos.creature) {
       return c.json(
         {
@@ -135,10 +115,7 @@ export function registerApiRoutes(app: Hono): void {
     }
     const items = await getInventoryItems(userId);
     const image = await renderInventoryImage(userId, items, fr);
-    const responseBody = image.buffer.slice(
-      image.byteOffset,
-      image.byteOffset + image.byteLength
-    );
+    const responseBody = image.buffer.slice(image.byteOffset, image.byteOffset + image.byteLength);
 
     return new Response(responseBody as ArrayBuffer, {
       headers: imageCacheHeaders('image/png'),
@@ -154,12 +131,7 @@ export function registerApiRoutes(app: Hono): void {
 
     const progresses = await getCharacterProgresses(userId);
     if (!progresses) {
-      return c.text(
-        fr
-          ? 'Affinite indisponible pour le moment.'
-          : 'Affinity is unavailable right now.',
-        404
-      );
+      return c.text(fr ? 'Affinite indisponible pour le moment.' : 'Affinity is unavailable right now.', 404);
     }
 
     const renderSvg = c.req.query('renderSvg') === 'true';
@@ -171,10 +143,7 @@ export function registerApiRoutes(app: Hono): void {
     }
 
     const image = await renderAffinityImage(userId, progresses, fr);
-    const responseBody = image.buffer.slice(
-      image.byteOffset,
-      image.byteOffset + image.byteLength
-    );
+    const responseBody = image.buffer.slice(image.byteOffset, image.byteOffset + image.byteLength);
 
     return new Response(responseBody as ArrayBuffer, {
       headers: imageCacheHeaders('image/png'),
@@ -199,10 +168,7 @@ export function registerApiRoutes(app: Hono): void {
     }
 
     const image = await renderQuestImage(userId, statuses, fr);
-    const responseBody = image.buffer.slice(
-      image.byteOffset,
-      image.byteOffset + image.byteLength
-    );
+    const responseBody = image.buffer.slice(image.byteOffset, image.byteOffset + image.byteLength);
 
     return new Response(responseBody as ArrayBuffer, {
       headers: imageCacheHeaders('image/png'),
@@ -217,16 +183,10 @@ export function registerApiRoutes(app: Hono): void {
     const allItems = getAllShopItems();
     const pageCount = Math.max(1, Math.ceil(allItems.length / pageSize));
     const pageIndex = Math.min(pageCount - 1, page - 1);
-    const itemsOnPage = allItems.slice(
-      pageIndex * pageSize,
-      pageIndex * pageSize + pageSize
-    );
+    const itemsOnPage = allItems.slice(pageIndex * pageSize, pageIndex * pageSize + pageSize);
 
     const image = await renderShopImage(itemsOnPage, page, pageCount, fr);
-    const responseBody = image.buffer.slice(
-      image.byteOffset,
-      image.byteOffset + image.byteLength
-    );
+    const responseBody = image.buffer.slice(image.byteOffset, image.byteOffset + image.byteLength);
 
     return new Response(responseBody as ArrayBuffer, {
       headers: imageCacheHeaders('image/png'),
@@ -242,12 +202,7 @@ export function registerApiRoutes(app: Hono): void {
 
     const profile = await getPlayerProfile(userId);
     if (!profile) {
-      return c.text(
-        fr
-          ? 'Profil indisponible pour le moment.'
-          : 'Profile is unavailable right now.',
-        404
-      );
+      return c.text(fr ? 'Profil indisponible pour le moment.' : 'Profile is unavailable right now.', 404);
     }
 
     const progresses = await getCharacterProgresses(userId);
@@ -255,43 +210,21 @@ export function registerApiRoutes(app: Hono): void {
     const achievements = await getAchievementsOverview(userId, fr);
 
     if (!progresses || !runSummary || !achievements) {
-      return c.text(
-        fr ? 'Données de profil incomplètes.' : 'Incomplete profile data.',
-        404
-      );
+      return c.text(fr ? 'Données de profil incomplètes.' : 'Incomplete profile data.', 404);
     }
 
     const renderSvg = c.req.query('renderSvg') === 'true';
 
     if (renderSvg) {
-      const image = await buildProfileSvg(
-        userId,
-        profile,
-        progresses,
-        runSummary,
-        achievements.filter(item => item.unlocked).length,
-        achievements.length,
-        fr
-      );
+      const image = await buildProfileSvg(userId, profile, progresses, runSummary, achievements.filter(item => item.unlocked).length, achievements.length, fr);
       return c.text(image, 200, {
         ...imageCacheHeaders('image/svg+xml'),
       });
     }
 
-    const image = await renderProfileImage(
-      userId,
-      profile,
-      progresses,
-      runSummary,
-      achievements.filter(item => item.unlocked).length,
-      achievements.length,
-      fr
-    );
+    const image = await renderProfileImage(userId, profile, progresses, runSummary, achievements.filter(item => item.unlocked).length, achievements.length, fr);
 
-    const responseBody = image.buffer.slice(
-      image.byteOffset,
-      image.byteOffset + image.byteLength
-    );
+    const responseBody = image.buffer.slice(image.byteOffset, image.byteOffset + image.byteLength);
 
     return new Response(responseBody as ArrayBuffer, {
       headers: imageCacheHeaders('image/png'),
@@ -307,12 +240,7 @@ export function registerApiRoutes(app: Hono): void {
 
     const achievements = await getAchievementsOverview(userId, fr);
     if (!achievements) {
-      return c.text(
-        fr
-          ? 'Achievements indisponibles pour le moment.'
-          : 'Achievements are unavailable right now.',
-        404
-      );
+      return c.text(fr ? 'Achievements indisponibles pour le moment.' : 'Achievements are unavailable right now.', 404);
     }
 
     const pageSize = 5;
@@ -331,10 +259,7 @@ export function registerApiRoutes(app: Hono): void {
     }
 
     const image = await renderAchievementsImage(userId, pageItems, fr);
-    const responseBody = image.buffer.slice(
-      image.byteOffset,
-      image.byteOffset + image.byteLength
-    );
+    const responseBody = image.buffer.slice(image.byteOffset, image.byteOffset + image.byteLength);
 
     return new Response(responseBody as ArrayBuffer, {
       headers: imageCacheHeaders('image/png'),

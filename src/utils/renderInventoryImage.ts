@@ -27,17 +27,10 @@ function getCanvasHeight(itemsCount: number): number {
 }
 
 function escapeXml(value: string): string {
-  return value
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&apos;');
+  return value.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&apos;');
 }
 
-async function getItemIconBytes(
-  path: string | null
-): Promise<ArrayBuffer | null> {
+async function getItemIconBytes(path: string | null): Promise<ArrayBuffer | null> {
   if (!path) {
     return null;
   }
@@ -87,12 +80,7 @@ function rarityColor(rarity: string | null): string {
   }
 }
 
-export async function buildSvg(
-  userId: string,
-  items: InventoryItemView[],
-  fr: boolean,
-  hasEmbeddedFont = false
-): Promise<string> {
+export async function buildSvg(userId: string, items: InventoryItemView[], fr: boolean, hasEmbeddedFont = false): Promise<string> {
   void userId;
   const width = WIDTH;
   const lineHeight = LINE_HEIGHT;
@@ -117,13 +105,7 @@ export async function buildSvg(
     `;
   });
 
-  const emptyState = !items.length
-    ? `<text x="36" y="190" fill="#d7deef" font-size="22" font-family="${fontFamily}">${escapeXml(
-        fr
-          ? 'Aucun objet dans cet inventaire pour le moment.'
-          : 'No item in this inventory yet.'
-      )}</text>`
-    : '';
+  const emptyState = !items.length ? `<text x="36" y="190" fill="#d7deef" font-size="22" font-family="${fontFamily}">${escapeXml(fr ? 'Aucun objet dans cet inventaire pour le moment.' : 'No item in this inventory yet.')}</text>` : '';
 
   return `
   <svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">
@@ -137,11 +119,7 @@ export async function buildSvg(
   </svg>`;
 }
 
-export async function renderInventoryImage(
-  userId: string,
-  items: InventoryItemView[],
-  fr: boolean
-): Promise<Uint8Array> {
+export async function renderInventoryImage(userId: string, items: InventoryItemView[], fr: boolean): Promise<Uint8Array> {
   await ensureResvgWasm();
   const fontBuffer = await getEmbeddedFontBuffer();
   const height = getCanvasHeight(items.length);
@@ -158,30 +136,21 @@ export async function renderInventoryImage(
     : { font: { loadSystemFonts: true } };
 
   const png = new Resvg(svg, options).render().asPng();
-  const overlay = Photon.PhotonImage.new_from_byteslice(
-    new Uint8Array(png.buffer.slice(0) as ArrayBuffer)
-  );
+  const overlay = Photon.PhotonImage.new_from_byteslice(new Uint8Array(png.buffer.slice(0) as ArrayBuffer));
 
   let board: Photon.PhotonImage | null = null;
   let canvas: Photon.PhotonImage;
   const boardBytes = await getItemIconBytes(BOARD_PATH);
   if (boardBytes) {
     board = Photon.PhotonImage.new_from_byteslice(new Uint8Array(boardBytes));
-    canvas = Photon.resize(
-      board,
-      WIDTH,
-      height,
-      Photon.SamplingFilter.Lanczos3
-    );
+    canvas = Photon.resize(board, WIDTH, height, Photon.SamplingFilter.Lanczos3);
     Photon.watermark(canvas, overlay, 0n, 0n);
   } else {
     canvas = overlay;
   }
 
   const visibleItems = items.length ? items.slice(0, 18) : [];
-  const iconBuffers = await Promise.all(
-    visibleItems.map(item => getItemIconBytes(item.imagePath))
-  );
+  const iconBuffers = await Promise.all(visibleItems.map(item => getItemIconBytes(item.imagePath)));
 
   for (let idx = 0; idx < visibleItems.length; idx += 1) {
     const iconBuffer = iconBuffers[idx];

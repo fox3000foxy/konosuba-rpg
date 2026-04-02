@@ -69,10 +69,7 @@ function getBaseStatsByCharacter(key: CharacterKey): BaseStats {
 function getScaledStats(base: BaseStats, factor: number): BaseStats {
   const nextHpMax = scaleStat(base.hp, factor, 1);
   const nextAttackMin = Math.max(0, Math.round(base.attack[0] * factor));
-  const nextAttackMax = Math.max(
-    nextAttackMin,
-    scaleStat(base.attack[1], factor, 1)
-  );
+  const nextAttackMax = Math.max(nextAttackMin, scaleStat(base.attack[1], factor, 1));
 
   return {
     hp: nextHpMax,
@@ -80,11 +77,7 @@ function getScaledStats(base: BaseStats, factor: number): BaseStats {
   };
 }
 
-function getAffinityStatBonus(
-  key: CharacterKey,
-  level: number,
-  affinity: number
-): { hp: number; attack: [number, number] } {
+function getAffinityStatBonus(key: CharacterKey, level: number, affinity: number): { hp: number; attack: [number, number] } {
   const base = getBaseStatsByCharacter(key);
   const levelFactor = getLevelFactor(level);
   const affinityFactor = getAffinityFactor(affinity);
@@ -94,20 +87,12 @@ function getAffinityStatBonus(
 
   return {
     hp: withAffinity.hp - withoutAffinity.hp,
-    attack: [
-      withAffinity.attack[0] - withoutAffinity.attack[0],
-      withAffinity.attack[1] - withoutAffinity.attack[1],
-    ],
+    attack: [withAffinity.attack[0] - withoutAffinity.attack[0], withAffinity.attack[1] - withoutAffinity.attack[1]],
   };
 }
 
 function escapeXml(value: string): string {
-  return value
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&apos;');
+  return value.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&apos;');
 }
 
 async function getAssetBytes(path: string): Promise<ArrayBuffer | null> {
@@ -181,37 +166,19 @@ function getTierLabel(fr: boolean, tier: 'basic' | 'gold' | 'epic'): string {
 }
 
 function getRows(progresses: CharacterProgress[]): AffinityRow[] {
-  const byKey = new Map(
-    progresses.map(progress => [progress.characterKey, progress])
-  );
+  const byKey = new Map(progresses.map(progress => [progress.characterKey, progress]));
 
   const darknessLevel = Number(byKey.get(CharacterKey.Darkness)?.level || 1);
-  const darknessAffinity = Number(
-    byKey.get(CharacterKey.Darkness)?.affinity || 0
-  );
-  const darknessBonus = getAffinityStatBonus(
-    CharacterKey.Darkness,
-    darknessLevel,
-    darknessAffinity
-  );
+  const darknessAffinity = Number(byKey.get(CharacterKey.Darkness)?.affinity || 0);
+  const darknessBonus = getAffinityStatBonus(CharacterKey.Darkness, darknessLevel, darknessAffinity);
 
   const meguminLevel = Number(byKey.get(CharacterKey.Megumin)?.level || 1);
-  const meguminAffinity = Number(
-    byKey.get(CharacterKey.Megumin)?.affinity || 0
-  );
-  const meguminBonus = getAffinityStatBonus(
-    CharacterKey.Megumin,
-    meguminLevel,
-    meguminAffinity
-  );
+  const meguminAffinity = Number(byKey.get(CharacterKey.Megumin)?.affinity || 0);
+  const meguminBonus = getAffinityStatBonus(CharacterKey.Megumin, meguminLevel, meguminAffinity);
 
   const aquaLevel = Number(byKey.get(CharacterKey.Aqua)?.level || 1);
   const aquaAffinity = Number(byKey.get(CharacterKey.Aqua)?.affinity || 0);
-  const aquaBonus = getAffinityStatBonus(
-    CharacterKey.Aqua,
-    aquaLevel,
-    aquaAffinity
-  );
+  const aquaBonus = getAffinityStatBonus(CharacterKey.Aqua, aquaLevel, aquaAffinity);
 
   return [
     {
@@ -244,12 +211,7 @@ function getRows(progresses: CharacterProgress[]): AffinityRow[] {
   ];
 }
 
-export async function buildAffinitySvg(
-  userId: string,
-  progresses: CharacterProgress[],
-  fr: boolean,
-  hasEmbeddedFont = false
-): Promise<string> {
+export async function buildAffinitySvg(userId: string, progresses: CharacterProgress[], fr: boolean, hasEmbeddedFont = false): Promise<string> {
   void userId;
   const rows = getRows(progresses);
   const totalAffinity = rows.reduce((acc, row) => acc + row.affinity, 0);
@@ -260,9 +222,7 @@ export async function buildAffinitySvg(
     .map((row, idx) => {
       const stars = getAffinityStars(row.affinity);
       const tier = getAffinityTier(stars);
-      const bonusHpLabel = fr
-        ? `+${row.affinityBonusHp} PV`
-        : `+${row.affinityBonusHp} HP`;
+      const bonusHpLabel = fr ? `+${row.affinityBonusHp} PV` : `+${row.affinityBonusHp} HP`;
       const bonusAtkLabel = `+${row.affinityBonusAttack[0]} to ${row.affinityBonusAttack[1]} ATK`;
       const result = `
       <rect x="36" y="${rowY[idx] - 50}" width="1028" height="108" rx="14" fill="#0f1729" fill-opacity="0.74" />
@@ -272,10 +232,13 @@ export async function buildAffinitySvg(
       <text x="560" y="${rowY[idx] + 24}" fill="#9db0e8" font-size="20" font-family="${fontFamily}">${escapeXml(fr ? `Niv. ${row.level} | XP ${row.xp}` : `Lv. ${row.level} | XP ${row.xp}`)}</text>
     `;
       if (row.affinityBonusHp > 0 || row.affinityBonusAttack.some(atk => atk > 0)) {
-        return result + `
+        return (
+          result +
+          `
       <text x="1030" y="${rowY[idx] + 30}" text-anchor="end" fill="#5EF38C" font-size="17" font-family="${fontFamily}">${escapeXml(bonusHpLabel)}</text>
       <text x="1030" y="${rowY[idx] + 46}" text-anchor="end" fill="#5EF38C" font-size="17" font-family="${fontFamily}">${escapeXml(bonusAtkLabel)}</text>
-        `;
+        `
+        );
       }
 
       return result;
@@ -291,20 +254,11 @@ export async function buildAffinitySvg(
   </svg>`;
 }
 
-export async function renderAffinityImage(
-  userId: string,
-  progresses: CharacterProgress[],
-  fr: boolean
-): Promise<Uint8Array> {
+export async function renderAffinityImage(userId: string, progresses: CharacterProgress[], fr: boolean): Promise<Uint8Array> {
   await ensureResvgWasm();
   const rows = getRows(progresses);
   const fontBuffer = await getEmbeddedFontBuffer();
-  const svg = await buildAffinitySvg(
-    userId,
-    progresses,
-    fr,
-    Boolean(fontBuffer)
-  );
+  const svg = await buildAffinitySvg(userId, progresses, fr, Boolean(fontBuffer));
 
   const options = fontBuffer
     ? {
@@ -317,9 +271,7 @@ export async function renderAffinityImage(
     : { font: { loadSystemFonts: true } };
 
   const png = new Resvg(svg, options).render().asPng();
-  const overlay = Photon.PhotonImage.new_from_byteslice(
-    new Uint8Array(png.buffer.slice(0) as ArrayBuffer)
-  );
+  const overlay = Photon.PhotonImage.new_from_byteslice(new Uint8Array(png.buffer.slice(0) as ArrayBuffer));
 
   let board: Photon.PhotonImage | null = null;
   let canvas: Photon.PhotonImage;
@@ -327,29 +279,15 @@ export async function renderAffinityImage(
 
   if (boardBytes) {
     board = Photon.PhotonImage.new_from_byteslice(new Uint8Array(boardBytes));
-    canvas = Photon.resize(
-      board,
-      WIDTH,
-      HEIGHT,
-      Photon.SamplingFilter.Lanczos3
-    );
+    canvas = Photon.resize(board, WIDTH, HEIGHT, Photon.SamplingFilter.Lanczos3);
     Photon.watermark(canvas, overlay, 0n, 0n);
   } else {
     canvas = overlay;
   }
 
-  const [starEnabledBytes, starDisabledBytes] = await Promise.all([
-    getAssetBytes(STAR_ENABLED_PATH),
-    getAssetBytes(STAR_DISABLED_PATH),
-  ]);
+  const [starEnabledBytes, starDisabledBytes] = await Promise.all([getAssetBytes(STAR_ENABLED_PATH), getAssetBytes(STAR_DISABLED_PATH)]);
 
-  const badgeBuffers = await Promise.all(
-    rows.map(row =>
-      getAssetBytes(
-        getCharacterBadgePath(row.key, getAffinityStars(row.affinity))
-      )
-    )
-  );
+  const badgeBuffers = await Promise.all(rows.map(row => getAssetBytes(getCharacterBadgePath(row.key, getAffinityStars(row.affinity)))));
 
   const rowY = [180, 300, 420];
 
@@ -363,15 +301,8 @@ export async function renderAffinityImage(
       let badgeResized: Photon.PhotonImage | null = null;
 
       try {
-        badge = Photon.PhotonImage.new_from_byteslice(
-          new Uint8Array(badgeBuffer)
-        );
-        badgeResized = Photon.resize(
-          badge,
-          96,
-          96,
-          Photon.SamplingFilter.Lanczos3
-        );
+        badge = Photon.PhotonImage.new_from_byteslice(new Uint8Array(badgeBuffer));
+        badgeResized = Photon.resize(badge, 96, 96, Photon.SamplingFilter.Lanczos3);
         Photon.watermark(canvas, badgeResized, 48n, BigInt(rowY[rowIdx] - 62));
       } catch {
         // Keep the row even when a badge image fails to decode.
@@ -392,21 +323,9 @@ export async function renderAffinityImage(
       let starResized: Photon.PhotonImage | null = null;
 
       try {
-        star = Photon.PhotonImage.new_from_byteslice(
-          new Uint8Array(starBuffer)
-        );
-        starResized = Photon.resize(
-          star,
-          36,
-          36,
-          Photon.SamplingFilter.Lanczos3
-        );
-        Photon.watermark(
-          canvas,
-          starResized,
-          BigInt(170 + starIdx * 44),
-          BigInt(rowY[rowIdx] + 30)
-        );
+        star = Photon.PhotonImage.new_from_byteslice(new Uint8Array(starBuffer));
+        starResized = Photon.resize(star, 36, 36, Photon.SamplingFilter.Lanczos3);
+        Photon.watermark(canvas, starResized, BigInt(170 + starIdx * 44), BigInt(rowY[rowIdx] + 30));
       } catch {
         // Keep text rendering if one star icon fails to decode.
       } finally {

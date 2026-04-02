@@ -4,8 +4,7 @@ import { DecodeGameplayPayloadResult } from './types/gameSession';
 
 const TOKEN_PREFIX = 'gs.';
 const TOKEN_SIZE = 10;
-const TOKEN_CHARS =
-  'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+const TOKEN_CHARS = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
 const SESSION_TTL_MS = 7 * 24 * 60 * 60 * 1000;
 const PRUNE_INTERVAL_MS = 10 * 60 * 1000;
 
@@ -47,10 +46,7 @@ function hasCustomId(component: unknown): component is { custom_id: string } {
     return false;
   }
 
-  return (
-    'custom_id' in component &&
-    typeof (component as { custom_id?: unknown }).custom_id === 'string'
-  );
+  return 'custom_id' in component && typeof (component as { custom_id?: unknown }).custom_id === 'string';
 }
 
 function randomToken(length: number): string {
@@ -109,10 +105,7 @@ async function pruneExpiredSessions(force = false): Promise<void> {
     return;
   }
 
-  const { error } = await supabase
-    .from('game_sessions')
-    .delete()
-    .lt('expires_at', new Date(now).toISOString());
+  const { error } = await supabase.from('game_sessions').delete().lt('expires_at', new Date(now).toISOString());
 
   if (error) {
     console.error('[db] prune expired game sessions failed:', error.message);
@@ -180,10 +173,7 @@ export function extractBattleKeyFromPayload(payload: string): string {
   return cleanPayload.slice(0, slashIndex);
 }
 
-async function getLatestTurnVersion(
-  ownerUserId: string,
-  battleKey: string
-): Promise<number> {
+async function getLatestTurnVersion(ownerUserId: string, battleKey: string): Promise<number> {
   const key = battleCacheKey(ownerUserId, battleKey);
   const supabase = getSupabaseAdminClient();
 
@@ -191,14 +181,7 @@ async function getLatestTurnVersion(
     return latestTurnByBattle.get(key) || 1;
   }
 
-  const { data, error } = await supabase
-    .from('game_sessions')
-    .select('turn_version')
-    .eq('owner_user_id', ownerUserId)
-    .eq('battle_key', battleKey)
-    .order('turn_version', { ascending: false })
-    .limit(1)
-    .maybeSingle();
+  const { data, error } = await supabase.from('game_sessions').select('turn_version').eq('owner_user_id', ownerUserId).eq('battle_key', battleKey).order('turn_version', { ascending: false }).limit(1).maybeSingle();
 
   if (error) {
     console.error('[db] load latest turn version failed:', error.message);
@@ -210,10 +193,7 @@ async function getLatestTurnVersion(
   return latest;
 }
 
-async function reserveNextTurnVersion(
-  ownerUserId: string,
-  battleKey: string
-): Promise<number> {
+async function reserveNextTurnVersion(ownerUserId: string, battleKey: string): Promise<number> {
   const key = battleCacheKey(ownerUserId, battleKey);
   const latest = await getLatestTurnVersion(ownerUserId, battleKey);
   const next = Math.max(1, latest + 1);
@@ -250,11 +230,7 @@ async function insertSessionRows(
   return false;
 }
 
-async function createTokenMapForBattle(
-  ownerUserId: string,
-  battleKey: string,
-  payloads: string[]
-): Promise<Map<string, string>> {
+async function createTokenMapForBattle(ownerUserId: string, battleKey: string, payloads: string[]): Promise<Map<string, string>> {
   const map = new Map<string, string>();
   if (payloads.length === 0) {
     return map;
@@ -311,9 +287,7 @@ type PendingEncoding = {
   payloads: Set<string>;
 };
 
-export async function encodeGameplayButtons(
-  buttons: RawButton[]
-): Promise<RawButton[]> {
+export async function encodeGameplayButtons(buttons: RawButton[]): Promise<RawButton[]> {
   await pruneExpiredSessions();
 
   const groups = new Map<string, PendingEncoding>();
@@ -347,11 +321,7 @@ export async function encodeGameplayButtons(
 
   const tokenMaps = new Map<string, Map<string, string>>();
   for (const [key, group] of groups.entries()) {
-    const map = await createTokenMapForBattle(
-      group.ownerUserId,
-      group.battleKey,
-      [...group.payloads]
-    );
+    const map = await createTokenMapForBattle(group.ownerUserId, group.battleKey, [...group.payloads]);
     tokenMaps.set(key, map);
   }
 
@@ -383,21 +353,13 @@ export async function encodeGameplayButtons(
   }));
 }
 
-async function loadTokenRowByToken(
-  token: string
-): Promise<SessionEntry | null> {
+async function loadTokenRowByToken(token: string): Promise<SessionEntry | null> {
   const supabase = getSupabaseAdminClient();
   if (!supabase || !token) {
     return null;
   }
 
-  const { data, error } = await supabase
-    .from('game_sessions')
-    .select(
-      'token, payload, owner_user_id, battle_key, turn_version, expires_at'
-    )
-    .eq('token', token)
-    .maybeSingle();
+  const { data, error } = await supabase.from('game_sessions').select('token, payload, owner_user_id, battle_key, turn_version, expires_at').eq('token', token).maybeSingle();
 
   if (error) {
     console.error('[db] load game session by token failed:', error.message);
@@ -410,22 +372,11 @@ async function loadTokenRowByToken(
 
   const entry = buildSessionEntry(data as SessionTokenRow);
   tokenToSession.set(token, entry);
-  latestTurnByBattle.set(
-    battleCacheKey(entry.ownerUserId, entry.battleKey),
-    Math.max(
-      latestTurnByBattle.get(
-        battleCacheKey(entry.ownerUserId, entry.battleKey)
-      ) || 1,
-      entry.turnVersion
-    )
-  );
+  latestTurnByBattle.set(battleCacheKey(entry.ownerUserId, entry.battleKey), Math.max(latestTurnByBattle.get(battleCacheKey(entry.ownerUserId, entry.battleKey)) || 1, entry.turnVersion));
   return entry;
 }
 
-export async function decodeGameplayPayloadWithStatus(
-  encodedPayload: string,
-  userID: string
-): Promise<DecodeGameplayPayloadResult> {
+export async function decodeGameplayPayloadWithStatus(encodedPayload: string, userID: string): Promise<DecodeGameplayPayloadResult> {
   await pruneExpiredSessions();
 
   if (!encodedPayload.startsWith(TOKEN_PREFIX)) {
@@ -451,10 +402,7 @@ export async function decodeGameplayPayloadWithStatus(
     return { payload: null, reason: 'expired' };
   }
 
-  const latestTurn = await getLatestTurnVersion(
-    entry.ownerUserId,
-    entry.battleKey
-  );
+  const latestTurn = await getLatestTurnVersion(entry.ownerUserId, entry.battleKey);
   if (entry.turnVersion !== latestTurn) {
     return { payload: null, reason: 'stale' };
   }
@@ -462,10 +410,7 @@ export async function decodeGameplayPayloadWithStatus(
   return { payload: entry.payload };
 }
 
-export async function decodeGameplayPayload(
-  encodedPayload: string,
-  userID: string
-): Promise<string | null> {
+export async function decodeGameplayPayload(encodedPayload: string, userID: string): Promise<string | null> {
   const result = await decodeGameplayPayloadWithStatus(encodedPayload, userID);
   return result.payload;
 }

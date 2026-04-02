@@ -12,10 +12,7 @@ function startsWithFrenchElisionLetter(value: string): boolean {
   return /^[aàâäæeéèêëiîïoôœuùûüyh]$/.test(firstChar);
 }
 
-export function getCreatureDisplayName(
-  creature: Creature,
-  lang: string | Lang
-): string {
+export function getCreatureDisplayName(creature: Creature, lang: string | Lang): string {
   const langIndex = isFrench(lang) ? 1 : 0;
   return creature.name[langIndex]?.toLowerCase() || creature.constructor.name;
 }
@@ -28,11 +25,7 @@ export function toTitleCase(value: string): string {
     .join(' ');
 }
 
-export function getCreaturePrefix(
-  creature: Creature,
-  lang: string | Lang,
-  determined: boolean
-): string {
+export function getCreaturePrefix(creature: Creature, lang: string | Lang, determined: boolean): string {
   if (!creature.prefix) {
     return Prefix.None;
   }
@@ -42,23 +35,12 @@ export function getCreaturePrefix(
   }
 
   const name = getCreatureDisplayName(creature, lang);
-  const article =
-    creature.gender === Gender.Female
-      ? determined
-        ? Prefix.French_Determined_Feminine
-        : Prefix.French_Undetermined_Feminine
-      : determined
-        ? Prefix.French_Determined_Masculine
-        : Prefix.French_Undetermined_Masculine;
+  const article = creature.gender === Gender.Female ? (determined ? Prefix.French_Determined_Feminine : Prefix.French_Undetermined_Feminine) : determined ? Prefix.French_Determined_Masculine : Prefix.French_Undetermined_Masculine;
 
   return startsWithFrenchElisionLetter(name) ? "L'" : toTitleCase(article);
 }
 
-export function getCreatureNameAndPrefix(
-  creature: Creature,
-  lang: string | Lang,
-  determined: boolean
-): { name: string; prefix: string } {
+export function getCreatureNameAndPrefix(creature: Creature, lang: string | Lang, determined: boolean): { name: string; prefix: string } {
   return {
     name: getCreatureDisplayName(creature, lang),
     prefix: getCreaturePrefix(creature, lang, determined),

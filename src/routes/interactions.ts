@@ -15,12 +15,8 @@ export async function handleInteractions(c: Context) {
   }
 
   const interaction: Interaction = JSON.parse(body);
-  const langString = interaction?.guild?.features?.includes('COMMUNITY')
-    ? interaction?.guild_locale
-    : interaction?.locale;
-  const lang = Object.values(Lang).includes(langString)
-    ? (langString as Lang)
-    : Lang.English;
+  const langString = interaction?.guild?.features?.includes('COMMUNITY') ? interaction?.guild_locale : interaction?.locale;
+  const lang = Object.values(Lang).includes(langString) ? (langString as Lang) : Lang.English;
   const userID = interaction?.member?.user?.id || interaction.user.id;
   const fr = lang === Lang.French;
 
