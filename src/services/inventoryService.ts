@@ -88,3 +88,74 @@ export async function getInventoryItems(
     return a.itemKey.localeCompare(b.itemKey);
   });
 }
+
+export async function addInventoryItem(
+  userId: string,
+  itemKey: string,
+  itemType: string,
+  quantity = 1
+): Promise<boolean> {
+  const supabase = getSupabaseAdminClient();
+  if (!supabase) {
+    return false;
+  }
+
+  try {
+    const { data: existing, error: existingError } = await supabase
+      .from('inventory_items')
+      .select('quantity')
+      .eq('user_id', userId)
+      .eq('item_key', itemKey)
+      .maybeSingle();
+
+    if (existingError) {
+      console.error(
+        '[db] addInventoryItem select failed:',
+        existingError.message
+      );
+      return false;
+    }
+
+    if (!existing) {
+      const { error: insertError } = await supabase
+        .from('inventory_items')
+        .insert({
+          user_id: userId,
+          item_key: itemKey,
+          item_type: itemType,
+          quantity,
+          updated_at: new Date().toISOString(),
+        });
+
+      if (insertError) {
+        console.error(
+          '[db] addInventoryItem insert failed:',
+          insertError.message
+        );
+        return false;
+      }
+
+      return true;
+    }
+
+    const newQuantity = Number(existing.quantity || 0) + quantity;
+    const { error: updateError } = await supabase
+      .from('inventory_items')
+      .update({ quantity: newQuantity, updated_at: new Date().toISOString() })
+      .eq('user_id', userId)
+      .eq('item_key', itemKey);
+
+    if (updateError) {
+      console.error(
+        '[db] addInventoryItem update failed:',
+        updateError.message
+      );
+      return false;
+    }
+
+    return true;
+  } catch (error) {
+    console.error('[db] addInventoryItem error:', error);
+    return false;
+  }
+}

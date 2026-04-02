@@ -2,9 +2,9 @@ import { Context } from 'hono';
 import { BASE_URL } from '../../objects/config/constants';
 import { InteractionDataOption } from '../../objects/types/InteractionDataOption';
 import {
-    ensurePlayerProfile,
-    getCharacterProgresses,
-    getCharacterStatsSnapshot
+  ensurePlayerProfile,
+  getCharacterProgresses,
+  getCharacterStatsSnapshot,
 } from '../../services/progressionService';
 
 export async function handleCharacterCommand(

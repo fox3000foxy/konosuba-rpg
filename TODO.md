@@ -25,40 +25,13 @@ Completed work is tracked in [DONE.md](DONE.md).
 - Gate C: P2 decisions locked + TODO/README aligned.
 - Only after Gates A+B+C: reopen roadmap for new systems.
 
-## Phase 5 - Drops and inventory (DONE)
-
-### Combat drops
-- Reward generation at end of run implemented
-  - alchemy components
-
-## Phase 6 - Potion crafting from components (DONE)
-
-### Potion effects
-- Temporary buffs implemented
-- Permanent buffs pending discussion (intentional placeholder)
-
-## Phase 7 - Character UI assets (DONE)
-
-### Data preparation
-- Mapping `character_key` -> image set implemented
-- Potential visual states supported:
-  - normal
-  - rare/special
-  - high affinity
-
 ### Later (not now)
 - Integrate visuals into embeds/components
 - Add visual target character selection
 
-## Phase 8 - Profile and commands (incremental)
+## Phase 8 - Profile and commands (partial)
 
-### `/profile`
-- Display affinity per character (when useful)
-
-### Future commands
-- `/character` (inspect character)
-- `/use-item`
-- `/craft`
+### Remaining
 - `/shop` (buy/sell and gold sinks, later)
 
 ## Phase 9 - PVP (long-term backlog)

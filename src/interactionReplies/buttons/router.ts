@@ -1,14 +1,24 @@
 import { Context } from 'hono';
+import { AccessoryId } from '../../objects/enums/AccessoryId';
 import { AccessoryType } from '../../objects/enums/AccessoryType';
 import { CharacterKey } from '../../objects/enums/CharacterKey';
 import { Interaction } from '../../objects/enums/Interaction';
+import { ItemId } from '../../objects/enums/ItemId';
 import { Lang } from '../../objects/enums/Lang';
 import { Rarity } from '../../objects/enums/Rarity';
+import { ShopItem } from '../../objects/types/ShopItem';
 import { decodeGameplayPayloadWithStatus } from '../../services/gameSessionService';
 import {
   donateAccessoryToCharacter,
   recordRunResult,
 } from '../../services/progressionService';
+
+import { BASE_URL } from '../../objects/config/constants';
+import { addInventoryItem } from '../../services/inventoryService';
+import {
+  getPlayerProfile,
+  updatePlayerGold,
+} from '../../services/playerService';
 import {
   buildComponents,
   getBattleMonsterNames,
@@ -19,9 +29,26 @@ import {
   buildAffinityGiftComponents,
   buildAffinityMessageData,
 } from '../commands/affinity';
+import { buildShopComponents, getShopItem } from '../commands/shop';
 import { handleConsumablesButton } from './handleConsumablesButton';
 import { handleDefaultButton } from './handleDefaultButton';
 import { handleSpecialButton } from './handleSpecialButton';
+
+function getPagedShopItems(page: number) {
+  const pageSize = 16;
+  const allShopItems = [...Object.values(AccessoryId), ...Object.values(ItemId)]
+    .map(key => getShopItem(key))
+    .filter((item): item is ShopItem => Boolean(item));
+
+  const pageCount = Math.max(1, Math.ceil(allShopItems.length / pageSize));
+  const pageIndex = Math.min(pageCount - 1, Math.max(0, page - 1));
+  const pageItems = allShopItems.slice(
+    pageIndex * pageSize,
+    pageIndex * pageSize + pageSize
+  );
+
+  return { allShopItems, pageCount, pageItems };
+}
 
 export async function handleButtonInteraction(
   c: Context,
@@ -165,7 +192,184 @@ export async function handleButtonInteraction(
     });
   }
 
-  if (customId.startsWith('affinity_gift_apply:')) {
+  if (
+    customId.startsWith('shop_forward:') ||
+    customId.startsWith('shop_backward:') ||
+    customId.startsWith('shop_back:') ||
+    customId.startsWith('shop_page:')
+  ) {
+    try {
+      const parts = customId.split(':');
+      const pageRaw = parts[1] || '1';
+      const requestUserId = parts[2] || '';
+      if (requestUserId !== userID) {
+        console.log('Unauthorized shop navigation attempt', {
+          customId,
+          userID,
+        });
+        return c.json({ type: 6 });
+      }
+
+      const page = Math.max(1, Number(pageRaw) || 1);
+      const { pageCount, pageItems } = getPagedShopItems(page);
+      const components = buildShopComponents(
+        pageItems,
+        page,
+        pageCount,
+        fr,
+        userID
+      );
+
+      return c.json({
+        type: 7,
+        data: {
+          embeds: [
+            {
+              title: fr ? 'Boutique' : 'Shop',
+              description: fr
+                ? `Page ${page} / ${pageCount}`
+                : `Page ${page} / ${pageCount}`,
+              image: {
+                url: `${BASE_URL}/shop/${page}?lang=${fr ? 'fr' : 'en'}`,
+              },
+              color: 0x2b2d31,
+            },
+          ],
+          components,
+        },
+      });
+    } catch (error) {
+      console.error('[shop_page] error:', error);
+      return c.json({ type: 6 });
+    }
+  }
+
+  if (customId.startsWith('shop_select:')) {
+    try {
+      const parts = customId.split(':');
+      const pageRaw = parts[1] || '1';
+      const requestUserId = parts[2] || '';
+      if (requestUserId !== userID) {
+        return c.json({ type: 6 });
+      }
+
+      const selectedItemKey = interaction.data.values?.[0];
+      const page = Math.max(1, Number(pageRaw) || 1);
+      const { pageCount, pageItems } = getPagedShopItems(page);
+      const components = buildShopComponents(
+        pageItems,
+        page,
+        pageCount,
+        fr,
+        userID,
+        selectedItemKey
+      );
+
+      console.log(`${BASE_URL}/shop/${page}?lang=${fr ? 'fr' : 'en'}`);
+      const selectedItemName = selectedItemKey
+        ? getShopItem(selectedItemKey)?.nameEn || selectedItemKey
+        : fr
+          ? 'aucun'
+          : 'none';
+      const description = fr
+        ? `Page ${page} / ${pageCount}.\n\n Objet sélectionné : ${selectedItemName}`
+        : `Page ${page} / ${pageCount}.\n\n Selected item: ${selectedItemName}`;
+      return c.json({
+        type: 7,
+        data: {
+          embeds: [
+            {
+              title: fr ? 'Boutique' : 'Shop',
+              description,
+              image: {
+                url: `${BASE_URL}/shop/${page}?lang=${fr ? 'fr' : 'en'}`,
+              },
+              color: 0x2b2d31,
+            },
+          ],
+          components,
+        },
+      });
+    } catch (error) {
+      console.error('[shop_select] error:', error);
+      return c.json({ type: 6 });
+    }
+  }
+
+  if (customId.startsWith('shop_buy:')) {
+    try {
+      const parts = customId.split(':');
+      const itemKey = parts[1] || '';
+      const pageRaw = parts[2] || '1';
+      const requestUserId = parts[3] || '';
+      if (requestUserId !== userID) {
+        return c.json({ type: 6 });
+      }
+
+      const shopItem = getShopItem(itemKey);
+      if (!shopItem) {
+        return c.json({
+          type: 7,
+          data: { content: fr ? 'Item invalide' : 'Invalid item' },
+        });
+      }
+
+      const profile = await getPlayerProfile(userID);
+      if (!profile) {
+        return c.json({
+          type: 7,
+          data: { content: fr ? 'Profil indisponible' : 'Profile unavailable' },
+        });
+      }
+
+      const cost = shopItem.price;
+      if (profile.gold < cost) {
+        return c.json({
+          type: 7,
+          data: { content: fr ? 'Or insuffisant' : 'Not enough gold' },
+        });
+      }
+
+      const updatedGold = await updatePlayerGold(userID, -cost);
+      await addInventoryItem(userID, shopItem.itemKey, shopItem.itemType, 1);
+
+      const page = Math.max(1, Number(pageRaw) || 1);
+      const { pageCount, pageItems } = getPagedShopItems(page);
+      const components = buildShopComponents(
+        pageItems,
+        page,
+        pageCount,
+        fr,
+        userID
+      );
+
+      const message = fr
+        ? `✅ Achat de ${shopItem.nameFr} réussi. Or restant : ${updatedGold}.`
+        : `✅ Bought ${shopItem.nameEn}. Remaining gold: ${updatedGold}.`;
+
+      return c.json({
+        type: 7,
+        data: {
+          embeds: [
+            {
+              title: fr ? 'Achat réussi' : 'Purchase success',
+              description: message,
+              image: {
+                url: `${BASE_URL}/shop/${page}?lang=${fr ? 'fr' : 'en'}`,
+              },
+              color: 0x2b2d31,
+            },
+          ],
+          components,
+        },
+      });
+    } catch (error) {
+      console.error('[shop_buy] error:', error);
+      return c.json({ type: 6 });
+    }
+  }
+
+  if (customId.startsWith('consumable_item:')) {
     const parts = customId.split(':');
     const itemKey = parts[1] || '';
     const characterKeyRaw = parts[2] || '';

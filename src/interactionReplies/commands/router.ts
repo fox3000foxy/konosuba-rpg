@@ -14,6 +14,7 @@ import { handleLeaderboardCommand } from './leaderboard';
 import { handleMenuCommand } from './menu';
 import { handleProfileCommand } from './profile';
 import { handleQuestCommand } from './quest';
+import { handleShopCommand } from './shop';
 import { handleStartCommand } from './start';
 import { handleTrainCommand } from './train';
 
@@ -107,6 +108,10 @@ export async function handleSlashCommand(
     }
 
     return handleInfosMonsterCommand(c, fr, interaction.data.options);
+  }
+
+  if (interaction.data?.name === 'shop') {
+    return handleShopCommand(c, userID, fr, interaction.data.options);
   }
 
   return c.json({ error: 'Unknown command' }, 400);

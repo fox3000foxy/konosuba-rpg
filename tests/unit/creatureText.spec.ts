@@ -7,18 +7,18 @@ describe('creatureText', () => {
   it('uses French elision for vowel-starting names', () => {
     const tree = new AliveTree();
 
-    expect(getCreatureNameAndPrefix(tree, Lang.French)).toEqual({
-      name: 'Arbre vivant',
-      prefix: "l'",
+    expect(getCreatureNameAndPrefix(tree, Lang.French, true)).toEqual({
+      name: 'arbre vivant',
+      prefix: "L'",
     });
   });
 
   it('keeps the expected article for non-elided names', () => {
     const troll = new Troll();
 
-    expect(getCreatureNameAndPrefix(troll, Lang.French)).toEqual({
-      name: 'Troll',
-      prefix: 'le ',
+    expect(getCreatureNameAndPrefix(troll, Lang.French, true)).toEqual({
+      name: 'troll',
+      prefix: 'Le ',
     });
   });
 });

@@ -3,7 +3,7 @@ import { BASE_URL } from '../../objects/config/constants';
 import { InteractionDataOption } from '../../objects/types/InteractionDataOption';
 import {
   ensurePlayerProfile,
-  getPlayerProfile
+  getPlayerProfile,
 } from '../../services/progressionService';
 
 export async function handleProfileCommand(
@@ -37,7 +37,7 @@ export async function handleProfileCommand(
 
   const description = fr
     ? `# Profil de <@${targetUserId}>`
-    : `# <@${targetUserId}> profile`
+    : `# <@${targetUserId}> profile`;
 
   return c.json({
     type: 4,

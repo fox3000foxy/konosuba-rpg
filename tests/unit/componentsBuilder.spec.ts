@@ -8,12 +8,12 @@ describe('getBattleMonsterNames', () => {
     const dragon = new Dragon();
 
     expect(getBattleMonsterNames(dragon, Lang.English)).toEqual({
-      displayName: 'Dragon',
-      recordName: 'Dragon',
+      displayName: 'dragon',
+      recordName: 'dragon',
     });
     expect(getBattleMonsterNames(dragon, Lang.French)).toEqual({
-      displayName: 'Dragon',
-      recordName: 'Dragon',
+      displayName: 'dragon',
+      recordName: 'dragon',
     });
   });
 
@@ -21,12 +21,12 @@ describe('getBattleMonsterNames', () => {
     const kingTroll = new KingTroll();
 
     expect(getBattleMonsterNames(kingTroll, Lang.English)).toEqual({
-      displayName: 'King Troll',
+      displayName: 'king troll',
       recordName: 'King Troll',
     });
     expect(getBattleMonsterNames(kingTroll, Lang.French)).toEqual({
-      displayName: 'Roi Troll',
-      recordName: 'King Troll',
+      displayName: 'roi troll',
+      recordName: 'Roi Troll',
     });
   });
 });
