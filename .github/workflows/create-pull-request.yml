@@ -9,10 +9,6 @@ jobs:
   create-pull-request:
     if: github.ref != 'refs/heads/main'
     runs-on: ubuntu-latest
-
-jobs:
-  create-pull-request:
-    runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
