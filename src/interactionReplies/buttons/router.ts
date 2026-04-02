@@ -192,12 +192,16 @@ export async function handleButtonInteraction(
     });
   }
 
-  if (customId.startsWith('shop_page:')) {
+  if (customId.startsWith('shop_forward:') || 
+    customId.startsWith('shop_backward:') || 
+    customId.startsWith('shop_back:') || 
+    customId.startsWith('shop_page:')) {
     try {
       const parts = customId.split(':');
       const pageRaw = parts[1] || '1';
       const requestUserId = parts[2] || '';
       if (requestUserId !== userID) {
+        console.log('Unauthorized shop navigation attempt', { customId, userID });
         return c.json({ type: 6 });
       }
 
@@ -251,15 +255,20 @@ export async function handleButtonInteraction(
       );
 
       console.log(`${BASE_URL}/shop/${page}?lang=${fr ? 'fr' : 'en'}`);
+      const selectedItemName = selectedItemKey        ? getShopItem(selectedItemKey)?.nameEn || selectedItemKey
+        : fr
+          ? 'aucun'
+          : 'none';
+      const description = fr
+        ? `Page ${page} / ${pageCount}.\n\n Objet sélectionné : ${selectedItemName}`
+        : `Page ${page} / ${pageCount}.\n\n Selected item: ${selectedItemName}`;
       return c.json({
         type: 7,
         data: {
           embeds: [
             {
               title: fr ? 'Boutique' : 'Shop',
-              description: fr
-                ? `Objet sélectionné : ${selectedItemKey || 'aucun'}`
-                : `Selected item: ${selectedItemKey || 'none'}`,
+              description,
               image: {
                 url: `${BASE_URL}/shop/${page}?lang=${fr ? 'fr' : 'en'}`,
               },

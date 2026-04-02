@@ -105,6 +105,23 @@ function getOptionValue(options: InteractionDataOption[] | undefined, name: stri
   return option ? String(option.value).trim() : '';
 }
 
+const MAX_CUSTOM_ID_LENGTH = 100;
+const MAX_SELECT_OPTIONS = 25;
+const MAX_OPTION_LABEL = 100;
+const MAX_OPTION_VALUE = 100;
+
+function sanitizeComponentId(value: string) {
+  return String(value).slice(0, MAX_CUSTOM_ID_LENGTH);
+}
+
+function sanitizeOptionLabel(value: string) {
+  return String(value).trim().slice(0, MAX_OPTION_LABEL);
+}
+
+function sanitizeOptionValue(value: string) {
+  return String(value).trim().slice(0, MAX_OPTION_VALUE);
+}
+
 export function buildShopComponents(
   items: ShopItem[],
   page: number,
@@ -113,63 +130,78 @@ export function buildShopComponents(
   userId: string,
   selectedItemKey?: string
 ) {
+  const safeUserId = sanitizeComponentId(userId);
+  const safePage = Math.max(1, page);
+  const safePageCount = Math.max(1, pageCount);
+
   const arrowBack = {
     type: 2,
     label: '<',
     style: 2,
-    custom_id: `shop_page:${Math.max(1, page - 1)}:${userId}`,
-    disabled: page <= 1,
+    custom_id: sanitizeComponentId(`shop_backward:${Math.max(1, safePage - 1)}:${safeUserId}`),
+    disabled: safePage <= 1,
   };
   const arrowForward = {
     type: 2,
     label: '>',
     style: 2,
-    custom_id: `shop_page:${Math.min(pageCount, page + 1)}:${userId}`,
-    disabled: page >= pageCount,
+    custom_id: sanitizeComponentId(`shop_forward:${Math.min(safePageCount, safePage + 1)}:${safeUserId}`),
+    disabled: safePage >= safePageCount,
   };
 
-  const options = items.map(item => ({
-    label: fr ? item.nameFr : item.nameEn,
-    value: String(item.itemKey),
-    description: `${item.price} gold`,
+  const options = items.slice(0, 1000).map(item => ({
+    label: sanitizeOptionLabel(fr ? item.nameFr : item.nameEn),
+    value: sanitizeOptionValue(String(item.itemKey)),
+    description: `${item.price} gold`.slice(0, 100),
   }));
+
+  const selectHasOptions = options.length > 0;
+  const selectOptions = selectHasOptions
+    ? options.slice(0, MAX_SELECT_OPTIONS)
+    : [
+        {
+          label: fr ? 'Aucun objet disponible' : 'No items available',
+          value: 'none',
+          description: '',
+        },
+      ];
 
   const selectComponent = {
     type: 3,
-    custom_id: `shop_select:${page}:${userId}`,
-    options: options.slice(0, 25),
+    custom_id: sanitizeComponentId(`shop_select:${safePage}:${safeUserId}`),
+    options: selectOptions,
     placeholder: fr ? 'Choisir un objet' : 'Choose an item',
-    min_values: 1,
+    min_values: selectHasOptions ? 1 : 0,
     max_values: 1,
+    disabled: !selectHasOptions,
   };
 
-  const mainButtons: Button[] = [arrowBack, arrowForward];
+  const mainButtons = [arrowBack, arrowForward];
 
-  const bottomButtons: Button[] = [
-    {
-      type: 2,
-      label: fr ? 'Retour' : 'Back',
-      style: 2,
-      custom_id: `shop_page:${page}:${userId}`,
-    },
-  ];
+  const bottomButtons: Button[] = [];
 
   if (selectedItemKey) {
-    bottomButtons.unshift({
+    bottomButtons.push({
       type: 2,
       label: fr ? 'Acheter' : 'Buy',
       style: 3,
-      custom_id: `shop_buy:${selectedItemKey}:${page}:${userId}`,
+      custom_id: sanitizeComponentId(`shop_buy:${sanitizeOptionValue(selectedItemKey)}:${safePage}:${safeUserId}`),
+      disabled: !selectHasOptions,
+    });
+
+    bottomButtons.push ({
+      type: 2,
+      label: fr ? 'Retour' : 'Back',
+      style: 2,
+      custom_id: sanitizeComponentId(`shop_back:${safePage}:${safeUserId}`),
     });
   }
 
-  const components = [
+  return [
     { type: 1, components: mainButtons },
     { type: 1, components: [selectComponent] },
-    { type: 1, components: bottomButtons },
-  ];
-
-  return components;
+    bottomButtons.length > 0 ? { type: 1, components: bottomButtons } : null,
+  ].filter((v): v is NonNullable<typeof v> => !!v);
 }
 
 export async function handleShopCommand(
@@ -179,8 +211,6 @@ export async function handleShopCommand(
   options?: InteractionDataOption[]
 ) {
   await ensurePlayerProfile(userId);
-
-  console.log(`[ShopCommand] userId=${userId} options=${JSON.stringify(options)}`);
 
   const action = (getOptionValue(options, 'action') || 'items').toLowerCase();
   const format = (getOptionValue(options, 'format') || 'image').toLowerCase();
