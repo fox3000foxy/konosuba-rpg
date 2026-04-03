@@ -8,6 +8,7 @@ type CacheEntry<T> = {
 export type SizedCache<T> = {
   get(key: string): T | undefined;
   set(key: string, value: T): void;
+  stats(): { entries: number; totalBytes: number; maxBytes: number };
 };
 
 class FifoSizedCache<T> implements SizedCache<T> {
@@ -51,6 +52,14 @@ class FifoSizedCache<T> implements SizedCache<T> {
 
     this.entries.set(key, { value, size });
     this.totalSize += size;
+  }
+
+  stats(): { entries: number; totalBytes: number; maxBytes: number } {
+    return {
+      entries: this.entries.size,
+      totalBytes: this.totalSize,
+      maxBytes: this.maxSizeBytes,
+    };
   }
 }
 

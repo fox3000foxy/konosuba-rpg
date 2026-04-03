@@ -3,25 +3,12 @@ import { Interaction } from '../../objects/enums/Interaction';
 import { Lang } from '../../objects/enums/Lang';
 import { InteractionDataOption } from '../../objects/types/InteractionDataOption';
 import { ensurePlayerProfile } from '../../services/progressionService';
-import { handleAchievementsCommand } from './achievements';
-import { handleAffinityCommand } from './affinity';
-import { handleCharacterCommand } from './character';
-import { handleCraftCommand } from './craft';
-import { handleInfosMonsterCommand } from './infos-monster';
-import { handleInfosPlayerCommand } from './infos-player';
-import { handleInventoryCommand } from './inventory';
-import { handleLeaderboardCommand } from './leaderboard';
-import { handleMenuCommand } from './menu';
-import { handleProfileCommand } from './profile';
-import { handleQuestCommand } from './quest';
-import { handleShopCommand } from './shop';
-import { handleStartCommand } from './start';
-import { handleTrainCommand } from './train';
 
 export async function handleSlashCommand(c: Context, interaction: Interaction, userID: string, lang: Lang, fr: boolean) {
   void ensurePlayerProfile(userID);
 
   if (interaction.data?.name === 'start') {
+    const { handleStartCommand } = await import('./start.js');
     const options = interaction.data.options || [];
     const difficultyOption = options.find(opt => opt.name === 'difficulty');
     const difficulty = difficultyOption ? String(difficultyOption.value) : undefined;
@@ -29,38 +16,47 @@ export async function handleSlashCommand(c: Context, interaction: Interaction, u
   }
 
   if (interaction.data?.name === 'menu') {
+    const { handleMenuCommand } = await import('./menu.js');
     return handleMenuCommand(c, userID, fr);
   }
 
   if (interaction.data?.name === 'profile') {
+    const { handleProfileCommand } = await import('./profile.js');
     return handleProfileCommand(c, userID, fr, interaction.data.options);
   }
 
   if (interaction.data?.name === 'character') {
+    const { handleCharacterCommand } = await import('./character.js');
     return handleCharacterCommand(c, userID, fr, interaction.data.options);
   }
 
   if (interaction.data?.name === 'leaderboard') {
+    const { handleLeaderboardCommand } = await import('./leaderboard.js');
     return handleLeaderboardCommand(c, fr);
   }
 
   if (interaction.data?.name === 'quest') {
+    const { handleQuestCommand } = await import('./quest.js');
     return handleQuestCommand(c, userID, fr, interaction.data.options);
   }
 
   if (interaction.data?.name === 'achievements') {
+    const { handleAchievementsCommand } = await import('./achievements.js');
     return handleAchievementsCommand(c, userID, fr);
   }
 
   if (interaction.data?.name === 'affinity') {
+    const { handleAffinityCommand } = await import('./affinity.js');
     return handleAffinityCommand(c, userID, fr, interaction.data.options);
   }
 
   if (interaction.data?.name === 'inventory') {
+    const { handleInventoryCommand } = await import('./inventory.js');
     return handleInventoryCommand(c, userID, fr, interaction.data.options);
   }
 
   if (interaction.data?.name === 'craft') {
+    const { handleCraftCommand } = await import('./craft.js');
     return handleCraftCommand(c, userID, fr, interaction.data.options);
   }
 
@@ -73,10 +69,12 @@ export async function handleSlashCommand(c: Context, interaction: Interaction, u
         },
       });
     }
+    const { handleTrainCommand } = await import('./train.js');
     return handleTrainCommand(c, userID, lang, fr, interaction.data.options);
   }
 
   if (interaction.data?.name === 'infos-player') {
+    const { handleInfosPlayerCommand } = await import('./infos-player.js');
     const characterId = Number(interaction.data.options?.find((o: InteractionDataOption) => o.name === 'character')?.value);
     return handleInfosPlayerCommand(c, fr, characterId);
   }
@@ -91,10 +89,12 @@ export async function handleSlashCommand(c: Context, interaction: Interaction, u
       });
     }
 
+    const { handleInfosMonsterCommand } = await import('./infos-monster.js');
     return handleInfosMonsterCommand(c, fr, interaction.data.options);
   }
 
   if (interaction.data?.name === 'shop') {
+    const { handleShopCommand } = await import('./shop.js');
     return handleShopCommand(c, userID, fr, interaction.data.options);
   }
 

@@ -1,4 +1,5 @@
 import { Context } from 'hono';
+import { BASE_URL } from '../../objects/config';
 import { AccessoryId } from '../../objects/enums/AccessoryId';
 import { AccessoryType } from '../../objects/enums/AccessoryType';
 import { CharacterKey } from '../../objects/enums/CharacterKey';
@@ -6,26 +7,38 @@ import { Interaction } from '../../objects/enums/Interaction';
 import { ItemId } from '../../objects/enums/ItemId';
 import { Lang } from '../../objects/enums/Lang';
 import { Rarity } from '../../objects/enums/Rarity';
+import { RecordRunInput } from '../../objects/types/RecordRunInput';
 import { ShopItem } from '../../objects/types/ShopItem';
 import { decodeGameplayPayloadWithStatus } from '../../services/gameSessionService';
 import { donateAccessoryToCharacter, ensurePlayerProfile, getAchievementsOverview, recordRunResult } from '../../services/progressionService';
-
-import { BASE_URL } from '../../objects/config';
-import { addInventoryItem } from '../../services/inventoryService';
-import { getPlayerProfile, updatePlayerGold } from '../../services/playerService';
-import { buildComponents, getBattleMonsterNames } from '../../utils/componentsBuilder';
 import { addImageVersion } from '../../utils/imageUtils';
 import { decompressMoves } from '../../utils/movesUtils';
 import { extractDifficulty, isTraining } from '../../utils/payloadUtils';
-import { buildAchievementsComponents } from '../commands/achievements';
-import { buildAffinityGiftComponents, buildAffinityMessageData } from '../commands/affinity';
-import { buildShopComponents, getShopItem } from '../commands/shop';
-import { handleConsumablesButton } from './handleConsumablesButton';
-import { handleDefaultButton } from './handleDefaultButton';
-import { handleSpecialButton } from './handleSpecialButton';
 
-function getPagedShopItems(page: number) {
+const RECORD_RUN_RESULT_TIMEOUT_MS = 3000;
+
+function persistRunResultInBackground(input: RecordRunInput): void {
+  const writePromise = recordRunResult(input).catch(error => {
+    const message = error instanceof Error ? error.message : String(error);
+    console.error(`[db] recordRunResult failed for user=${input.userId}:`, message);
+  });
+
+  const timeoutPromise = new Promise<void>((_, reject) => {
+    const timer = setTimeout(() => {
+      clearTimeout(timer);
+      reject(new Error(`recordRunResult timed out after ${RECORD_RUN_RESULT_TIMEOUT_MS}ms`));
+    }, RECORD_RUN_RESULT_TIMEOUT_MS);
+  });
+
+  void Promise.race([writePromise, timeoutPromise]).catch(error => {
+    const message = error instanceof Error ? error.message : String(error);
+    console.warn(`[db] recordRunResult background warning for user=${input.userId}:`, message);
+  });
+}
+
+async function getPagedShopItems(page: number) {
   const pageSize = 16;
+  const { getShopItem } = await import('../commands/shop.js');
   const allShopItems = [...Object.values(AccessoryId), ...Object.values(ItemId)].map(key => getShopItem(key)).filter((item): item is ShopItem => Boolean(item));
 
   const pageCount = Math.max(1, Math.ceil(allShopItems.length / pageSize));
@@ -55,6 +68,7 @@ export async function handleButtonInteraction(c: Context, interaction: Interacti
       return c.json({ type: 6 });
     }
 
+    const { buildAffinityGiftComponents } = await import('../commands/affinity.js');
     const components = await buildAffinityGiftComponents(userID, fr, {
       accessoryType: selectedType as AccessoryType,
     });
@@ -83,6 +97,7 @@ export async function handleButtonInteraction(c: Context, interaction: Interacti
 
     const selectedType = selectedTypeRaw !== 'all' && Object.values(AccessoryType).includes(selectedTypeRaw as AccessoryType) ? (selectedTypeRaw as AccessoryType) : undefined;
 
+    const { buildAffinityGiftComponents } = await import('../commands/affinity.js');
     const components = await buildAffinityGiftComponents(userID, fr, {
       accessoryType: selectedType,
       rarity: selectedRarity as Rarity,
@@ -158,6 +173,7 @@ export async function handleButtonInteraction(c: Context, interaction: Interacti
       return c.json({ type: 6 });
     }
 
+    const { buildAffinityGiftComponents } = await import('../commands/affinity.js');
     const components = await buildAffinityGiftComponents(userID, fr);
     return c.json({
       type: 7,
@@ -188,6 +204,7 @@ export async function handleButtonInteraction(c: Context, interaction: Interacti
       const page = Math.min(pageCount, Math.max(1, Number(pageRaw) || 1));
       const unlockedCount = achievements.filter(item => item.unlocked).length;
 
+      const { buildAchievementsComponents } = await import('../commands/achievements.js');
       const components = buildAchievementsComponents(page, pageCount, userID, fr);
 
       const description = fr ? `# Achievements de <@${userID}>\n\nProgression: **${unlockedCount}/${achievements.length}**\nPage: **${page}/${pageCount}**` : `# <@${userID}> achievements\n\nProgress: **${unlockedCount}/${achievements.length}**\nPage: **${page}/${pageCount}**`;
@@ -227,7 +244,8 @@ export async function handleButtonInteraction(c: Context, interaction: Interacti
       }
 
       const page = Math.max(1, Number(pageRaw) || 1);
-      const { pageCount, pageItems } = getPagedShopItems(page);
+      const { buildShopComponents } = await import('../commands/shop.js');
+      const { pageCount, pageItems } = await getPagedShopItems(page);
       const components = buildShopComponents(pageItems, page, pageCount, fr, userID);
 
       return c.json({
@@ -263,7 +281,8 @@ export async function handleButtonInteraction(c: Context, interaction: Interacti
 
       const selectedItemKey = interaction.data.values?.[0];
       const page = Math.max(1, Number(pageRaw) || 1);
-      const { pageCount, pageItems } = getPagedShopItems(page);
+      const { buildShopComponents, getShopItem } = await import('../commands/shop.js');
+      const { pageCount, pageItems } = await getPagedShopItems(page);
       const components = buildShopComponents(pageItems, page, pageCount, fr, userID, selectedItemKey);
 
       console.log(addImageVersion(`${BASE_URL}/shop/${page}?lang=${fr ? 'fr' : 'en'}`));
@@ -301,6 +320,7 @@ export async function handleButtonInteraction(c: Context, interaction: Interacti
         return c.json({ type: 6 });
       }
 
+      const { getShopItem, buildShopComponents } = await import('../commands/shop.js');
       const shopItem = getShopItem(itemKey);
       if (!shopItem) {
         return c.json({
@@ -309,6 +329,8 @@ export async function handleButtonInteraction(c: Context, interaction: Interacti
         });
       }
 
+      const { getPlayerProfile, updatePlayerGold } = await import('../../services/playerService.js');
+      const { addInventoryItem } = await import('../../services/inventoryService.js');
       const profile = await getPlayerProfile(userID);
       if (!profile) {
         return c.json({
@@ -329,7 +351,7 @@ export async function handleButtonInteraction(c: Context, interaction: Interacti
       await addInventoryItem(userID, shopItem.itemKey, shopItem.itemType, 1);
 
       const page = Math.max(1, Number(pageRaw) || 1);
-      const { pageCount, pageItems } = getPagedShopItems(page);
+      const { pageCount, pageItems } = await getPagedShopItems(page);
       const components = buildShopComponents(pageItems, page, pageCount, fr, userID);
 
       const message = fr ? `✅ Achat de ${shopItem.nameFr} réussi. Or restant : ${updatedGold}.` : `✅ Bought ${shopItem.nameEn}. Remaining gold: ${updatedGold}.`;
@@ -376,6 +398,7 @@ export async function handleButtonInteraction(c: Context, interaction: Interacti
     if (!donation.success) {
       const message = donation.reason === 'out-of-stock' ? (fr ? 'Accessoire indisponible ou stock insuffisant.' : 'Accessory unavailable or insufficient stock.') : fr ? 'Accessoire invalide.' : 'Invalid accessory.';
 
+      const { buildAffinityMessageData } = await import('../commands/affinity.js');
       const data = await buildAffinityMessageData(userID, userID, fr, message, undefined, false);
 
       return c.json({
@@ -388,6 +411,7 @@ export async function handleButtonInteraction(c: Context, interaction: Interacti
 
     const successMessage = fr ? `Don effectue sur ${targetLabel}: +${donation.affinityPoints} affinite.` : `Gift sent to ${targetLabel}: +${donation.affinityPoints} affinity.`;
 
+    const { buildAffinityMessageData } = await import('../commands/affinity.js');
     const data = await buildAffinityMessageData(userID, userID, fr, successMessage, undefined, true);
 
     return c.json({
@@ -417,6 +441,7 @@ export async function handleButtonInteraction(c: Context, interaction: Interacti
         { id: 3, labelFr: 'Darkness', labelEn: 'Darkness' },
       ];
 
+      const { buildComponents } = await import('../../utils/componentsBuilder.js');
       const difficulty = extractDifficulty(payload) ?? undefined;
       const { alivePlayerIds } = await buildComponents(payload, userID, lang, false, difficulty);
 
@@ -476,12 +501,13 @@ export async function handleButtonInteraction(c: Context, interaction: Interacti
 
       const targetId = Number.parseInt(targetIdRaw, 10);
       const nextPayload = `${payload}u`;
+      const { buildComponents, getBattleMonsterNames } = await import('../../utils/componentsBuilder.js');
       const difficulty = extractDifficulty(nextPayload) ?? undefined;
       const { buttons, embedDescription, gameState, creature } = await buildComponents(nextPayload, userID, lang, false, difficulty, itemKey, Number.isNaN(targetId) ? undefined : targetId);
       const actualMonsterNames = getBattleMonsterNames(creature, lang);
       const monsterName = actualMonsterNames.displayName;
 
-      void recordRunResult({
+      persistRunResultInBackground({
         userId: userID,
         payload: nextPayload,
         state: gameState,
@@ -489,6 +515,7 @@ export async function handleButtonInteraction(c: Context, interaction: Interacti
         monsterName: actualMonsterNames.recordName,
       });
 
+      const { handleDefaultButton } = await import('./handleDefaultButton.js');
       return handleDefaultButton(c, nextPayload, userID, lang, fr, monsterName, embedDescription, buttons);
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
@@ -521,6 +548,7 @@ export async function handleButtonInteraction(c: Context, interaction: Interacti
   // Check if this is a consumables menu action (ends with 'c')
   if (resolvedEncodedPayload.endsWith('c')) {
     try {
+      const { handleConsumablesButton } = await import('./handleConsumablesButton.js');
       return await handleConsumablesButton(c, userID, fr, resolvedEncodedPayload);
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
@@ -550,13 +578,14 @@ export async function handleButtonInteraction(c: Context, interaction: Interacti
 
   console.log('Received button interaction with payload:', resolvedEncodedPayload);
 
+  const { buildComponents, getBattleMonsterNames } = await import('../../utils/componentsBuilder.js');
   const training = isTraining(payload);
   const difficulty = extractDifficulty(payload) ?? undefined;
   const { buttons, embedDescription, activePlayerName, gameState, creature } = await buildComponents(payload, userID, lang, false, difficulty);
   const actualMonsterNames = getBattleMonsterNames(creature, lang);
   const monsterName = actualMonsterNames.displayName;
 
-  void recordRunResult({
+  persistRunResultInBackground({
     userId: userID,
     payload,
     state: gameState,
@@ -566,8 +595,10 @@ export async function handleButtonInteraction(c: Context, interaction: Interacti
 
   const special = resolvedEncodedPayload.endsWith('p');
   if (special) {
+    const { handleSpecialButton } = await import('./handleSpecialButton.js');
     return handleSpecialButton(interaction, c, payload, userID, lang, fr, monsterName, activePlayerName, embedDescription, buttons);
   }
 
+  const { handleDefaultButton } = await import('./handleDefaultButton.js');
   return handleDefaultButton(c, payload, userID, lang, fr, monsterName, embedDescription, buttons);
 }

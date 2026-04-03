@@ -15,6 +15,7 @@ import { KazumaImages } from '../objects/enums/player/KazumaImages';
 import { MeguminImages } from '../objects/enums/player/MeguminImages';
 import { PlayerName } from '../objects/enums/player/PlayerName';
 import { getCreatureNameAndPrefix } from './creatureText';
+import { createBoundedArrayBufferCache, createBoundedStringCache, SizedCache } from './renderImageHelpers';
 import { ensureResvgWasm } from './resvgWasm';
 
 // ─── LRU Cache ───────────────────────────────────────────────────────────────
@@ -73,17 +74,21 @@ function freePhoton(_key: string, img: Photon.PhotonImage): void {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const G = globalThis as any;
 
-G.__imageCache ??= {} as Record<string, ArrayBuffer>;
-G.__base64Cache ??= {} as Record<string, string>;
-G.__fontCache ??= {} as Record<string, ArrayBuffer>;
+const IMAGE_CACHE_MAX_BYTES = 64 * 1024 * 1024;
+const BASE64_CACHE_MAX_BYTES = 32 * 1024 * 1024;
+const FONT_CACHE_MAX_BYTES = 8 * 1024 * 1024;
+
+G.__imageCache ??= createBoundedArrayBufferCache(IMAGE_CACHE_MAX_BYTES);
+G.__base64Cache ??= createBoundedStringCache(BASE64_CACHE_MAX_BYTES);
+G.__fontCache ??= createBoundedArrayBufferCache(FONT_CACHE_MAX_BYTES);
 G.__photonCache ??= new LRUCache<string, Photon.PhotonImage>(40, freePhoton);
 G.__layerCache ??= new LRUCache<string, Photon.PhotonImage>(12, freePhoton);
 G.__uiPhotonCache ??= new LRUCache<string, Photon.PhotonImage>(30, freePhoton);
 G.__renderOutputCache ??= new LRUCache<string, Uint8Array>(120);
 
-const imageCache: Record<string, ArrayBuffer> = G.__imageCache;
-const base64Cache: Record<string, string> = G.__base64Cache;
-const fontCache: Record<string, ArrayBuffer> = G.__fontCache;
+const imageCache: SizedCache<ArrayBuffer> = G.__imageCache;
+const base64Cache: SizedCache<string> = G.__base64Cache;
+const fontCache: SizedCache<ArrayBuffer> = G.__fontCache;
 const photonCache: LRUCache<string, Photon.PhotonImage> = G.__photonCache;
 const layerCache: LRUCache<string, Photon.PhotonImage> = G.__layerCache;
 const uiPhotonCache: LRUCache<string, Photon.PhotonImage> = G.__uiPhotonCache;
@@ -96,7 +101,8 @@ const pendingFontFetches = new Map<string, Promise<ArrayBuffer>>();
 const BASE_URL = 'https://fox3000foxy.com/konosuba-rpg'; /* Should match the base path used in src/index.ts for /assets/ */
 
 export async function getImageBytes(key: string): Promise<ArrayBuffer> {
-  if (imageCache[key]) return imageCache[key];
+  const cached = imageCache.get(key);
+  if (cached) return cached;
   const pending = pendingImageFetches.get(key);
   if (pending) return pending;
 
@@ -111,7 +117,7 @@ export async function getImageBytes(key: string): Promise<ArrayBuffer> {
       return r.arrayBuffer();
     })
     .then(buf => {
-      imageCache[key] = buf;
+      imageCache.set(key, buf);
       return buf;
     })
     .finally(() => {
@@ -123,14 +129,15 @@ export async function getImageBytes(key: string): Promise<ArrayBuffer> {
 }
 
 async function getFontBytes(url: string): Promise<ArrayBuffer> {
-  if (fontCache[url]) return fontCache[url];
+  const cached = fontCache.get(url);
+  if (cached) return cached;
   const pending = pendingFontFetches.get(url);
   if (pending) return pending;
 
   const request = fetch(url)
     .then(r => r.arrayBuffer())
     .then(buf => {
-      fontCache[url] = buf;
+      fontCache.set(url, buf);
       return buf;
     })
     .finally(() => {
@@ -142,15 +149,10 @@ async function getFontBytes(url: string): Promise<ArrayBuffer> {
 }
 
 function getBase64Cached(key: string, buf: ArrayBuffer): string {
-  if (base64Cache[key]) return base64Cache[key];
-  const bytes = new Uint8Array(buf);
-  const chunkSize = 0x8000;
-  let binary = '';
-  for (let i = 0; i < bytes.length; i += chunkSize) {
-    binary += String.fromCharCode(...bytes.subarray(i, Math.min(i + chunkSize, bytes.length)));
-  }
-  const b64 = btoa(binary);
-  base64Cache[key] = b64;
+  const cached = base64Cache.get(key);
+  if (cached) return cached;
+  const b64 = Buffer.from(buf).toString('base64');
+  base64Cache.set(key, b64);
   return b64;
 }
 
@@ -345,7 +347,8 @@ async function buildOverlayJsx(team: Team, creature: Creature, messages: string[
       effectImageKey = 'ui_effect_scroll';
     }
 
-    const effectImageSrc = effectImageKey && imageCache[effectImageKey] ? `data:image/png;base64,${getBase64Cached(effectImageKey, imageCache[effectImageKey])}` : null;
+    const effectImageBuffer = effectImageKey ? imageCache.get(effectImageKey) : undefined;
+    const effectImageSrc = effectImageBuffer ? `data:image/png;base64,${getBase64Cached(effectImageKey, effectImageBuffer)}` : null;
 
     const { left, top } = playerEffectAnchor(playerId);
     return {
@@ -437,7 +440,9 @@ async function buildOverlayJsx(team: Team, creature: Creature, messages: string[
     : null;
 
   // Résolution synchrone depuis le cache — pas d'await dans la construction JSX
-  const endImgSrc = endMsg && imageCache['end_' + state] ? `data:image/png;base64,${getBase64Cached('end_' + state, imageCache['end_' + state])}` : null;
+  const endImageKey = state ? `end_${state}` : null;
+  const endImageBuffer = endImageKey ? imageCache.get(endImageKey) : undefined;
+  const endImgSrc = endMsg && endImageKey && endImageBuffer ? `data:image/png;base64,${getBase64Cached(endImageKey, endImageBuffer)}` : null;
 
   let pid = 0;
   switch (team.activePlayer?.name[0]) {
@@ -704,8 +709,13 @@ export async function warmup(): Promise<void> {
   await Promise.all([ensureResvgWasm(), getFontBytes(fontUrl), ...END_STATES.map(s => getImageBytes('end_' + s)), getImageBytes('board'), getImageBytes('frameless'), getImageBytes('ui_effect_potion').catch(() => undefined), getImageBytes('ui_effect_chrono').catch(() => undefined), getImageBytes('ui_effect_stone').catch(() => undefined), getImageBytes('ui_effect_scroll').catch(() => undefined)]);
 }
 
-// Appeler warmup au démarrage pour précharger les ressources nécessaires
-warmup().catch(err => console.error('Warmup failed:', err));
+// Avoid heavy boot-time warmup in serverless by default.
+const isVercelRuntime = process.env.VERCEL === '1' || process.env.VERCEL === 'true';
+const shouldAutoWarmup = process.env.RENDER_WARMUP_ON_BOOT === '1' || (!isVercelRuntime && process.env.NODE_ENV !== 'test');
+
+if (shouldAutoWarmup) {
+  warmup().catch(err => console.error('Warmup failed:', err));
+}
 
 // ─── Main render ──────────────────────────────────────────────────────────────
 
@@ -791,14 +801,24 @@ export default async function renderImage(state: string | null, messages: string
 // ─── Cache diagnostics ────────────────────────────────────────────────────────
 
 export function getCacheDiagnostics(): Record<string, unknown> {
+  const imageCacheStats = imageCache.stats();
+  const base64CacheStats = base64Cache.stats();
+  const fontCacheStats = fontCache.stats();
+
   return {
     photonCacheSize: photonCache.size,
     layerCacheSize: layerCache.size,
     uiCacheSize: uiPhotonCache.size,
     renderOutputCacheSize: renderOutputCache.size,
-    imageCacheKeys: Object.keys(imageCache).length,
-    base64CacheKeys: Object.keys(base64Cache).length,
-    fontCacheKeys: Object.keys(fontCache).length,
+    imageCacheKeys: imageCacheStats.entries,
+    imageCacheBytes: imageCacheStats.totalBytes,
+    imageCacheMaxBytes: imageCacheStats.maxBytes,
+    base64CacheKeys: base64CacheStats.entries,
+    base64CacheBytes: base64CacheStats.totalBytes,
+    base64CacheMaxBytes: base64CacheStats.maxBytes,
+    fontCacheKeys: fontCacheStats.entries,
+    fontCacheBytes: fontCacheStats.totalBytes,
+    fontCacheMaxBytes: fontCacheStats.maxBytes,
   };
 }
 
