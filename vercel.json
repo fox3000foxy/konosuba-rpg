@@ -3,6 +3,10 @@
   "installCommand": "",
   "routes": [
     {
+      "src": "/api/interactions",
+      "dest": "/api/interactions.js"
+    },
+    {
       "src": "/(.*)",
       "dest": "/api/index.js"
     }
