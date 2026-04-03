@@ -3,6 +3,7 @@ import { Resvg } from '@resvg/resvg-wasm';
 import { BASE_URL } from '../objects/config/constants';
 import { DailyQuestStatus } from '../objects/types/DailyQuestStatus';
 import { getQuestLabel } from '../services/progressionService';
+import { createPerfLogger } from './perfLogger';
 import { cacheRenderOutput, createBoundedArrayBufferCache, createBoundedStringCache, resolveResvgImageUri, SizedCache } from './renderImageHelpers';
 import { ensureResvgWasm } from './resvgWasm';
 
@@ -111,12 +112,18 @@ export async function buildQuestSvg(userId: string, statuses: DailyQuestStatus[]
 }
 
 export async function renderQuestImage(userId: string, statuses: DailyQuestStatus[], fr: boolean): Promise<Uint8Array> {
+  const perf = createPerfLogger('renderQuestImage');
   await ensureResvgWasm();
+  perf.mark('ensureResvgWasm');
+
   const fontBuffer = await getEmbeddedFontBuffer();
+  perf.mark('getEmbeddedFontBuffer');
+
   const hasEmbeddedFont = Boolean(fontBuffer);
   const renderKey = buildRenderCacheKey(statuses, fr, hasEmbeddedFont);
   const cachedOutput = renderOutputCache.get(renderKey);
   if (cachedOutput) {
+    perf.done('cache hit -> return');
     return cachedOutput;
   }
 
@@ -127,9 +134,13 @@ export async function renderQuestImage(userId: string, statuses: DailyQuestStatu
 
   const renderPromise = (async () => {
     const [boardUri] = await Promise.all([resolveResvgImageUriQuest(BOARD_PATH)]);
+    perf.mark('resolve URIs');
+
     const boardDataUri = boardUri || undefined;
 
     const svg = await buildQuestSvg(userId, statuses, fr, hasEmbeddedFont, boardDataUri);
+    perf.mark('buildSvg');
+
     const options = fontBuffer
       ? {
           font: {
@@ -141,6 +152,8 @@ export async function renderQuestImage(userId: string, statuses: DailyQuestStatu
       : { font: { loadSystemFonts: true } };
 
     const pngBytes = new Resvg(svg, options).render().asPng();
+    perf.mark('Resvg render -> PNG');
+
     const image = Photon.PhotonImage.new_from_byteslice(pngBytes);
     let webpBytes: Uint8Array;
     try {
@@ -148,8 +161,10 @@ export async function renderQuestImage(userId: string, statuses: DailyQuestStatu
     } finally {
       image.free();
     }
+    perf.mark('Photon PNG -> WebP');
 
     cacheRenderOutput(renderKey, webpBytes, renderOutputCache, RENDER_OUTPUT_CACHE_MAX);
+    perf.done();
     return webpBytes;
   })().finally(() => {
     pendingRenders.delete(renderKey);
