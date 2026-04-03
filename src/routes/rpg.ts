@@ -1,6 +1,6 @@
 import { Context } from 'hono';
 import { Lang } from '../objects/enums/Lang';
-import { calculateGameImageFromUrl } from '../services/gameService';
+import { calculateGameImageFromUrl } from '../services/gameRenderService';
 import { imageCacheHeaders } from '../utils/cacheHeaders';
 
 export async function calculateRPG(c: Context) {
