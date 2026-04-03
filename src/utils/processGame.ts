@@ -20,7 +20,6 @@ import { LinesType } from '../objects/types/LinesType';
 import { applyConsumableEffect } from '../services/consumableEffectService';
 import { consumeInventoryItem } from '../services/inventoryConsumptionService';
 import { getCreatureNameAndPrefix } from './creatureText';
-import renderImage from './renderImage';
 
 const linesTyped = lines as LinesType;
 const descriptionsTyped = descriptions as LinesType;
@@ -201,7 +200,7 @@ async function handlePlayerAction({ move, currentPlayer, team, creature, rand, l
   }
 }
 
-export default async function processGame(rand: Random, moves: string[], monsterName: string | null = null, lang: Lang = Lang.English, renderingImage: boolean = true, teamLevelFactors?: number[], difficulty?: string | MonsterDifficulty | null, userId?: string, itemIds?: ItemId[], selectedUseTargetPlayerId?: number): Promise<Game> {
+export default async function processGame(rand: Random, moves: string[], monsterName: string | null = null, lang: Lang = Lang.English, _renderingImage: boolean = false, teamLevelFactors?: number[], difficulty?: string | MonsterDifficulty | null, userId?: string, itemIds?: ItemId[], selectedUseTargetPlayerId?: number): Promise<Game> {
   lang = lang === Lang.French ? Lang.French : Lang.English;
   const team = new Team();
   applyTeamLevelFactors(team, teamLevelFactors);
@@ -351,19 +350,6 @@ export default async function processGame(rand: Random, moves: string[], monster
 
   if (state === GameState.Good || state === GameState.Best) {
     embedDescription.push(lang === Lang.French ? EndMessages.French_Good : EndMessages.English_Good);
-  }
-
-  if (renderingImage) {
-    const image = await renderImage(state, messages, team, creature as Creature, lang);
-    return {
-      image,
-      state,
-      messages,
-      embedDescription,
-      team,
-      creature: creature as Creature,
-      training: !!monsterName,
-    };
   }
 
   return {

@@ -24,13 +24,6 @@ export async function calculateGameStateFromUrl(url: string, lang: Lang, userID?
   return processGame(rand, moves, monster, lang, false, characterFactors, difficulty, userID);
 }
 
-export async function calculateGameImageFromUrl(url: string, lang: Lang, userID?: string): Promise<Game> {
-  const { rand, moves, monster, difficulty } = parseGameUrl(url);
-  const characterFactors = await getCharacterFactors(userID);
-
-  return processGame(rand, moves, monster, lang, true, characterFactors, difficulty, userID);
-}
-
 export function serializeGameForApi(game: Game, lang: Lang): Record<string, unknown> {
   const serializableTeam = {
     ...game.team,

@@ -17,7 +17,7 @@
 
 import { BASE_URL } from '../objects/config/constants';
 import { Lang } from '../objects/enums/Lang';
-import processGame from './processGame';
+import processGameWithRender from './processGameWithRender';
 import processUrl from './processUrl';
 import { PerfReport, getCacheDiagnostics, getLastPerfReport, renderOutputCache } from './renderImage';
 
@@ -157,7 +157,7 @@ async function runScenario(scenario: Scenario, runs: number, warmup: number): Pr
     const [rand, moves, , monster] = processUrl(url);
 
     const t0 = performance.now();
-    const game = await processGame(rand, moves, monster, scenario.lang, true /* renderingImage */);
+    const game = await processGameWithRender(rand, moves, monster, scenario.lang);
     const elapsed = performance.now() - t0;
 
     if (i >= warmup) {
