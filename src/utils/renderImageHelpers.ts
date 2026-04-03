@@ -1,8 +1,70 @@
 import * as Photon from '@cf-wasm/photon';
 
+type CacheEntry<T> = {
+  value: T;
+  size: number;
+};
+
+export type SizedCache<T> = {
+  get(key: string): T | undefined;
+  set(key: string, value: T): void;
+};
+
+class FifoSizedCache<T> implements SizedCache<T> {
+  private readonly entries = new Map<string, CacheEntry<T>>();
+  private totalSize = 0;
+
+  constructor(
+    private readonly maxSizeBytes: number,
+    private readonly estimateSize: (value: T) => number
+  ) {}
+
+  get(key: string): T | undefined {
+    return this.entries.get(key)?.value;
+  }
+
+  set(key: string, value: T): void {
+    const size = Math.max(0, this.estimateSize(value));
+    if (size > this.maxSizeBytes) {
+      this.entries.clear();
+      this.totalSize = 0;
+      return;
+    }
+
+    const existing = this.entries.get(key);
+    if (existing) {
+      this.totalSize -= existing.size;
+      this.entries.delete(key);
+    }
+
+    while (this.totalSize + size > this.maxSizeBytes && this.entries.size > 0) {
+      const oldestKey = this.entries.keys().next().value as string | undefined;
+      if (!oldestKey) {
+        break;
+      }
+      const oldest = this.entries.get(oldestKey);
+      if (oldest) {
+        this.totalSize -= oldest.size;
+      }
+      this.entries.delete(oldestKey);
+    }
+
+    this.entries.set(key, { value, size });
+    this.totalSize += size;
+  }
+}
+
+export function createBoundedArrayBufferCache(maxSizeBytes: number): SizedCache<ArrayBuffer> {
+  return new FifoSizedCache<ArrayBuffer>(maxSizeBytes, value => value.byteLength);
+}
+
+export function createBoundedStringCache(maxSizeBytes: number): SizedCache<string> {
+  return new FifoSizedCache<string>(maxSizeBytes, value => Buffer.byteLength(value, 'utf8'));
+}
+
 export type RenderImageGlobals = {
-  assetCache: Record<string, ArrayBuffer>;
-  resvgUriCache: Record<string, string>;
+  assetCache: SizedCache<ArrayBuffer>;
+  resvgUriCache: SizedCache<string>;
   fontBuffer: Uint8Array | null;
   renderOutputCache: Map<string, Uint8Array>;
 };
@@ -12,13 +74,14 @@ export type PendingRequests = {
   resvgUriConversions: Map<string, Promise<string | null>>;
 };
 
-export async function getAssetBytes(path: string | null, baseUrl: string, pendingAssetFetches: Map<string, Promise<ArrayBuffer | null>>, assetCache: Record<string, ArrayBuffer>): Promise<ArrayBuffer | null> {
+export async function getAssetBytes(path: string | null, baseUrl: string, pendingAssetFetches: Map<string, Promise<ArrayBuffer | null>>, assetCache: SizedCache<ArrayBuffer>): Promise<ArrayBuffer | null> {
   if (!path) {
     return null;
   }
 
-  if (assetCache[path]) {
-    return assetCache[path];
+  const cached = assetCache.get(path);
+  if (cached) {
+    return cached;
   }
 
   const pending = pendingAssetFetches.get(path);
@@ -33,7 +96,7 @@ export async function getAssetBytes(path: string | null, baseUrl: string, pendin
       }
 
       const buf = await response.arrayBuffer();
-      assetCache[path] = buf;
+      assetCache.set(path, buf);
       return buf;
     })
     .finally(() => {
@@ -72,8 +135,8 @@ export function resolveAssetUrl(path: string | null, baseUrl: string): string | 
   return `${baseUrl}${path.startsWith('/') ? path : `/${path}`}`;
 }
 
-export async function toResvgCompatibleDataUri(path: string, bytes: ArrayBuffer, resvgUriCache: Record<string, string>): Promise<string> {
-  const cached = resvgUriCache[path];
+export async function toResvgCompatibleDataUri(path: string, bytes: ArrayBuffer, resvgUriCache: SizedCache<string>): Promise<string> {
+  const cached = resvgUriCache.get(path);
   if (cached) {
     return cached;
   }
@@ -81,7 +144,7 @@ export async function toResvgCompatibleDataUri(path: string, bytes: ArrayBuffer,
   const mimeType = getMimeTypeFromPath(path);
   if (mimeType !== 'image/webp') {
     const uri = toDataUri(bytes, mimeType);
-    resvgUriCache[path] = uri;
+    resvgUriCache.set(path, uri);
     return uri;
   }
 
@@ -94,11 +157,11 @@ export async function toResvgCompatibleDataUri(path: string, bytes: ArrayBuffer,
       image.free();
     }
     const uri = toDataUri(bytesToArrayBuffer(pngBytes), 'image/png');
-    resvgUriCache[path] = uri;
+    resvgUriCache.set(path, uri);
     return uri;
   } catch {
     const fallback = toDataUri(bytes, mimeType);
-    resvgUriCache[path] = fallback;
+    resvgUriCache.set(path, fallback);
     return fallback;
   }
 }
@@ -108,14 +171,14 @@ export async function resolveResvgImageUri(
   baseUrl: string,
   pendingAssetFetches: Map<string, Promise<ArrayBuffer | null>>,
   pendingResvgUriConversions: Map<string, Promise<string | null>>,
-  assetCache: Record<string, ArrayBuffer>,
-  resvgUriCache: Record<string, string>
+  assetCache: SizedCache<ArrayBuffer>,
+  resvgUriCache: SizedCache<string>
 ): Promise<string | null> {
   if (!path) {
     return null;
   }
 
-  const cached = resvgUriCache[path];
+  const cached = resvgUriCache.get(path);
   if (cached) {
     return cached;
   }

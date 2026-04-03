@@ -1,20 +1,23 @@
 import * as Photon from '@cf-wasm/photon';
 import { Resvg } from '@resvg/resvg-wasm';
 import { ShopItem } from '../objects/types/ShopItem';
-import { cacheRenderOutput, resolveResvgImageUri } from './renderImageHelpers';
+import { cacheRenderOutput, createBoundedArrayBufferCache, createBoundedStringCache, resolveResvgImageUri, SizedCache } from './renderImageHelpers';
 import { ensureResvgWasm } from './resvgWasm';
 
 type ShopImageGlobals = {
-  __shopAssetCache?: Record<string, ArrayBuffer>;
-  __shopResvgUriCache?: Record<string, string>;
+  __shopAssetCache?: SizedCache<ArrayBuffer>;
+  __shopResvgUriCache?: SizedCache<string>;
   __shopFontBuffer?: Uint8Array;
   __shopRenderOutputCache?: Map<string, Uint8Array>;
   __shopPendingRenders?: Map<string, Promise<Uint8Array>>;
 };
 
+const ASSET_CACHE_MAX_BYTES = 20 * 1024 * 1024;
+const RESVG_URI_CACHE_MAX_BYTES = 24 * 1024 * 1024;
+
 const G = globalThis as unknown as ShopImageGlobals;
-G.__shopAssetCache ??= {};
-G.__shopResvgUriCache ??= {};
+G.__shopAssetCache ??= createBoundedArrayBufferCache(ASSET_CACHE_MAX_BYTES);
+G.__shopResvgUriCache ??= createBoundedStringCache(RESVG_URI_CACHE_MAX_BYTES);
 G.__shopRenderOutputCache ??= new Map<string, Uint8Array>();
 G.__shopPendingRenders ??= new Map<string, Promise<Uint8Array>>();
 const assetCache = G.__shopAssetCache;
