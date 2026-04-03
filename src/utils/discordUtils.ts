@@ -3,27 +3,7 @@
 import { verifyKey } from 'discord-interactions';
 import { config } from 'dotenv';
 import { Context } from 'vm';
-import { DISCORD_API_URL } from '../objects/config/constants';
-import { Interaction } from '../objects/enums/Interaction';
 config();
-
-export function followUpTimeout(interaction: Interaction, response: { type: number; data?: Record<string, unknown> }, delay: number = 3000): void {
-  setTimeout(() => {
-    if (response.type === 4) {
-      response.data = {
-        content: response.data?.content || ' ',
-        embeds: response.data?.embeds || [],
-        components: response.data?.components || [],
-      };
-    }
-
-    fetch(`${DISCORD_API_URL}/webhooks/${interaction.application_id}/${interaction.token}/messages/@original`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(response.data),
-    });
-  }, delay);
-}
 
 export async function verifySignature(c: Context, body: string): Promise<boolean> {
   const signature = c.req.header('x-signature-ed25519');
