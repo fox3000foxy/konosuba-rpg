@@ -5,5 +5,5 @@ import { parseGameUrl } from './urlService';
 
 export async function calculateGameStateFromUrlLight(url: string, lang: Lang, userID?: string): Promise<Game> {
   const { rand, moves, monster, difficulty } = parseGameUrl(url);
-  return processGame(rand, moves, monster, lang, false, undefined, difficulty, userID);
+  return processGame(rand, moves, monster, lang, undefined, difficulty, userID);
 }

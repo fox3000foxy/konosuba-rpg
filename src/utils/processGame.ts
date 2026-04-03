@@ -200,7 +200,7 @@ async function handlePlayerAction({ move, currentPlayer, team, creature, rand, l
   }
 }
 
-export default async function processGame(rand: Random, moves: string[], monsterName: string | null = null, lang: Lang = Lang.English, _renderingImage: boolean = false, teamLevelFactors?: number[], difficulty?: string | MonsterDifficulty | null, userId?: string, itemIds?: ItemId[], selectedUseTargetPlayerId?: number): Promise<Game> {
+export default async function processGame(rand: Random, moves: string[], monsterName: string | null = null, lang: Lang = Lang.English, teamLevelFactors?: number[], difficulty?: string | MonsterDifficulty | null, userId?: string, itemIds?: ItemId[], selectedUseTargetPlayerId?: number): Promise<Game> {
   lang = lang === Lang.French ? Lang.French : Lang.English;
   const team = new Team();
   applyTeamLevelFactors(team, teamLevelFactors);
