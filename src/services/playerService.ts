@@ -141,11 +141,7 @@ export async function getPlayerRunSummary(userId: string): Promise<PlayerRunSumm
 
     await Promise.all(
       updates.map(async update => {
-        const { error: updateError } = await supabase
-          .from('runs')
-          .update({ monster_name: update.monsterName })
-          .eq('run_key', update.runKey)
-          .eq('user_id', userId);
+        const { error: updateError } = await supabase.from('runs').update({ monster_name: update.monsterName }).eq('run_key', update.runKey).eq('user_id', userId);
 
         if (updateError) {
           console.error('[db] getPlayerRunSummary backfill failed:', updateError.message);

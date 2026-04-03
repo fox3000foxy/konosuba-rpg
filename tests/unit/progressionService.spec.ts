@@ -1,9 +1,9 @@
 import { GameState } from '../../src/objects/enums/GameState';
 import {
-  claimDailyQuestReward,
-  getAllQuestStatuses,
-  getDailyQuestStatus,
-  getLeaderboard,
+    claimDailyQuestReward,
+    getAllQuestStatuses,
+    getDailyQuestStatus,
+    getLeaderboard,
 } from '../../src/services/progressionService';
 import { getSupabaseAdminClient } from '../../src/utils/supabaseClient';
 
