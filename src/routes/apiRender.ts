@@ -6,12 +6,6 @@ import { getItems as getConsumableItems } from '../services/consumableService';
 import { getInventoryItems } from '../services/inventoryService';
 import { getAchievementsOverview, getAllQuestStatuses, getCharacterProgresses, getPlayerProfile, getPlayerRunSummary } from '../services/progressionService';
 import { imageCacheHeaders } from '../utils/cacheHeaders';
-import { buildAchievementsSvg, renderAchievementsImage } from '../utils/renderAchievementsImage';
-import { buildAffinitySvg, renderAffinityImage } from '../utils/renderAffinityImage';
-import { buildSvg, renderInventoryImage } from '../utils/renderInventoryImage';
-import { buildProfileSvg, renderProfileImage } from '../utils/renderProfileImage';
-import { buildQuestSvg, renderQuestImage } from '../utils/renderQuestImage';
-import { renderShopImage } from '../utils/renderShopImage';
 
 function getApiLang(c: Context) {
   return c.req.query('lang') === 'fr';
@@ -58,6 +52,7 @@ export function registerApiRenderRoutes(app: Hono): void {
     const renderSvg = c.req.query('renderSvg') === 'true';
     if (renderSvg) {
       const items = await getInventoryItems(userId);
+      const { buildSvg } = await import('../utils/renderInventoryImage.js');
       const image = await buildSvg(userId, items, fr);
       return c.text(image, 200, {
         ...imageCacheHeaders('image/svg+xml'),
@@ -65,6 +60,7 @@ export function registerApiRenderRoutes(app: Hono): void {
     }
 
     const items = await getInventoryItems(userId);
+    const { renderInventoryImage } = await import('../utils/renderInventoryImage.js');
     const image = await renderInventoryImage(userId, items, fr);
     const responseBody = image.buffer.slice(image.byteOffset, image.byteOffset + image.byteLength);
 
@@ -87,12 +83,14 @@ export function registerApiRenderRoutes(app: Hono): void {
 
     const renderSvg = c.req.query('renderSvg') === 'true';
     if (renderSvg) {
+      const { buildAffinitySvg } = await import('../utils/renderAffinityImage.js');
       const image = await buildAffinitySvg(userId, progresses, fr);
       return c.text(image, 200, {
         ...imageCacheHeaders('image/svg+xml'),
       });
     }
 
+    const { renderAffinityImage } = await import('../utils/renderAffinityImage.js');
     const image = await renderAffinityImage(userId, progresses, fr);
     const responseBody = image.buffer.slice(image.byteOffset, image.byteOffset + image.byteLength);
 
@@ -112,12 +110,14 @@ export function registerApiRenderRoutes(app: Hono): void {
     const renderSvg = c.req.query('renderSvg') === 'true';
 
     if (renderSvg) {
+      const { buildQuestSvg } = await import('../utils/renderQuestImage.js');
       const image = await buildQuestSvg(userId, statuses, fr);
       return c.text(image, 200, {
         ...imageCacheHeaders('image/svg+xml'),
       });
     }
 
+    const { renderQuestImage } = await import('../utils/renderQuestImage.js');
     const image = await renderQuestImage(userId, statuses, fr);
     const responseBody = image.buffer.slice(image.byteOffset, image.byteOffset + image.byteLength);
 
@@ -136,6 +136,7 @@ export function registerApiRenderRoutes(app: Hono): void {
     const pageIndex = Math.min(pageCount - 1, page - 1);
     const itemsOnPage = allItems.slice(pageIndex * pageSize, pageIndex * pageSize + pageSize);
 
+    const { renderShopImage } = await import('../utils/renderShopImage.js');
     const image = await renderShopImage(itemsOnPage, page, pageCount, fr);
     const responseBody = image.buffer.slice(image.byteOffset, image.byteOffset + image.byteLength);
 
@@ -165,12 +166,14 @@ export function registerApiRenderRoutes(app: Hono): void {
     const renderSvg = c.req.query('renderSvg') === 'true';
 
     if (renderSvg) {
+      const { buildProfileSvg } = await import('../utils/renderProfileImage.js');
       const image = await buildProfileSvg(userId, profile, progresses, runSummary, achievements.filter(item => item.unlocked).length, achievements.length, fr);
       return c.text(image, 200, {
         ...imageCacheHeaders('image/svg+xml'),
       });
     }
 
+    const { renderProfileImage } = await import('../utils/renderProfileImage.js');
     const image = await renderProfileImage(userId, profile, progresses, runSummary, achievements.filter(item => item.unlocked).length, achievements.length, fr);
     const responseBody = image.buffer.slice(image.byteOffset, image.byteOffset + image.byteLength);
 
@@ -200,12 +203,14 @@ export function registerApiRenderRoutes(app: Hono): void {
 
     const renderSvg = c.req.query('renderSvg') === 'true';
     if (renderSvg) {
+      const { buildAchievementsSvg } = await import('../utils/renderAchievementsImage.js');
       const image = await buildAchievementsSvg(userId, pageItems, fr);
       return c.text(image, 200, {
         ...imageCacheHeaders('image/svg+xml'),
       });
     }
 
+    const { renderAchievementsImage } = await import('../utils/renderAchievementsImage.js');
     const image = await renderAchievementsImage(userId, pageItems, fr);
     const responseBody = image.buffer.slice(image.byteOffset, image.byteOffset + image.byteLength);
 

@@ -1,5 +1,3 @@
-import * as Photon from '@cf-wasm/photon';
-
 type CacheEntry<T> = {
   value: T;
   size: number;
@@ -149,6 +147,7 @@ export async function toResvgCompatibleDataUri(path: string, bytes: ArrayBuffer,
   }
 
   try {
+    const Photon = await import('@cf-wasm/photon');
     const image = Photon.PhotonImage.new_from_byteslice(new Uint8Array(bytes));
     let pngBytes: Uint8Array;
     try {
