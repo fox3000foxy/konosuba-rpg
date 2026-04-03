@@ -24,6 +24,12 @@ jobs:
       - name: Install dependencies
         run: bun install
 
+      - name: Setup pnpm (required by Vercel CLI)
+        run: |
+          corepack enable
+          corepack prepare pnpm@9 --activate
+          pnpm --version
+
       - name: Pull Vercel project configuration
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
