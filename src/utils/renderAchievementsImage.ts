@@ -2,32 +2,25 @@ import * as Photon from '@cf-wasm/photon';
 import { Resvg } from '@resvg/resvg-wasm';
 import { BASE_URL } from '../objects/config/constants';
 import { AchievementOverviewItem } from '../objects/types/AchievementOverviewItem';
-import { getEmbeddedFontBuffer as getEmbeddedFontBufferUtil } from './assetLoader';
+import { getAssetBytes as getAssetBytesFromLoader, getEmbeddedFontBuffer as getEmbeddedFontBufferUtil } from './assetLoader';
 import { createPerfLogger } from './perfLogger';
-import { cacheRenderOutput, createBoundedArrayBufferCache, createBoundedStringCache, resolveResvgImageUri, SizedCache } from './renderImageHelpers';
+import { cacheRenderOutput, createBoundedStringCache, SizedCache } from './renderImageHelpers';
 import { ensureResvgWasm } from './resvgWasm';
 
 type AchievementsImageGlobals = {
-  __achievementsAssetCache?: SizedCache<ArrayBuffer>;
   __achievementsResvgUriCache?: SizedCache<string>;
   __achievementsRenderOutputCache?: Map<string, Uint8Array>;
   __achievementsPendingRenders?: Map<string, Promise<Uint8Array>>;
 };
 
-const ASSET_CACHE_MAX_BYTES = 20 * 1024 * 1024;
 const RESVG_URI_CACHE_MAX_BYTES = 24 * 1024 * 1024;
 
 const G = globalThis as unknown as AchievementsImageGlobals;
-G.__achievementsAssetCache ??= createBoundedArrayBufferCache(ASSET_CACHE_MAX_BYTES);
 G.__achievementsResvgUriCache ??= createBoundedStringCache(RESVG_URI_CACHE_MAX_BYTES);
 G.__achievementsRenderOutputCache ??= new Map<string, Uint8Array>();
 G.__achievementsPendingRenders ??= new Map<string, Promise<Uint8Array>>();
-const assetCache = G.__achievementsAssetCache;
-const resvgUriCache = G.__achievementsResvgUriCache;
 const renderOutputCache = G.__achievementsRenderOutputCache;
 const pendingRenders = G.__achievementsPendingRenders;
-const pendingAssetFetches = new Map<string, Promise<ArrayBuffer | null>>();
-const pendingResvgUriConversions = new Map<string, Promise<string | null>>();
 
 const RENDER_OUTPUT_CACHE_MAX = 32;
 
@@ -43,10 +36,6 @@ function escapeXml(value: string): string {
 
 async function getEmbeddedFontBuffer(): Promise<Uint8Array | null> {
   return getEmbeddedFontBufferUtil('assets/swordgame/font/GintoNordMedium.otf', FONT_URL);
-}
-
-async function resolveResvgImageUriAchievements(path: string | null): Promise<string | null> {
-  return resolveResvgImageUri(path, ASSET_BASE_URL, pendingAssetFetches, pendingResvgUriConversions, assetCache, resvgUriCache);
 }
 
 function buildRenderCacheKey(achievements: AchievementOverviewItem[], fr: boolean, hasEmbeddedFont: boolean): string {
@@ -111,12 +100,7 @@ export async function renderAchievementsImage(userId: string, achievements: Achi
   }
 
   const renderPromise = (async () => {
-    const [boardUri] = await Promise.all([resolveResvgImageUriAchievements(BOARD_PATH)]);
-    perf.mark('resolve URIs');
-
-    const boardDataUri = boardUri || undefined;
-
-    const svg = await buildAchievementsSvg(userId, achievements, fr, hasEmbeddedFont, boardDataUri);
+    const svg = await buildAchievementsSvg(userId, achievements, fr, hasEmbeddedFont);
     perf.mark('buildSvg');
 
     const options = fontBuffer
@@ -132,12 +116,29 @@ export async function renderAchievementsImage(userId: string, achievements: Achi
     const pngBytes = new Resvg(svg, options).render().asPng();
     perf.mark('Resvg render -> PNG');
 
-    const image = Photon.PhotonImage.new_from_byteslice(pngBytes);
+    const overlay = Photon.PhotonImage.new_from_byteslice(pngBytes);
+    const boardBytes = await getAssetBytesFromLoader(BOARD_PATH, ASSET_BASE_URL);
+    perf.mark('get board');
+
+    let board: Photon.PhotonImage | null = null;
+    let canvas: Photon.PhotonImage;
+    if (boardBytes) {
+      board = Photon.PhotonImage.new_from_byteslice(new Uint8Array(boardBytes));
+      canvas = Photon.resize(board, WIDTH, HEIGHT, Photon.SamplingFilter.Lanczos3);
+      Photon.watermark(canvas, overlay, 0n, 0n);
+    } else {
+      canvas = overlay;
+    }
+
     let webpBytes: Uint8Array;
     try {
-      webpBytes = image.get_bytes_webp();
+      webpBytes = canvas.get_bytes_webp();
     } finally {
-      image.free();
+      if (canvas !== overlay) {
+        overlay.free();
+      }
+      board?.free();
+      canvas.free();
     }
     perf.mark('Photon PNG -> WebP');
 
