@@ -95,6 +95,19 @@ Example:
 - `npx wrangler secret put DISCORD_TOKEN`
 - `npx wrangler secret put DISCORD_APPLICATION_ID`
 
+#### Deployment Architecture
+
+**Cloudflare Workers** hosts a **lightweight logic-only version** of the application:
+
+- ✅ Supports: Game logic (`/konosuba-rpg/:lang/*`), Discord interactions (`/api/interactions`), API routes (`/api/*`)
+- ❌ Not supported: Image rendering routes (`/inventory`, `/profile`, `/quest`, `/shop`, `/achievements`). These routes return **501 Not Implemented** and should be accessed via Vercel instead.
+
+**Reason**: Cloudflare Workers forbids runtime WebAssembly instantiation for security reasons, and the image rendering pipeline relies heavily on `@cf-wasm/photon` for image manipulation. The Worker configuration explicitly excludes these WASM-dependent routes to avoid `WebAssembly.instantiate() disallowed by embedder` errors.
+
+**Production strategy**:
+- Use **Vercel** for the complete application (all routes including image rendering)
+- Use **Cloudflare Workers** for horizontal scaling of game logic and API endpoints with lower latency
+
 ## License (Important)
 
 This repository uses a custom **source-available** license in [LICENSE](LICENSE).
