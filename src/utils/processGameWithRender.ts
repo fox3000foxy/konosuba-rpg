@@ -17,7 +17,7 @@ export default async function processGameWithRender(
   itemIds?: ItemId[],
   selectedUseTargetPlayerId?: number
 ): Promise<Game> {
-  const game = await processGame(rand, moves, monsterName, lang, false, teamLevelFactors, difficulty, userId, itemIds, selectedUseTargetPlayerId);
+  const game = await processGame(rand, moves, monsterName, lang, teamLevelFactors, difficulty, userId, itemIds, selectedUseTargetPlayerId);
   const image = await renderImage(game.state, game.messages, game.team, game.creature, lang);
 
   return {

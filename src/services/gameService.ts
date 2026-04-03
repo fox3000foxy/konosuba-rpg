@@ -21,5 +21,5 @@ async function getCharacterFactors(userID?: string): Promise<number[] | undefine
 export async function calculateGameStateFromUrl(url: string, lang: Lang, userID?: string): Promise<Game> {
   const { rand, moves, monster, difficulty } = parseGameUrl(url);
   const characterFactors = await getCharacterFactors(userID);
-  return processGame(rand, moves, monster, lang, false, characterFactors, difficulty, userID);
+  return processGame(rand, moves, monster, lang, characterFactors, difficulty, userID);
 }
