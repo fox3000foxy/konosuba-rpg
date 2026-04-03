@@ -11,15 +11,18 @@ type QuestImageGlobals = {
   __questResvgUriCache?: Record<string, string>;
   __questFontBuffer?: Uint8Array;
   __questRenderOutputCache?: Map<string, Uint8Array>;
+  __questPendingRenders?: Map<string, Promise<Uint8Array>>;
 };
 
 const G = globalThis as unknown as QuestImageGlobals;
 G.__questAssetCache ??= {};
 G.__questResvgUriCache ??= {};
 G.__questRenderOutputCache ??= new Map<string, Uint8Array>();
+G.__questPendingRenders ??= new Map<string, Promise<Uint8Array>>();
 const assetCache = G.__questAssetCache;
 const resvgUriCache = G.__questResvgUriCache;
 const renderOutputCache = G.__questRenderOutputCache;
+const pendingRenders = G.__questPendingRenders;
 const pendingAssetFetches = new Map<string, Promise<ArrayBuffer | null>>();
 const pendingResvgUriConversions = new Map<string, Promise<string | null>>();
 
@@ -111,27 +114,44 @@ export async function renderQuestImage(userId: string, statuses: DailyQuestStatu
   const renderKey = buildRenderCacheKey(statuses, fr, hasEmbeddedFont);
   const cachedOutput = renderOutputCache.get(renderKey);
   if (cachedOutput) {
-    return new Uint8Array(cachedOutput);
+    return cachedOutput;
   }
 
-  const [boardUri] = await Promise.all([resolveResvgImageUriQuest(BOARD_PATH)]);
-  const boardDataUri = boardUri || undefined;
+  const pendingRender = pendingRenders.get(renderKey);
+  if (pendingRender) {
+    return pendingRender;
+  }
 
-  const svg = await buildQuestSvg(userId, statuses, fr, hasEmbeddedFont, boardDataUri);
-  const options = fontBuffer
-    ? {
-        font: {
-          fontBuffers: [fontBuffer],
-          loadSystemFonts: false,
-          defaultFontFamily: 'GintoNordMedium',
-        },
-      }
-    : { font: { loadSystemFonts: true } };
+  const renderPromise = (async () => {
+    const [boardUri] = await Promise.all([resolveResvgImageUriQuest(BOARD_PATH)]);
+    const boardDataUri = boardUri || undefined;
 
-  const pngBytes = new Uint8Array(new Resvg(svg, options).render().asPng().buffer.slice(0) as ArrayBuffer);
-  const image = Photon.PhotonImage.new_from_byteslice(pngBytes);
-  const webpBytes = new Uint8Array(image.get_bytes_webp());
-  image.free();
-  cacheRenderOutput(renderKey, new Uint8Array(webpBytes), renderOutputCache, RENDER_OUTPUT_CACHE_MAX);
-  return webpBytes;
+    const svg = await buildQuestSvg(userId, statuses, fr, hasEmbeddedFont, boardDataUri);
+    const options = fontBuffer
+      ? {
+          font: {
+            fontBuffers: [fontBuffer],
+            loadSystemFonts: false,
+            defaultFontFamily: 'GintoNordMedium',
+          },
+        }
+      : { font: { loadSystemFonts: true } };
+
+    const pngBytes = new Resvg(svg, options).render().asPng();
+    const image = Photon.PhotonImage.new_from_byteslice(pngBytes);
+    let webpBytes: Uint8Array;
+    try {
+      webpBytes = image.get_bytes_webp();
+    } finally {
+      image.free();
+    }
+
+    cacheRenderOutput(renderKey, webpBytes, renderOutputCache, RENDER_OUTPUT_CACHE_MAX);
+    return webpBytes;
+  })().finally(() => {
+    pendingRenders.delete(renderKey);
+  });
+
+  pendingRenders.set(renderKey, renderPromise);
+  return renderPromise;
 }
