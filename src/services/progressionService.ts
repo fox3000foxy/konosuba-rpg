@@ -3,6 +3,7 @@ import { CharacterKey } from '../objects/enums/CharacterKey';
 import { GameState } from '../objects/enums/GameState';
 import { QuestConditionKey } from '../objects/enums/QuestConditionKey';
 import { RecordRunInput } from '../objects/types/RecordRunInput';
+import { withPerf } from '../utils/perfLogger';
 import { getSupabaseAdminClient } from '../utils/supabaseClient';
 import { getItemById as getAccessoryById } from './accessoryService';
 import { syncAchievements } from './achievementService';
@@ -55,207 +56,211 @@ function xpFromState(state: GameState): number {
 }
 
 export async function donateAccessoryToCharacter(userId: string, accessoryId: string, characterKey: CharacterKey): Promise<DonateAccessoryResult> {
-  const accessory = getAccessoryById(accessoryId as AccessoryId);
-  if (!accessory) {
+  return withPerf('progressionService', 'donateAccessoryToCharacter', async () => {
+    const accessory = getAccessoryById(accessoryId as AccessoryId);
+    if (!accessory) {
+      return {
+        success: false,
+        affinityPoints: 0,
+        reason: 'invalid-accessory',
+      };
+    }
+
+    const affinityPoints = ACCESSORY_AFFINITY_POINTS_BY_RARITY[accessory.rarity] || 0;
+    if (affinityPoints <= 0) {
+      return {
+        success: false,
+        affinityPoints: 0,
+        reason: 'invalid-accessory',
+      };
+    }
+
+    const consumed = await consumeInventoryItem(userId, accessory.id, 1);
+    if (!consumed) {
+      return {
+        success: false,
+        affinityPoints: 0,
+        reason: 'out-of-stock',
+      };
+    }
+
+    await addCharacterAffinity(userId, characterKey, affinityPoints);
+
     return {
-      success: false,
-      affinityPoints: 0,
-      reason: 'invalid-accessory',
+      success: true,
+      affinityPoints,
     };
-  }
-
-  const affinityPoints = ACCESSORY_AFFINITY_POINTS_BY_RARITY[accessory.rarity] || 0;
-  if (affinityPoints <= 0) {
-    return {
-      success: false,
-      affinityPoints: 0,
-      reason: 'invalid-accessory',
-    };
-  }
-
-  const consumed = await consumeInventoryItem(userId, accessory.id, 1);
-  if (!consumed) {
-    return {
-      success: false,
-      affinityPoints: 0,
-      reason: 'out-of-stock',
-    };
-  }
-
-  await addCharacterAffinity(userId, characterKey, affinityPoints);
-
-  return {
-    success: true,
-    affinityPoints,
-  };
+  });
 }
 
 export async function recordRunResult(input: RecordRunInput): Promise<void> {
-  if (!shouldPersistRun(input.state)) {
-    console.log(`[db] skipping run: state=${input.state} for user=${input.userId}`);
-    return;
-  }
+  return withPerf('progressionService', 'recordRunResult', async () => {
+    if (!shouldPersistRun(input.state)) {
+      console.log(`[db] skipping run: state=${input.state} for user=${input.userId}`);
+      return;
+    }
 
-  console.log(`[db] recording run: user=${input.userId} state=${input.state} training=${input.training} monster=${input.monsterName}`);
+    console.log(`[db] recording run: user=${input.userId} state=${input.state} training=${input.training} monster=${input.monsterName}`);
 
-  // Ensure player exists before recording run (foreign key constraint)
-  await ensurePlayerProfile(input.userId);
+    // Ensure player exists before recording run (foreign key constraint)
+    await ensurePlayerProfile(input.userId);
 
-  const supabase = getSupabaseAdminClient();
-  if (!supabase) {
-    console.warn('[db] Supabase client unavailable, run not recorded');
-    return;
-  }
+    const supabase = getSupabaseAdminClient();
+    if (!supabase) {
+      console.warn('[db] Supabase client unavailable, run not recorded');
+      return;
+    }
 
-  const actionCount = countActions(input.payload);
-  const runKey = `${input.userId}:${input.payload}`;
-  const isWin = isWinningState(input.state);
+    const actionCount = countActions(input.payload);
+    const runKey = `${input.userId}:${input.payload}`;
+    const isWin = isWinningState(input.state);
 
-  console.log(`[db] upserting run: runKey=${runKey} actions=${actionCount}`);
+    console.log(`[db] upserting run: runKey=${runKey} actions=${actionCount}`);
 
-  const { error: runError } = await supabase.from('runs').upsert(
-    {
-      run_key: runKey,
-      user_id: input.userId,
-      state: input.state,
-      training: input.training,
-      monster_name: input.monsterName,
-      actions_count: actionCount,
-      completed_at: new Date().toISOString(),
-    },
-    { onConflict: 'run_key' }
-  );
+    const { error: runError } = await supabase.from('runs').upsert(
+      {
+        run_key: runKey,
+        user_id: input.userId,
+        state: input.state,
+        training: input.training,
+        monster_name: input.monsterName,
+        actions_count: actionCount,
+        completed_at: new Date().toISOString(),
+      },
+      { onConflict: 'run_key' }
+    );
 
-  if (runError) {
-    console.error('[db] recordRunResult failed:', runError.message);
-    return;
-  }
+    if (runError) {
+      console.error('[db] recordRunResult failed:', runError.message);
+      return;
+    }
 
-  console.log(`[db] run recorded successfully for user=${input.userId} state=${input.state}`);
+    console.log(`[db] run recorded successfully for user=${input.userId} state=${input.state}`);
 
-  const gainedXp = xpFromState(input.state);
-  let leveledUp = false;
-  let oldLevel;
-  let nextLevel;
+    const gainedXp = xpFromState(input.state);
+    let leveledUp = false;
+    let oldLevel;
+    let nextLevel;
 
-  console.log(`[db] loading player profile for quest and xp evaluation: user=${input.userId}`);
+    console.log(`[db] loading player profile for quest and xp evaluation: user=${input.userId}`);
 
-  const { data: player, error: playerError } = await supabase.from('players').select('xp, level').eq('user_id', input.userId).single();
+    const { data: player, error: playerError } = await supabase.from('players').select('xp, level').eq('user_id', input.userId).single();
 
-  if (playerError || !player) {
-    console.error('[db] load player profile failed:', playerError?.message || 'missing row');
-  } else {
-    const currentXp = Number(player.xp || 0);
-    oldLevel = Math.floor(currentXp / 100) + 1;
-    const nextXpValue = currentXp + gainedXp;
-    nextLevel = Math.floor(nextXpValue / 100) + 1;
-
-    console.log(`[db] xp update: user=${input.userId} oldXp=${currentXp} newXp=${nextXpValue} oldLevel=${oldLevel} newLevel=${nextLevel}`);
-
-    const { error: updateError } = await supabase
-      .from('players')
-      .update({
-        xp: nextXpValue,
-        level: nextLevel,
-        updated_at: new Date().toISOString(),
-      })
-      .eq('user_id', input.userId);
-
-    if (updateError) {
-      console.error('[db] xp update failed:', updateError.message);
+    if (playerError || !player) {
+      console.error('[db] load player profile failed:', playerError?.message || 'missing row');
     } else {
-      console.log(`[db] xp updated successfully for user=${input.userId}`);
+      const currentXp = Number(player.xp || 0);
+      oldLevel = Math.floor(currentXp / 100) + 1;
+      const nextXpValue = currentXp + gainedXp;
+      nextLevel = Math.floor(nextXpValue / 100) + 1;
+
+      console.log(`[db] xp update: user=${input.userId} oldXp=${currentXp} newXp=${nextXpValue} oldLevel=${oldLevel} newLevel=${nextLevel}`);
+
+      const { error: updateError } = await supabase
+        .from('players')
+        .update({
+          xp: nextXpValue,
+          level: nextLevel,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('user_id', input.userId);
+
+      if (updateError) {
+        console.error('[db] xp update failed:', updateError.message);
+      } else {
+        console.log(`[db] xp updated successfully for user=${input.userId}`);
+      }
+
+      if (gainedXp > 0) {
+        leveledUp = nextLevel > oldLevel;
+      } else {
+        console.log(`[db] no xp gained for state=${input.state}`);
+        leveledUp = false;
+      }
     }
 
     if (gainedXp > 0) {
-      leveledUp = nextLevel > oldLevel;
-    } else {
-      console.log(`[db] no xp gained for state=${input.state}`);
-      leveledUp = false;
-    }
-  }
-
-  if (gainedXp > 0) {
-    await Promise.all([addCharacterXp(input.userId, CharacterKey.Darkness, gainedXp), addCharacterXp(input.userId, CharacterKey.Megumin, gainedXp), addCharacterXp(input.userId, CharacterKey.Aqua, gainedXp)]);
-  }
-
-  if (isWin) {
-    const [accessoryDrops, consumableDrops] = await Promise.all([grantAccessoryDropRewards(input.userId, runKey, input.monsterName), grantConsumableDropRewards(input.userId, runKey, input.monsterName)]);
-
-    if (accessoryDrops && accessoryDrops.length > 0) {
-      for (const drop of accessoryDrops) {
-        console.log(`[db] accessory drop granted: user=${input.userId} item=${drop.accessoryId} rarity=${drop.rarity} affinity=${drop.affinityPoints} target=${drop.characterKey}`);
-      }
+      await Promise.all([addCharacterXp(input.userId, CharacterKey.Darkness, gainedXp), addCharacterXp(input.userId, CharacterKey.Megumin, gainedXp), addCharacterXp(input.userId, CharacterKey.Aqua, gainedXp)]);
     }
 
-    if (consumableDrops && consumableDrops.length > 0) {
-      for (const drop of consumableDrops) {
-        console.log(`[db] consumable drop granted: user=${input.userId} item=${drop.itemId} rarity=${drop.rarity} type=${drop.itemType} inventoryType=${drop.inventoryItemType}`);
-      }
-    }
-  }
+    if (isWin) {
+      const [accessoryDrops, consumableDrops] = await Promise.all([grantAccessoryDropRewards(input.userId, runKey, input.monsterName), grantConsumableDropRewards(input.userId, runKey, input.monsterName)]);
 
-  const questDay = currentQuestDay();
-
-  console.log(`[db] quest processing: user=${input.userId} questDay=${questDay} isWin=${isWin} leveledUp=${leveledUp}`);
-
-  await Promise.all(
-    QUESTS.map(async quest => {
-      const shouldIncrement = quest.conditionKey === QuestConditionKey.Play || (quest.conditionKey === QuestConditionKey.Win && isWin) || (quest.conditionKey === QuestConditionKey.LevelUp && leveledUp);
-
-      if (!shouldIncrement) {
-        return;
-      }
-
-      console.log(`[db] incrementing quest: key=${quest.key} for user=${input.userId}`);
-
-      const { data: questRow, error: questLoadError } = await supabase.from('daily_quests_progress').select('progress, claimed').eq('user_id', input.userId).eq('quest_day', questDay).eq('quest_key', quest.key).maybeSingle();
-
-      if (questLoadError) {
-        console.error('[db] load quest progress failed:', questLoadError.message);
-        return;
-      }
-
-      if (!questRow) {
-        console.log(`[db] creating new quest progress: key=${quest.key} user=${input.userId}`);
-
-        const { error: questInsertError } = await supabase.from('daily_quests_progress').insert({
-          user_id: input.userId,
-          quest_day: questDay,
-          quest_key: quest.key,
-          progress: 1,
-          claimed: false,
-          updated_at: new Date().toISOString(),
-        });
-
-        if (questInsertError) {
-          console.error('[db] create quest progress failed:', questInsertError.message);
-        } else {
-          console.log(`[db] quest progress created: key=${quest.key} user=${input.userId}`);
+      if (accessoryDrops && accessoryDrops.length > 0) {
+        for (const drop of accessoryDrops) {
+          console.log(`[db] accessory drop granted: user=${input.userId} item=${drop.accessoryId} rarity=${drop.rarity} affinity=${drop.affinityPoints} target=${drop.characterKey}`);
         }
-        return;
       }
 
-      if (questRow.claimed) {
-        console.log(`[db] quest already claimed: key=${quest.key} user=${input.userId}`);
-        return;
+      if (consumableDrops && consumableDrops.length > 0) {
+        for (const drop of consumableDrops) {
+          console.log(`[db] consumable drop granted: user=${input.userId} item=${drop.itemId} rarity=${drop.rarity} type=${drop.itemType} inventoryType=${drop.inventoryItemType}`);
+        }
       }
+    }
 
-      const nextProgress = Math.min(quest.targetProgress, Number(questRow.progress || 0) + 1);
+    const questDay = currentQuestDay();
 
-      console.log(`[db] updating quest progress: key=${quest.key} user=${input.userId} from=${questRow.progress} to=${nextProgress}`);
+    console.log(`[db] quest processing: user=${input.userId} questDay=${questDay} isWin=${isWin} leveledUp=${leveledUp}`);
 
-      const { error: questUpdateError } = await supabase.from('daily_quests_progress').update({ progress: nextProgress, updated_at: new Date().toISOString() }).eq('user_id', input.userId).eq('quest_day', questDay).eq('quest_key', quest.key);
+    await Promise.all(
+      QUESTS.map(async quest => {
+        const shouldIncrement = quest.conditionKey === QuestConditionKey.Play || (quest.conditionKey === QuestConditionKey.Win && isWin) || (quest.conditionKey === QuestConditionKey.LevelUp && leveledUp);
 
-      if (questUpdateError) {
-        console.error('[db] update quest progress failed:', questUpdateError.message);
-      } else {
-        console.log(`[db] quest progress updated: key=${quest.key} user=${input.userId} progress=${nextProgress}`);
-      }
-    })
-  );
+        if (!shouldIncrement) {
+          return;
+        }
 
-  await syncAchievements(input.userId);
+        console.log(`[db] incrementing quest: key=${quest.key} for user=${input.userId}`);
 
-  console.log(`[db] run processing complete for user=${input.userId} state=${input.state}`);
+        const { data: questRow, error: questLoadError } = await supabase.from('daily_quests_progress').select('progress, claimed').eq('user_id', input.userId).eq('quest_day', questDay).eq('quest_key', quest.key).maybeSingle();
+
+        if (questLoadError) {
+          console.error('[db] load quest progress failed:', questLoadError.message);
+          return;
+        }
+
+        if (!questRow) {
+          console.log(`[db] creating new quest progress: key=${quest.key} user=${input.userId}`);
+
+          const { error: questInsertError } = await supabase.from('daily_quests_progress').insert({
+            user_id: input.userId,
+            quest_day: questDay,
+            quest_key: quest.key,
+            progress: 1,
+            claimed: false,
+            updated_at: new Date().toISOString(),
+          });
+
+          if (questInsertError) {
+            console.error('[db] create quest progress failed:', questInsertError.message);
+          } else {
+            console.log(`[db] quest progress created: key=${quest.key} user=${input.userId}`);
+          }
+          return;
+        }
+
+        if (questRow.claimed) {
+          console.log(`[db] quest already claimed: key=${quest.key} user=${input.userId}`);
+          return;
+        }
+
+        const nextProgress = Math.min(quest.targetProgress, Number(questRow.progress || 0) + 1);
+
+        console.log(`[db] updating quest progress: key=${quest.key} user=${input.userId} from=${questRow.progress} to=${nextProgress}`);
+
+        const { error: questUpdateError } = await supabase.from('daily_quests_progress').update({ progress: nextProgress, updated_at: new Date().toISOString() }).eq('user_id', input.userId).eq('quest_day', questDay).eq('quest_key', quest.key);
+
+        if (questUpdateError) {
+          console.error('[db] update quest progress failed:', questUpdateError.message);
+        } else {
+          console.log(`[db] quest progress updated: key=${quest.key} user=${input.userId} progress=${nextProgress}`);
+        }
+      })
+    );
+
+    await syncAchievements(input.userId);
+
+    console.log(`[db] run processing complete for user=${input.userId} state=${input.state}`);
+  });
 }

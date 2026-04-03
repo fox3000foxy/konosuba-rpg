@@ -6,6 +6,7 @@ import { MonsterDifficulty } from '../objects/enums/MonsterDifficulty';
 import { Rarity } from '../objects/enums/Rarity';
 import { TypeItem } from '../objects/enums/TypeItem';
 import { AccessoryDefinition } from '../objects/types/catalog/Accessory';
+import { withPerf } from '../utils/perfLogger';
 import { getSupabaseAdminClient } from '../utils/supabaseClient';
 import { getItems } from './accessoryService';
 import { addCharacterAffinity } from './characterService';
@@ -287,101 +288,105 @@ export function rollConsumableDrop(runKey: string, monsterName?: string | null):
 }
 
 export async function grantAccessoryDropRewards(userId: string, runKey: string, monsterName?: string | null): Promise<AccessoryDropResult[] | null> {
-  const supabase = getSupabaseAdminClient();
-  if (!supabase) {
-    return null;
-  }
-
-  const drops = rollAccessoryDrop(runKey, monsterName);
-
-  for (const drop of drops) {
-    const { data: current, error: loadError } = await supabase.from('inventory_items').select('quantity').eq('user_id', userId).eq('item_key', drop.accessoryId).maybeSingle();
-
-    if (loadError) {
-      console.error('[db] load inventory item for drop failed:', loadError.message);
+  return withPerf('dropService', 'grantAccessoryDropRewards', async () => {
+    const supabase = getSupabaseAdminClient();
+    if (!supabase) {
       return null;
     }
 
-    if (!current) {
-      const { error: insertError } = await supabase.from('inventory_items').insert({
-        user_id: userId,
-        item_key: drop.accessoryId,
-        item_type: 'affinity',
-        quantity: 1,
-        updated_at: new Date().toISOString(),
-      });
+    const drops = rollAccessoryDrop(runKey, monsterName);
 
-      if (insertError) {
-        console.error('[db] insert dropped accessory failed:', insertError.message);
+    for (const drop of drops) {
+      const { data: current, error: loadError } = await supabase.from('inventory_items').select('quantity').eq('user_id', userId).eq('item_key', drop.accessoryId).maybeSingle();
+
+      if (loadError) {
+        console.error('[db] load inventory item for drop failed:', loadError.message);
         return null;
       }
-    } else {
-      const { error: updateError } = await supabase
-        .from('inventory_items')
-        .update({
-          quantity: Number(current.quantity || 0) + 1,
+
+      if (!current) {
+        const { error: insertError } = await supabase.from('inventory_items').insert({
+          user_id: userId,
+          item_key: drop.accessoryId,
+          item_type: 'affinity',
+          quantity: 1,
           updated_at: new Date().toISOString(),
-        })
-        .eq('user_id', userId)
-        .eq('item_key', drop.accessoryId);
+        });
 
-      if (updateError) {
-        console.error('[db] update dropped accessory quantity failed:', updateError.message);
-        return null;
+        if (insertError) {
+          console.error('[db] insert dropped accessory failed:', insertError.message);
+          return null;
+        }
+      } else {
+        const { error: updateError } = await supabase
+          .from('inventory_items')
+          .update({
+            quantity: Number(current.quantity || 0) + 1,
+            updated_at: new Date().toISOString(),
+          })
+          .eq('user_id', userId)
+          .eq('item_key', drop.accessoryId);
+
+        if (updateError) {
+          console.error('[db] update dropped accessory quantity failed:', updateError.message);
+          return null;
+        }
       }
+
+      await addCharacterAffinity(userId, drop.characterKey, drop.affinityPoints);
     }
 
-    await addCharacterAffinity(userId, drop.characterKey, drop.affinityPoints);
-  }
-
-  return drops;
+    return drops;
+  });
 }
 
 export async function grantConsumableDropRewards(userId: string, runKey: string, monsterName?: string | null): Promise<ConsumableDropResult[] | null> {
-  const supabase = getSupabaseAdminClient();
-  if (!supabase) {
-    return null;
-  }
-
-  const drops = rollConsumableDrop(runKey, monsterName);
-
-  for (const drop of drops) {
-    const { data: current, error: loadError } = await supabase.from('inventory_items').select('quantity').eq('user_id', userId).eq('item_key', drop.itemId).maybeSingle();
-
-    if (loadError) {
-      console.error('[db] load inventory item for consumable drop failed:', loadError.message);
+  return withPerf('dropService', 'grantConsumableDropRewards', async () => {
+    const supabase = getSupabaseAdminClient();
+    if (!supabase) {
       return null;
     }
 
-    if (!current) {
-      const { error: insertError } = await supabase.from('inventory_items').insert({
-        user_id: userId,
-        item_key: drop.itemId,
-        item_type: drop.inventoryItemType,
-        quantity: 1,
-        updated_at: new Date().toISOString(),
-      });
+    const drops = rollConsumableDrop(runKey, monsterName);
 
-      if (insertError) {
-        console.error('[db] insert dropped consumable failed:', insertError.message);
+    for (const drop of drops) {
+      const { data: current, error: loadError } = await supabase.from('inventory_items').select('quantity').eq('user_id', userId).eq('item_key', drop.itemId).maybeSingle();
+
+      if (loadError) {
+        console.error('[db] load inventory item for consumable drop failed:', loadError.message);
         return null;
       }
-    } else {
-      const { error: updateError } = await supabase
-        .from('inventory_items')
-        .update({
-          quantity: Number(current.quantity || 0) + 1,
-          updated_at: new Date().toISOString(),
-        })
-        .eq('user_id', userId)
-        .eq('item_key', drop.itemId);
 
-      if (updateError) {
-        console.error('[db] update dropped consumable quantity failed:', updateError.message);
-        return null;
+      if (!current) {
+        const { error: insertError } = await supabase.from('inventory_items').insert({
+          user_id: userId,
+          item_key: drop.itemId,
+          item_type: drop.inventoryItemType,
+          quantity: 1,
+          updated_at: new Date().toISOString(),
+        });
+
+        if (insertError) {
+          console.error('[db] insert dropped consumable failed:', insertError.message);
+          return null;
+        }
+      } else {
+        const { error: updateError } = await supabase
+          .from('inventory_items')
+          .update({
+            quantity: Number(current.quantity || 0) + 1,
+            updated_at: new Date().toISOString(),
+          })
+          .eq('user_id', userId)
+          .eq('item_key', drop.itemId);
+
+        if (updateError) {
+          console.error('[db] update dropped consumable quantity failed:', updateError.message);
+          return null;
+        }
       }
     }
-  }
 
-  return drops;
+    return drops;
+  });
 }
