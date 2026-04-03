@@ -7,4 +7,5 @@ export type ShopItem = {
   nameFr: string;
   nameEn: string;
   price: number;
+  imagePath: string | null;
 };
