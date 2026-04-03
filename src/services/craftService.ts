@@ -1,5 +1,6 @@
 import { CRAFTING_RECIPES } from '../objects/data/craftingCatalog';
 import { ItemId } from '../objects/enums/ItemId';
+import { withPerf } from '../utils/perfLogger';
 import { getSupabaseAdminClient } from '../utils/supabaseClient';
 import { getItemById } from './consumableService';
 import { CraftingRecipeView, CraftRecipeResult } from './types/craft';
@@ -70,56 +71,58 @@ export function getCraftingRecipes(): CraftingRecipeView[] {
 }
 
 export async function craftRecipe(userId: string, recipeKey: string): Promise<CraftRecipeResult> {
-  const supabase = getSupabaseAdminClient();
-  if (!supabase) {
-    return {
-      success: false,
-      reason: 'service_unavailable',
-    };
-  }
+  return withPerf('craftService', 'craftRecipe', async () => {
+    const supabase = getSupabaseAdminClient();
+    if (!supabase) {
+      return {
+        success: false,
+        reason: 'service_unavailable',
+      };
+    }
 
-  const { data, error } = await supabase.rpc('craft_recipe_atomic', {
-    p_user_id: userId,
-    p_recipe_key: recipeKey,
+    const { data, error } = await supabase.rpc('craft_recipe_atomic', {
+      p_user_id: userId,
+      p_recipe_key: recipeKey,
+    });
+
+    if (error) {
+      console.error('[db] craftRecipe failed:', error.message);
+      return {
+        success: false,
+        reason: 'internal_error',
+      };
+    }
+
+    const rows = Array.isArray(data) ? (data as CraftRecipeRpcRow[]) : data ? [data as CraftRecipeRpcRow] : [];
+
+    const row = rows[0];
+    if (!row) {
+      return {
+        success: false,
+        reason: 'internal_error',
+      };
+    }
+
+    if (!row.success) {
+      const missingIngredients =
+        row.missing_ingredients?.map(item => ({
+          itemId: item.item_key as ItemId,
+          required: item.required,
+          available: item.available,
+        })) || [];
+
+      return {
+        success: false,
+        reason: mapReason(row.reason),
+        missingIngredients,
+      };
+    }
+
+    return {
+      success: true,
+      reason: 'crafted',
+      craftedItemId: row.crafted_item_key as ItemId,
+      craftedQuantity: Number(row.crafted_quantity || 0),
+    };
   });
-
-  if (error) {
-    console.error('[db] craftRecipe failed:', error.message);
-    return {
-      success: false,
-      reason: 'internal_error',
-    };
-  }
-
-  const rows = Array.isArray(data) ? (data as CraftRecipeRpcRow[]) : data ? [data as CraftRecipeRpcRow] : [];
-
-  const row = rows[0];
-  if (!row) {
-    return {
-      success: false,
-      reason: 'internal_error',
-    };
-  }
-
-  if (!row.success) {
-    const missingIngredients =
-      row.missing_ingredients?.map(item => ({
-        itemId: item.item_key as ItemId,
-        required: item.required,
-        available: item.available,
-      })) || [];
-
-    return {
-      success: false,
-      reason: mapReason(row.reason),
-      missingIngredients,
-    };
-  }
-
-  return {
-    success: true,
-    reason: 'crafted',
-    craftedItemId: row.crafted_item_key as ItemId,
-    craftedQuantity: Number(row.crafted_quantity || 0),
-  };
 }
