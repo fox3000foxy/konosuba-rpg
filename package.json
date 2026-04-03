@@ -24,7 +24,7 @@
     "format": "npx prettier --config prettier.json --write src",
     "format:check": "npx prettier --config prettier.json --check src",
     "lint": "npx eslint src",
-    "build": "npx esbuild src/index.ts --bundle --platform=node --target=node18 --outfile=api/index.js --minify --tree-shaking",
+    "build": "npx esbuild src/index.ts --bundle --platform=node --target=node18 --outfile=api/index.js --minify --tree-shaking && npx esbuild src/interactions.ts --bundle --platform=node --target=node18 --outfile=api/interactions.js --minify --tree-shaking",
     "build:watch": "npx esbuild src/index.ts --bundle --platform=node --target=node18 --outfile=api/index.js --watch",
     "start": "node api/index.js",
     "vercel:dev": "npx vercel dev --listen 8787",
