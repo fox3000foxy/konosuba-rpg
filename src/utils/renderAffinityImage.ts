@@ -5,6 +5,7 @@ import { CharacterKey } from '../objects/enums/CharacterKey';
 import { PlayerStats } from '../objects/enums/player/PlayerStats';
 import { CharacterProgress } from '../objects/types/CharacterProgress';
 import { getAffinityFactor, getLevelFactor } from '../services/characterService';
+import { createPerfLogger } from './perfLogger';
 import { ensureResvgWasm } from './resvgWasm';
 
 type AffinityImageGlobals = {
@@ -255,10 +256,16 @@ export async function buildAffinitySvg(userId: string, progresses: CharacterProg
 }
 
 export async function renderAffinityImage(userId: string, progresses: CharacterProgress[], fr: boolean): Promise<Uint8Array> {
+  const perf = createPerfLogger('renderAffinityImage');
   await ensureResvgWasm();
+  perf.mark('ensureResvgWasm');
+
   const rows = getRows(progresses);
   const fontBuffer = await getEmbeddedFontBuffer();
+  perf.mark('getEmbeddedFontBuffer');
+
   const svg = await buildAffinitySvg(userId, progresses, fr, Boolean(fontBuffer));
+  perf.mark('buildSvg');
 
   const options = fontBuffer
     ? {
@@ -271,11 +278,14 @@ export async function renderAffinityImage(userId: string, progresses: CharacterP
     : { font: { loadSystemFonts: true } };
 
   const png = new Resvg(svg, options).render().asPng();
+  perf.mark('Resvg render -> PNG');
+
   const overlay = Photon.PhotonImage.new_from_byteslice(new Uint8Array(png.buffer.slice(0) as ArrayBuffer));
 
   let board: Photon.PhotonImage | null = null;
   let canvas: Photon.PhotonImage;
   const boardBytes = await getAssetBytes(BOARD_PATH);
+  perf.mark('get board');
 
   if (boardBytes) {
     board = Photon.PhotonImage.new_from_byteslice(new Uint8Array(boardBytes));
@@ -286,8 +296,10 @@ export async function renderAffinityImage(userId: string, progresses: CharacterP
   }
 
   const [starEnabledBytes, starDisabledBytes] = await Promise.all([getAssetBytes(STAR_ENABLED_PATH), getAssetBytes(STAR_DISABLED_PATH)]);
+  perf.mark('get star assets');
 
   const badgeBuffers = await Promise.all(rows.map(row => getAssetBytes(getCharacterBadgePath(row.key, getAffinityStars(row.affinity)))));
+  perf.mark('get badges');
 
   const rowY = [180, 300, 420];
 
@@ -334,6 +346,7 @@ export async function renderAffinityImage(userId: string, progresses: CharacterP
       }
     }
   }
+  perf.mark('compose overlays');
 
   const output = new Uint8Array(canvas.get_bytes());
   if (canvas !== overlay) {
@@ -342,5 +355,6 @@ export async function renderAffinityImage(userId: string, progresses: CharacterP
 
   board?.free();
   canvas.free();
+  perf.done();
   return output;
 }
