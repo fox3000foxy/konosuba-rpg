@@ -145,44 +145,40 @@ export async function recordRunResult(input: RecordRunInput): Promise<void> {
 
     const gainedXp = xpFromState(input.state);
     let leveledUp = false;
-    let oldLevel;
-    let nextLevel;
+    if (gainedXp > 0) {
+      console.log(`[db] loading player profile for quest and xp evaluation: user=${input.userId}`);
 
-    console.log(`[db] loading player profile for quest and xp evaluation: user=${input.userId}`);
+      const { data: player, error: playerError } = await supabase.from('players').select('xp, level').eq('user_id', input.userId).single();
 
-    const { data: player, error: playerError } = await supabase.from('players').select('xp, level').eq('user_id', input.userId).single();
-
-    if (playerError || !player) {
-      console.error('[db] load player profile failed:', playerError?.message || 'missing row');
-    } else {
-      const currentXp = Number(player.xp || 0);
-      oldLevel = Math.floor(currentXp / 100) + 1;
-      const nextXpValue = currentXp + gainedXp;
-      nextLevel = Math.floor(nextXpValue / 100) + 1;
-
-      console.log(`[db] xp update: user=${input.userId} oldXp=${currentXp} newXp=${nextXpValue} oldLevel=${oldLevel} newLevel=${nextLevel}`);
-
-      const { error: updateError } = await supabase
-        .from('players')
-        .update({
-          xp: nextXpValue,
-          level: nextLevel,
-          updated_at: new Date().toISOString(),
-        })
-        .eq('user_id', input.userId);
-
-      if (updateError) {
-        console.error('[db] xp update failed:', updateError.message);
+      if (playerError || !player) {
+        console.error('[db] load player profile failed:', playerError?.message || 'missing row');
       } else {
-        console.log(`[db] xp updated successfully for user=${input.userId}`);
-      }
+        const currentXp = Number(player.xp || 0);
+        const oldLevel = Math.floor(currentXp / 100) + 1;
+        const nextXpValue = currentXp + gainedXp;
+        const nextLevel = Math.floor(nextXpValue / 100) + 1;
 
-      if (gainedXp > 0) {
+        console.log(`[db] xp update: user=${input.userId} oldXp=${currentXp} newXp=${nextXpValue} oldLevel=${oldLevel} newLevel=${nextLevel}`);
+
+        const { error: updateError } = await supabase
+          .from('players')
+          .update({
+            xp: nextXpValue,
+            level: nextLevel,
+            updated_at: new Date().toISOString(),
+          })
+          .eq('user_id', input.userId);
+
+        if (updateError) {
+          console.error('[db] xp update failed:', updateError.message);
+        } else {
+          console.log(`[db] xp updated successfully for user=${input.userId}`);
+        }
+
         leveledUp = nextLevel > oldLevel;
-      } else {
-        console.log(`[db] no xp gained for state=${input.state}`);
-        leveledUp = false;
       }
+    } else {
+      console.log(`[db] no xp gained for state=${input.state}`);
     }
 
     if (gainedXp > 0) {
