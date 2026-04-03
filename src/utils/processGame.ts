@@ -75,7 +75,7 @@ async function handlePlayerAction({ move, currentPlayer, team, creature, rand, l
   const langIndex = lang === Lang.French ? 1 : 0;
   const langLines = linesTyped[lang];
   const langDescriptions = descriptionsTyped[lang];
-  const action = move.toUpperCase();
+  const action = move;
 
   switch (action) {
     case PLAYER_DEF: {
@@ -205,6 +205,7 @@ export default async function processGame(rand: Random, moves: string[], monster
   lang = lang === Lang.French ? Lang.French : Lang.English;
   const team = new Team();
   applyTeamLevelFactors(team, teamLevelFactors);
+  const normalizedMoves = moves.map(move => move.toUpperCase());
 
   // Precompute monster and team setup
   const creature = monsterName ? generateMob().find(MobClass => MobClass.name[lang === Lang.French ? 1 : 0].toLowerCase() === monsterName.toLowerCase()) || new Troll() : rand.choice(Object.values(getMonstersByDifficulty(difficulty || null)));
@@ -230,6 +231,7 @@ export default async function processGame(rand: Random, moves: string[], monster
   // Precompute reusable values
   const langIndex = lang === Lang.French ? 1 : 0;
   const activePlayers: Player[] = team.players.filter(player => player.hp > 0);
+  const lastActivePlayer = activePlayers[activePlayers.length - 1];
 
   // Reducing the creature HP by dividing it per 2
   creature.hpMax = Math.ceil(creature.hpMax / 2);
@@ -247,8 +249,8 @@ export default async function processGame(rand: Random, moves: string[], monster
   //   })),
   // });
 
-  for (let moveIndex = 0; moveIndex < moves.length; moveIndex += 1) {
-    const move = moves[moveIndex];
+  for (let moveIndex = 0; moveIndex < normalizedMoves.length; moveIndex += 1) {
+    const move = normalizedMoves[moveIndex];
     if (state !== GameState.Incomplete) break; // Early exit if game state is resolved
 
     if (move === 'GIV') {
@@ -280,7 +282,7 @@ export default async function processGame(rand: Random, moves: string[], monster
       itemIds,
       consumedItemIds,
       selectedUseTargetPlayerId,
-      isLastMove: moveIndex === moves.length - 1,
+      isLastMove: moveIndex === normalizedMoves.length - 1,
     });
 
     // Check if creature is defeated
@@ -295,7 +297,7 @@ export default async function processGame(rand: Random, moves: string[], monster
     }
 
     // Skip creature's turn if current player is not Aqua
-    if (currentPlayer !== activePlayers[activePlayers.length - 1]) {
+    if (currentPlayer !== lastActivePlayer) {
       continue;
     }
 
