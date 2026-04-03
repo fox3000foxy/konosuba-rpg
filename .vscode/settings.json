@@ -2,11 +2,8 @@
     "files.exclude": {
         "**/node_modules": true,
         "**/dist": true,
-        "**/.vercel": true,
         "**/api": true,
-        ".vercelignore": true,
         "tsconfig.test.json": true,
-        "TESTING.md": true,
         "tsconfig.tsbuildinfo": true,
         "future.zip": true
     }
