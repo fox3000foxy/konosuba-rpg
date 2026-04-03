@@ -34,7 +34,7 @@
     "vercel:deploy": "npx vercel deploy --prebuilt --prod --token \"$VERCEL_TOKEN\"",
     "local-deploy": "pnpm build && pnpm vercel:localDeploy",
     "deploy": "pnpm build && pnpm vercel:build && pnpm vercel:deploy",
-    "test-battery": "pnpm tsc:build && pnpm test:perf && pnpm test:leaks && pnpm lint",
+    "test-battery": "pnpm tsc:build && pnpm test && pnpm lint",
     "bench": "npx esbuild src/utils/bench.ts --bundle --platform=node --target=node18 --outfile=bench.js && node --expose-gc bench.js && npx rimraf bench.js",
     "deploy-commands": "npx esbuild src/commandsUpdater.ts --bundle --platform=node --target=node18 --outfile=update-commands.js && node update-commands.js && npx rimraf update-commands.js",
     "db:check": "npx ts-node scripts/supabaseCrudCheck.ts"

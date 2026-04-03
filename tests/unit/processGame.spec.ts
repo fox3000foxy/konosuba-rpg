@@ -6,22 +6,22 @@ import processGame from '../../src/utils/processGame';
 
 describe('processGame core loop', () => {
   it('returns giveup state when move is GIV', async () => {
-    const game = await processGame(new Random(), ['GIV'], 'Troll', Lang.English, false);
+    const game = await processGame(new Random(), ['GIV'], 'Troll', Lang.English);
 
     expect(game.state).toBe(GameState.Giveup);
     expect(Array.isArray(game.messages)).toBe(true);
   });
 
   it('accepts lowercase moves by normalizing them once', async () => {
-    const game = await processGame(new Random(), ['giv'], 'Troll', Lang.English, false);
+    const game = await processGame(new Random(), ['giv'], 'Troll', Lang.English);
 
     expect(game.state).toBe(GameState.Giveup);
   });
 
   it('is deterministic for same seed, moves, and monster when rendering is disabled', async () => {
     const moves = ['ATK', 'DEF', 'HUG', 'ATK', 'ATK'];
-    const g1 = await processGame(new Random(1), moves, 'Dragon', Lang.French, false);
-    const g2 = await processGame(new Random(1), moves, 'Dragon', Lang.French, false);
+    const g1 = await processGame(new Random(1), moves, 'Dragon', Lang.French);
+    const g2 = await processGame(new Random(1), moves, 'Dragon', Lang.French);
 
     expect(g1.state).toBe(g2.state);
     expect(g1.messages).toEqual(g2.messages);
@@ -31,7 +31,7 @@ describe('processGame core loop', () => {
   });
 
   it('supports unknown monster key by falling back to Troll class', async () => {
-    const game = await processGame(new Random(), ['ATK'], 'UnknownBoss', Lang.English, false);
+    const game = await processGame(new Random(), ['ATK'], 'UnknownBoss', Lang.English);
 
     expect(game.creature).toBeDefined();
     expect(game.training).toBe(true);
@@ -50,7 +50,7 @@ describe('processGame core loop', () => {
     ];
 
     for (const monster of monsters) {
-      const game = await processGame(new Random(), ['ATK'], monster, Lang.English, false);
+      const game = await processGame(new Random(), ['ATK'], monster, Lang.English);
       expect(game.creature.name.length).toBeGreaterThan(0);
     }
   });
@@ -65,7 +65,6 @@ describe('processGame core loop', () => {
       ['USE'],
       'Troll',
       Lang.English,
-      false,
       undefined,
       undefined,
       'user-123' // userId
@@ -90,7 +89,6 @@ describe('processGame core loop', () => {
       ['USE'],
       'Troll',
       Lang.English,
-      false
       // no userId provided
     );
 
