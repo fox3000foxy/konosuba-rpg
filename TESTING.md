@@ -2,9 +2,9 @@
 
 ## Commandes
 
-- Tests complets: pnpm test
-- Tests de performance: pnpm test:perf
-- Test fuite mémoire (simulation): pnpm test:leaks
+- Tests complets: `bun run test`
+- Tests de performance: `bun run test:perf`
+- Test fuite mémoire (simulation): `bun run test:leaks`
 
 ## Ce que couvrent les tests
 
