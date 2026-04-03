@@ -213,11 +213,29 @@ describe('recordRunResult integration-like flow', () => {
         op: 'update',
         data: null,
       },
+      // Parallel quest processing: all SELECTs happen first
+      // Quest 1: Win1Run (condition: Win, matches)
       {
         table: 'daily_quests_progress',
         op: 'select',
         data: null,
       },
+      // Quest 2: Play3Runs (condition: Play, always matches)
+      {
+        table: 'daily_quests_progress',
+        op: 'select',
+        data: null,
+      },
+      // Quest 3: LevelUpOnce (condition: LevelUp, doesn't match - no level up)
+      // -> no queries
+      // Then INSERTs for quests that matched
+      // Quest 1: Win1Run
+      {
+        table: 'daily_quests_progress',
+        op: 'insert',
+        data: null,
+      },
+      // Quest 2: Play3Runs
       {
         table: 'daily_quests_progress',
         op: 'insert',
@@ -230,19 +248,25 @@ describe('recordRunResult integration-like flow', () => {
     await recordRunResult({
       userId: 'user-1',
       payload: 'seed123/atk',
-      state: GameState.Giveup,
+      state: GameState.Good,
       training: false,
       monsterName: 'Troll',
     });
 
     expect(mockedEnsurePlayerProfile).toHaveBeenCalledWith('user-1');
-    expect(mockedEnsureCharacterProgress).not.toHaveBeenCalled();
-
-    expect(mockedAddCharacterXp).not.toHaveBeenCalled();
+    expect(mockedAddCharacterXp).toHaveBeenCalled();
 
     expect(mockedSyncAchievements).toHaveBeenCalledWith('user-1');
-    expect(mockedGrantAccessoryDropRewards).not.toHaveBeenCalled();
-    expect(mockedGrantConsumableDropRewards).not.toHaveBeenCalled();
+    expect(mockedGrantAccessoryDropRewards).toHaveBeenCalledWith(
+      'user-1',
+      'user-1:seed123/atk',
+      'Troll'
+    );
+    expect(mockedGrantConsumableDropRewards).toHaveBeenCalledWith(
+      'user-1',
+      'user-1:seed123/atk',
+      'Troll'
+    );
 
     expect(client.queries[0].table).toBe('runs');
     expect(client.queries[0].op).toBe('upsert');
@@ -305,7 +329,7 @@ describe('recordRunResult integration-like flow', () => {
     expect((client.queries[2].payload as { xp: number }).xp).toBe(42);
   });
 
-  it('triggers accessory drop rewards on winning runs', async () => {
+  it('does not trigger drop rewards on losing or giveup runs', async () => {
     const client = new SupabaseMockClient([
       {
         table: 'runs',
@@ -315,21 +339,11 @@ describe('recordRunResult integration-like flow', () => {
       {
         table: 'players',
         op: 'select',
-        data: { xp: 0, level: 1 },
+        data: { xp: 50, level: 2 },
       },
       {
         table: 'players',
         op: 'update',
-        data: null,
-      },
-      {
-        table: 'daily_quests_progress',
-        op: 'select',
-        data: null,
-      },
-      {
-        table: 'daily_quests_progress',
-        op: 'insert',
         data: null,
       },
       {
@@ -347,22 +361,14 @@ describe('recordRunResult integration-like flow', () => {
     mockedGetSupabaseAdminClient.mockReturnValue(client as never);
 
     await recordRunResult({
-      userId: 'winner-1',
-      payload: 'seedwin/atk',
-      state: GameState.Good,
+      userId: 'loser-1',
+      payload: 'seedloss/atk',
+      state: GameState.Bad,
       training: false,
-      monsterName: 'Dragon',
+      monsterName: 'Goblin',
     });
 
-    expect(mockedGrantAccessoryDropRewards).toHaveBeenCalledWith(
-      'winner-1',
-      'winner-1:seedwin/atk',
-      'Dragon'
-    );
-    expect(mockedGrantConsumableDropRewards).toHaveBeenCalledWith(
-      'winner-1',
-      'winner-1:seedwin/atk',
-      'Dragon'
-    );
+    expect(mockedGrantAccessoryDropRewards).not.toHaveBeenCalled();
+    expect(mockedGrantConsumableDropRewards).not.toHaveBeenCalled();
   });
 });
