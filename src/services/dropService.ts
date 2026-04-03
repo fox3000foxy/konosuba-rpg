@@ -333,7 +333,7 @@ export async function grantAccessoryDropRewards(userId: string, runKey: string, 
         }
       }
 
-      await addCharacterAffinity(userId, drop.characterKey, drop.affinityPoints);
+      await addCharacterAffinity(userId, drop.characterKey, drop.affinityPoints, { ensureProfile: false });
     }
 
     return drops;
