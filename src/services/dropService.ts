@@ -25,6 +25,11 @@ type LootTable = {
   rarityWeights: LootRarityWeight[];
 };
 
+type InventoryRow = {
+  item_key: string;
+  quantity: number | null;
+};
+
 const DROP_CHARACTERS: CharacterKey[] = [CharacterKey.Darkness, CharacterKey.Megumin, CharacterKey.Aqua];
 
 export const ACCESSORY_AFFINITY_POINTS_BY_RARITY: Record<Rarity, number> = {
@@ -295,46 +300,88 @@ export async function grantAccessoryDropRewards(userId: string, runKey: string, 
     }
 
     const drops = rollAccessoryDrop(runKey, monsterName);
+    if (drops.length === 0) {
+      return drops;
+    }
 
+    const countsByItem = new Map<string, number>();
+    const affinityByCharacter = new Map<CharacterKey, number>();
     for (const drop of drops) {
-      const { data: current, error: loadError } = await supabase.from('inventory_items').select('quantity').eq('user_id', userId).eq('item_key', drop.accessoryId).maybeSingle();
+      countsByItem.set(drop.accessoryId, (countsByItem.get(drop.accessoryId) || 0) + 1);
+      affinityByCharacter.set(drop.characterKey, (affinityByCharacter.get(drop.characterKey) || 0) + drop.affinityPoints);
+    }
 
-      if (loadError) {
-        console.error('[db] load inventory item for drop failed:', loadError.message);
-        return null;
+    const itemKeys = [...countsByItem.keys()];
+    const { data: existingRows, error: loadError } = await supabase.from('inventory_items').select('item_key, quantity').eq('user_id', userId).in('item_key', itemKeys);
+
+    if (loadError) {
+      console.error('[db] load inventory item for drop failed:', loadError.message);
+      return null;
+    }
+
+    const nowIso = new Date().toISOString();
+    const existingByItemKey = new Map(
+      ((existingRows || []) as InventoryRow[]).map(row => [String(row.item_key), Number(row.quantity || 0)])
+    );
+
+    const rowsToInsert: Array<{
+      user_id: string;
+      item_key: string;
+      item_type: string;
+      quantity: number;
+      updated_at: string;
+    }> = [];
+
+    const updateOps: Array<PromiseLike<{ error: { message: string } | null }>> = [];
+
+    for (const [itemKey, increment] of countsByItem.entries()) {
+      const currentQuantity = existingByItemKey.get(itemKey);
+      if (typeof currentQuantity !== 'number') {
+        rowsToInsert.push({
+          user_id: userId,
+          item_key: itemKey,
+          item_type: 'affinity',
+          quantity: increment,
+          updated_at: nowIso,
+        });
+        continue;
       }
 
-      if (!current) {
-        const { error: insertError } = await supabase.from('inventory_items').insert({
-          user_id: userId,
-          item_key: drop.accessoryId,
-          item_type: 'affinity',
-          quantity: 1,
-          updated_at: new Date().toISOString(),
-        });
-
-        if (insertError) {
-          console.error('[db] insert dropped accessory failed:', insertError.message);
-          return null;
-        }
-      } else {
-        const { error: updateError } = await supabase
+      updateOps.push(
+        supabase
           .from('inventory_items')
           .update({
-            quantity: Number(current.quantity || 0) + 1,
-            updated_at: new Date().toISOString(),
+            quantity: currentQuantity + increment,
+            updated_at: nowIso,
           })
           .eq('user_id', userId)
-          .eq('item_key', drop.accessoryId);
+          .eq('item_key', itemKey)
+      );
+    }
 
-        if (updateError) {
-          console.error('[db] update dropped accessory quantity failed:', updateError.message);
+    if (rowsToInsert.length > 0) {
+      const { error: insertError } = await supabase.from('inventory_items').insert(rowsToInsert);
+      if (insertError) {
+        console.error('[db] insert dropped accessory failed:', insertError.message);
+        return null;
+      }
+    }
+
+    if (updateOps.length > 0) {
+      const updateResults = await Promise.all(updateOps);
+      for (const result of updateResults) {
+        if (result.error) {
+          console.error('[db] update dropped accessory quantity failed:', result.error.message);
           return null;
         }
       }
-
-      await addCharacterAffinity(userId, drop.characterKey, drop.affinityPoints, { ensureProfile: false });
     }
+
+    await Promise.all(
+      [...affinityByCharacter.entries()].map(([characterKey, totalAffinity]) =>
+        addCharacterAffinity(userId, characterKey, totalAffinity, { ensureProfile: false })
+      )
+    );
 
     return drops;
   });
@@ -348,40 +395,85 @@ export async function grantConsumableDropRewards(userId: string, runKey: string,
     }
 
     const drops = rollConsumableDrop(runKey, monsterName);
+    if (drops.length === 0) {
+      return drops;
+    }
 
+    const groupedByItem = new Map<string, { itemType: string; quantity: number }>();
     for (const drop of drops) {
-      const { data: current, error: loadError } = await supabase.from('inventory_items').select('quantity').eq('user_id', userId).eq('item_key', drop.itemId).maybeSingle();
+      const current = groupedByItem.get(drop.itemId);
+      if (current) {
+        current.quantity += 1;
+      } else {
+        groupedByItem.set(drop.itemId, {
+          itemType: drop.inventoryItemType,
+          quantity: 1,
+        });
+      }
+    }
 
-      if (loadError) {
-        console.error('[db] load inventory item for consumable drop failed:', loadError.message);
-        return null;
+    const itemKeys = [...groupedByItem.keys()];
+    const { data: existingRows, error: loadError } = await supabase.from('inventory_items').select('item_key, quantity').eq('user_id', userId).in('item_key', itemKeys);
+
+    if (loadError) {
+      console.error('[db] load inventory item for consumable drop failed:', loadError.message);
+      return null;
+    }
+
+    const nowIso = new Date().toISOString();
+    const existingByItemKey = new Map(
+      ((existingRows || []) as InventoryRow[]).map(row => [String(row.item_key), Number(row.quantity || 0)])
+    );
+
+    const rowsToInsert: Array<{
+      user_id: string;
+      item_key: string;
+      item_type: string;
+      quantity: number;
+      updated_at: string;
+    }> = [];
+
+    const updateOps: Array<PromiseLike<{ error: { message: string } | null }>> = [];
+
+    for (const [itemKey, grouped] of groupedByItem.entries()) {
+      const currentQuantity = existingByItemKey.get(itemKey);
+      if (typeof currentQuantity !== 'number') {
+        rowsToInsert.push({
+          user_id: userId,
+          item_key: itemKey,
+          item_type: grouped.itemType,
+          quantity: grouped.quantity,
+          updated_at: nowIso,
+        });
+        continue;
       }
 
-      if (!current) {
-        const { error: insertError } = await supabase.from('inventory_items').insert({
-          user_id: userId,
-          item_key: drop.itemId,
-          item_type: drop.inventoryItemType,
-          quantity: 1,
-          updated_at: new Date().toISOString(),
-        });
-
-        if (insertError) {
-          console.error('[db] insert dropped consumable failed:', insertError.message);
-          return null;
-        }
-      } else {
-        const { error: updateError } = await supabase
+      updateOps.push(
+        supabase
           .from('inventory_items')
           .update({
-            quantity: Number(current.quantity || 0) + 1,
-            updated_at: new Date().toISOString(),
+            quantity: currentQuantity + grouped.quantity,
+            updated_at: nowIso,
           })
           .eq('user_id', userId)
-          .eq('item_key', drop.itemId);
+          .eq('item_key', itemKey)
+      );
+    }
 
-        if (updateError) {
-          console.error('[db] update dropped consumable quantity failed:', updateError.message);
+    if (rowsToInsert.length > 0) {
+      const { error: insertError } = await supabase.from('inventory_items').insert(rowsToInsert);
+
+      if (insertError) {
+        console.error('[db] insert dropped consumable failed:', insertError.message);
+        return null;
+      }
+    }
+
+    if (updateOps.length > 0) {
+      const updateResults = await Promise.all(updateOps);
+      for (const result of updateResults) {
+        if (result.error) {
+          console.error('[db] update dropped consumable quantity failed:', result.error.message);
           return null;
         }
       }
