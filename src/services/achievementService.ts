@@ -95,20 +95,22 @@ async function getUserRunStats(userId: string): Promise<UserRunStats> {
     winsByMonster[key] = (winsByMonster[key] ?? 0) + 1;
   }
 
-  for (const update of updates) {
-    const { error: updateError } = await supabase
-      .from('runs')
-      .update({
-        monster_name: update.monsterName,
-      })
-      .eq('run_key', update.runKey)
-      .eq('user_id', userId)
-      .is('monster_name', null);
+  await Promise.all(
+    updates.map(async update => {
+      const { error: updateError } = await supabase
+        .from('runs')
+        .update({
+          monster_name: update.monsterName,
+        })
+        .eq('run_key', update.runKey)
+        .eq('user_id', userId)
+        .is('monster_name', null);
 
-    if (updateError) {
-      console.error('[db] getUserRunStats backfill failed:', updateError.message);
-    }
-  }
+      if (updateError) {
+        console.error('[db] getUserRunStats backfill failed:', updateError.message);
+      }
+    })
+  );
 
   return {
     totalRuns: rows.length,
