@@ -97,16 +97,19 @@ Example:
 
 #### Deployment Architecture
 
-**Cloudflare Workers** hosts a **lightweight logic-only version** of the application:
+**Cloudflare Workers** now supports the **complete application** including image rendering:
 
-- ✅ Supports: Game logic (`/konosuba-rpg/:lang/*`), Discord interactions (`/api/interactions`), API routes (`/api/*`)
-- ❌ Not supported: Image rendering routes (`/inventory`, `/profile`, `/quest`, `/shop`, `/achievements`). These routes return **501 Not Implemented** and should be accessed via Vercel instead.
+- ✅ All routes supported: Game logic (`/konosuba-rpg/:lang/*`), Discord interactions (`/api/interactions`), image rendering (`/inventory`, `/profile`, `/quest`, `/shop`, `/achievements`)
+- ✅ Uses `@cf-wasm/photon/edge-light` for WASM image processing
+- ✅ Pre-compiled WASM avoids runtime instantiation restrictions
 
-**Reason**: Cloudflare Workers forbids runtime WebAssembly instantiation for security reasons, and the image rendering pipeline relies heavily on `@cf-wasm/photon` for image manipulation. The Worker configuration explicitly excludes these WASM-dependent routes to avoid `WebAssembly.instantiate() disallowed by embedder` errors.
+**Technical detail**: The application was updated to use Cloudflare's optimized WASM build (`@cf-wasm/photon/edge-light`) instead of the standard build, which allows the Worker to bypass the "Wasm code generation disallowed by embedder" restriction.
 
 **Production strategy**:
-- Use **Vercel** for the complete application (all routes including image rendering)
-- Use **Cloudflare Workers** for horizontal scaling of game logic and API endpoints with lower latency
+- Use **Vercel** as primary production deployment (proven stable)
+- Use **Cloudflare Workers** for identical functionality with reduced latency
+- Both deployments share the same codebase
+- Workers provides automatic global edge distribution
 
 ## License (Important)
 
