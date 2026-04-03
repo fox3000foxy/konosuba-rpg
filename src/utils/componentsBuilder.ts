@@ -57,7 +57,7 @@ export async function buildComponents(
   const characterStatsSnapshot = await getCharacterStatsSnapshot(userID);
   const characterFactors = characterStatsSnapshot ? characterStatsSnapshot.map(snapshot => snapshot.factor) : undefined;
 
-  const { state, team, embedDescription, creature } = await processGame(rand, moves, monster, lang, false, characterFactors, difficultyFromUrl || effectiveDifficulty, userID, selectedConsumableItemId ? [selectedConsumableItemId as never] : undefined, selectedConsumableTargetId);
+  const { state, team, embedDescription, creature } = await processGame(rand, moves, monster, lang, characterFactors, difficultyFromUrl || effectiveDifficulty, userID, selectedConsumableItemId ? [selectedConsumableItemId as never] : undefined, selectedConsumableTargetId);
 
   const disableHugForCreature = creature.love <= 0 || creature.love === 100 || creature.prefix === false;
 
