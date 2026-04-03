@@ -34,8 +34,62 @@ function currentQuestDay(): string {
   return new Date().toISOString().slice(0, 10);
 }
 
-export function getAllQuestStatuses(userID: string): Promise<DailyQuestStatus[]> {
-  return Promise.all(QUESTS.map(q => getDailyQuestStatus(userID, q.key)));
+type DailyQuestProgressRow = {
+  quest_key: string;
+  progress: number | null;
+  claimed: boolean | null;
+};
+
+export async function getAllQuestStatuses(userID: string): Promise<DailyQuestStatus[]> {
+  return withPerf('questService', 'getAllQuestStatuses', async () => {
+    const questDay = currentQuestDay();
+    const supabase = getSupabaseAdminClient();
+
+    if (!supabase) {
+      return QUESTS.map(quest => ({
+        questKey: quest.key,
+        questDay,
+        progress: 0,
+        target: quest.targetProgress,
+        claimed: false,
+        rewardGold: quest.rewardGold,
+      }));
+    }
+
+    const { data, error } = await supabase
+      .from('daily_quests_progress')
+      .select('quest_key, progress, claimed')
+      .eq('user_id', userID)
+      .eq('quest_day', questDay);
+
+    if (error) {
+      console.error('[db] getAllQuestStatuses failed:', error.message);
+      return QUESTS.map(quest => ({
+        questKey: quest.key,
+        questDay,
+        progress: 0,
+        target: quest.targetProgress,
+        claimed: false,
+        rewardGold: quest.rewardGold,
+      }));
+    }
+
+    const rowsByKey = new Map(
+      ((data || []) as DailyQuestProgressRow[]).map(row => [String(row.quest_key), row])
+    );
+
+    return QUESTS.map(quest => {
+      const row = rowsByKey.get(quest.key);
+      return {
+        questKey: quest.key,
+        questDay,
+        progress: Number(row?.progress || 0),
+        target: quest.targetProgress,
+        claimed: Boolean(row?.claimed || false),
+        rewardGold: quest.rewardGold,
+      };
+    });
+  });
 }
 
 export async function getDailyQuestStatus(userId: string, questKey: QuestKey | string = DAILY_QUEST_KEY): Promise<DailyQuestStatus> {
