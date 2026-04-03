@@ -139,13 +139,19 @@ export async function getPlayerRunSummary(userId: string): Promise<PlayerRunSumm
       killsByMonster.set(inferredMonster, (killsByMonster.get(inferredMonster) ?? 0) + 1);
     }
 
-    for (const update of updates) {
-      const { error: updateError } = await supabase.from('runs').update({ monster_name: update.monsterName }).eq('run_key', update.runKey).eq('user_id', userId);
+    await Promise.all(
+      updates.map(async update => {
+        const { error: updateError } = await supabase
+          .from('runs')
+          .update({ monster_name: update.monsterName })
+          .eq('run_key', update.runKey)
+          .eq('user_id', userId);
 
-      if (updateError) {
-        console.error('[db] getPlayerRunSummary backfill failed:', updateError.message);
-      }
-    }
+        if (updateError) {
+          console.error('[db] getPlayerRunSummary backfill failed:', updateError.message);
+        }
+      })
+    );
 
     return {
       totalRuns: rows.length,
