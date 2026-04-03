@@ -321,17 +321,10 @@ describe('progressionService with Supabase interactions', () => {
       {
         table: 'daily_quests_progress',
         op: 'select',
-        data: { progress: 1, claimed: false },
-      },
-      {
-        table: 'daily_quests_progress',
-        op: 'select',
-        data: { progress: 2, claimed: false },
-      },
-      {
-        table: 'daily_quests_progress',
-        op: 'select',
-        data: null,
+        data: [
+          { quest_key: 'win_1_run', progress: 1, claimed: false },
+          { quest_key: 'play_3_runs', progress: 2, claimed: false },
+        ],
       },
     ]);
 
