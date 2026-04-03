@@ -714,7 +714,7 @@ if (shouldAutoWarmup) {
 // ─── Main render ──────────────────────────────────────────────────────────────
 
 export default async function renderImage(state: string | null, messages: string[], team: Team, creature: Creature, lang = 'en'): Promise<Uint8Array> {
-  const perfEnabled = process.env.RENDER_PERF === '1';
+  const perfEnabled = process.env.RENDER_PERF === '1' || process.env.DEV_MODE === '1' || process.env.DEV_MODE === 'true';
   const startedAt = perfEnabled ? performance.now() : 0;
   const spans: PerfSpan[] = [];
   const mark = (label: string, t0: number): void => {
