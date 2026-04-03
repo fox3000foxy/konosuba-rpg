@@ -3,8 +3,56 @@
   "installCommand": "",
   "routes": [
     {
+      "src": "/assets/(.*)",
+      "dest": "/api/light.js"
+    },
+    {
+      "src": "/player/(.*)",
+      "dest": "/api/light.js"
+    },
+    {
+      "src": "/monster/(.*)",
+      "dest": "/api/light.js"
+    },
+    {
+      "src": "/inventory/(.*)",
+      "dest": "/api/api/api.mjs"
+    },
+    {
+      "src": "/affinity/(.*)",
+      "dest": "/api/api/api.mjs"
+    },
+    {
+      "src": "/quest/(.*)",
+      "dest": "/api/api/api.mjs"
+    },
+    {
+      "src": "/shop/(.*)",
+      "dest": "/api/api/api.mjs"
+    },
+    {
+      "src": "/profile/(.*)",
+      "dest": "/api/api/api.mjs"
+    },
+    {
+      "src": "/achievements/(.*)",
+      "dest": "/api/api/api.mjs"
+    },
+    {
+      "src": "/api/interactions",
+      "dest": "/api/interactions/interactions.mjs"
+    },
+    {
+      "src": "/game/(.*)",
+      "dest": "/api/render.js"
+    },
+    {
+      "src": "/konosuba-rpg/(.*)",
+      "dest": "/api/render.js"
+    },
+    {
       "src": "/(.*)",
-      "dest": "/api/index.js"
+      "dest": "/api/not-found.js"
     }
   ]
 }
