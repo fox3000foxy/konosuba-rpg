@@ -1,7 +1,4 @@
 import { Context } from 'hono';
-import { handleAutocomplete } from '../interactionReplies/autocomplete/router';
-import { handleButtonInteraction } from '../interactionReplies/buttons/router';
-import { handleSlashCommand } from '../interactionReplies/commands/router';
 import { Interaction } from '../objects/enums/Interaction';
 import { Lang } from '../objects/enums/Lang';
 import { verifySignature } from '../utils/discordUtils';
@@ -29,14 +26,17 @@ export async function handleInteractions(c: Context) {
   }
 
   if (interaction.type === 4) {
+    const { handleAutocomplete } = await import('../interactionReplies/autocomplete/router.js');
     return handleAutocomplete(c, interaction, fr);
   }
 
   if (interaction.type === 2) {
+    const { handleSlashCommand } = await import('../interactionReplies/commands/router.js');
     return handleSlashCommand(c, interaction, userID, lang, fr);
   }
 
   if (interaction.type === 3) {
+    const { handleButtonInteraction } = await import('../interactionReplies/buttons/router.js');
     return handleButtonInteraction(c, interaction, userID, lang, fr);
   }
 

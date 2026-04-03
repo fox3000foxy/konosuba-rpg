@@ -20,4 +20,8 @@ export default app;
 async function start() {
   await startServer(app);
 }
-start();
+
+const isVercelRuntime = process.env.VERCEL === '1' || process.env.VERCEL === 'true';
+if (!isVercelRuntime) {
+  start();
+}
