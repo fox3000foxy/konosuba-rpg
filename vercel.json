@@ -16,31 +16,31 @@
     },
     {
       "src": "/inventory/(.*)",
-      "dest": "/api/api/api.mjs"
+      "dest": "/api/api/api.js"
     },
     {
       "src": "/affinity/(.*)",
-      "dest": "/api/api/api.mjs"
+      "dest": "/api/api/api.js"
     },
     {
       "src": "/quest/(.*)",
-      "dest": "/api/api/api.mjs"
+      "dest": "/api/api/api.js"
     },
     {
       "src": "/shop/(.*)",
-      "dest": "/api/api/api.mjs"
+      "dest": "/api/api/api.js"
     },
     {
       "src": "/profile/(.*)",
-      "dest": "/api/api/api.mjs"
+      "dest": "/api/api/api.js"
     },
     {
       "src": "/achievements/(.*)",
-      "dest": "/api/api/api.mjs"
+      "dest": "/api/api/api.js"
     },
     {
       "src": "/api/interactions",
-      "dest": "/api/interactions/interactions.mjs"
+      "dest": "/api/interactions/interactions.js"
     },
     {
       "src": "/game/(.*)",
