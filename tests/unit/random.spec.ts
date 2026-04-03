@@ -2,8 +2,9 @@ import { Random } from '../../src/classes/Random';
 
 describe('Random', () => {
   it('produces deterministic sequence for the same seed', () => {
-    const r1 = new Random();
-    const r2 = new Random();
+    const seed = 1337;
+    const r1 = new Random(seed);
+    const r2 = new Random(seed);
 
     const seq1 = Array.from({ length: 20 }, () => r1.next());
     const seq2 = Array.from({ length: 20 }, () => r2.next());
