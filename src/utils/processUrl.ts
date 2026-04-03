@@ -2,7 +2,7 @@ import { Random } from '../classes/Random';
 import { PlayerAction } from '../objects/enums/player/PlayerAction';
 
 // Precompute valid moves set outside the function to avoid recreating it on every call
-const VALID_MOVES_SET = new Set([PlayerAction.Atk.toLocaleUpperCase(), PlayerAction.Def.toLocaleUpperCase(), PlayerAction.Hug.toLocaleUpperCase(), PlayerAction.Hea.toLocaleUpperCase(), PlayerAction.Giv.toLocaleUpperCase(), PlayerAction.Spe.toLocaleUpperCase(), PlayerAction.Use.toLocaleUpperCase()]);
+const VALID_MOVES_SET = new Set([PlayerAction.Atk.toUpperCase(), PlayerAction.Def.toUpperCase(), PlayerAction.Hug.toUpperCase(), PlayerAction.Hea.toUpperCase(), PlayerAction.Giv.toUpperCase(), PlayerAction.Spe.toUpperCase(), PlayerAction.Use.toUpperCase()]);
 
 export default function processUrl(url: string): [Random, string[], string, string | null, string | null] {
   const monsterIdx = url.indexOf('monster=');

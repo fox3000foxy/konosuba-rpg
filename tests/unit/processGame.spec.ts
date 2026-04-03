@@ -12,6 +12,12 @@ describe('processGame core loop', () => {
     expect(Array.isArray(game.messages)).toBe(true);
   });
 
+  it('accepts lowercase moves by normalizing them once', async () => {
+    const game = await processGame(new Random(), ['giv'], 'Troll', Lang.English, false);
+
+    expect(game.state).toBe(GameState.Giveup);
+  });
+
   it('is deterministic for same seed, moves, and monster when rendering is disabled', async () => {
     const moves = ['ATK', 'DEF', 'HUG', 'ATK', 'ATK'];
     const g1 = await processGame(new Random(1), moves, 'Dragon', Lang.French, false);
