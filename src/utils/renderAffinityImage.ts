@@ -5,17 +5,9 @@ import { CharacterKey } from '../objects/enums/CharacterKey';
 import { PlayerStats } from '../objects/enums/player/PlayerStats';
 import { CharacterProgress } from '../objects/types/CharacterProgress';
 import { getAffinityFactor, getLevelFactor } from '../services/characterService';
+import { getAssetBytes, getEmbeddedFontBuffer as getEmbeddedFontBufferUtil } from './assetLoader';
 import { createPerfLogger } from './perfLogger';
 import { ensureResvgWasm } from './resvgWasm';
-
-type AffinityImageGlobals = {
-  __affinityIconCache?: Record<string, ArrayBuffer>;
-  __affinityFontBuffer?: Uint8Array;
-};
-
-const G = globalThis as unknown as AffinityImageGlobals;
-G.__affinityIconCache ??= {};
-const iconCache = G.__affinityIconCache;
 
 const ASSET_BASE_URL = BASE_URL;
 const FONT_URL = `${ASSET_BASE_URL}/assets/swordgame/font/GintoNordMedium.otf`;
@@ -96,35 +88,8 @@ function escapeXml(value: string): string {
   return value.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&apos;');
 }
 
-async function getAssetBytes(path: string): Promise<ArrayBuffer | null> {
-  if (iconCache[path]) {
-    return iconCache[path];
-  }
-
-  const response = await fetch(`${ASSET_BASE_URL}${path}`);
-  if (!response.ok) {
-    return null;
-  }
-
-  const buf = await response.arrayBuffer();
-  iconCache[path] = buf;
-  return buf;
-}
-
 async function getEmbeddedFontBuffer(): Promise<Uint8Array | null> {
-  if (G.__affinityFontBuffer) {
-    return G.__affinityFontBuffer;
-  }
-
-  const response = await fetch(FONT_URL);
-  if (!response.ok) {
-    return null;
-  }
-
-  const fontBuffer = await response.arrayBuffer();
-  const fontBytes = new Uint8Array(fontBuffer);
-  G.__affinityFontBuffer = fontBytes;
-  return fontBytes;
+  return getEmbeddedFontBufferUtil('assets/swordgame/font/GintoNordMedium.otf', FONT_URL);
 }
 
 export function getAffinityStars(affinity: number): number {
@@ -284,7 +249,7 @@ export async function renderAffinityImage(userId: string, progresses: CharacterP
 
   let board: Photon.PhotonImage | null = null;
   let canvas: Photon.PhotonImage;
-  const boardBytes = await getAssetBytes(BOARD_PATH);
+  const boardBytes = await getAssetBytes(BOARD_PATH, ASSET_BASE_URL);
   perf.mark('get board');
 
   if (boardBytes) {
@@ -295,10 +260,10 @@ export async function renderAffinityImage(userId: string, progresses: CharacterP
     canvas = overlay;
   }
 
-  const [starEnabledBytes, starDisabledBytes] = await Promise.all([getAssetBytes(STAR_ENABLED_PATH), getAssetBytes(STAR_DISABLED_PATH)]);
+  const [starEnabledBytes, starDisabledBytes] = await Promise.all([getAssetBytes(STAR_ENABLED_PATH, ASSET_BASE_URL), getAssetBytes(STAR_DISABLED_PATH, ASSET_BASE_URL)]);
   perf.mark('get star assets');
 
-  const badgeBuffers = await Promise.all(rows.map(row => getAssetBytes(getCharacterBadgePath(row.key, getAffinityStars(row.affinity)))));
+  const badgeBuffers = await Promise.all(rows.map(row => getAssetBytes(getCharacterBadgePath(row.key, getAffinityStars(row.affinity)), ASSET_BASE_URL)));
   perf.mark('get badges');
 
   const rowY = [180, 300, 420];

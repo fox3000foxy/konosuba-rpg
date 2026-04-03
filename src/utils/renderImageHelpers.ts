@@ -1,3 +1,6 @@
+import fs from 'fs/promises';
+import path from 'path';
+
 type CacheEntry<T> = {
   value: T;
   size: number;
@@ -72,36 +75,51 @@ export type PendingRequests = {
   resvgUriConversions: Map<string, Promise<string | null>>;
 };
 
-export async function getAssetBytes(path: string | null, baseUrl: string, pendingAssetFetches: Map<string, Promise<ArrayBuffer | null>>, assetCache: SizedCache<ArrayBuffer>): Promise<ArrayBuffer | null> {
-  if (!path) {
+export async function getAssetBytes(assetPath: string | null, baseUrl: string, pendingAssetFetches: Map<string, Promise<ArrayBuffer | null>>, assetCache: SizedCache<ArrayBuffer>): Promise<ArrayBuffer | null> {
+  if (!assetPath) {
     return null;
   }
 
-  const cached = assetCache.get(path);
+  const cached = assetCache.get(assetPath);
   if (cached) {
     return cached;
   }
 
-  const pending = pendingAssetFetches.get(path);
+  const pending = pendingAssetFetches.get(assetPath);
   if (pending) {
     return pending;
   }
 
-  const request = fetch(`${baseUrl}${path}`)
-    .then(async response => {
+  const request = (async () => {
+    // Try filesystem first (Vercel Node runtime)
+    try {
+      const filePath = path.join(process.cwd(), 'assets', assetPath.replace(/^\/assets\//, ''));
+      const buffer = await fs.readFile(filePath);
+      const arrayBuffer = buffer.buffer.slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength);
+      assetCache.set(assetPath, arrayBuffer);
+      return arrayBuffer;
+    } catch {
+      // Fallthrough to fetch if file not found
+    }
+
+    // Fallback to fetch for development or if file not found
+    try {
+      const response = await fetch(`${baseUrl}${assetPath}`);
       if (!response.ok) {
         return null;
       }
 
       const buf = await response.arrayBuffer();
-      assetCache.set(path, buf);
+      assetCache.set(assetPath, buf);
       return buf;
-    })
-    .finally(() => {
-      pendingAssetFetches.delete(path);
-    });
+    } catch {
+      return null;
+    }
+  })().finally(() => {
+    pendingAssetFetches.delete(assetPath);
+  });
 
-  pendingAssetFetches.set(path, request);
+  pendingAssetFetches.set(assetPath, request);
   return request;
 }
 

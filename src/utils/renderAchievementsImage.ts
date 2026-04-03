@@ -2,6 +2,7 @@ import * as Photon from '@cf-wasm/photon';
 import { Resvg } from '@resvg/resvg-wasm';
 import { BASE_URL } from '../objects/config/constants';
 import { AchievementOverviewItem } from '../objects/types/AchievementOverviewItem';
+import { getEmbeddedFontBuffer as getEmbeddedFontBufferUtil } from './assetLoader';
 import { createPerfLogger } from './perfLogger';
 import { cacheRenderOutput, createBoundedArrayBufferCache, createBoundedStringCache, resolveResvgImageUri, SizedCache } from './renderImageHelpers';
 import { ensureResvgWasm } from './resvgWasm';
@@ -9,7 +10,6 @@ import { ensureResvgWasm } from './resvgWasm';
 type AchievementsImageGlobals = {
   __achievementsAssetCache?: SizedCache<ArrayBuffer>;
   __achievementsResvgUriCache?: SizedCache<string>;
-  __achievementsFontBuffer?: Uint8Array;
   __achievementsRenderOutputCache?: Map<string, Uint8Array>;
   __achievementsPendingRenders?: Map<string, Promise<Uint8Array>>;
 };
@@ -42,19 +42,7 @@ function escapeXml(value: string): string {
 }
 
 async function getEmbeddedFontBuffer(): Promise<Uint8Array | null> {
-  if (G.__achievementsFontBuffer) {
-    return G.__achievementsFontBuffer;
-  }
-
-  const response = await fetch(FONT_URL);
-  if (!response.ok) {
-    return null;
-  }
-
-  const fontBuffer = await response.arrayBuffer();
-  const fontBytes = new Uint8Array(fontBuffer);
-  G.__achievementsFontBuffer = fontBytes;
-  return fontBytes;
+  return getEmbeddedFontBufferUtil('assets/swordgame/font/GintoNordMedium.otf', FONT_URL);
 }
 
 async function resolveResvgImageUriAchievements(path: string | null): Promise<string | null> {
