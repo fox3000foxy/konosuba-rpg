@@ -147,7 +147,8 @@ export async function toResvgCompatibleDataUri(path: string, bytes: ArrayBuffer,
   }
 
   try {
-    const Photon = await import('@cf-wasm/photon');
+    // Use edge-light for Cloudflare Workers compatibility (cf-wasm official export)
+    const Photon = await import('@cf-wasm/photon/edge-light');
     const image = Photon.PhotonImage.new_from_byteslice(new Uint8Array(bytes));
     let pngBytes: Uint8Array;
     try {
