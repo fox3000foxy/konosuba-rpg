@@ -78,18 +78,9 @@ function isMissingAtomicRunRpc(error: unknown): boolean {
   return message.includes('record_run_result_atomic') || code === 'PGRST202';
 }
 
-async function tryRecordRunResultAtomic(
-  supabase: NonNullable<ReturnType<typeof getSupabaseAdminClient>>,
-  input: RecordRunInput,
-  runKey: string,
-  actionCount: number,
-  questDay: string
-): Promise<AtomicRunResult | null> {
+async function tryRecordRunResultAtomic(supabase: NonNullable<ReturnType<typeof getSupabaseAdminClient>>, input: RecordRunInput, runKey: string, actionCount: number, questDay: string): Promise<AtomicRunResult | null> {
   const rpcClient = supabase as unknown as {
-    rpc?: (
-      fn: string,
-      args: Record<string, unknown>
-    ) => Promise<{ data: unknown; error: { message?: string; code?: string } | null }>;
+    rpc?: (fn: string, args: Record<string, unknown>) => Promise<{ data: unknown; error: { message?: string; code?: string } | null }>;
   };
 
   if (typeof rpcClient.rpc !== 'function') {
@@ -270,26 +261,15 @@ export async function recordRunResult(input: RecordRunInput): Promise<void> {
 
       console.log(`[db] quest processing: user=${input.userId} questDay=${questDay} isWin=${isWin} leveledUp=${leveledUp}`);
 
-      const questsToIncrement = QUESTS.filter(
-        quest =>
-          quest.conditionKey === QuestConditionKey.Play ||
-          (quest.conditionKey === QuestConditionKey.Win && isWin) ||
-          (quest.conditionKey === QuestConditionKey.LevelUp && leveledUp)
-      );
+      const questsToIncrement = QUESTS.filter(quest => quest.conditionKey === QuestConditionKey.Play || (quest.conditionKey === QuestConditionKey.Win && isWin) || (quest.conditionKey === QuestConditionKey.LevelUp && leveledUp));
 
       if (questsToIncrement.length > 0) {
-        const { data: questRows, error: questLoadError } = await supabase
-          .from('daily_quests_progress')
-          .select('quest_key, progress, claimed')
-          .eq('user_id', input.userId)
-          .eq('quest_day', questDay);
+        const { data: questRows, error: questLoadError } = await supabase.from('daily_quests_progress').select('quest_key, progress, claimed').eq('user_id', input.userId).eq('quest_day', questDay);
 
         if (questLoadError) {
           console.error('[db] load quest progress failed:', questLoadError.message);
         } else {
-          const rowsByQuestKey = new Map(
-            ((questRows || []) as DailyQuestProgressRow[]).map(row => [String(row.quest_key), row])
-          );
+          const rowsByQuestKey = new Map(((questRows || []) as DailyQuestProgressRow[]).map(row => [String(row.quest_key), row]));
 
           const rowsToInsert: Array<{
             user_id: string;
@@ -326,13 +306,7 @@ export async function recordRunResult(input: RecordRunInput): Promise<void> {
               const nextProgress = Math.min(quest.targetProgress, currentProgress + 1);
               console.log(`[db] updating quest progress: key=${quest.key} user=${input.userId} from=${currentProgress} to=${nextProgress}`);
 
-              const { error: questUpdateError } = await supabase
-                .from('daily_quests_progress')
-                .update({ progress: nextProgress, updated_at: new Date().toISOString() })
-                .eq('user_id', input.userId)
-                .eq('quest_day', questDay)
-                .eq('quest_key', quest.key)
-                .eq('claimed', false);
+              const { error: questUpdateError } = await supabase.from('daily_quests_progress').update({ progress: nextProgress, updated_at: new Date().toISOString() }).eq('user_id', input.userId).eq('quest_day', questDay).eq('quest_key', quest.key).eq('claimed', false);
 
               if (questUpdateError) {
                 console.error('[db] update quest progress failed:', questUpdateError.message);
@@ -343,9 +317,7 @@ export async function recordRunResult(input: RecordRunInput): Promise<void> {
           );
 
           if (rowsToInsert.length > 0) {
-            const { error: questInsertError } = await supabase
-              .from('daily_quests_progress')
-              .insert(rowsToInsert);
+            const { error: questInsertError } = await supabase.from('daily_quests_progress').insert(rowsToInsert);
 
             if (questInsertError) {
               console.error('[db] create quest progress failed:', questInsertError.message);
@@ -360,11 +332,7 @@ export async function recordRunResult(input: RecordRunInput): Promise<void> {
     }
 
     if (gainedXp > 0) {
-      await Promise.all([
-        addCharacterXp(input.userId, CharacterKey.Darkness, gainedXp, { ensureProfile: false }),
-        addCharacterXp(input.userId, CharacterKey.Megumin, gainedXp, { ensureProfile: false }),
-        addCharacterXp(input.userId, CharacterKey.Aqua, gainedXp, { ensureProfile: false }),
-      ]);
+      await Promise.all([addCharacterXp(input.userId, CharacterKey.Darkness, gainedXp, { ensureProfile: false }), addCharacterXp(input.userId, CharacterKey.Megumin, gainedXp, { ensureProfile: false }), addCharacterXp(input.userId, CharacterKey.Aqua, gainedXp, { ensureProfile: false })]);
     }
 
     if (isWin) {
