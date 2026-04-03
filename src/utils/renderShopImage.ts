@@ -1,23 +1,29 @@
 import * as Photon from '@cf-wasm/photon';
 import { Resvg } from '@resvg/resvg-wasm';
 import { ShopItem } from '../objects/types/ShopItem';
-import { cacheRenderOutput, resolveResvgImageUri } from './renderImageHelpers';
+import { cacheRenderOutput, createBoundedArrayBufferCache, createBoundedStringCache, resolveResvgImageUri, SizedCache } from './renderImageHelpers';
 import { ensureResvgWasm } from './resvgWasm';
 
 type ShopImageGlobals = {
-  __shopAssetCache?: Record<string, ArrayBuffer>;
-  __shopResvgUriCache?: Record<string, string>;
+  __shopAssetCache?: SizedCache<ArrayBuffer>;
+  __shopResvgUriCache?: SizedCache<string>;
   __shopFontBuffer?: Uint8Array;
   __shopRenderOutputCache?: Map<string, Uint8Array>;
+  __shopPendingRenders?: Map<string, Promise<Uint8Array>>;
 };
 
+const ASSET_CACHE_MAX_BYTES = 20 * 1024 * 1024;
+const RESVG_URI_CACHE_MAX_BYTES = 24 * 1024 * 1024;
+
 const G = globalThis as unknown as ShopImageGlobals;
-G.__shopAssetCache ??= {};
-G.__shopResvgUriCache ??= {};
+G.__shopAssetCache ??= createBoundedArrayBufferCache(ASSET_CACHE_MAX_BYTES);
+G.__shopResvgUriCache ??= createBoundedStringCache(RESVG_URI_CACHE_MAX_BYTES);
 G.__shopRenderOutputCache ??= new Map<string, Uint8Array>();
+G.__shopPendingRenders ??= new Map<string, Promise<Uint8Array>>();
 const assetCache = G.__shopAssetCache;
 const resvgUriCache = G.__shopResvgUriCache;
 const renderOutputCache = G.__shopRenderOutputCache;
+const pendingRenders = G.__shopPendingRenders;
 const pendingAssetFetches = new Map<string, Promise<ArrayBuffer | null>>();
 const pendingResvgUriConversions = new Map<string, Promise<string | null>>();
 
@@ -111,27 +117,44 @@ export async function renderShopImage(items: ShopItem[], page: number, pageCount
   const renderKey = buildRenderCacheKey(items, page, pageCount, fr, hasEmbeddedFont);
   const cachedOutput = renderOutputCache.get(renderKey);
   if (cachedOutput) {
-    return new Uint8Array(cachedOutput);
+    return cachedOutput;
   }
 
-  const [boardUri, iconUris] = await Promise.all([resolveResvgImageUriShop(BOARD_PATH), Promise.all(items.map(item => resolveResvgImageUriShop(item.imagePath)))]);
-  const boardDataUri = boardUri || undefined;
+  const pendingRender = pendingRenders.get(renderKey);
+  if (pendingRender) {
+    return pendingRender;
+  }
 
-  const svg = await buildShopSvg(items, page, pageCount, fr, hasEmbeddedFont, boardDataUri, iconUris);
-  const options = fontBuffer
-    ? {
-        font: {
-          fontBuffers: [fontBuffer],
-          loadSystemFonts: false,
-          defaultFontFamily: 'GintoNordMedium',
-        },
-      }
-    : { font: { loadSystemFonts: true } };
+  const renderPromise = (async () => {
+    const [boardUri, iconUris] = await Promise.all([resolveResvgImageUriShop(BOARD_PATH), Promise.all(items.map(item => resolveResvgImageUriShop(item.imagePath)))]);
+    const boardDataUri = boardUri || undefined;
 
-  const pngBytes = new Uint8Array(new Resvg(svg, options).render().asPng().buffer.slice(0) as ArrayBuffer);
-  const image = Photon.PhotonImage.new_from_byteslice(pngBytes);
-  const webpBytes = new Uint8Array(image.get_bytes_webp());
-  image.free();
-  cacheRenderOutput(renderKey, new Uint8Array(webpBytes), renderOutputCache, RENDER_OUTPUT_CACHE_MAX);
-  return webpBytes;
+    const svg = await buildShopSvg(items, page, pageCount, fr, hasEmbeddedFont, boardDataUri, iconUris);
+    const options = fontBuffer
+      ? {
+          font: {
+            fontBuffers: [fontBuffer],
+            loadSystemFonts: false,
+            defaultFontFamily: 'GintoNordMedium',
+          },
+        }
+      : { font: { loadSystemFonts: true } };
+
+    const pngBytes = new Resvg(svg, options).render().asPng();
+    const image = Photon.PhotonImage.new_from_byteslice(pngBytes);
+    let webpBytes: Uint8Array;
+    try {
+      webpBytes = image.get_bytes_webp();
+    } finally {
+      image.free();
+    }
+
+    cacheRenderOutput(renderKey, webpBytes, renderOutputCache, RENDER_OUTPUT_CACHE_MAX);
+    return webpBytes;
+  })().finally(() => {
+    pendingRenders.delete(renderKey);
+  });
+
+  pendingRenders.set(renderKey, renderPromise);
+  return renderPromise;
 }
