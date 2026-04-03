@@ -1,20 +1,23 @@
 import * as Photon from '@cf-wasm/photon';
 import { Resvg } from '@resvg/resvg-wasm';
 import { InventoryItemView } from '../objects/types/InventoryItemView';
-import { cacheRenderOutput, resolveAssetUrl, resolveResvgImageUri } from './renderImageHelpers';
+import { cacheRenderOutput, createBoundedArrayBufferCache, createBoundedStringCache, resolveAssetUrl, resolveResvgImageUri, SizedCache } from './renderImageHelpers';
 import { ensureResvgWasm } from './resvgWasm';
 
 type InventoryImageGlobals = {
-  __inventoryAssetCache?: Record<string, ArrayBuffer>;
-  __inventoryResvgUriCache?: Record<string, string>;
+  __inventoryAssetCache?: SizedCache<ArrayBuffer>;
+  __inventoryResvgUriCache?: SizedCache<string>;
   __inventoryFontBuffer?: Uint8Array;
   __inventoryRenderOutputCache?: Map<string, Uint8Array>;
   __inventoryPendingRenders?: Map<string, Promise<Uint8Array>>;
 };
 
+const ASSET_CACHE_MAX_BYTES = 20 * 1024 * 1024;
+const RESVG_URI_CACHE_MAX_BYTES = 24 * 1024 * 1024;
+
 const G = globalThis as unknown as InventoryImageGlobals;
-G.__inventoryAssetCache ??= {};
-G.__inventoryResvgUriCache ??= {};
+G.__inventoryAssetCache ??= createBoundedArrayBufferCache(ASSET_CACHE_MAX_BYTES);
+G.__inventoryResvgUriCache ??= createBoundedStringCache(RESVG_URI_CACHE_MAX_BYTES);
 G.__inventoryRenderOutputCache ??= new Map<string, Uint8Array>();
 G.__inventoryPendingRenders ??= new Map<string, Promise<Uint8Array>>();
 const assetCache = G.__inventoryAssetCache;

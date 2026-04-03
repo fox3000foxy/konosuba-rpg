@@ -3,20 +3,23 @@ import { Resvg } from '@resvg/resvg-wasm';
 import { BASE_URL } from '../objects/config/constants';
 import { DailyQuestStatus } from '../objects/types/DailyQuestStatus';
 import { getQuestLabel } from '../services/progressionService';
-import { cacheRenderOutput, resolveResvgImageUri } from './renderImageHelpers';
+import { cacheRenderOutput, createBoundedArrayBufferCache, createBoundedStringCache, resolveResvgImageUri, SizedCache } from './renderImageHelpers';
 import { ensureResvgWasm } from './resvgWasm';
 
 type QuestImageGlobals = {
-  __questAssetCache?: Record<string, ArrayBuffer>;
-  __questResvgUriCache?: Record<string, string>;
+  __questAssetCache?: SizedCache<ArrayBuffer>;
+  __questResvgUriCache?: SizedCache<string>;
   __questFontBuffer?: Uint8Array;
   __questRenderOutputCache?: Map<string, Uint8Array>;
   __questPendingRenders?: Map<string, Promise<Uint8Array>>;
 };
 
+const ASSET_CACHE_MAX_BYTES = 20 * 1024 * 1024;
+const RESVG_URI_CACHE_MAX_BYTES = 24 * 1024 * 1024;
+
 const G = globalThis as unknown as QuestImageGlobals;
-G.__questAssetCache ??= {};
-G.__questResvgUriCache ??= {};
+G.__questAssetCache ??= createBoundedArrayBufferCache(ASSET_CACHE_MAX_BYTES);
+G.__questResvgUriCache ??= createBoundedStringCache(RESVG_URI_CACHE_MAX_BYTES);
 G.__questRenderOutputCache ??= new Map<string, Uint8Array>();
 G.__questPendingRenders ??= new Map<string, Promise<Uint8Array>>();
 const assetCache = G.__questAssetCache;

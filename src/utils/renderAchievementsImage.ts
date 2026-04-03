@@ -2,20 +2,23 @@ import * as Photon from '@cf-wasm/photon';
 import { Resvg } from '@resvg/resvg-wasm';
 import { BASE_URL } from '../objects/config/constants';
 import { AchievementOverviewItem } from '../objects/types/AchievementOverviewItem';
-import { cacheRenderOutput, resolveResvgImageUri } from './renderImageHelpers';
+import { cacheRenderOutput, createBoundedArrayBufferCache, createBoundedStringCache, resolveResvgImageUri, SizedCache } from './renderImageHelpers';
 import { ensureResvgWasm } from './resvgWasm';
 
 type AchievementsImageGlobals = {
-  __achievementsAssetCache?: Record<string, ArrayBuffer>;
-  __achievementsResvgUriCache?: Record<string, string>;
+  __achievementsAssetCache?: SizedCache<ArrayBuffer>;
+  __achievementsResvgUriCache?: SizedCache<string>;
   __achievementsFontBuffer?: Uint8Array;
   __achievementsRenderOutputCache?: Map<string, Uint8Array>;
   __achievementsPendingRenders?: Map<string, Promise<Uint8Array>>;
 };
 
+const ASSET_CACHE_MAX_BYTES = 20 * 1024 * 1024;
+const RESVG_URI_CACHE_MAX_BYTES = 24 * 1024 * 1024;
+
 const G = globalThis as unknown as AchievementsImageGlobals;
-G.__achievementsAssetCache ??= {};
-G.__achievementsResvgUriCache ??= {};
+G.__achievementsAssetCache ??= createBoundedArrayBufferCache(ASSET_CACHE_MAX_BYTES);
+G.__achievementsResvgUriCache ??= createBoundedStringCache(RESVG_URI_CACHE_MAX_BYTES);
 G.__achievementsRenderOutputCache ??= new Map<string, Uint8Array>();
 G.__achievementsPendingRenders ??= new Map<string, Promise<Uint8Array>>();
 const assetCache = G.__achievementsAssetCache;
