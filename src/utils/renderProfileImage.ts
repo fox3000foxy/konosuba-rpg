@@ -8,6 +8,7 @@ import { CharacterKey } from '../objects/enums/CharacterKey';
 import { CharacterProgress } from '../objects/types/CharacterProgress';
 import { PlayerProfile } from '../objects/types/PlayerProfile';
 import { PlayerRunSummary } from '../objects/types/PlayerRunSummary';
+import { escapeXml } from './renderImageHelpers';
 import { getImageBytes as getImageBytesFromManifest } from './renderImage';
 import { ensureResvgWasm } from './resvgWasm';
 
@@ -75,9 +76,6 @@ function getCharacterBadgePath(key: CharacterKey, stars: number): string {
     }
   });
 })();
-function escapeXml(value: string): string {
-  return value.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&apos;');
-}
 
 async function getEmbeddedFontBuffer(): Promise<Uint8Array | null> {
   if (G.__profileFontBuffer) {
