@@ -1,4 +1,4 @@
-// Auto-generated file. Regenerate with: pnpm ts-node scripts/generate-image-manifest.ts
+// Auto-generated file. Regenerate with: bun run ts-node scripts/generate-image-manifest.ts
 
 export const imageManifest: Record<string, string> = {
   enemy_image_10001: '/assets/mobs/enemy_image_10001.webp',
