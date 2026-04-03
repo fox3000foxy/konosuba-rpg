@@ -38,6 +38,7 @@ function toShopItemFromAccessory(accessory: NonNullable<ReturnType<typeof getAcc
     nameFr: accessory.nameFr,
     nameEn: accessory.nameEn,
     price: getPriceFromRarity(accessory.rarity, 'accessory'),
+    imagePath: `/assets/accessories/${accessory.fileName}`,
   };
 }
 
@@ -48,6 +49,7 @@ function toShopItemFromConsumable(consumable: NonNullable<ReturnType<typeof getC
     nameFr: consumable.nameFr,
     nameEn: consumable.nameEn,
     price: getPriceFromRarity(consumable.rarity, 'consumable'),
+    imagePath: `/assets/consumables/${consumable.fileName}`,
   };
 }
 
@@ -126,6 +128,7 @@ export function buildShopComponents(items: ShopItem[], page: number, pageCount: 
     label: sanitizeOptionLabel(fr ? item.nameFr : item.nameEn),
     value: sanitizeOptionValue(String(item.itemKey)),
     description: `${item.price} gold`.slice(0, 100),
+    emoji: item.imagePath ? { name: 'item', animated: false, id: null } : undefined,
   }));
 
   const selectHasOptions = options.length > 0;
