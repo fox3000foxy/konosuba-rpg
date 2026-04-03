@@ -56,11 +56,7 @@ export async function getAllQuestStatuses(userID: string): Promise<DailyQuestSta
       }));
     }
 
-    const { data, error } = await supabase
-      .from('daily_quests_progress')
-      .select('quest_key, progress, claimed')
-      .eq('user_id', userID)
-      .eq('quest_day', questDay);
+    const { data, error } = await supabase.from('daily_quests_progress').select('quest_key, progress, claimed').eq('user_id', userID).eq('quest_day', questDay);
 
     if (error) {
       console.error('[db] getAllQuestStatuses failed:', error.message);
@@ -74,9 +70,7 @@ export async function getAllQuestStatuses(userID: string): Promise<DailyQuestSta
       }));
     }
 
-    const rowsByKey = new Map(
-      ((data || []) as DailyQuestProgressRow[]).map(row => [String(row.quest_key), row])
-    );
+    const rowsByKey = new Map(((data || []) as DailyQuestProgressRow[]).map(row => [String(row.quest_key), row]));
 
     return QUESTS.map(quest => {
       const row = rowsByKey.get(quest.key);
