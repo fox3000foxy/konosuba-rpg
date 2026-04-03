@@ -56,7 +56,7 @@ for (const dir of ASSET_DIRS) {
     const imageTsDir = path.join(IMAGE_TS_ROOT, fromAssetSubpath);
     const targetFile = path.join(imageTsDir, `${key}.ts`);
     ensureDir(targetFile);
-    const basePath = 'https://fox3000foxy.com/konosuba-rpg/';
+    const basePath = 'https://konosuba-rpg.vercel.app/';
     const modulePath = basePath + posixPath(file);
     loaders.push({ key, modulePath });
   }

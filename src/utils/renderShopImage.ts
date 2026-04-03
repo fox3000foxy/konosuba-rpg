@@ -30,7 +30,7 @@ const pendingResvgUriConversions = new Map<string, Promise<string | null>>();
 
 const RENDER_OUTPUT_CACHE_MAX = 32;
 
-const ASSET_BASE_URL = 'https://fox3000foxy.com/konosuba-rpg';
+const ASSET_BASE_URL = 'https://konosuba-rpg.vercel.app';
 const FONT_URL = `${ASSET_BASE_URL}/assets/swordgame/font/GintoNordMedium.otf`;
 const BOARD_PATH = '/assets/swordgame/art/board.webp';
 const WIDTH = 1100;

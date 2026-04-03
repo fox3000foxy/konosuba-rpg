@@ -91,18 +91,26 @@ export async function getAssetBytes(assetPath: string | null, baseUrl: string, p
   }
 
   const request = (async () => {
-    // Try filesystem first (Vercel Node runtime)
-    try {
-      const filePath = path.join(process.cwd(), 'assets', assetPath.replace(/^\/assets\//, ''));
-      const buffer = await fs.readFile(filePath);
-      const arrayBuffer = buffer.buffer.slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength);
-      assetCache.set(assetPath, arrayBuffer);
-      return arrayBuffer;
-    } catch {
-      // Fallthrough to fetch if file not found
+    // Try filesystem paths in order (Vercel then local)
+    const cleanPath = assetPath.replace(/^\/assets\//, '');
+    const possiblePaths = [
+      `/var/task/assets/${cleanPath}`, // Vercel serverless
+      path.join(process.cwd(), 'assets', cleanPath), // Dev/local
+    ];
+
+    for (const filePath of possiblePaths) {
+      try {
+        const buffer = await fs.readFile(filePath);
+        const arrayBuffer = buffer.buffer.slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength);
+        assetCache.set(assetPath, arrayBuffer);
+        return arrayBuffer;
+      } catch {
+        // Try next path
+        continue;
+      }
     }
 
-    // Fallback to fetch for development or if file not found
+    // Fallback to fetch if no file found locally
     try {
       const response = await fetch(`${baseUrl}${assetPath}`);
       if (!response.ok) {
