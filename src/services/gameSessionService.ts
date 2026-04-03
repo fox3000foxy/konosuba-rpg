@@ -1,4 +1,5 @@
 import { RawButton } from '../objects/enums/RawButton';
+import { withPerf } from '../utils/perfLogger';
 import { getSupabaseAdminClient } from '../utils/supabaseClient';
 import { DecodeGameplayPayloadResult } from './types/gameSession';
 
@@ -288,71 +289,73 @@ type PendingEncoding = {
 };
 
 export async function encodeGameplayButtons(buttons: RawButton[]): Promise<RawButton[]> {
-  await pruneExpiredSessions();
+  return withPerf('gameSessionService', 'encodeGameplayButtons', async () => {
+    await pruneExpiredSessions();
 
-  const groups = new Map<string, PendingEncoding>();
+    const groups = new Map<string, PendingEncoding>();
 
-  for (const row of buttons) {
-    for (const component of row.components) {
-      if (!hasCustomId(component)) {
-        continue;
+    for (const row of buttons) {
+      for (const component of row.components) {
+        if (!hasCustomId(component)) {
+          continue;
+        }
+
+        const { payload, owner } = parseCustomId(component.custom_id);
+        if (!needsEncoding(payload)) {
+          continue;
+        }
+
+        const ownerUserId = owner || 'all';
+        const battleKey = extractBattleKeyFromPayload(payload);
+        const key = `${ownerUserId}::${battleKey}`;
+
+        if (!groups.has(key)) {
+          groups.set(key, {
+            ownerUserId,
+            battleKey,
+            payloads: new Set<string>(),
+          });
+        }
+
+        groups.get(key)?.payloads.add(payload);
       }
-
-      const { payload, owner } = parseCustomId(component.custom_id);
-      if (!needsEncoding(payload)) {
-        continue;
-      }
-
-      const ownerUserId = owner || 'all';
-      const battleKey = extractBattleKeyFromPayload(payload);
-      const key = `${ownerUserId}::${battleKey}`;
-
-      if (!groups.has(key)) {
-        groups.set(key, {
-          ownerUserId,
-          battleKey,
-          payloads: new Set<string>(),
-        });
-      }
-
-      groups.get(key)?.payloads.add(payload);
     }
-  }
 
-  const tokenMaps = new Map<string, Map<string, string>>();
-  const entries = [...groups.entries()];
-  const resolvedMaps = await Promise.all(entries.map(async ([key, group]) => [key, await createTokenMapForBattle(group.ownerUserId, group.battleKey, [...group.payloads])] as const));
+    const tokenMaps = new Map<string, Map<string, string>>();
+    const entries = [...groups.entries()];
+    const resolvedMaps = await Promise.all(entries.map(async ([key, group]) => [key, await createTokenMapForBattle(group.ownerUserId, group.battleKey, [...group.payloads])] as const));
 
-  for (const [key, map] of resolvedMaps) {
-    tokenMaps.set(key, map);
-  }
+    for (const [key, map] of resolvedMaps) {
+      tokenMaps.set(key, map);
+    }
 
-  return buttons.map(row => ({
-    ...row,
-    components: row.components.map(component => {
-      if (!hasCustomId(component)) {
-        return component;
-      }
+    return buttons.map(row => ({
+      ...row,
+      components: row.components.map(component => {
+        if (!hasCustomId(component)) {
+          return component;
+        }
 
-      const { payload, owner } = parseCustomId(component.custom_id);
-      if (!needsEncoding(payload)) {
-        return component;
-      }
+        const { payload, owner } = parseCustomId(component.custom_id);
+        if (!needsEncoding(payload)) {
+          return component;
+        }
 
-      const ownerUserId = owner || 'all';
-      const battleKey = extractBattleKeyFromPayload(payload);
-      const map = tokenMaps.get(`${ownerUserId}::${battleKey}`);
-      const token = map?.get(payload);
-      if (!token) {
-        return component;
-      }
+        const ownerUserId = owner || 'all';
+        const battleKey = extractBattleKeyFromPayload(payload);
+        const map = tokenMaps.get(`${ownerUserId}::${battleKey}`);
+        const token = map?.get(payload);
+        if (!token) {
+          return component;
+        }
 
-      return {
-        ...component,
-        custom_id: `${TOKEN_PREFIX}${token}${owner ? `:${owner}` : ''}`,
-      };
-    }),
-  }));
+        return {
+          ...component,
+          custom_id: `${TOKEN_PREFIX}${token}${owner ? `:${owner}` : ''}`,
+        };
+      }),
+    }));
+  });
 }
 
 async function loadTokenRowByToken(token: string): Promise<SessionEntry | null> {
@@ -379,40 +382,44 @@ async function loadTokenRowByToken(token: string): Promise<SessionEntry | null> 
 }
 
 export async function decodeGameplayPayloadWithStatus(encodedPayload: string, userID: string): Promise<DecodeGameplayPayloadResult> {
-  await pruneExpiredSessions();
+  return withPerf('gameSessionService', 'decodeGameplayPayloadWithStatus', async () => {
+    await pruneExpiredSessions();
 
-  if (!encodedPayload.startsWith(TOKEN_PREFIX)) {
-    return { payload: encodedPayload };
-  }
+    if (!encodedPayload.startsWith(TOKEN_PREFIX)) {
+      return { payload: encodedPayload };
+    }
 
-  const token = encodedPayload.slice(TOKEN_PREFIX.length);
-  if (!token) {
-    return { payload: null, reason: 'invalid-token' };
-  }
+    const token = encodedPayload.slice(TOKEN_PREFIX.length);
+    if (!token) {
+      return { payload: null, reason: 'invalid-token' };
+    }
 
-  const cached = tokenToSession.get(token) || null;
-  const entry = cached || (await loadTokenRowByToken(token));
-  if (!entry) {
-    return { payload: null, reason: 'not-found' };
-  }
+    const cached = tokenToSession.get(token) || null;
+    const entry = cached || (await loadTokenRowByToken(token));
+    if (!entry) {
+      return { payload: null, reason: 'not-found' };
+    }
 
-  if (entry.ownerUserId !== userID && entry.ownerUserId !== 'all') {
-    return { payload: null, reason: 'forbidden' };
-  }
+    if (entry.ownerUserId !== userID && entry.ownerUserId !== 'all') {
+      return { payload: null, reason: 'forbidden' };
+    }
 
-  if (isExpired(entry)) {
-    return { payload: null, reason: 'expired' };
-  }
+    if (isExpired(entry)) {
+      return { payload: null, reason: 'expired' };
+    }
 
-  const latestTurn = await getLatestTurnVersion(entry.ownerUserId, entry.battleKey);
-  if (entry.turnVersion !== latestTurn) {
-    return { payload: null, reason: 'stale' };
-  }
+    const latestTurn = await getLatestTurnVersion(entry.ownerUserId, entry.battleKey);
+    if (entry.turnVersion !== latestTurn) {
+      return { payload: null, reason: 'stale' };
+    }
 
-  return { payload: entry.payload };
+    return { payload: entry.payload };
+  });
 }
 
 export async function decodeGameplayPayload(encodedPayload: string, userID: string): Promise<string | null> {
-  const result = await decodeGameplayPayloadWithStatus(encodedPayload, userID);
-  return result.payload;
+  return withPerf('gameSessionService', 'decodeGameplayPayload', async () => {
+    const result = await decodeGameplayPayloadWithStatus(encodedPayload, userID);
+    return result.payload;
+  });
 }

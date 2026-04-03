@@ -47,3 +47,17 @@ export function createPerfLogger(scope: string): PerfLogger {
     done,
   };
 }
+
+export async function withPerf<T>(scope: string, label: string, work: () => Promise<T>): Promise<T> {
+  const perf = createPerfLogger(scope);
+  if (!perf.enabled) {
+    return work();
+  }
+
+  perf.mark(`${label}:start`);
+  try {
+    return await work();
+  } finally {
+    perf.done(`${label}:done`);
+  }
+}

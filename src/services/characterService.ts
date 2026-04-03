@@ -1,6 +1,7 @@
 import { CharacterKey } from '../objects/enums/CharacterKey';
 import { CharacterProgress } from '../objects/types/CharacterProgress';
 import { CharacterStatsSnapshot } from '../objects/types/CharacterStatsSnapshot';
+import { withPerf } from '../utils/perfLogger';
 import { getSupabaseAdminClient } from '../utils/supabaseClient';
 import { ensurePlayerProfile } from './playerService';
 
@@ -30,41 +31,43 @@ export function getAffinityFactor(affinity: number): number {
 }
 
 export async function ensureCharacterProgress(userId: string): Promise<void> {
-  const supabase = getSupabaseAdminClient();
-  if (!supabase) {
-    return;
-  }
+  await withPerf('characterService', 'ensureCharacterProgress', async () => {
+    const supabase = getSupabaseAdminClient();
+    if (!supabase) {
+      return;
+    }
 
-  // Ensure FK target exists before inserting character_progress rows.
-  await ensurePlayerProfile(userId);
+    // Ensure FK target exists before inserting character_progress rows.
+    await ensurePlayerProfile(userId);
 
-  const { data: existingRows, error: loadError } = await supabase.from('character_progress').select('character_key').eq('user_id', userId);
+    const { data: existingRows, error: loadError } = await supabase.from('character_progress').select('character_key').eq('user_id', userId);
 
-  if (loadError) {
-    console.error('[db] ensureCharacterProgress load failed:', loadError.message);
-    return;
-  }
+    if (loadError) {
+      console.error('[db] ensureCharacterProgress load failed:', loadError.message);
+      return;
+    }
 
-  const existingKeys = new Set((existingRows || []).map(row => String(row.character_key) as CharacterKey));
+    const existingKeys = new Set((existingRows || []).map(row => String(row.character_key) as CharacterKey));
 
-  const missingRows = CHARACTER_KEYS.filter(characterKey => !existingKeys.has(characterKey)).map(characterKey => ({
-    user_id: userId,
-    character_key: characterKey,
-    xp: 0,
-    level: 1,
-    affinity: 0,
-    updated_at: new Date().toISOString(),
-  }));
+    const missingRows = CHARACTER_KEYS.filter(characterKey => !existingKeys.has(characterKey)).map(characterKey => ({
+      user_id: userId,
+      character_key: characterKey,
+      xp: 0,
+      level: 1,
+      affinity: 0,
+      updated_at: new Date().toISOString(),
+    }));
 
-  if (missingRows.length === 0) {
-    return;
-  }
+    if (missingRows.length === 0) {
+      return;
+    }
 
-  const { error } = await supabase.from('character_progress').insert(missingRows);
+    const { error } = await supabase.from('character_progress').insert(missingRows);
 
-  if (error) {
-    console.error('[db] ensureCharacterProgress failed:', error.message);
-  }
+    if (error) {
+      console.error('[db] ensureCharacterProgress failed:', error.message);
+    }
+  });
 }
 
 export async function getCharacterProgress(userId: string, characterKey: CharacterKey): Promise<CharacterProgress | null> {
@@ -230,46 +233,48 @@ export async function addCharacterAffinity(userId: string, characterKey: Charact
 }
 
 export async function getCharacterStatsSnapshot(userId: string): Promise<CharacterStatsSnapshot[] | null> {
-  const supabase = getSupabaseAdminClient();
-  if (!supabase) {
-    return null;
-  }
+  return withPerf('characterService', 'getCharacterStatsSnapshot', async () => {
+    const supabase = getSupabaseAdminClient();
+    if (!supabase) {
+      return null;
+    }
 
-  const { data: playerRow, error: playerError } = await supabase.from('players').select('level').eq('user_id', userId).maybeSingle();
+    const { data: playerRow, error: playerError } = await supabase.from('players').select('level').eq('user_id', userId).maybeSingle();
 
-  if (playerError) {
-    console.error('[db] getCharacterStatsSnapshot player load failed:', playerError.message);
-    return null;
-  }
+    if (playerError) {
+      console.error('[db] getCharacterStatsSnapshot player load failed:', playerError.message);
+      return null;
+    }
 
-  const kazumaLevel = Number(playerRow?.level || 1);
-  const progresses = await getCharacterProgresses(userId);
-  if (!progresses) {
-    return null;
-  }
+    const kazumaLevel = Number(playerRow?.level || 1);
+    const progresses = await getCharacterProgresses(userId);
+    if (!progresses) {
+      return null;
+    }
 
-  const byKey = new Map(progresses.map(progress => [progress.characterKey, progress]));
+    const byKey = new Map(progresses.map(progress => [progress.characterKey, progress]));
 
-  return [
-    {
-      characterKey: 'kazuma',
-      level: clampLevel(kazumaLevel),
-      factor: getLevelFactor(kazumaLevel),
-    },
-    {
-      characterKey: CharacterKey.Darkness,
-      level: Number(byKey.get(CharacterKey.Darkness)?.level || 1),
-      factor: getLevelFactor(Number(byKey.get(CharacterKey.Darkness)?.level || 1)) * getAffinityFactor(Number(byKey.get(CharacterKey.Darkness)?.affinity || 0)),
-    },
-    {
-      characterKey: CharacterKey.Megumin,
-      level: Number(byKey.get(CharacterKey.Megumin)?.level || 1),
-      factor: getLevelFactor(Number(byKey.get(CharacterKey.Megumin)?.level || 1)) * getAffinityFactor(Number(byKey.get(CharacterKey.Megumin)?.affinity || 0)),
-    },
-    {
-      characterKey: CharacterKey.Aqua,
-      level: Number(byKey.get(CharacterKey.Aqua)?.level || 1),
-      factor: getLevelFactor(Number(byKey.get(CharacterKey.Aqua)?.level || 1)) * getAffinityFactor(Number(byKey.get(CharacterKey.Aqua)?.affinity || 0)),
-    },
-  ];
+    return [
+      {
+        characterKey: 'kazuma',
+        level: clampLevel(kazumaLevel),
+        factor: getLevelFactor(kazumaLevel),
+      },
+      {
+        characterKey: CharacterKey.Darkness,
+        level: Number(byKey.get(CharacterKey.Darkness)?.level || 1),
+        factor: getLevelFactor(Number(byKey.get(CharacterKey.Darkness)?.level || 1)) * getAffinityFactor(Number(byKey.get(CharacterKey.Darkness)?.affinity || 0)),
+      },
+      {
+        characterKey: CharacterKey.Megumin,
+        level: Number(byKey.get(CharacterKey.Megumin)?.level || 1),
+        factor: getLevelFactor(Number(byKey.get(CharacterKey.Megumin)?.level || 1)) * getAffinityFactor(Number(byKey.get(CharacterKey.Megumin)?.affinity || 0)),
+      },
+      {
+        characterKey: CharacterKey.Aqua,
+        level: Number(byKey.get(CharacterKey.Aqua)?.level || 1),
+        factor: getLevelFactor(Number(byKey.get(CharacterKey.Aqua)?.level || 1)) * getAffinityFactor(Number(byKey.get(CharacterKey.Aqua)?.affinity || 0)),
+      },
+    ];
+  });
 }

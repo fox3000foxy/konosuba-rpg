@@ -5,6 +5,7 @@ import { AchievementDefinition } from '../objects/types/AchievementDefinition';
 import { AchievementOverviewItem } from '../objects/types/AchievementOverviewItem';
 import { AchievementUnlockRow } from '../objects/types/AchievementUnlockRow';
 import { UserRunStats } from '../objects/types/UserRunStats';
+import { withPerf } from '../utils/perfLogger';
 import { inferMonsterFromRunKey } from '../utils/runMonsterUtils';
 import { getSupabaseAdminClient } from '../utils/supabaseClient';
 
@@ -117,91 +118,95 @@ async function getUserRunStats(userId: string): Promise<UserRunStats> {
 }
 
 export async function syncAchievements(userId: string): Promise<void> {
-  const supabase = getSupabaseAdminClient();
-  if (!supabase) {
-    return;
-  }
-
-  const { data: profile, error: profileError } = await supabase.from('players').select('level, xp, gold').eq('user_id', userId).maybeSingle();
-
-  if (profileError || !profile) {
-    console.error('[db] syncAchievements profile load failed:', profileError?.message || 'missing row');
-    return;
-  }
-
-  const stats = await getUserRunStats(userId);
-  const level = Number(profile.level || 1);
-  const xp = Number(profile.xp || 0);
-  const gold = Number(profile.gold || 0);
-
-  const toUnlock: AchievementKey[] = [];
-  for (const [key, requiredWins] of WIN_ACHIEVEMENT_REQUIREMENTS) {
-    if (stats.winRuns >= requiredWins) {
-      toUnlock.push(key);
+  return withPerf('achievementService', 'syncAchievements', async () => {
+    const supabase = getSupabaseAdminClient();
+    if (!supabase) {
+      return;
     }
-  }
 
-  if (xp >= 100) toUnlock.push(AchievementKey.Xp100);
+    const { data: profile, error: profileError } = await supabase.from('players').select('level, xp, gold').eq('user_id', userId).maybeSingle();
 
-  for (const [key, requiredLevel] of LEVEL_ACHIEVEMENT_REQUIREMENTS) {
-    if (level >= requiredLevel) {
-      toUnlock.push(key);
+    if (profileError || !profile) {
+      console.error('[db] syncAchievements profile load failed:', profileError?.message || 'missing row');
+      return;
     }
-  }
 
-  for (const [key, requiredGold] of GOLD_ACHIEVEMENT_REQUIREMENTS) {
-    if (gold >= requiredGold) {
-      toUnlock.push(key);
+    const stats = await getUserRunStats(userId);
+    const level = Number(profile.level || 1);
+    const xp = Number(profile.xp || 0);
+    const gold = Number(profile.gold || 0);
+
+    const toUnlock: AchievementKey[] = [];
+    for (const [key, requiredWins] of WIN_ACHIEVEMENT_REQUIREMENTS) {
+      if (stats.winRuns >= requiredWins) {
+        toUnlock.push(key);
+      }
     }
-  }
 
-  for (const [key, monsterName] of MONSTER_ACHIEVEMENT_REQUIREMENTS) {
-    if ((stats.winsByMonster[normalizeMonsterName(monsterName)] ?? 0) >= 1) {
-      toUnlock.push(key);
+    if (xp >= 100) toUnlock.push(AchievementKey.Xp100);
+
+    for (const [key, requiredLevel] of LEVEL_ACHIEVEMENT_REQUIREMENTS) {
+      if (level >= requiredLevel) {
+        toUnlock.push(key);
+      }
     }
-  }
 
-  if (toUnlock.length === 0) {
-    return;
-  }
+    for (const [key, requiredGold] of GOLD_ACHIEVEMENT_REQUIREMENTS) {
+      if (gold >= requiredGold) {
+        toUnlock.push(key);
+      }
+    }
 
-  const rows = toUnlock.map(key => ({
-    user_id: userId,
-    achievement_key: key,
-    unlocked_at: new Date().toISOString(),
-  }));
+    for (const [key, monsterName] of MONSTER_ACHIEVEMENT_REQUIREMENTS) {
+      if ((stats.winsByMonster[normalizeMonsterName(monsterName)] ?? 0) >= 1) {
+        toUnlock.push(key);
+      }
+    }
 
-  const { error: unlockError } = await supabase.from('achievements_unlocked').upsert(rows, { onConflict: 'user_id,achievement_key' });
+    if (toUnlock.length === 0) {
+      return;
+    }
 
-  if (unlockError) {
-    console.error('[db] syncAchievements unlock failed:', unlockError.message);
-  }
+    const rows = toUnlock.map(key => ({
+      user_id: userId,
+      achievement_key: key,
+      unlocked_at: new Date().toISOString(),
+    }));
+
+    const { error: unlockError } = await supabase.from('achievements_unlocked').upsert(rows, { onConflict: 'user_id,achievement_key' });
+
+    if (unlockError) {
+      console.error('[db] syncAchievements unlock failed:', unlockError.message);
+    }
+  });
 }
 
 export async function getAchievementsOverview(userId: string, fr: boolean): Promise<AchievementOverviewItem[] | null> {
-  const supabase = getSupabaseAdminClient();
-  if (!supabase) {
-    return null;
-  }
+  return withPerf('achievementService', 'getAchievementsOverview', async () => {
+    const supabase = getSupabaseAdminClient();
+    if (!supabase) {
+      return null;
+    }
 
-  const { data, error } = await supabase.from('achievements_unlocked').select('achievement_key, unlocked_at').eq('user_id', userId);
+    const { data, error } = await supabase.from('achievements_unlocked').select('achievement_key, unlocked_at').eq('user_id', userId);
 
-  if (error) {
-    console.error('[db] getAchievementsOverview failed:', error.message);
-    return null;
-  }
+    if (error) {
+      console.error('[db] getAchievementsOverview failed:', error.message);
+      return null;
+    }
 
-  const unlockedRows = (data || []) as AchievementUnlockRow[];
-  const unlockedByKey = new Map(unlockedRows.map(row => [row.achievement_key, row.unlocked_at]));
+    const unlockedRows = (data || []) as AchievementUnlockRow[];
+    const unlockedByKey = new Map(unlockedRows.map(row => [row.achievement_key, row.unlocked_at]));
 
-  return ACHIEVEMENTS.map(achievement => {
-    const unlockedAt = unlockedByKey.get(achievement.key) || null;
-    return {
-      key: achievement.key,
-      title: fr ? achievement.titleFr : achievement.titleEn,
-      description: fr ? achievement.descriptionFr : achievement.descriptionEn,
-      unlocked: Boolean(unlockedAt),
-      unlockedAt,
-    };
+    return ACHIEVEMENTS.map(achievement => {
+      const unlockedAt = unlockedByKey.get(achievement.key) || null;
+      return {
+        key: achievement.key,
+        title: fr ? achievement.titleFr : achievement.titleEn,
+        description: fr ? achievement.descriptionFr : achievement.descriptionEn,
+        unlocked: Boolean(unlockedAt),
+        unlockedAt,
+      };
+    });
   });
 }
