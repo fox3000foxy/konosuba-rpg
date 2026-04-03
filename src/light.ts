@@ -1,13 +1,13 @@
 import { config } from 'dotenv';
 import { Hono } from 'hono';
 import { registerApiRoutes } from './routes/api';
-import { calculateGame } from './routes/game';
+import { calculateGameLight } from './routes/gameLight';
 
 config();
 
 const app = new Hono();
 
 registerApiRoutes(app);
-app.get('/game/:lang/*', calculateGame);
+app.get('/game/:lang/*', calculateGameLight);
 
 export default app;

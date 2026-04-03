@@ -22,5 +22,8 @@ TESTING.md
 # Source files
 convert-png-to-webp.ts
 
+# Unused monolith output
+api/index.js
+
 # Archives
 future.zip
