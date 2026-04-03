@@ -14,7 +14,7 @@ commands.json
 
 # Package management
 package.json
-pnpm-lock.yaml
+bun.lock
 
 # Documentation
 TESTING.md

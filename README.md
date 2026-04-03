@@ -42,12 +42,12 @@ Game visual assets are sourced from **KonoSuba: Fantastic Days** and are used he
 
 ### Common commands
 
-- `pnpm dev`
-- `pnpm build`
-- `pnpm test`
-- `pnpm test:perf`
-- `pnpm test:leaks`
-- `pnpm lint`
+- `bun run dev`
+- `bun run build`
+- `bun run test`
+- `bun run test:perf`
+- `bun run test:leaks`
+- `bun run lint`
 
 ### Vercel deployment
 
@@ -75,11 +75,11 @@ Worker configuration is in [wrangler.toml](wrangler.toml) and Worker entrypoint 
 
 Useful commands:
 
-- `pnpm worker:dev`
-- `pnpm worker:dry-run`
-- `pnpm worker:deploy`
-- `pnpm deploy:worker`
-- `pnpm deploy:all`
+- `bun run worker:dev`
+- `bun run worker:dry-run`
+- `bun run worker:deploy`
+- `bun run deploy:worker`
+- `bun run deploy:all`
 
 Required secrets (set once via Wrangler):
 

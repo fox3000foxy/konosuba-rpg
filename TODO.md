@@ -34,7 +34,7 @@ Completed work is tracked in [DONE.md](DONE.md).
 - PVP remains in long-term backlog and is not part of the current execution window.
 
 ### Release gates before new feature development
-- Gate A: P0 completed + green tests (`pnpm test`, targeted perf checks).
+- Gate A: P0 completed + green tests (`bun run test`, targeted perf checks).
 - Gate B: P1 completed + transactional guarantees verified.
 - Gate C: P2 decisions locked + TODO/README aligned.
 - Only after Gates A+B+C: reopen roadmap for new systems.
