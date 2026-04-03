@@ -270,19 +270,9 @@ describe('recordRunResult integration-like flow', () => {
         data: null,
       },
       {
-        table: 'players',
-        op: 'select',
-        data: { xp: 42, level: 1 },
-      },
-      {
-        table: 'players',
-        op: 'update',
-        data: null,
-      },
-      {
         table: 'daily_quests_progress',
         op: 'select',
-        data: null,
+        data: [],
       },
       {
         table: 'daily_quests_progress',
@@ -305,11 +295,7 @@ describe('recordRunResult integration-like flow', () => {
     expect(mockedGrantAccessoryDropRewards).not.toHaveBeenCalled();
     expect(mockedGrantConsumableDropRewards).not.toHaveBeenCalled();
 
-    expect(client.queries[1].table).toBe('players');
-    expect(client.queries[1].op).toBe('select');
-    expect(client.queries[2].table).toBe('players');
-    expect(client.queries[2].op).toBe('update');
-    expect((client.queries[2].payload as { xp: number }).xp).toBe(42);
+    expect(client.queries.some(query => query.table === 'players')).toBe(false);
   });
 
   it('does not trigger drop rewards on losing or giveup runs', async () => {
@@ -320,19 +306,9 @@ describe('recordRunResult integration-like flow', () => {
         data: null,
       },
       {
-        table: 'players',
-        op: 'select',
-        data: { xp: 50, level: 2 },
-      },
-      {
-        table: 'players',
-        op: 'update',
-        data: null,
-      },
-      {
         table: 'daily_quests_progress',
         op: 'select',
-        data: null,
+        data: [],
       },
       {
         table: 'daily_quests_progress',
@@ -353,5 +329,6 @@ describe('recordRunResult integration-like flow', () => {
 
     expect(mockedGrantAccessoryDropRewards).not.toHaveBeenCalled();
     expect(mockedGrantConsumableDropRewards).not.toHaveBeenCalled();
+    expect(client.queries.some(query => query.table === 'players')).toBe(false);
   });
 });
