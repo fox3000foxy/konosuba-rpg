@@ -8,6 +8,7 @@ import { CharacterKey } from '../objects/enums/CharacterKey';
 import { CharacterProgress } from '../objects/types/CharacterProgress';
 import { PlayerProfile } from '../objects/types/PlayerProfile';
 import { PlayerRunSummary } from '../objects/types/PlayerRunSummary';
+import { createPerfLogger } from './perfLogger';
 import { getImageBytes as getImageBytesFromManifest } from './renderImage';
 import { escapeXml } from './renderImageHelpers';
 import { ensureResvgWasm } from './resvgWasm';
@@ -177,9 +178,15 @@ export async function buildProfileSvg(userId: string, profile: PlayerProfile, pr
 }
 
 export async function renderProfileImage(userId: string, profile: PlayerProfile, progresses: CharacterProgress[], runSummary: PlayerRunSummary, achievementsCount: number, totalAchievements: number, fr: boolean): Promise<Uint8Array> {
+  const perf = createPerfLogger('renderProfileImage');
   await ensureResvgWasm();
+  perf.mark('ensureResvgWasm');
+
   const fontBuffer = await getEmbeddedFontBuffer();
+  perf.mark('getEmbeddedFontBuffer');
+
   const svg = await buildProfileSvg(userId, profile, progresses, runSummary, achievementsCount, totalAchievements, fr, Boolean(fontBuffer));
+  perf.mark('buildSvg');
 
   const options = fontBuffer
     ? {
@@ -192,11 +199,14 @@ export async function renderProfileImage(userId: string, profile: PlayerProfile,
     : { font: { loadSystemFonts: true } };
 
   const png = new Resvg(svg, options).render().asPng();
+  perf.mark('Resvg render -> PNG');
+
   const overlay = Photon.PhotonImage.new_from_byteslice(new Uint8Array(png.buffer.slice(0) as ArrayBuffer));
 
   let board: Photon.PhotonImage | null = null;
   let canvas: Photon.PhotonImage;
   const boardBytes = await getAssetBytes(BOARD_PATH);
+  perf.mark('get board');
 
   if (boardBytes) {
     board = Photon.PhotonImage.new_from_byteslice(new Uint8Array(boardBytes));
@@ -208,8 +218,10 @@ export async function renderProfileImage(userId: string, profile: PlayerProfile,
 
   const rows = getRows(progresses);
   const [starEnabledBytes, starDisabledBytes] = await Promise.all([getAssetBytes(STAR_ENABLED_PATH), getAssetBytes(STAR_DISABLED_PATH)]);
+  perf.mark('get star assets');
 
   const badgeBuffers = await Promise.all(rows.map(row => getAssetBytes(getCharacterBadgePath(row.key, getAffinityStars(row.affinity)))));
+  perf.mark('get badges');
 
   const rowY = [320, 435, 550];
   for (let rowIdx = 0; rowIdx < rows.length; rowIdx += 1) {
@@ -274,6 +286,7 @@ export async function renderProfileImage(userId: string, profile: PlayerProfile,
       // If icon missing or invalid, ignore and continue.
     }
   }
+  perf.mark('compose overlays');
 
   const output = new Uint8Array(canvas.get_bytes());
   if (canvas !== overlay) {
@@ -282,6 +295,7 @@ export async function renderProfileImage(userId: string, profile: PlayerProfile,
 
   board?.free();
   canvas.free();
+  perf.done();
   return output;
 }
 
