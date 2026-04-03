@@ -68,7 +68,7 @@ const importsObjectEntries = loaders
   .map((entry) => `  ${JSON.stringify(entry.key)}: ${JSON.stringify(entry.modulePath)}`.replace(".ts",".js"))
   .join(',\n');
 
-const manifestContent = `// Auto-generated file. Regenerate with: pnpm ts-node scripts/generate-image-manifest.ts\n\nexport const imageManifest: Record<string, string> = {\n${importsObjectEntries}\n};\n`;
+const manifestContent = `// Auto-generated file. Regenerate with: bun run ts-node scripts/generate-image-manifest.ts\n\nexport const imageManifest: Record<string, string> = {\n${importsObjectEntries}\n};\n`;
 
 fs.writeFileSync(OUT_FILE, manifestContent, 'utf8');
 console.log(`Wrote image manifest: ${OUT_FILE} (${loaders.length} entries)`);
