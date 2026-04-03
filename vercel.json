@@ -12,7 +12,7 @@
     },
     {
       "src": "/(inventory|affinity|quest|shop|profile|achievements)/(.*)",
-      "dest": "/api/render.js"
+      "dest": "/api/renderPages.js"
     },
     {
       "src": "/(.*)",
