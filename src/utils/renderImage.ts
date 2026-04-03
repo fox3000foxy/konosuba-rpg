@@ -704,9 +704,13 @@ export async function warmup(): Promise<void> {
   await Promise.all([ensureResvgWasm(), getFontBytes(fontUrl), ...END_STATES.map(s => getImageBytes('end_' + s)), getImageBytes('board'), getImageBytes('frameless'), getImageBytes('ui_effect_potion').catch(() => undefined), getImageBytes('ui_effect_chrono').catch(() => undefined), getImageBytes('ui_effect_stone').catch(() => undefined), getImageBytes('ui_effect_scroll').catch(() => undefined)]);
 }
 
-// Appeler warmup au démarrage pour précharger les ressources nécessaires
-warmup().catch(err => console.error('Warmup failed:', err));
+// Avoid heavy boot-time warmup in serverless by default.
+const isVercelRuntime = process.env.VERCEL === '1' || process.env.VERCEL === 'true';
+const shouldAutoWarmup = process.env.RENDER_WARMUP_ON_BOOT === '1' || (!isVercelRuntime && process.env.NODE_ENV !== 'test');
 
+if (shouldAutoWarmup) {
+  warmup().catch(err => console.error('Warmup failed:', err));
+} 
 // ─── Main render ──────────────────────────────────────────────────────────────
 
 export default async function renderImage(state: string | null, messages: string[], team: Team, creature: Creature, lang = 'en'): Promise<Uint8Array> {
