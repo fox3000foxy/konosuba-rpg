@@ -55,6 +55,12 @@ function xpFromState(state: GameState): number {
   }
 }
 
+type DailyQuestProgressRow = {
+  quest_key: string;
+  progress: number | null;
+  claimed: boolean | null;
+};
+
 export async function donateAccessoryToCharacter(userId: string, accessoryId: string, characterKey: CharacterKey): Promise<DonateAccessoryResult> {
   return withPerf('progressionService', 'donateAccessoryToCharacter', async () => {
     const accessory = getAccessoryById(accessoryId as AccessoryId);
@@ -203,61 +209,93 @@ export async function recordRunResult(input: RecordRunInput): Promise<void> {
 
     console.log(`[db] quest processing: user=${input.userId} questDay=${questDay} isWin=${isWin} leveledUp=${leveledUp}`);
 
-    await Promise.all(
-      QUESTS.map(async quest => {
-        const shouldIncrement = quest.conditionKey === QuestConditionKey.Play || (quest.conditionKey === QuestConditionKey.Win && isWin) || (quest.conditionKey === QuestConditionKey.LevelUp && leveledUp);
+    const questsToIncrement = QUESTS.filter(
+      quest =>
+        quest.conditionKey === QuestConditionKey.Play ||
+        (quest.conditionKey === QuestConditionKey.Win && isWin) ||
+        (quest.conditionKey === QuestConditionKey.LevelUp && leveledUp)
+    );
 
-        if (!shouldIncrement) {
-          return;
-        }
+    if (questsToIncrement.length > 0) {
+      const { data: questRows, error: questLoadError } = await supabase
+        .from('daily_quests_progress')
+        .select('quest_key, progress, claimed')
+        .eq('user_id', input.userId)
+        .eq('quest_day', questDay);
 
-        console.log(`[db] incrementing quest: key=${quest.key} for user=${input.userId}`);
+      if (questLoadError) {
+        console.error('[db] load quest progress failed:', questLoadError.message);
+      } else {
+        const rowsByQuestKey = new Map(
+          ((questRows || []) as DailyQuestProgressRow[]).map(row => [String(row.quest_key), row])
+        );
 
-        const { data: questRow, error: questLoadError } = await supabase.from('daily_quests_progress').select('progress, claimed').eq('user_id', input.userId).eq('quest_day', questDay).eq('quest_key', quest.key).maybeSingle();
+        const rowsToInsert: Array<{
+          user_id: string;
+          quest_day: string;
+          quest_key: string;
+          progress: number;
+          claimed: boolean;
+          updated_at: string;
+        }> = [];
 
-        if (questLoadError) {
-          console.error('[db] load quest progress failed:', questLoadError.message);
-          return;
-        }
+        await Promise.all(
+          questsToIncrement.map(async quest => {
+            console.log(`[db] incrementing quest: key=${quest.key} for user=${input.userId}`);
 
-        if (!questRow) {
-          console.log(`[db] creating new quest progress: key=${quest.key} user=${input.userId}`);
+            const questRow = rowsByQuestKey.get(quest.key);
+            if (!questRow) {
+              rowsToInsert.push({
+                user_id: input.userId,
+                quest_day: questDay,
+                quest_key: quest.key,
+                progress: 1,
+                claimed: false,
+                updated_at: new Date().toISOString(),
+              });
+              return;
+            }
 
-          const { error: questInsertError } = await supabase.from('daily_quests_progress').insert({
-            user_id: input.userId,
-            quest_day: questDay,
-            quest_key: quest.key,
-            progress: 1,
-            claimed: false,
-            updated_at: new Date().toISOString(),
-          });
+            if (questRow.claimed) {
+              console.log(`[db] quest already claimed: key=${quest.key} user=${input.userId}`);
+              return;
+            }
+
+            const currentProgress = Number(questRow.progress || 0);
+            const nextProgress = Math.min(quest.targetProgress, currentProgress + 1);
+            console.log(`[db] updating quest progress: key=${quest.key} user=${input.userId} from=${currentProgress} to=${nextProgress}`);
+
+            const { error: questUpdateError } = await supabase
+              .from('daily_quests_progress')
+              .update({ progress: nextProgress, updated_at: new Date().toISOString() })
+              .eq('user_id', input.userId)
+              .eq('quest_day', questDay)
+              .eq('quest_key', quest.key)
+              .eq('claimed', false);
+
+            if (questUpdateError) {
+              console.error('[db] update quest progress failed:', questUpdateError.message);
+            } else {
+              console.log(`[db] quest progress updated: key=${quest.key} user=${input.userId} progress=${nextProgress}`);
+            }
+          })
+        );
+
+        if (rowsToInsert.length > 0) {
+          const { error: questInsertError } = await supabase
+            .from('daily_quests_progress')
+            .insert(rowsToInsert);
 
           if (questInsertError) {
             console.error('[db] create quest progress failed:', questInsertError.message);
           } else {
-            console.log(`[db] quest progress created: key=${quest.key} user=${input.userId}`);
+            for (const row of rowsToInsert) {
+              console.log(`[db] quest progress created: key=${row.quest_key} user=${input.userId}`);
+            }
           }
-          return;
         }
-
-        if (questRow.claimed) {
-          console.log(`[db] quest already claimed: key=${quest.key} user=${input.userId}`);
-          return;
-        }
-
-        const nextProgress = Math.min(quest.targetProgress, Number(questRow.progress || 0) + 1);
-
-        console.log(`[db] updating quest progress: key=${quest.key} user=${input.userId} from=${questRow.progress} to=${nextProgress}`);
-
-        const { error: questUpdateError } = await supabase.from('daily_quests_progress').update({ progress: nextProgress, updated_at: new Date().toISOString() }).eq('user_id', input.userId).eq('quest_day', questDay).eq('quest_key', quest.key);
-
-        if (questUpdateError) {
-          console.error('[db] update quest progress failed:', questUpdateError.message);
-        } else {
-          console.log(`[db] quest progress updated: key=${quest.key} user=${input.userId} progress=${nextProgress}`);
-        }
-      })
-    );
+      }
+    }
 
     await syncAchievements(input.userId);
 

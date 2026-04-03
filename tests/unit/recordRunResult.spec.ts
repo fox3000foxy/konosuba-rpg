@@ -1,12 +1,12 @@
 import { GameState } from '../../src/objects/enums/GameState';
 import { syncAchievements } from '../../src/services/achievementService';
 import {
-  addCharacterXp,
-  ensureCharacterProgress,
+    addCharacterXp,
+    ensureCharacterProgress,
 } from '../../src/services/characterService';
 import {
-  grantAccessoryDropRewards,
-  grantConsumableDropRewards,
+    grantAccessoryDropRewards,
+    grantConsumableDropRewards,
 } from '../../src/services/dropService';
 import { ensurePlayerProfile } from '../../src/services/playerService';
 import { recordRunResult } from '../../src/services/progressionService';
@@ -213,29 +213,12 @@ describe('recordRunResult integration-like flow', () => {
         op: 'update',
         data: null,
       },
-      // Parallel quest processing: all SELECTs happen first
-      // Quest 1: Win1Run (condition: Win, matches)
+      // Quest processing is now batched: one SELECT for the day, then one INSERT for missing quests.
       {
         table: 'daily_quests_progress',
         op: 'select',
-        data: null,
+        data: [],
       },
-      // Quest 2: Play3Runs (condition: Play, always matches)
-      {
-        table: 'daily_quests_progress',
-        op: 'select',
-        data: null,
-      },
-      // Quest 3: LevelUpOnce (condition: LevelUp, doesn't match - no level up)
-      // -> no queries
-      // Then INSERTs for quests that matched
-      // Quest 1: Win1Run
-      {
-        table: 'daily_quests_progress',
-        op: 'insert',
-        data: null,
-      },
-      // Quest 2: Play3Runs
       {
         table: 'daily_quests_progress',
         op: 'insert',
