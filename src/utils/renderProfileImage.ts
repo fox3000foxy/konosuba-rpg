@@ -8,8 +8,8 @@ import { CharacterKey } from '../objects/enums/CharacterKey';
 import { CharacterProgress } from '../objects/types/CharacterProgress';
 import { PlayerProfile } from '../objects/types/PlayerProfile';
 import { PlayerRunSummary } from '../objects/types/PlayerRunSummary';
-import { escapeXml } from './renderImageHelpers';
 import { getImageBytes as getImageBytesFromManifest } from './renderImage';
+import { escapeXml } from './renderImageHelpers';
 import { ensureResvgWasm } from './resvgWasm';
 
 type ProfileImageGlobals = {
