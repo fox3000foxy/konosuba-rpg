@@ -2,7 +2,7 @@
     "files.exclude": {
         "**/node_modules": true,
         "**/dist": true,
-        "**/api": true,
+        // "**/api": true,
         "tsconfig.test.json": true,
         "tsconfig.tsbuildinfo": true,
         "future.zip": true

@@ -37,7 +37,7 @@
     "worker:dry-run": "npx wrangler deploy --dry-run --config wrangler.toml",
     "worker:deploy": "npx wrangler deploy --config wrangler.toml",
     "worker:deploy:ci": "npx wrangler deploy --config wrangler.toml",
-    "local-deploy": "bun run build && bun run vercel:localDeploy",
+    "local-deploy": "bun run build && bun run vercel:build && bun run vercel:localDeploy",
     "deploy": "bun run build && bun run vercel:build && bun run vercel:deploy",
     "deploy:worker": "bun run build && bun run worker:dry-run && bun run worker:deploy",
     "deploy:all": "bun run deploy && bun run deploy:worker",

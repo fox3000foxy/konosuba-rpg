@@ -95,7 +95,7 @@ const pendingFontFetches = new Map<string, Promise<ArrayBuffer>>();
 
 // ─── Image / Font helpers ────────────────────────────────────────────────────
 
-const BASE_URL = 'https://fox3000foxy.com/konosuba-rpg'; /* Should match the base path used in src/index.ts for /assets/ */
+const BASE_URL = 'https://konosuba-rpg.vercel.app'; /* Should match the base path used in src/index.ts for /assets/ */
 
 export async function getImageBytes(key: string): Promise<ArrayBuffer> {
   if (imageCache[key]) return imageCache[key];
@@ -106,18 +106,30 @@ export async function getImageBytes(key: string): Promise<ArrayBuffer> {
   if (!manifestPath) throw new Error(`Image key not found in manifest: ${key}`);
 
   const request = (async () => {
-    // Try filesystem first (Vercel Node runtime)
-    try {
-      const filePath = path.join(process.cwd(), 'assets', manifestPath.replace(/^\/assets\//, ''));
-      const buffer = await fs.readFile(filePath);
-      const arrayBuffer = buffer.buffer.slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength);
-      imageCache[key] = arrayBuffer;
-      return arrayBuffer;
-    } catch {
-      // Fallthrough to fetch if file not found
+    // Try filesystem paths in order (Vercel then local)
+    const cleanPath = manifestPath.replace(/^\/assets\//, '');
+    const possiblePaths = [
+      `/var/task/assets/${cleanPath}`, // Vercel serverless
+      path.join(process.cwd(), 'assets', cleanPath), // Dev/local
+    ];
+
+    for (const filePath of possiblePaths) {
+      if(!fs.stat(filePath).catch(() => false)) {
+        console.warn(`Image file not found at ${filePath}, trying next path...`);
+        continue;
+      }
+      try {
+        const buffer = await fs.readFile(filePath);
+        const arrayBuffer = buffer.buffer.slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength);
+        imageCache[key] = arrayBuffer;
+        return arrayBuffer;
+      } catch {
+        // Try next path
+        continue;
+      }
     }
 
-    // Fallback to fetch for development or if file not found
+    // Fallback to fetch if no file found locally
     const response = await fetch(`${BASE_URL}${manifestPath}`);
     if (!response.ok) {
       throw new Error(`Failed to fetch image "${key}": ${response.status}`);
@@ -139,18 +151,26 @@ async function getFontBytes(fontUrl: string): Promise<ArrayBuffer> {
   if (pending) return pending;
 
   const request = (async () => {
-    // Try filesystem first (Vercel Node runtime)
-    try {
-      const filePath = path.join(process.cwd(), 'assets/swordgame/font/GintoNordMedium.otf');
-      const buffer = await fs.readFile(filePath);
-      const arrayBuffer = buffer.buffer.slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength);
-      fontCache[fontUrl] = arrayBuffer;
-      return arrayBuffer;
-    } catch {
-      // Fallthrough to fetch if file not found
+    // Try filesystem paths in order (Vercel then local)
+    const fontPath = 'assets/swordgame/font/GintoNordMedium.otf';
+    const possiblePaths = [
+      `/var/task/${fontPath}`, // Vercel serverless
+      path.join(process.cwd(), fontPath), // Dev/local
+    ];
+
+    for (const filePath of possiblePaths) {
+      try {
+        const buffer = await fs.readFile(filePath);
+        const arrayBuffer = buffer.buffer.slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength);
+        fontCache[fontUrl] = arrayBuffer;
+        return arrayBuffer;
+      } catch {
+        // Try next path
+        continue;
+      }
     }
 
-    // Fallback to fetch for development or if file not found
+    // Fallback to fetch if no file found locally
     const response = await fetch(fontUrl);
     const buf = await response.arrayBuffer();
     fontCache[fontUrl] = buf;

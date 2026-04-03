@@ -1,29 +1,22 @@
-# Directories
-dist/
-scripts/
-src/
-tests/
-assets/
+# Dependencies and local tooling
+node_modules/
+.git/
+.vscode/
+.vercel/
 
-# Configuration files
+# Source and tests (not needed in deployment input)
+src/
+scripts/
+tests/
+
+# CI and docs
+.github/
+*.md
+
+# Local/dev configs not required at runtime
 eslint.config.mts
 jest.config.cjs
 tsconfig.json
 tsconfig.test.json
-commands.json
-
-# Package management
-package.json
-bun.lock
-
-# Documentation
-TESTING.md
-
-# Source files
-convert-png-to-webp.ts
-
-# Unused monolith output
-api/index.js
-
-# Archives
-future.zip
+wrangler.toml
+supabase/

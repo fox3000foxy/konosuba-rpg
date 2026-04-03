@@ -6,6 +6,7 @@ const fontBufferCache = new Map<string, Uint8Array>();
 
 /**
  * Load asset bytes with filesystem priority (Vercel Node runtime).
+ * Assets are guaranteed to be deployed with the code.
  * Falls back to fetch for development or if file not found.
  */
 export async function getAssetBytes(assetPath: string, assetBaseUrl: string): Promise<ArrayBuffer | null> {
@@ -15,20 +16,26 @@ export async function getAssetBytes(assetPath: string, assetBaseUrl: string): Pr
     return assetByteCache.get(cacheKey)!;
   }
 
-  // Try filesystem first (Vercel Node runtime)
-  try {
-    const filePath = path.join(process.cwd(), 'assets', assetPath.replace(/^\/assets\//, ''));
-    const buffer = await fs.readFile(filePath);
-    const arrayBuffer = buffer.buffer.slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength);
-    assetByteCache.set(cacheKey, arrayBuffer);
-    // console.log(`Loaded asset from filesystem: ${filePath}`);
-    return arrayBuffer;
-  } catch {
-    // Fallthrough to fetch if file not found
-    console.warn(`Asset not found on filesystem: ${assetPath}, falling back to fetch.`);
+  // Try filesystem paths in order
+  const cleanPath = assetPath.replace(/^\/assets\//, '');
+  const possiblePaths = [
+    `/var/task/assets/${cleanPath}`, // Vercel serverless
+    path.join(process.cwd(), 'assets', cleanPath), // Dev/local
+  ];
+
+  for (const filePath of possiblePaths) {
+    try {
+      const buffer = await fs.readFile(filePath);
+      const arrayBuffer = buffer.buffer.slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength);
+      assetByteCache.set(cacheKey, arrayBuffer);
+      return arrayBuffer;
+    } catch {
+      // Try next path
+      continue;
+    }
   }
 
-  // Fallback to fetch for development or if file not found
+  // Fallback to fetch if no file found locally
   try {
     const response = await fetch(`${assetBaseUrl}${assetPath}`);
     if (!response.ok) {
@@ -39,7 +46,6 @@ export async function getAssetBytes(assetPath: string, assetBaseUrl: string): Pr
     assetByteCache.set(cacheKey, buf);
     return buf;
   } catch {
-    console.error(`Failed to fetch asset: ${assetPath}`);
     return null;
   }
 }
@@ -55,18 +61,25 @@ export async function getEmbeddedFontBuffer(fontPath: string, fontUrl: string): 
     return fontBufferCache.get(cacheKey)!;
   }
 
-  // Try filesystem first (Vercel Node runtime)
-  try {
-    const filePath = path.join(process.cwd(), fontPath);
-    const buffer = await fs.readFile(filePath);
-    const fontBytes = new Uint8Array(buffer);
-    fontBufferCache.set(cacheKey, fontBytes);
-    return fontBytes;
-  } catch {
-    console.warn(`Font not found on filesystem: ${fontPath}, falling back to fetch.`);
+  // Try filesystem paths in order
+  const possiblePaths = [
+    `/var/task/${fontPath}`, // Vercel serverless
+    path.join(process.cwd(), fontPath), // Dev/local
+  ];
+
+  for (const filePath of possiblePaths) {
+    try {
+      const buffer = await fs.readFile(filePath);
+      const fontBytes = new Uint8Array(buffer);
+      fontBufferCache.set(cacheKey, fontBytes);
+      return fontBytes;
+    } catch {
+      // Try next path
+      continue;
+    }
   }
 
-  // Fallback to fetch for development or if file not found
+  // Fallback to fetch if no file found locally
   try {
     const response = await fetch(fontUrl);
     if (!response.ok) {
@@ -78,7 +91,6 @@ export async function getEmbeddedFontBuffer(fontPath: string, fontUrl: string): 
     fontBufferCache.set(cacheKey, fontBytes);
     return fontBytes;
   } catch {
-    console.error(`Failed to fetch font: ${fontUrl}`);
     return null;
   }
 }

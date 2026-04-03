@@ -129,7 +129,7 @@ export function generateMonsterInfos(
 
   const preparedMonster = prepareMonsterForInfos(monster);
   const lore = fr ? preparedMonster.lore[0] : preparedMonster.lore[1];
-  const imgUrl = `https://fox3000foxy.com/konosuba-rpg/assets/mobs/${preparedMonster.images[0]}.webp`;
+  const imgUrl = `https://konosuba-rpg.vercel.app/assets/mobs/${preparedMonster.images[0]}.webp`;
 
   return {
     command: {

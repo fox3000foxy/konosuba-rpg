@@ -95,7 +95,7 @@ export function generatePlayerInfos(
   const attackR = player.attack;
   const lore = fr ? player.lore[0] : player.lore[1];
 
-  const imgUrl = `https://fox3000foxy.com/konosuba-rpg/assets/player/${player.images[0]}.webp`;
+  const imgUrl = `https://konosuba-rpg.vercel.app/assets/player/${player.images[0]}.webp`;
   return {
     command: {
       type: 4,
