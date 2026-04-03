@@ -1,5 +1,7 @@
 import * as Photon from '@cf-wasm/photon';
 import { Resvg } from '@resvg/resvg-wasm';
+import fs from 'fs/promises';
+import path from 'path';
 import satori from 'satori';
 import { Creature } from '../classes/Creature';
 import { Team } from '../classes/Player';
@@ -100,44 +102,64 @@ export async function getImageBytes(key: string): Promise<ArrayBuffer> {
   const pending = pendingImageFetches.get(key);
   if (pending) return pending;
 
-  const path: string = imageManifest[key];
-  if (!path) throw new Error(`Image key not found in manifest: ${key}`);
+  const manifestPath: string = imageManifest[key];
+  if (!manifestPath) throw new Error(`Image key not found in manifest: ${key}`);
 
-  const request = fetch(`${BASE_URL}${path}`)
-    .then(r => {
-      if (!r.ok) {
-        throw new Error(`Failed to fetch image "${key}": ${r.status}`);
-      }
-      return r.arrayBuffer();
-    })
-    .then(buf => {
-      imageCache[key] = buf;
-      return buf;
-    })
-    .finally(() => {
-      pendingImageFetches.delete(key);
-    });
+  const request = (async () => {
+    // Try filesystem first (Vercel Node runtime)
+    try {
+      const filePath = path.join(process.cwd(), 'assets', manifestPath.replace(/^\/assets\//, ''));
+      const buffer = await fs.readFile(filePath);
+      const arrayBuffer = buffer.buffer.slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength);
+      imageCache[key] = arrayBuffer;
+      return arrayBuffer;
+    } catch {
+      // Fallthrough to fetch if file not found
+    }
+
+    // Fallback to fetch for development or if file not found
+    const response = await fetch(`${BASE_URL}${manifestPath}`);
+    if (!response.ok) {
+      throw new Error(`Failed to fetch image "${key}": ${response.status}`);
+    }
+    const buf = await response.arrayBuffer();
+    imageCache[key] = buf;
+    return buf;
+  })().finally(() => {
+    pendingImageFetches.delete(key);
+  });
 
   pendingImageFetches.set(key, request);
   return request;
 }
 
-async function getFontBytes(url: string): Promise<ArrayBuffer> {
-  if (fontCache[url]) return fontCache[url];
-  const pending = pendingFontFetches.get(url);
+async function getFontBytes(fontUrl: string): Promise<ArrayBuffer> {
+  if (fontCache[fontUrl]) return fontCache[fontUrl];
+  const pending = pendingFontFetches.get(fontUrl);
   if (pending) return pending;
 
-  const request = fetch(url)
-    .then(r => r.arrayBuffer())
-    .then(buf => {
-      fontCache[url] = buf;
-      return buf;
-    })
-    .finally(() => {
-      pendingFontFetches.delete(url);
-    });
+  const request = (async () => {
+    // Try filesystem first (Vercel Node runtime)
+    try {
+      const filePath = path.join(process.cwd(), 'assets/swordgame/font/GintoNordMedium.otf');
+      const buffer = await fs.readFile(filePath);
+      const arrayBuffer = buffer.buffer.slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength);
+      fontCache[fontUrl] = arrayBuffer;
+      return arrayBuffer;
+    } catch {
+      // Fallthrough to fetch if file not found
+    }
 
-  pendingFontFetches.set(url, request);
+    // Fallback to fetch for development or if file not found
+    const response = await fetch(fontUrl);
+    const buf = await response.arrayBuffer();
+    fontCache[fontUrl] = buf;
+    return buf;
+  })().finally(() => {
+    pendingFontFetches.delete(fontUrl);
+  });
+
+  pendingFontFetches.set(fontUrl, request);
   return request;
 }
 

@@ -8,19 +8,21 @@ import { CharacterKey } from '../objects/enums/CharacterKey';
 import { CharacterProgress } from '../objects/types/CharacterProgress';
 import { PlayerProfile } from '../objects/types/PlayerProfile';
 import { PlayerRunSummary } from '../objects/types/PlayerRunSummary';
+import { getAssetBytes, getEmbeddedFontBuffer as getEmbeddedFontBufferUtil } from './assetLoader';
 import { createPerfLogger } from './perfLogger';
 import { getImageBytes as getImageBytesFromManifest } from './renderImage';
 import { escapeXml } from './renderImageHelpers';
 import { ensureResvgWasm } from './resvgWasm';
 
 type ProfileImageGlobals = {
-  __profileIconCache?: Record<string, ArrayBuffer>;
-  __profileFontBuffer?: Uint8Array;
+  __starEnabledImage?: Photon.PhotonImage;
+  __starDisabledImage?: Photon.PhotonImage;
+  __boardImageResized?: Photon.PhotonImage;
+  __badgeImageCache?: Record<string, Photon.PhotonImage>;
 };
 
 const G = globalThis as unknown as ProfileImageGlobals;
-G.__profileIconCache ??= {};
-const iconCache = G.__profileIconCache;
+G.__badgeImageCache ??= {};
 
 const ASSET_BASE_URL = BASE_URL;
 const FONT_URL = `${ASSET_BASE_URL}/assets/swordgame/font/GintoNordMedium.otf`;
@@ -81,19 +83,42 @@ function getCharacterBadgePath(key: CharacterKey, stars: number): string {
 }
 
 async function getEmbeddedFontBuffer(): Promise<Uint8Array | null> {
-  if (G.__profileFontBuffer) {
-    return G.__profileFontBuffer;
-  }
+  return getEmbeddedFontBufferUtil('assets/swordgame/font/GintoNordMedium.otf', FONT_URL);
+}
 
-  const response = await fetch(FONT_URL);
-  if (!response.ok) {
+async function getCachedPhotonImage(path: string): Promise<Photon.PhotonImage | null> {
+  const bytes = await getAssetBytes(path, ASSET_BASE_URL);
+  if (!bytes) return null;
+  try {
+    return Photon.PhotonImage.new_from_byteslice(new Uint8Array(bytes));
+  } catch {
     return null;
   }
+}
 
-  const fontBuffer = await response.arrayBuffer();
-  const fontBytes = new Uint8Array(fontBuffer);
-  G.__profileFontBuffer = fontBytes;
-  return fontBytes;
+async function initializeStarAssets() {
+  if (G.__starEnabledImage && G.__starDisabledImage) {
+    return { enabled: G.__starEnabledImage, disabled: G.__starDisabledImage };
+  }
+
+  const [enabledImg, disabledImg] = await Promise.all([getCachedPhotonImage(STAR_ENABLED_PATH), getCachedPhotonImage(STAR_DISABLED_PATH)]);
+  if (enabledImg) G.__starEnabledImage = enabledImg;
+  if (disabledImg) G.__starDisabledImage = disabledImg;
+  return { enabled: enabledImg, disabled: disabledImg };
+}
+
+async function getResizedBoard(): Promise<Photon.PhotonImage | null> {
+  if (G.__boardImageResized) {
+    return G.__boardImageResized;
+  }
+
+  const boardImg = await getCachedPhotonImage(BOARD_PATH);
+  if (!boardImg) return null;
+
+  const resized = Photon.resize(boardImg, WIDTH, HEIGHT, Photon.SamplingFilter.Lanczos3);
+  G.__boardImageResized = resized;
+  boardImg.free();
+  return resized;
 }
 
 function getRows(progresses: CharacterProgress[]) {
@@ -203,82 +228,96 @@ export async function renderProfileImage(userId: string, profile: PlayerProfile,
 
   const overlay = Photon.PhotonImage.new_from_byteslice(new Uint8Array(png.buffer.slice(0) as ArrayBuffer));
 
-  let board: Photon.PhotonImage | null = null;
-  let canvas: Photon.PhotonImage;
-  const boardBytes = await getAssetBytes(BOARD_PATH);
-  perf.mark('get board');
+  const rows = getRows(progresses);
+  
+  // Parallelize all asset loading: board + stars + badges
+  const [resizedBoard, starAssets, badgeBuffers] = await Promise.all([
+    getResizedBoard(),
+    initializeStarAssets(),
+    Promise.all(rows.map(row => getAssetBytes(getCharacterBadgePath(row.key, getAffinityStars(row.affinity)), ASSET_BASE_URL)))
+  ]);
+  perf.mark('get all assets');
 
-  if (boardBytes) {
-    board = Photon.PhotonImage.new_from_byteslice(new Uint8Array(boardBytes));
-    canvas = Photon.resize(board, WIDTH, HEIGHT, Photon.SamplingFilter.Lanczos3);
+  // Use pre-resized board
+  let canvas: Photon.PhotonImage;
+  if (resizedBoard) {
+    canvas = Photon.resize(resizedBoard, WIDTH, HEIGHT, Photon.SamplingFilter.Lanczos3);
     Photon.watermark(canvas, overlay, 0n, 0n);
   } else {
     canvas = overlay;
   }
 
-  const rows = getRows(progresses);
-  const [starEnabledBytes, starDisabledBytes] = await Promise.all([getAssetBytes(STAR_ENABLED_PATH), getAssetBytes(STAR_DISABLED_PATH)]);
-  perf.mark('get star assets');
+  // Pre-create and cache resized star images
+  const starEnabledResized = starAssets.enabled ? Photon.resize(starAssets.enabled, 28, 28, Photon.SamplingFilter.Lanczos3) : null;
+  const starDisabledResized = starAssets.disabled ? Photon.resize(starAssets.disabled, 28, 28, Photon.SamplingFilter.Lanczos3) : null;
+  perf.mark('prepare star assets');
 
-  const badgeBuffers = await Promise.all(rows.map(row => getAssetBytes(getCharacterBadgePath(row.key, getAffinityStars(row.affinity)))));
-  perf.mark('get badges');
+  // Pre-decode and cache badge images
+  const badgeImagesMap = new Map<string, Photon.PhotonImage>();
+  for (let rowIdx = 0; rowIdx < rows.length; rowIdx += 1) {
+    const badgeBuffer = badgeBuffers[rowIdx];
+    if (badgeBuffer) {
+      const badgePath = getCharacterBadgePath(rows[rowIdx].key, getAffinityStars(rows[rowIdx].affinity));
+      if (!badgeImagesMap.has(badgePath)) {
+        try {
+          const badgeImg = Photon.PhotonImage.new_from_byteslice(new Uint8Array(badgeBuffer));
+          badgeImagesMap.set(badgePath, badgeImg);
+        } catch {
+          // Skip on decode failure
+        }
+      }
+    }
+  }
+  perf.mark('prepare badges');
 
+  // Compose overlays more efficiently
   const rowY = [320, 435, 550];
   for (let rowIdx = 0; rowIdx < rows.length; rowIdx += 1) {
     const stars = getAffinityStars(rows[rowIdx].affinity);
-    const badgeBuffer = badgeBuffers[rowIdx];
-    if (badgeBuffer) {
-      let badge: Photon.PhotonImage | null = null;
-      let badgeResized: Photon.PhotonImage | null = null;
+    const badgePath = getCharacterBadgePath(rows[rowIdx].key, stars);
+    const badgeImage = badgeImagesMap.get(badgePath);
 
+    if (badgeImage) {
       try {
-        badge = Photon.PhotonImage.new_from_byteslice(new Uint8Array(badgeBuffer));
-        badgeResized = Photon.resize(badge, 84, 84, Photon.SamplingFilter.Lanczos3);
+        const badgeResized = Photon.resize(badgeImage, 84, 84, Photon.SamplingFilter.Lanczos3);
         Photon.watermark(canvas, badgeResized, 48n, BigInt(rowY[rowIdx] - 64));
+        badgeResized.free();
       } catch {
-        // Keep row even if badge fails to decode
-      } finally {
-        badgeResized?.free();
-        badge?.free();
+        // Keep row even if badge fails
       }
     }
 
+    // Use pre-resized stars
     for (let starIdx = 0; starIdx < STAR_SLOT_COUNT; starIdx += 1) {
       const shouldEnable = starIdx < stars;
-      const starBuffer = shouldEnable ? starEnabledBytes : starDisabledBytes;
-      if (!starBuffer) {
-        continue;
-      }
-
-      let star: Photon.PhotonImage | null = null;
-      let starResized: Photon.PhotonImage | null = null;
-      try {
-        star = Photon.PhotonImage.new_from_byteslice(new Uint8Array(starBuffer));
-        starResized = Photon.resize(star, 28, 28, Photon.SamplingFilter.Lanczos3);
-        Photon.watermark(canvas, starResized, BigInt(170 + starIdx * 34), BigInt(rowY[rowIdx] + 20));
-      } catch {
-        // Keep row text even if star icon fails to decode
-      } finally {
-        starResized?.free();
-        star?.free();
+      const starImage = shouldEnable ? starEnabledResized : starDisabledResized;
+      if (starImage) {
+        try {
+          Photon.watermark(canvas, starImage, BigInt(170 + starIdx * 34), BigInt(rowY[rowIdx] + 20));
+        } catch {
+          // Continue on watermark failure
+        }
       }
     }
   }
 
-  // Render mini monster icons before each monster name line.
+  // Render mini monster icons before each monster name line - parallelize fetches
   const iconSize = 18;
   const monsterStartY = 738;
+  const monsterIconFetches = runSummary.killedMonsters.slice(0, 4).map((monster, idx) => ({
+    idx,
+    name: monster.name,
+    key: getMonsterIconKey(monster.name),
+    y: monsterStartY + idx * 36,
+  }));
 
-  for (const [idx, monster] of runSummary.killedMonsters.slice(0, 4).entries()) {
-    const iconKey = getMonsterIconKey(monster.name);
-    const iconY = monsterStartY + idx * 36;
-
+  for (const monsterInfo of monsterIconFetches) {
     try {
-      const iconBytes = await getImageBytesFromManifest(iconKey);
+      const iconBytes = await getImageBytesFromManifest(monsterInfo.key);
       if (iconBytes) {
         const iconImage = Photon.PhotonImage.new_from_byteslice(new Uint8Array(iconBytes));
         const icon = Photon.resize(iconImage, iconSize, iconSize, Photon.SamplingFilter.Lanczos3);
-        Photon.watermark(canvas, icon, 52n, BigInt(iconY - 15));
+        Photon.watermark(canvas, icon, 52n, BigInt(monsterInfo.y - 15));
         icon.free();
         iconImage.free();
       }
@@ -293,23 +332,11 @@ export async function renderProfileImage(userId: string, profile: PlayerProfile,
     overlay.free();
   }
 
-  board?.free();
+  // Cleanup resized bed global assets only on error, keep for reuse
+  starEnabledResized?.free();
+  starDisabledResized?.free();
+  badgeImagesMap.forEach(img => img.free());
   canvas.free();
   perf.done();
   return output;
-}
-
-async function getAssetBytes(path: string): Promise<ArrayBuffer | null> {
-  if (iconCache[path]) {
-    return iconCache[path];
-  }
-
-  const response = await fetch(`${ASSET_BASE_URL}${path}`);
-  if (!response.ok) {
-    return null;
-  }
-
-  const buf = await response.arrayBuffer();
-  iconCache[path] = buf;
-  return buf;
 }
