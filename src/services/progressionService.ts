@@ -182,7 +182,11 @@ export async function recordRunResult(input: RecordRunInput): Promise<void> {
     }
 
     if (gainedXp > 0) {
-      await Promise.all([addCharacterXp(input.userId, CharacterKey.Darkness, gainedXp), addCharacterXp(input.userId, CharacterKey.Megumin, gainedXp), addCharacterXp(input.userId, CharacterKey.Aqua, gainedXp)]);
+      await Promise.all([
+        addCharacterXp(input.userId, CharacterKey.Darkness, gainedXp, { ensureProfile: false }),
+        addCharacterXp(input.userId, CharacterKey.Megumin, gainedXp, { ensureProfile: false }),
+        addCharacterXp(input.userId, CharacterKey.Aqua, gainedXp, { ensureProfile: false }),
+      ]);
     }
 
     if (isWin) {

@@ -123,7 +123,11 @@ export async function getCharacterProgresses(userId: string): Promise<CharacterP
   });
 }
 
-export async function addCharacterXp(userId: string, characterKey: CharacterKey, amount: number): Promise<void> {
+type CharacterMutationOptions = {
+  ensureProfile?: boolean;
+};
+
+export async function addCharacterXp(userId: string, characterKey: CharacterKey, amount: number, options?: CharacterMutationOptions): Promise<void> {
   if (amount <= 0) {
     return;
   }
@@ -133,7 +137,9 @@ export async function addCharacterXp(userId: string, characterKey: CharacterKey,
     return;
   }
 
-  await ensurePlayerProfile(userId);
+  if (options?.ensureProfile !== false) {
+    await ensurePlayerProfile(userId);
+  }
 
   const current = await getCharacterProgress(userId, characterKey);
   if (!current) {
