@@ -166,14 +166,7 @@ export async function toResvgCompatibleDataUri(path: string, bytes: ArrayBuffer,
   }
 }
 
-export async function resolveResvgImageUri(
-  path: string | null,
-  baseUrl: string,
-  pendingAssetFetches: Map<string, Promise<ArrayBuffer | null>>,
-  pendingResvgUriConversions: Map<string, Promise<string | null>>,
-  assetCache: SizedCache<ArrayBuffer>,
-  resvgUriCache: SizedCache<string>
-): Promise<string | null> {
+export async function resolveResvgImageUri(path: string | null, baseUrl: string, pendingAssetFetches: Map<string, Promise<ArrayBuffer | null>>, pendingResvgUriConversions: Map<string, Promise<string | null>>, assetCache: SizedCache<ArrayBuffer>, resvgUriCache: SizedCache<string>): Promise<string | null> {
   if (!path) {
     return null;
   }

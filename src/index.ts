@@ -27,4 +27,3 @@ const isVercelRuntime = process.env.VERCEL === '1' || process.env.VERCEL === 'tr
 if (!isVercelRuntime) {
   start();
 }
- 

@@ -321,9 +321,7 @@ export async function encodeGameplayButtons(buttons: RawButton[]): Promise<RawBu
 
   const tokenMaps = new Map<string, Map<string, string>>();
   const entries = [...groups.entries()];
-  const resolvedMaps = await Promise.all(
-    entries.map(async ([key, group]) => [key, await createTokenMapForBattle(group.ownerUserId, group.battleKey, [...group.payloads])] as const)
-  );
+  const resolvedMaps = await Promise.all(entries.map(async ([key, group]) => [key, await createTokenMapForBattle(group.ownerUserId, group.battleKey, [...group.payloads])] as const));
 
   for (const [key, map] of resolvedMaps) {
     tokenMaps.set(key, map);

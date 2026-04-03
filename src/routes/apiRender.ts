@@ -156,11 +156,7 @@ export function registerApiRenderRoutes(app: Hono): void {
       return c.text(fr ? 'Profil indisponible pour le moment.' : 'Profile is unavailable right now.', 404);
     }
 
-    const [progresses, runSummary, achievements] = await Promise.all([
-      getCharacterProgresses(userId),
-      getPlayerRunSummary(userId),
-      getAchievementsOverview(userId, fr),
-    ]);
+    const [progresses, runSummary, achievements] = await Promise.all([getCharacterProgresses(userId), getPlayerRunSummary(userId), getAchievementsOverview(userId, fr)]);
 
     if (!progresses || !runSummary || !achievements) {
       return c.text(fr ? 'Données de profil incomplètes.' : 'Incomplete profile data.', 404);

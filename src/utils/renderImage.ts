@@ -712,7 +712,7 @@ Promise.all([...END_STATES.map(s => getImageBytes('end_' + s)), getImageBytes('b
 
 if (shouldAutoWarmup) {
   warmup().catch(err => console.error('Warmup failed:', err));
-} 
+}
 
 // ─── Main render ──────────────────────────────────────────────────────────────
 
