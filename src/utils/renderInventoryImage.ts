@@ -1,6 +1,7 @@
 import * as Photon from '@cf-wasm/photon';
 import { Resvg } from '@resvg/resvg-wasm';
 import { InventoryItemView } from '../objects/types/InventoryItemView';
+import { createPerfLogger } from './perfLogger';
 import { cacheRenderOutput, createBoundedArrayBufferCache, createBoundedStringCache, resolveAssetUrl, resolveResvgImageUri, SizedCache } from './renderImageHelpers';
 import { ensureResvgWasm } from './resvgWasm';
 
@@ -141,12 +142,18 @@ export async function buildSvg(userId: string, items: InventoryItemView[], fr: b
 }
 
 export async function renderInventoryImage(userId: string, items: InventoryItemView[], fr: boolean): Promise<Uint8Array> {
+  const perf = createPerfLogger('renderInventoryImage');
   await ensureResvgWasm();
+  perf.mark('ensureResvgWasm');
+
   const fontBuffer = await getEmbeddedFontBuffer();
+  perf.mark('getEmbeddedFontBuffer');
+
   const hasEmbeddedFont = Boolean(fontBuffer);
   const renderKey = buildRenderCacheKey(items, fr, hasEmbeddedFont);
   const cachedOutput = renderOutputCache.get(renderKey);
   if (cachedOutput) {
+    perf.done('cache hit -> return');
     return cachedOutput;
   }
 
@@ -158,9 +165,13 @@ export async function renderInventoryImage(userId: string, items: InventoryItemV
   const renderPromise = (async () => {
     const visibleItems = items.length ? items.slice(0, 18) : [];
     const [boardUri, iconUris] = await Promise.all([resolveResvgImageUriInventory(BOARD_PATH), Promise.all(visibleItems.map(item => resolveResvgImageUriInventory(item.imagePath)))]);
+    perf.mark('resolve URIs');
+
     const boardDataUri = boardUri || undefined;
 
     const svg = await buildSvg(userId, items, fr, hasEmbeddedFont, boardDataUri, iconUris);
+    perf.mark('buildSvg');
+
     const options = fontBuffer
       ? {
           font: {
@@ -172,6 +183,8 @@ export async function renderInventoryImage(userId: string, items: InventoryItemV
       : { font: { loadSystemFonts: true } };
 
     const pngBytes = new Resvg(svg, options).render().asPng();
+    perf.mark('Resvg render -> PNG');
+
     const image = Photon.PhotonImage.new_from_byteslice(pngBytes);
     let webpBytes: Uint8Array;
     try {
@@ -179,8 +192,10 @@ export async function renderInventoryImage(userId: string, items: InventoryItemV
     } finally {
       image.free();
     }
+    perf.mark('Photon PNG -> WebP');
 
     cacheRenderOutput(renderKey, webpBytes, renderOutputCache, RENDER_OUTPUT_CACHE_MAX);
+    perf.done();
     return webpBytes;
   })().finally(() => {
     pendingRenders.delete(renderKey);
