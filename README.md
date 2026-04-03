@@ -69,6 +69,32 @@ To create the Vercel token:
 
 You can find `VERCEL_ORG_ID` and `VERCEL_PROJECT_ID` in the local `.vercel/project.json` after linking the project, or by running `vercel link` locally and reusing the generated values.
 
+### Cloudflare Worker deployment
+
+Worker configuration is in [wrangler.toml](wrangler.toml) and Worker entrypoint is [src/worker.ts](src/worker.ts).
+
+Useful commands:
+
+- `pnpm worker:dev`
+- `pnpm worker:dry-run`
+- `pnpm worker:deploy`
+- `pnpm deploy:worker`
+- `pnpm deploy:all`
+
+Required secrets (set once via Wrangler):
+
+- `SUPABASE_URL`
+- `SUPABASE_SERVICE_ROLE_KEY`
+- `DISCORD_TOKEN`
+- `DISCORD_APPLICATION_ID`
+
+Example:
+
+- `npx wrangler secret put SUPABASE_URL`
+- `npx wrangler secret put SUPABASE_SERVICE_ROLE_KEY`
+- `npx wrangler secret put DISCORD_TOKEN`
+- `npx wrangler secret put DISCORD_APPLICATION_ID`
+
 ## License (Important)
 
 This repository uses a custom **source-available** license in [LICENSE](LICENSE).
