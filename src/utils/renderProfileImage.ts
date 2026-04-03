@@ -33,6 +33,7 @@ const AFFINITY_POINTS_PER_STAR = 20;
 
 const MONSTER_ICON_DEFAULT_KEY = 'enemy_image_17700';
 const monsterIconKeyByName: Record<string, string> = {};
+let monsterIconMappingInitialized = false;
 
 function normalizeMonsterName(name: string): string {
   return name
@@ -42,6 +43,27 @@ function normalizeMonsterName(name: string): string {
 }
 
 export function getMonsterIconKey(name: string): string {
+  if (!monsterIconMappingInitialized) {
+    monsterIconMappingInitialized = true;
+    const mobs = generateMob();
+    mobs.forEach(mob => {
+      const mobName = normalizeMonsterName(mob.name?.[0] || '');
+      if (!mobName) {
+        return;
+      }
+
+      const rng = new Random(0);
+      if (mob instanceof GenericCreature) {
+        mob.pickColor(rng);
+      }
+
+      const key = mob.images?.[0];
+      if (key) {
+        monsterIconKeyByName[mobName] = key;
+      }
+    });
+  }
+
   const normalized = normalizeMonsterName(name);
   return monsterIconKeyByName[normalized] || MONSTER_ICON_DEFAULT_KEY;
 }
@@ -56,26 +78,6 @@ function getCharacterBadgePath(key: CharacterKey, stars: number): string {
   const badgeStars = Math.max(1, Math.min(5, stars || 1));
   return `/assets/characters-emojis/${key}_${badgeStars}_star.webp`;
 }
-
-(function initMonsterIconMapping() {
-  const mobs = generateMob();
-  mobs.forEach(mob => {
-    const mobName = normalizeMonsterName(mob.name?.[0] || '');
-    if (!mobName) {
-      return;
-    }
-
-    const rng = new Random(0);
-    if (mob instanceof GenericCreature) {
-      mob.pickColor(rng);
-    }
-
-    const key = mob.images?.[0];
-    if (key) {
-      monsterIconKeyByName[mobName] = key;
-    }
-  });
-})();
 
 async function getEmbeddedFontBuffer(): Promise<Uint8Array | null> {
   if (G.__profileFontBuffer) {
