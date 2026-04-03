@@ -7,8 +7,16 @@
       "dest": "/api/interactions.js"
     },
     {
+      "src": "/konosuba-rpg/(.*)",
+      "dest": "/api/render.js"
+    },
+    {
+      "src": "/(inventory|affinity|quest|shop|profile|achievements)/(.*)",
+      "dest": "/api/render.js"
+    },
+    {
       "src": "/(.*)",
-      "dest": "/api/index.js"
+      "dest": "/api/light.js"
     }
   ]
 }
