@@ -180,10 +180,7 @@ export async function recordRunResult(input: RecordRunInput): Promise<void> {
   }
 
   if (isWin) {
-    const [accessoryDrops, consumableDrops] = await Promise.all([
-      grantAccessoryDropRewards(input.userId, runKey, input.monsterName),
-      grantConsumableDropRewards(input.userId, runKey, input.monsterName),
-    ]);
+    const [accessoryDrops, consumableDrops] = await Promise.all([grantAccessoryDropRewards(input.userId, runKey, input.monsterName), grantConsumableDropRewards(input.userId, runKey, input.monsterName)]);
 
     if (accessoryDrops && accessoryDrops.length > 0) {
       for (const drop of accessoryDrops) {
