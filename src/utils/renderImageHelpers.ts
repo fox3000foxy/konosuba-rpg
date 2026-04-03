@@ -199,6 +199,7 @@ export async function resolveResvgImageUri(path: string | null, baseUrl: string,
 
   const cached = resvgUriCache.get(path);
   if (cached) {
+    console.debug(`Using cached resvg URI for path: ${path}`);
     return cached;
   }
 
@@ -207,12 +208,14 @@ export async function resolveResvgImageUri(path: string | null, baseUrl: string,
     return pending;
   }
 
+  // trying locally first to avoid unnecessary fetches and conversions for missing assets, especially during development
+  console.debug(`Attempting local resolution for path: ${path}`);
+
   const conversion = (async () => {
     const bytes = await getAssetBytes(path, baseUrl, pendingAssetFetches, assetCache);
     if (!bytes) {
       return resolveAssetUrl(path, baseUrl);
     }
-
     return toResvgCompatibleDataUri(path, bytes, resvgUriCache);
   })().finally(() => {
     pendingResvgUriConversions.delete(path);
