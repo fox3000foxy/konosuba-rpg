@@ -1,16 +1,27 @@
 import * as Photon from '@cf-wasm/photon';
 import { Resvg } from '@resvg/resvg-wasm';
 import { ShopItem } from '../objects/types/ShopItem';
+import { cacheRenderOutput, resolveResvgImageUri } from './renderImageHelpers';
 import { ensureResvgWasm } from './resvgWasm';
 
 type ShopImageGlobals = {
-  __shopIconCache?: Record<string, ArrayBuffer>;
+  __shopAssetCache?: Record<string, ArrayBuffer>;
+  __shopResvgUriCache?: Record<string, string>;
   __shopFontBuffer?: Uint8Array;
+  __shopRenderOutputCache?: Map<string, Uint8Array>;
 };
 
 const G = globalThis as unknown as ShopImageGlobals;
-G.__shopIconCache ??= {};
-const iconCache = G.__shopIconCache;
+G.__shopAssetCache ??= {};
+G.__shopResvgUriCache ??= {};
+G.__shopRenderOutputCache ??= new Map<string, Uint8Array>();
+const assetCache = G.__shopAssetCache;
+const resvgUriCache = G.__shopResvgUriCache;
+const renderOutputCache = G.__shopRenderOutputCache;
+const pendingAssetFetches = new Map<string, Promise<ArrayBuffer | null>>();
+const pendingResvgUriConversions = new Map<string, Promise<string | null>>();
+
+const RENDER_OUTPUT_CACHE_MAX = 32;
 
 const ASSET_BASE_URL = 'https://fox3000foxy.com/konosuba-rpg';
 const FONT_URL = `${ASSET_BASE_URL}/assets/swordgame/font/GintoNordMedium.otf`;
@@ -46,26 +57,16 @@ async function getEmbeddedFontBuffer(): Promise<Uint8Array | null> {
   return fontBytes;
 }
 
-async function getAssetBytes(path: string): Promise<ArrayBuffer | null> {
-  if (!path) {
-    return null;
-  }
-
-  if (iconCache[path]) {
-    return iconCache[path];
-  }
-
-  const response = await fetch(`${ASSET_BASE_URL}${path}`);
-  if (!response.ok) {
-    return null;
-  }
-
-  const buf = await response.arrayBuffer();
-  iconCache[path] = buf;
-  return buf;
+async function resolveResvgImageUriShop(path: string | null): Promise<string | null> {
+  return resolveResvgImageUri(path, ASSET_BASE_URL, pendingAssetFetches, pendingResvgUriConversions, assetCache, resvgUriCache);
 }
 
-export async function buildShopSvg(items: ShopItem[], page: number, pageCount: number, fr: boolean, hasEmbeddedFont = false): Promise<string> {
+function buildRenderCacheKey(items: ShopItem[], page: number, pageCount: number, fr: boolean, hasEmbeddedFont: boolean): string {
+  const itemSignature = items.map(i => `${i.itemKey}:${i.price}`).join('|');
+  return `${fr ? 'fr' : 'en'}::${hasEmbeddedFont ? 'font' : 'system'}::page${page}of${pageCount}::${itemSignature}`;
+}
+
+export async function buildShopSvg(items: ShopItem[], page: number, pageCount: number, fr: boolean, hasEmbeddedFont = false, boardDataUri?: string, iconUris?: Array<string | null>): Promise<string> {
   const width = WIDTH;
   const lineHeight = LINE_HEIGHT;
   const height = getCanvasHeight(items.length);
@@ -76,9 +77,12 @@ export async function buildShopSvg(items: ShopItem[], page: number, pageCount: n
   const lines = items.map((item, idx) => {
     const y = 170 + idx * lineHeight;
     const itemName = fr ? item.nameFr : item.nameEn;
+    const iconHref = iconUris?.[idx] ? escapeXml(String(iconUris[idx])) : '';
+    const iconTag = iconHref ? `<image href="${iconHref}" xlink:href="${iconHref}" x="44" y="${y - 20}" width="24" height="24" preserveAspectRatio="none" />` : '';
 
     return `
       <rect x="36" y="${y - 24}" width="1028" height="32" rx="8" fill="#0f1729" fill-opacity="0.72" />
+      ${iconTag}
       <text x="80" y="${y - 2}" fill="#f5f7ff" font-size="20" font-family="${fontFamily}">${escapeXml(itemName)}</text>
       <text x="820" y="${y - 2}" fill="#9db0e8" font-size="18" font-family="${fontFamily}">${escapeXml(item.itemKey)}</text>
       <text x="1030" y="${y - 2}" text-anchor="end" fill="#ffffff" font-size="20" font-family="${fontFamily}">${item.price} gold</text>
@@ -88,7 +92,8 @@ export async function buildShopSvg(items: ShopItem[], page: number, pageCount: n
   const emptyState = !items.length ? `<text x="36" y="190" fill="#d7deef" font-size="22" font-family="${fontFamily}">${escapeXml(fr ? 'Aucun objet disponible sur cette page.' : 'No items available on this page.')}</text>` : '';
 
   return `
-  <svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">
+  <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">
+    ${boardDataUri ? `<image href="${escapeXml(String(boardDataUri))}" xlink:href="${escapeXml(String(boardDataUri))}" x="0" y="0" width="${width}" height="${height}" preserveAspectRatio="none" />` : ''}
     <rect x="24" y="24" width="1052" height="${height - 48}" rx="16" fill="#070c1b" fill-opacity="0.76" stroke="#34405e" stroke-opacity="0.9" />
     <text x="36" y="72" fill="#ffffff" font-size="42" font-family="${fontFamily}">${escapeXml(title)}</text>
     <text x="36" y="106" fill="#b2bdd6" font-size="18" font-family="${fontFamily}">${escapeXml(subtitle)}</text>
@@ -102,8 +107,17 @@ export async function buildShopSvg(items: ShopItem[], page: number, pageCount: n
 export async function renderShopImage(items: ShopItem[], page: number, pageCount: number, fr: boolean): Promise<Uint8Array> {
   await ensureResvgWasm();
   const fontBuffer = await getEmbeddedFontBuffer();
-  const svg = await buildShopSvg(items, page, pageCount, fr, Boolean(fontBuffer));
+  const hasEmbeddedFont = Boolean(fontBuffer);
+  const renderKey = buildRenderCacheKey(items, page, pageCount, fr, hasEmbeddedFont);
+  const cachedOutput = renderOutputCache.get(renderKey);
+  if (cachedOutput) {
+    return new Uint8Array(cachedOutput);
+  }
 
+  const [boardUri, iconUris] = await Promise.all([resolveResvgImageUriShop(BOARD_PATH), Promise.all(items.map(item => resolveResvgImageUriShop(item.imagePath)))]);
+  const boardDataUri = boardUri || undefined;
+
+  const svg = await buildShopSvg(items, page, pageCount, fr, hasEmbeddedFont, boardDataUri, iconUris);
   const options = fontBuffer
     ? {
         font: {
@@ -114,25 +128,10 @@ export async function renderShopImage(items: ShopItem[], page: number, pageCount
       }
     : { font: { loadSystemFonts: true } };
 
-  const png = new Resvg(svg, options).render().asPng();
-  const overlay = Photon.PhotonImage.new_from_byteslice(new Uint8Array(png.buffer.slice(0) as ArrayBuffer));
-
-  let board: Photon.PhotonImage | null = null;
-  let canvas: Photon.PhotonImage;
-  const boardBytes = await getAssetBytes(BOARD_PATH);
-  if (boardBytes) {
-    board = Photon.PhotonImage.new_from_byteslice(new Uint8Array(boardBytes));
-    canvas = Photon.resize(board, WIDTH, getCanvasHeight(items.length), Photon.SamplingFilter.Lanczos3);
-    Photon.watermark(canvas, overlay, 0n, 0n);
-  } else {
-    canvas = overlay;
-  }
-
-  const output = new Uint8Array(canvas.get_bytes());
-  if (canvas !== overlay) {
-    overlay.free();
-  }
-  board?.free();
-  canvas.free();
-  return output;
+  const pngBytes = new Uint8Array(new Resvg(svg, options).render().asPng().buffer.slice(0) as ArrayBuffer);
+  const image = Photon.PhotonImage.new_from_byteslice(pngBytes);
+  const webpBytes = new Uint8Array(image.get_bytes_webp());
+  image.free();
+  cacheRenderOutput(renderKey, new Uint8Array(webpBytes), renderOutputCache, RENDER_OUTPUT_CACHE_MAX);
+  return webpBytes;
 }

@@ -41,16 +41,16 @@ function getAllShopItems(): ShopItem[] {
     itemType: 'accessory',
     nameFr: item.nameFr,
     nameEn: item.nameEn,
-    rarity: item.rarity,
     price: getPriceFromRarity(item.rarity, 'accessory'),
+    imagePath: `/assets/accessories/${item.fileName}`,
   }));
   const consumableItems: ShopItem[] = getConsumableItems().map(item => ({
     itemKey: item.id,
     itemType: 'consumable',
     nameFr: item.nameFr,
     nameEn: item.nameEn,
-    rarity: item.rarity,
     price: getPriceFromRarity(item.rarity, 'consumable'),
+    imagePath: `/assets/consumables/${item.fileName}`,
   }));
 
   return [...accessoryItems, ...consumableItems];
@@ -118,7 +118,7 @@ export function registerApiRoutes(app: Hono): void {
     const responseBody = image.buffer.slice(image.byteOffset, image.byteOffset + image.byteLength);
 
     return new Response(responseBody as ArrayBuffer, {
-      headers: imageCacheHeaders('image/png'),
+      headers: imageCacheHeaders('image/webp'),
     });
   });
 
@@ -171,7 +171,7 @@ export function registerApiRoutes(app: Hono): void {
     const responseBody = image.buffer.slice(image.byteOffset, image.byteOffset + image.byteLength);
 
     return new Response(responseBody as ArrayBuffer, {
-      headers: imageCacheHeaders('image/png'),
+      headers: imageCacheHeaders('image/webp'),
     });
   });
 
@@ -189,7 +189,7 @@ export function registerApiRoutes(app: Hono): void {
     const responseBody = image.buffer.slice(image.byteOffset, image.byteOffset + image.byteLength);
 
     return new Response(responseBody as ArrayBuffer, {
-      headers: imageCacheHeaders('image/png'),
+      headers: imageCacheHeaders('image/webp'),
     });
   });
 
@@ -264,7 +264,7 @@ export function registerApiRoutes(app: Hono): void {
     const responseBody = image.buffer.slice(image.byteOffset, image.byteOffset + image.byteLength);
 
     return new Response(responseBody as ArrayBuffer, {
-      headers: imageCacheHeaders('image/png'),
+      headers: imageCacheHeaders('image/webp'),
     });
   });
 }

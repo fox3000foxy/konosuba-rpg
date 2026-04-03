@@ -2,16 +2,27 @@ import * as Photon from '@cf-wasm/photon';
 import { Resvg } from '@resvg/resvg-wasm';
 import { BASE_URL } from '../objects/config/constants';
 import { AchievementOverviewItem } from '../objects/types/AchievementOverviewItem';
+import { cacheRenderOutput, resolveResvgImageUri } from './renderImageHelpers';
 import { ensureResvgWasm } from './resvgWasm';
 
 type AchievementsImageGlobals = {
-  __achievementsIconCache?: Record<string, ArrayBuffer>;
+  __achievementsAssetCache?: Record<string, ArrayBuffer>;
+  __achievementsResvgUriCache?: Record<string, string>;
   __achievementsFontBuffer?: Uint8Array;
+  __achievementsRenderOutputCache?: Map<string, Uint8Array>;
 };
 
 const G = globalThis as unknown as AchievementsImageGlobals;
-G.__achievementsIconCache ??= {};
-const iconCache = G.__achievementsIconCache;
+G.__achievementsAssetCache ??= {};
+G.__achievementsResvgUriCache ??= {};
+G.__achievementsRenderOutputCache ??= new Map<string, Uint8Array>();
+const assetCache = G.__achievementsAssetCache;
+const resvgUriCache = G.__achievementsResvgUriCache;
+const renderOutputCache = G.__achievementsRenderOutputCache;
+const pendingAssetFetches = new Map<string, Promise<ArrayBuffer | null>>();
+const pendingResvgUriConversions = new Map<string, Promise<string | null>>();
+
+const RENDER_OUTPUT_CACHE_MAX = 32;
 
 const ASSET_BASE_URL = BASE_URL;
 const FONT_URL = `${ASSET_BASE_URL}/assets/swordgame/font/GintoNordMedium.otf`;
@@ -21,21 +32,6 @@ const HEIGHT = 620;
 
 function escapeXml(value: string): string {
   return value.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&apos;');
-}
-
-async function getAssetBytes(path: string): Promise<ArrayBuffer | null> {
-  if (iconCache[path]) {
-    return iconCache[path];
-  }
-
-  const response = await fetch(`${ASSET_BASE_URL}${path}`);
-  if (!response.ok) {
-    return null;
-  }
-
-  const buf = await response.arrayBuffer();
-  iconCache[path] = buf;
-  return buf;
 }
 
 async function getEmbeddedFontBuffer(): Promise<Uint8Array | null> {
@@ -54,7 +50,16 @@ async function getEmbeddedFontBuffer(): Promise<Uint8Array | null> {
   return fontBytes;
 }
 
-export async function buildAchievementsSvg(userId: string, achievements: AchievementOverviewItem[], fr: boolean, hasEmbeddedFont = false): Promise<string> {
+async function resolveResvgImageUriAchievements(path: string | null): Promise<string | null> {
+  return resolveResvgImageUri(path, ASSET_BASE_URL, pendingAssetFetches, pendingResvgUriConversions, assetCache, resvgUriCache);
+}
+
+function buildRenderCacheKey(achievements: AchievementOverviewItem[], fr: boolean, hasEmbeddedFont: boolean): string {
+  const achievementSignature = achievements.map(a => `${a.key}:${a.unlocked}`).join('|');
+  return `${fr ? 'fr' : 'en'}::${hasEmbeddedFont ? 'font' : 'system'}::${achievementSignature}`;
+}
+
+export async function buildAchievementsSvg(userId: string, achievements: AchievementOverviewItem[], fr: boolean, hasEmbeddedFont = false, boardDataUri?: string): Promise<string> {
   void userId;
   const fontFamily = hasEmbeddedFont ? 'GintoNordMedium' : 'Arial';
   const unlockedCount = achievements.filter(item => item.unlocked).length;
@@ -80,7 +85,8 @@ export async function buildAchievementsSvg(userId: string, achievements: Achieve
     .join('');
 
   return `
-  <svg xmlns="http://www.w3.org/2000/svg" width="${WIDTH}" height="${HEIGHT}" viewBox="0 0 ${WIDTH} ${HEIGHT}">
+  <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="${WIDTH}" height="${HEIGHT}" viewBox="0 0 ${WIDTH} ${HEIGHT}">
+    ${boardDataUri ? `<image href="${escapeXml(String(boardDataUri))}" xlink:href="${escapeXml(String(boardDataUri))}" x="0" y="0" width="${WIDTH}" height="${HEIGHT}" preserveAspectRatio="none" />` : ''}
     <rect x="24" y="24" width="1052" height="${HEIGHT - 48}" rx="16" fill="#070c1b" fill-opacity="0.76" stroke="#34405e" stroke-opacity="0.9" />
     <text x="36" y="82" fill="#ffffff" font-size="42" font-family="${fontFamily}">${escapeXml(title)}</text>
     <text x="36" y="116" fill="#b2bdd6" font-size="18" font-family="${fontFamily}">${escapeXml(subtitle)}</text>
@@ -91,8 +97,17 @@ export async function buildAchievementsSvg(userId: string, achievements: Achieve
 export async function renderAchievementsImage(userId: string, achievements: AchievementOverviewItem[], fr: boolean): Promise<Uint8Array> {
   await ensureResvgWasm();
   const fontBuffer = await getEmbeddedFontBuffer();
+  const hasEmbeddedFont = Boolean(fontBuffer);
+  const renderKey = buildRenderCacheKey(achievements, fr, hasEmbeddedFont);
+  const cachedOutput = renderOutputCache.get(renderKey);
+  if (cachedOutput) {
+    return new Uint8Array(cachedOutput);
+  }
 
-  const svg = await buildAchievementsSvg(userId, achievements, fr, Boolean(fontBuffer));
+  const [boardUri] = await Promise.all([resolveResvgImageUriAchievements(BOARD_PATH)]);
+  const boardDataUri = boardUri || undefined;
+
+  const svg = await buildAchievementsSvg(userId, achievements, fr, hasEmbeddedFont, boardDataUri);
   const options = fontBuffer
     ? {
         font: {
@@ -103,27 +118,10 @@ export async function renderAchievementsImage(userId: string, achievements: Achi
       }
     : { font: { loadSystemFonts: true } };
 
-  const png = new Resvg(svg, options).render().asPng();
-  const overlay = Photon.PhotonImage.new_from_byteslice(new Uint8Array(png.buffer.slice(0) as ArrayBuffer));
-
-  let board: Photon.PhotonImage | null = null;
-  let canvas: Photon.PhotonImage;
-  const boardBytes = await getAssetBytes(BOARD_PATH);
-
-  if (boardBytes) {
-    board = Photon.PhotonImage.new_from_byteslice(new Uint8Array(boardBytes));
-    canvas = Photon.resize(board, WIDTH, HEIGHT, Photon.SamplingFilter.Lanczos3);
-    Photon.watermark(canvas, overlay, 0n, 0n);
-  } else {
-    canvas = overlay;
-  }
-
-  const output = new Uint8Array(canvas.get_bytes());
-  if (canvas !== overlay) {
-    overlay.free();
-  }
-
-  board?.free();
-  canvas.free();
-  return output;
+  const pngBytes = new Uint8Array(new Resvg(svg, options).render().asPng().buffer.slice(0) as ArrayBuffer);
+  const image = Photon.PhotonImage.new_from_byteslice(pngBytes);
+  const webpBytes = new Uint8Array(image.get_bytes_webp());
+  image.free();
+  cacheRenderOutput(renderKey, new Uint8Array(webpBytes), renderOutputCache, RENDER_OUTPUT_CACHE_MAX);
+  return webpBytes;
 }
