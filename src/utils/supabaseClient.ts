@@ -2,6 +2,95 @@ import { createClient, SupabaseClient } from '@supabase/supabase-js';
 
 let supabaseAdminClient: SupabaseClient | null = null;
 
+function isTruthyEnv(value: string | undefined): boolean {
+  if (!value) {
+    return false;
+  }
+
+  const normalized = value.trim().toLowerCase();
+  return normalized === '1' || normalized === 'true' || normalized === 'yes' || normalized === 'on';
+}
+
+function parseTimeoutMs(raw: string | undefined): number {
+  if (!raw) {
+    return 0;
+  }
+
+  const parsed = Number(raw);
+  if (!Number.isFinite(parsed) || parsed <= 0) {
+    return 0;
+  }
+
+  return Math.floor(parsed);
+}
+
+function nowMs(): number {
+  if (typeof performance !== 'undefined' && typeof performance.now === 'function') {
+    return performance.now();
+  }
+
+  return Date.now();
+}
+
+function shouldEnableDbHttpPerf(): boolean {
+  return isTruthyEnv(process.env.DB_HTTP_PERF) || isTruthyEnv(process.env.RENDER_PERF) || isTruthyEnv(process.env.DEV_MODE);
+}
+
+function shouldUseSupabaseFetchWrapper(): boolean {
+  return shouldEnableDbHttpPerf() || parseTimeoutMs(process.env.SUPABASE_HTTP_TIMEOUT_MS) > 0;
+}
+
+function buildSupabaseFetch(): typeof fetch {
+  const enableHttpPerf = shouldEnableDbHttpPerf();
+  const timeoutMs = parseTimeoutMs(process.env.SUPABASE_HTTP_TIMEOUT_MS);
+  const logSlowThresholdMs = parseTimeoutMs(process.env.SUPABASE_HTTP_SLOW_MS) || 120;
+
+  return async (input, init) => {
+    const startedAt = enableHttpPerf ? nowMs() : 0;
+    const baseInit = init || {};
+    const nextInit = { ...baseInit } as RequestInit;
+
+    let timeoutId: NodeJS.Timeout | null = null;
+    let controller: AbortController | null = null;
+
+    if (timeoutMs > 0) {
+      controller = new AbortController();
+      if (nextInit.signal) {
+        if (nextInit.signal.aborted) {
+          controller.abort();
+        } else {
+          nextInit.signal.addEventListener('abort', () => controller?.abort(), { once: true });
+        }
+      }
+
+      nextInit.signal = controller.signal;
+      timeoutId = setTimeout(() => {
+        controller?.abort();
+      }, timeoutMs);
+    }
+
+    try {
+      const response = await fetch(input, nextInit);
+
+      if (enableHttpPerf) {
+        const elapsedMs = nowMs() - startedAt;
+        if (elapsedMs >= logSlowThresholdMs) {
+          const method = nextInit.method || 'GET';
+          const rawUrl = typeof input === 'string' ? input : input instanceof URL ? input.toString() : input.url;
+          const shortUrl = rawUrl.replace(/^https?:\/\/[^/]+/i, '');
+          console.log(`[perf][supabase-http] ${method} ${shortUrl} -> ${response.status} in ${elapsedMs.toFixed(1)}ms`);
+        }
+      }
+
+      return response;
+    } finally {
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
+    }
+  };
+}
+
 function normalizeSecret(raw: string | undefined): string {
   if (!raw) {
     return '';
@@ -64,6 +153,12 @@ export function getSupabaseAdminClient(): SupabaseClient | null {
     auth: {
       autoRefreshToken: false,
       persistSession: false,
+    },
+    global: {
+      ...(shouldUseSupabaseFetchWrapper() ? { fetch: buildSupabaseFetch() } : {}),
+      headers: {
+        'x-application-name': 'konosuba-rpg',
+      },
     },
   });
 
