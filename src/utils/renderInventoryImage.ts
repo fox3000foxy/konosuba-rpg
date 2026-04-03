@@ -9,15 +9,18 @@ type InventoryImageGlobals = {
   __inventoryResvgUriCache?: Record<string, string>;
   __inventoryFontBuffer?: Uint8Array;
   __inventoryRenderOutputCache?: Map<string, Uint8Array>;
+  __inventoryPendingRenders?: Map<string, Promise<Uint8Array>>;
 };
 
 const G = globalThis as unknown as InventoryImageGlobals;
 G.__inventoryAssetCache ??= {};
 G.__inventoryResvgUriCache ??= {};
 G.__inventoryRenderOutputCache ??= new Map<string, Uint8Array>();
+G.__inventoryPendingRenders ??= new Map<string, Promise<Uint8Array>>();
 const assetCache = G.__inventoryAssetCache;
 const resvgUriCache = G.__inventoryResvgUriCache;
 const renderOutputCache = G.__inventoryRenderOutputCache;
+const pendingRenders = G.__inventoryPendingRenders;
 const pendingAssetFetches = new Map<string, Promise<ArrayBuffer | null>>();
 const pendingResvgUriConversions = new Map<string, Promise<string | null>>();
 
@@ -141,28 +144,45 @@ export async function renderInventoryImage(userId: string, items: InventoryItemV
   const renderKey = buildRenderCacheKey(items, fr, hasEmbeddedFont);
   const cachedOutput = renderOutputCache.get(renderKey);
   if (cachedOutput) {
-    return new Uint8Array(cachedOutput);
+    return cachedOutput;
   }
 
-  const visibleItems = items.length ? items.slice(0, 18) : [];
-  const [boardUri, iconUris] = await Promise.all([resolveResvgImageUriInventory(BOARD_PATH), Promise.all(visibleItems.map(item => resolveResvgImageUriInventory(item.imagePath)))]);
-  const boardDataUri = boardUri || undefined;
+  const pendingRender = pendingRenders.get(renderKey);
+  if (pendingRender) {
+    return pendingRender;
+  }
 
-  const svg = await buildSvg(userId, items, fr, hasEmbeddedFont, boardDataUri, iconUris);
-  const options = fontBuffer
-    ? {
-        font: {
-          fontBuffers: [fontBuffer],
-          loadSystemFonts: false,
-          defaultFontFamily: 'GintoNordMedium',
-        },
-      }
-    : { font: { loadSystemFonts: true } };
+  const renderPromise = (async () => {
+    const visibleItems = items.length ? items.slice(0, 18) : [];
+    const [boardUri, iconUris] = await Promise.all([resolveResvgImageUriInventory(BOARD_PATH), Promise.all(visibleItems.map(item => resolveResvgImageUriInventory(item.imagePath)))]);
+    const boardDataUri = boardUri || undefined;
 
-  const pngBytes = new Uint8Array(new Resvg(svg, options).render().asPng().buffer.slice(0) as ArrayBuffer);
-  const image = Photon.PhotonImage.new_from_byteslice(pngBytes);
-  const webpBytes = new Uint8Array(image.get_bytes_webp());
-  image.free();
-  cacheRenderOutput(renderKey, new Uint8Array(webpBytes), renderOutputCache, RENDER_OUTPUT_CACHE_MAX);
-  return webpBytes;
+    const svg = await buildSvg(userId, items, fr, hasEmbeddedFont, boardDataUri, iconUris);
+    const options = fontBuffer
+      ? {
+          font: {
+            fontBuffers: [fontBuffer],
+            loadSystemFonts: false,
+            defaultFontFamily: 'GintoNordMedium',
+          },
+        }
+      : { font: { loadSystemFonts: true } };
+
+    const pngBytes = new Resvg(svg, options).render().asPng();
+    const image = Photon.PhotonImage.new_from_byteslice(pngBytes);
+    let webpBytes: Uint8Array;
+    try {
+      webpBytes = image.get_bytes_webp();
+    } finally {
+      image.free();
+    }
+
+    cacheRenderOutput(renderKey, webpBytes, renderOutputCache, RENDER_OUTPUT_CACHE_MAX);
+    return webpBytes;
+  })().finally(() => {
+    pendingRenders.delete(renderKey);
+  });
+
+  pendingRenders.set(renderKey, renderPromise);
+  return renderPromise;
 }

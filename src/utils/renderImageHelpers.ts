@@ -87,8 +87,12 @@ export async function toResvgCompatibleDataUri(path: string, bytes: ArrayBuffer,
 
   try {
     const image = Photon.PhotonImage.new_from_byteslice(new Uint8Array(bytes));
-    const pngBytes = new Uint8Array(image.get_bytes());
-    image.free();
+    let pngBytes: Uint8Array;
+    try {
+      pngBytes = image.get_bytes();
+    } finally {
+      image.free();
+    }
     const uri = toDataUri(bytesToArrayBuffer(pngBytes), 'image/png');
     resvgUriCache[path] = uri;
     return uri;
