@@ -52,7 +52,7 @@
     },
     {
       "src": "/(.*)",
-      "dest": "/api/not-found.js"
+      "dest": "/api/notFound.js"
     }
   ]
 }
