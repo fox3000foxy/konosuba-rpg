@@ -13,6 +13,7 @@
     "commands:update": "npx ts-node src/commandsUpdater.ts",
     "generate:image-manifest": "ts-node scripts/generate-image-manifest.ts",
     "tsc:build": "npx tsc -b",
+    "typecheck": "npx tsc -p tsconfig.json --noEmit",
     "test": "npx jest --runInBand",
     "test:watch": "npx jest --watch",
     "test:perf": "node --expose-gc ./node_modules/jest/bin/jest.js --runInBand --testPathPatterns=tests/perf",
@@ -41,7 +42,7 @@
     "deploy": "bun run build && bun run vercel:build && bun run vercel:deploy",
     "deploy:worker": "bun run build && bun run worker:dry-run && bun run worker:deploy",
     "deploy:all": "bun run deploy && bun run deploy:worker",
-    "test-battery": "bun run tsc:build && bun run test && bun run lint",
+    "test-battery": "bun run typecheck && bun run test && bun run lint",
     "bench": "npx esbuild src/utils/bench.ts --bundle --platform=node --target=node18 --outfile=bench.js && node --expose-gc bench.js && npx rimraf bench.js",
     "deploy-commands": "npx esbuild src/commandsUpdater.ts --bundle --platform=node --target=node18 --outfile=update-commands.js && node update-commands.js && npx rimraf update-commands.js",
     "db:check": "npx ts-node scripts/supabaseCrudCheck.ts"
