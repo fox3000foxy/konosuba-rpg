@@ -1,45 +1,37 @@
 import { Hono } from 'hono';
-import { BASE_URL } from './objects/config/constants';
 import { registerApiRoutes } from './routes/api';
+import { registerApiRenderRoutes } from './routes/apiRender';
 import { calculateGame } from './routes/game';
 import { handleInteractions } from './routes/interactions';
+import { calculateRPG } from './routes/rpg';
 
-type WorkerBindings = Record<string, string | undefined>;
-const RENDER_PROXY_BASE_URL = process.env.RENDER_PROXY_BASE_URL || BASE_URL;
+type AssetFetcher = {
+  fetch(input: Request | URL | string, init?: RequestInit): Promise<Response>;
+};
 
-function normalizeBaseUrl(url: string): string {
-  return url.endsWith('/') ? url.slice(0, -1) : url;
-}
-
-async function proxyRenderRequest(request: Request): Promise<Response> {
-  const incomingUrl = new URL(request.url);
-  const upstreamUrl = `${normalizeBaseUrl(RENDER_PROXY_BASE_URL)}${incomingUrl.pathname}${incomingUrl.search}`;
-
-  const upstreamResponse = await fetch(upstreamUrl, {
-    method: request.method,
-    headers: {
-      accept: request.headers.get('accept') || '*/*',
-    },
-  });
-
-  return new Response(upstreamResponse.body, {
-    status: upstreamResponse.status,
-    headers: upstreamResponse.headers,
-  });
-}
+type WorkerBindings = {
+  ASSETS?: AssetFetcher;
+  [key: string]: unknown;
+};
 
 const app = new Hono();
 registerApiRoutes(app);
+registerApiRenderRoutes(app);
 
-// Render pages rely on Photon WASM runtime that is restricted on Workers.
-// Proxy these routes to the Vercel deployment to keep feature parity.
-app.get('/inventory/:userId', c => proxyRenderRequest(c.req.raw));
-app.get('/affinity/:userId', c => proxyRenderRequest(c.req.raw));
-app.get('/quest/:userId', c => proxyRenderRequest(c.req.raw));
-app.get('/shop/:page', c => proxyRenderRequest(c.req.raw));
-app.get('/profile/:userId', c => proxyRenderRequest(c.req.raw));
-app.get('/achievements/:userId', c => proxyRenderRequest(c.req.raw));
-app.get('/konosuba-rpg/:lang/*', c => proxyRenderRequest(c.req.raw));
+app.get('/assets/*', c => {
+  const env = c.env as WorkerBindings;
+  if (!env.ASSETS) {
+    return c.text('Assets binding unavailable.', 500);
+  }
+
+  const url = new URL(c.req.url);
+  const assetPath = url.pathname.replace(/^\/assets\/?/, '/');
+  url.pathname = assetPath === '' ? '/' : assetPath;
+
+  return env.ASSETS.fetch(new Request(url.toString(), c.req.raw));
+});
+
+app.get('/konosuba-rpg/:lang/*', calculateRPG);
 
 app.get('/game/:lang/*', calculateGame);
 app.post('/api/interactions', handleInteractions);

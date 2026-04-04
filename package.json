@@ -1,7 +1,7 @@
 {
   "dependencies": {
     "@cf-wasm/photon": "^0.3.4",
-    "@resvg/resvg-wasm": "^2.6.2",
+    "@cf-wasm/resvg": "^0.3.3",
     "@supabase/supabase-js": "^2.101.1",
     "discord-interactions": "^4.4.0",
     "dotenv": "^17.4.0",

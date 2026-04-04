@@ -1,11 +1,10 @@
 import * as Photon from '@cf-wasm/photon';
-import { Resvg } from '@resvg/resvg-wasm';
 import { BASE_URL } from '../objects/config/constants';
 import { AchievementOverviewItem } from '../objects/types/AchievementOverviewItem';
 import { getAssetBytes as getAssetBytesFromLoader, getEmbeddedFontBuffer as getEmbeddedFontBufferUtil } from './assetLoader';
 import { createPerfLogger } from './perfLogger';
 import { cacheRenderOutput, createBoundedStringCache, SizedCache } from './renderImageHelpers';
-import { ensureResvgWasm } from './resvgWasm';
+import { ensureResvgWasm, renderSvgToPng } from './resvgWasm';
 
 type AchievementsImageGlobals = {
   __achievementsResvgUriCache?: SizedCache<string>;
@@ -113,7 +112,7 @@ export async function renderAchievementsImage(userId: string, achievements: Achi
         }
       : { font: { loadSystemFonts: true } };
 
-    const pngBytes = new Resvg(svg, options).render().asPng();
+    const pngBytes = await renderSvgToPng(svg, options);
     perf.mark('Resvg render -> PNG');
 
     const overlay = Photon.PhotonImage.new_from_byteslice(pngBytes);

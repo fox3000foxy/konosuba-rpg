@@ -1,5 +1,4 @@
 import * as Photon from '@cf-wasm/photon';
-import { Resvg } from '@resvg/resvg-wasm';
 import { GenericCreature } from '../classes/GenericCreature';
 import { Random } from '../classes/Random';
 import { BASE_URL } from '../objects/config/constants';
@@ -12,7 +11,7 @@ import { getAssetBytes, getEmbeddedFontBuffer as getEmbeddedFontBufferUtil } fro
 import { createPerfLogger } from './perfLogger';
 import { getImageBytes as getImageBytesFromManifest } from './renderImage';
 import { escapeXml } from './renderImageHelpers';
-import { ensureResvgWasm } from './resvgWasm';
+import { ensureResvgWasm, renderSvgToPng } from './resvgWasm';
 
 type ProfileImageGlobals = {
   __starEnabledImage?: Photon.PhotonImage;
@@ -223,7 +222,7 @@ export async function renderProfileImage(userId: string, profile: PlayerProfile,
       }
     : { font: { loadSystemFonts: true } };
 
-  const png = new Resvg(svg, options).render().asPng();
+  const png = await renderSvgToPng(svg, options);
   perf.mark('Resvg render -> PNG');
 
   const overlay = Photon.PhotonImage.new_from_byteslice(new Uint8Array(png.buffer.slice(0) as ArrayBuffer));
