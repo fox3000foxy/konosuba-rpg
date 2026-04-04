@@ -1,5 +1,4 @@
 import * as Photon from '@cf-wasm/photon';
-import { Resvg } from '@resvg/resvg-wasm';
 import fs from 'fs/promises';
 import path from 'path';
 import satori from 'satori';
@@ -17,7 +16,7 @@ import { KazumaImages } from '../objects/enums/player/KazumaImages';
 import { MeguminImages } from '../objects/enums/player/MeguminImages';
 import { PlayerName } from '../objects/enums/player/PlayerName';
 import { getCreatureNameAndPrefix } from './creatureText';
-import { ensureResvgWasm } from './resvgWasm';
+import { ensureResvgWasm, renderSvgToPng } from './resvgWasm';
 
 // ─── LRU Cache ───────────────────────────────────────────────────────────────
 
@@ -730,7 +729,7 @@ async function getUIOverlay(uiCacheKey: string, team: Team, creature: Creature, 
     fonts: [{ name: 'Sans-Serif', data: fontMediumBuf, weight: 400, style: 'normal' }],
   });
 
-  const png = new Resvg(svg, { fitTo: { mode: 'width', value: W } }).render().asPng();
+  const png = await renderSvgToPng(svg, { fitTo: { mode: 'width', value: W } });
   const img = toPhoton(png.buffer.slice(0) as ArrayBuffer);
 
   uiPhotonCache.set(uiCacheKey, img);
