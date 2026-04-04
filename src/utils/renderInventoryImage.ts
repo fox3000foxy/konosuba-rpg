@@ -1,9 +1,8 @@
 import * as Photon from '@cf-wasm/photon';
-import { Resvg } from '@resvg/resvg-wasm';
 import { InventoryItemView } from '../objects/types/InventoryItemView';
 import { createPerfLogger } from './perfLogger';
 import { cacheRenderOutput, createBoundedArrayBufferCache, createBoundedStringCache, resolveAssetUrl, resolveResvgImageUri, SizedCache } from './renderImageHelpers';
-import { ensureResvgWasm } from './resvgWasm';
+import { ensureResvgWasm, renderSvgToPng } from './resvgWasm';
 
 type InventoryImageGlobals = {
   __inventoryAssetCache?: SizedCache<ArrayBuffer>;
@@ -182,7 +181,7 @@ export async function renderInventoryImage(userId: string, items: InventoryItemV
         }
       : { font: { loadSystemFonts: true } };
 
-    const pngBytes = new Resvg(svg, options).render().asPng();
+    const pngBytes = await renderSvgToPng(svg, options);
     perf.mark('Resvg render -> PNG');
 
     const image = Photon.PhotonImage.new_from_byteslice(pngBytes);

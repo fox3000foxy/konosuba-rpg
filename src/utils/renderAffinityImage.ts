@@ -1,5 +1,4 @@
 import * as Photon from '@cf-wasm/photon';
-import { Resvg } from '@resvg/resvg-wasm';
 import { BASE_URL } from '../objects/config/constants';
 import { CharacterKey } from '../objects/enums/CharacterKey';
 import { PlayerStats } from '../objects/enums/player/PlayerStats';
@@ -7,7 +6,7 @@ import { CharacterProgress } from '../objects/types/CharacterProgress';
 import { getAffinityFactor, getLevelFactor } from '../services/characterService';
 import { getAssetBytes, getEmbeddedFontBuffer as getEmbeddedFontBufferUtil } from './assetLoader';
 import { createPerfLogger } from './perfLogger';
-import { ensureResvgWasm } from './resvgWasm';
+import { ensureResvgWasm, renderSvgToPng } from './resvgWasm';
 
 const ASSET_BASE_URL = BASE_URL;
 const FONT_URL = `${ASSET_BASE_URL}/assets/swordgame/font/GintoNordMedium.otf`;
@@ -242,7 +241,7 @@ export async function renderAffinityImage(userId: string, progresses: CharacterP
       }
     : { font: { loadSystemFonts: true } };
 
-  const png = new Resvg(svg, options).render().asPng();
+  const png = await renderSvgToPng(svg, options);
   perf.mark('Resvg render -> PNG');
 
   const overlay = Photon.PhotonImage.new_from_byteslice(new Uint8Array(png.buffer.slice(0) as ArrayBuffer));

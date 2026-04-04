@@ -1,9 +1,8 @@
 import * as Photon from '@cf-wasm/photon';
-import { Resvg } from '@resvg/resvg-wasm';
 import { ShopItem } from '../objects/types/ShopItem';
 import { createPerfLogger } from './perfLogger';
 import { cacheRenderOutput, createBoundedArrayBufferCache, createBoundedStringCache, resolveResvgImageUri, SizedCache } from './renderImageHelpers';
-import { ensureResvgWasm } from './resvgWasm';
+import { ensureResvgWasm, renderSvgToPng } from './resvgWasm';
 
 type ShopImageGlobals = {
   __shopAssetCache?: SizedCache<ArrayBuffer>;
@@ -151,7 +150,7 @@ export async function renderShopImage(items: ShopItem[], page: number, pageCount
         }
       : { font: { loadSystemFonts: true } };
 
-    const pngBytes = new Resvg(svg, options).render().asPng();
+    const pngBytes = await renderSvgToPng(svg, options);
     perf.mark('Resvg render -> PNG');
 
     const image = Photon.PhotonImage.new_from_byteslice(pngBytes);
