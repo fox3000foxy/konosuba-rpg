@@ -11,9 +11,9 @@ importers:
       '@cf-wasm/photon':
         specifier: ^0.3.4
         version: 0.3.4
-      '@resvg/resvg-wasm':
-        specifier: ^2.6.2
-        version: 2.6.2
+      '@cf-wasm/resvg':
+        specifier: ^0.3.3
+        version: 0.3.3
       '@supabase/supabase-js':
         specifier: ^2.101.1
         version: 2.101.1
@@ -254,6 +254,9 @@ packages:
 
   '@cf-wasm/photon@0.3.4':
     resolution: {integrity: sha512-yCYykIZKU+3Q1Vi/QlBOa7RRF2+w/qaHpjrRcnLJ0WHkkILJt71nDNCVb4hHRwZVGVpqOJX3gORWIQ4/XuzXPQ==}
+
+  '@cf-wasm/resvg@0.3.3':
+    resolution: {integrity: sha512-UN0cr048AZd0mtJ13ULWgFxlE0nAiBOETTON4r+VEHaaGpDk0oaak2Qurs6mfiBCVKKf2bQmXe8534WJ+o+B+w==}
 
   '@emnapi/core@1.9.2':
     resolution: {integrity: sha512-UC+ZhH3XtczQYfOlu3lNEkdW/p4dsJ1r/bP7H8+rhao3TTTMO1ATq/4DdIi23XuGoFY+Cz0JmCbdVl0hz9jZcA==}
@@ -601,6 +604,10 @@ packages:
   '@pkgr/core@0.2.9':
     resolution: {integrity: sha512-QNqXyfVS2wm9hweSYD2O7F0G06uurj9kZ96TRQE5Y9hU7+tgdZwIkbAKc5Ocy1HxEY2kuDQa6cQ1WRs/O5LFKA==}
     engines: {node: ^12.20.0 || ^14.18.0 || >=16.0.0}
+
+  '@resvg/resvg-wasm@2.4.1':
+    resolution: {integrity: sha512-yi6R0HyHtsoWTRA06Col4WoDs7SvlXU3DLMNP2bdAgs7HK18dTEVl1weXgxRzi8gwLteGUbIg29zulxIB3GSdg==}
+    engines: {node: '>= 10'}
 
   '@resvg/resvg-wasm@2.6.2':
     resolution: {integrity: sha512-FqALmHI8D4o6lk/LRWDnhw95z5eO+eAa6ORjVg09YRR7BkcM6oPHU9uyC0gtQG5vpFLvgpeU4+zEAz2H8APHNw==}
@@ -2474,6 +2481,11 @@ snapshots:
     dependencies:
       '@cf-wasm/internals': 0.1.1
 
+  '@cf-wasm/resvg@0.3.3':
+    dependencies:
+      '@resvg/resvg-wasm': 2.6.2
+      '@resvg/resvg-wasm-legacy': '@resvg/resvg-wasm@2.4.1'
+
   '@emnapi/core@1.9.2':
     dependencies:
       '@emnapi/wasi-threads': 1.2.1
@@ -2843,6 +2855,8 @@ snapshots:
     optional: true
 
   '@pkgr/core@0.2.9': {}
+
+  '@resvg/resvg-wasm@2.4.1': {}
 
   '@resvg/resvg-wasm@2.6.2': {}
 
