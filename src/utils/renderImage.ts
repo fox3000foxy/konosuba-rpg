@@ -26,7 +26,7 @@ class LRUCache<K, V> {
   constructor(
     private maxSize: number,
     private onEvict?: (key: K, val: V) => void
-  ) {}
+  ) { }
 
   has(key: K): boolean {
     return this.map.has(key);
@@ -113,7 +113,7 @@ export async function getImageBytes(key: string): Promise<ArrayBuffer> {
     ];
 
     for (const filePath of possiblePaths) {
-      if(!fs.stat(filePath).catch(() => false)) {
+      if (!fs.stat(filePath).catch(() => false)) {
         console.warn(`Image file not found at ${filePath}, trying next path...`);
         continue;
       }
@@ -410,15 +410,15 @@ async function buildOverlayJsx(team: Team, creature: Creature, messages: string[
         },
         children: effectImageSrc
           ? {
-              type: 'img',
-              props: {
-                src: effectImageSrc,
-                style: {
-                  width: 22,
-                  height: 22,
-                },
+            type: 'img',
+            props: {
+              src: effectImageSrc,
+              style: {
+                width: 22,
+                height: 22,
               },
-            }
+            },
+          }
           : label,
       },
     };
@@ -457,24 +457,24 @@ async function buildOverlayJsx(team: Team, creature: Creature, messages: string[
 
   const endMsg = state
     ? (
-        {
-          good: lang === Lang.French ? `${EndMessages.French_Good}${creaturePrefix}${name}${EndMessages.French_ExclamationMark}` : `${EndMessages.English_Good}${creaturePrefix}${name}${EndMessages.English_ExclamationMark}`,
-          bad: lang === Lang.French ? EndMessages.French_Bad : EndMessages.English_Bad,
-          giveup: lang === Lang.French ? EndMessages.French_Giveup : EndMessages.English_Giveup,
-          best: lang === Lang.French ? `${EndMessages.French_Best}${creaturePrefix}${name}${EndMessages.French_ExclamationMark}` : `${EndMessages.English_Best}${creaturePrefix}${name}${EndMessages.English_ExclamationMark}`,
-        } as Record<string, string>
-      )[state]
+      {
+        good: lang === Lang.French ? `${EndMessages.French_Good}${creaturePrefix}${name}${EndMessages.French_ExclamationMark}` : `${EndMessages.English_Good}${creaturePrefix}${name}${EndMessages.English_ExclamationMark}`,
+        bad: lang === Lang.French ? EndMessages.French_Bad : EndMessages.English_Bad,
+        giveup: lang === Lang.French ? EndMessages.French_Giveup : EndMessages.English_Giveup,
+        best: lang === Lang.French ? `${EndMessages.French_Best}${creaturePrefix}${name}${EndMessages.French_ExclamationMark}` : `${EndMessages.English_Best}${creaturePrefix}${name}${EndMessages.English_ExclamationMark}`,
+      } as Record<string, string>
+    )[state]
     : null;
 
   const endMsg2 = state
     ? (
-        {
-          good: lang === Lang.French ? RetryMessages.French_Good : RetryMessages.English_Good,
-          bad: lang === Lang.French ? RetryMessages.French_Bad : RetryMessages.English_Bad,
-          giveup: lang === Lang.French ? RetryMessages.French_Giveup : RetryMessages.English_Giveup,
-          best: lang === Lang.French ? RetryMessages.French_Best : RetryMessages.English_Best,
-        } as Record<string, string>
-      )[state]
+      {
+        good: lang === Lang.French ? RetryMessages.French_Good : RetryMessages.English_Good,
+        bad: lang === Lang.French ? RetryMessages.French_Bad : RetryMessages.English_Bad,
+        giveup: lang === Lang.French ? RetryMessages.French_Giveup : RetryMessages.English_Giveup,
+        best: lang === Lang.French ? RetryMessages.French_Best : RetryMessages.English_Best,
+      } as Record<string, string>
+    )[state]
     : null;
 
   // Résolution synchrone depuis le cache — pas d'await dans la construction JSX
@@ -651,54 +651,54 @@ async function buildOverlayJsx(team: Team, creature: Creature, messages: string[
         // ── End-state overlay ──────────────────────────────────────────
         ...(endMsg && endImgSrc
           ? [
-              {
-                type: 'img',
-                props: {
-                  src: endImgSrc,
-                  style: {
-                    position: 'absolute' as const,
-                    left: 0,
-                    top: 0,
-                    width: '100%',
-                    height: '100%',
-                  },
+            {
+              type: 'img',
+              props: {
+                src: endImgSrc,
+                style: {
+                  position: 'absolute' as const,
+                  left: 0,
+                  top: 0,
+                  width: '100%',
+                  height: '100%',
                 },
               },
-              {
-                type: 'div',
-                props: {
-                  style: {
-                    display: 'flex' as const,
-                    position: 'absolute' as const,
-                    left: W / 2 - endMsg.length * 9,
-                    right: 0,
-                    top: 135 * 2 + 100,
-                    textAlign: 'center' as const,
-                    fontSize: 32,
-                    fontFamily: '"Ginto Nord Medium"',
-                    color: '#FFFFFF',
-                  },
-                  children: endMsg,
+            },
+            {
+              type: 'div',
+              props: {
+                style: {
+                  display: 'flex' as const,
+                  position: 'absolute' as const,
+                  left: W / 2 - endMsg.length * 9,
+                  right: 0,
+                  top: 135 * 2 + 100,
+                  textAlign: 'center' as const,
+                  fontSize: 32,
+                  fontFamily: '"Ginto Nord Medium"',
+                  color: '#FFFFFF',
                 },
+                children: endMsg,
               },
-              {
-                type: 'div',
-                props: {
-                  style: {
-                    display: 'flex' as const,
-                    position: 'absolute' as const,
-                    left: W / 2 - (endMsg2?.length || 0) * 9,
-                    right: 0,
-                    top: 135 * 2 + 100 + 50,
-                    textAlign: 'center' as const,
-                    fontSize: 32,
-                    fontFamily: '"Ginto Nord Medium"',
-                    color: '#FFFFFF',
-                  },
-                  children: endMsg2,
+            },
+            {
+              type: 'div',
+              props: {
+                style: {
+                  display: 'flex' as const,
+                  position: 'absolute' as const,
+                  left: W / 2 - (endMsg2?.length || 0) * 9,
+                  right: 0,
+                  top: 135 * 2 + 100 + 50,
+                  textAlign: 'center' as const,
+                  fontSize: 32,
+                  fontFamily: '"Ginto Nord Medium"',
+                  color: '#FFFFFF',
                 },
+                children: endMsg2,
               },
-            ]
+            },
+          ]
           : []),
       ],
     },
@@ -742,22 +742,48 @@ const END_STATES = ['good', 'bad', 'giveup', 'best'];
 
 export async function warmup(): Promise<void> {
   const fontUrl = `${BASE_URL}/assets/swordgame/font/GintoNordMedium.otf`;
-  await Promise.all([ensureResvgWasm(), getFontBytes(fontUrl)]);
+  console.log('Starting warmup process...');
+  try {
+    console.log('Ensuring ResvgWasm is loaded...');
+    await ensureResvgWasm();
+    console.log('ResvgWasm loaded successfully.');
+
+    console.log(`Fetching font from: ${fontUrl}`);
+    await getFontBytes(fontUrl);
+    console.log('Font loaded successfully.');
+
+    console.log('Loading END_STATES images...');
+    await Promise.all(
+      END_STATES.map(async s => {
+        try {
+          await getImageBytes('end_' + s);
+          console.log(`Image 'end_${s}' loaded successfully.`);
+        } catch (err) {
+          console.error(`Failed to load image 'end_${s}':`, err);
+        }
+      })
+    );
+
+    console.log('Warmup completed successfully.');
+  } catch (error) {
+    console.error('Warmup failed:', error);
+  }
 }
 
 // Avoid heavy boot-time warmup in serverless by default.
 const isVercelRuntime = process.env.VERCEL === '1' || process.env.VERCEL === 'true';
 const shouldAutoWarmup = process.env.RENDER_WARMUP_ON_BOOT === '1' || (!isVercelRuntime && process.env.NODE_ENV !== 'test');
 
-Promise.all([...END_STATES.map(s => getImageBytes('end_' + s)), getImageBytes('board'), getImageBytes('frameless'), getImageBytes('ui_effect_potion').catch(() => undefined), getImageBytes('ui_effect_chrono').catch(() => undefined), getImageBytes('ui_effect_stone').catch(() => undefined), getImageBytes('ui_effect_scroll').catch(() => undefined)]);
+console.log('Warmup condition:', { isVercelRuntime, shouldAutoWarmup });
 
-if (shouldAutoWarmup) {
-  warmup().catch(err => console.error('Warmup failed:', err));
-}
+// if (shouldAutoWarmup) {
+// }
 
 // ─── Main render ──────────────────────────────────────────────────────────────
 
 export default async function renderImage(state: string | null, messages: string[], team: Team, creature: Creature, lang = 'en'): Promise<Uint8Array> {
+  await warmup().catch(err => console.error('Warmup failed:', err));
+
   const perfEnabled = process.env.RENDER_PERF === '1' || process.env.DEV_MODE === '1' || process.env.DEV_MODE === 'true';
   const startedAt = perfEnabled ? performance.now() : 0;
   const spans: PerfSpan[] = [];
