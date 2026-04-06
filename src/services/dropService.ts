@@ -320,9 +320,7 @@ export async function grantAccessoryDropRewards(userId: string, runKey: string, 
     }
 
     const nowIso = new Date().toISOString();
-    const existingByItemKey = new Map(
-      ((existingRows || []) as InventoryRow[]).map(row => [String(row.item_key), Number(row.quantity || 0)])
-    );
+    const existingByItemKey = new Map(((existingRows || []) as InventoryRow[]).map(row => [String(row.item_key), Number(row.quantity || 0)]));
 
     const rowsToInsert: Array<{
       user_id: string;
@@ -377,11 +375,7 @@ export async function grantAccessoryDropRewards(userId: string, runKey: string, 
       }
     }
 
-    await Promise.all(
-      [...affinityByCharacter.entries()].map(([characterKey, totalAffinity]) =>
-        addCharacterAffinity(userId, characterKey, totalAffinity, { ensureProfile: false })
-      )
-    );
+    await Promise.all([...affinityByCharacter.entries()].map(([characterKey, totalAffinity]) => addCharacterAffinity(userId, characterKey, totalAffinity, { ensureProfile: false })));
 
     return drops;
   });
@@ -421,9 +415,7 @@ export async function grantConsumableDropRewards(userId: string, runKey: string,
     }
 
     const nowIso = new Date().toISOString();
-    const existingByItemKey = new Map(
-      ((existingRows || []) as InventoryRow[]).map(row => [String(row.item_key), Number(row.quantity || 0)])
-    );
+    const existingByItemKey = new Map(((existingRows || []) as InventoryRow[]).map(row => [String(row.item_key), Number(row.quantity || 0)]));
 
     const rowsToInsert: Array<{
       user_id: string;

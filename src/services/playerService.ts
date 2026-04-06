@@ -61,11 +61,7 @@ export async function updatePlayerGold(userId: string, delta: number): Promise<n
       return null;
     }
 
-    const { data: currentRow, error: loadError } = await supabase
-      .from('players')
-      .select('gold')
-      .eq('user_id', userId)
-      .maybeSingle();
+    const { data: currentRow, error: loadError } = await supabase.from('players').select('gold').eq('user_id', userId).maybeSingle();
 
     if (loadError) {
       console.error('[db] updatePlayerGold load failed:', loadError.message);
@@ -77,10 +73,7 @@ export async function updatePlayerGold(userId: string, delta: number): Promise<n
     }
 
     const newGold = Math.max(0, Number(currentRow.gold || 0) + delta);
-    const { error } = await supabase
-      .from('players')
-      .update({ gold: newGold, updated_at: new Date().toISOString() })
-      .eq('user_id', userId);
+    const { error } = await supabase.from('players').update({ gold: newGold, updated_at: new Date().toISOString() }).eq('user_id', userId);
 
     if (error) {
       console.error('[db] updatePlayerGold failed:', error.message);
