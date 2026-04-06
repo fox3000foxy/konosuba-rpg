@@ -1,5 +1,8 @@
 type ResvgModule = {
-  Resvg: new (svg: string, options?: unknown) => {
+  Resvg: new (
+    svg: string,
+    options?: unknown
+  ) => {
     render(): {
       asPng(): Uint8Array;
     };

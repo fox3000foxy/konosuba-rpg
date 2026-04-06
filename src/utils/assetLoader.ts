@@ -11,7 +11,7 @@ const fontBufferCache = new Map<string, Uint8Array>();
  */
 export async function getAssetBytes(assetPath: string, assetBaseUrl: string): Promise<ArrayBuffer | null> {
   const cacheKey = `${assetBaseUrl}${assetPath}`;
-  
+
   if (assetByteCache.has(cacheKey)) {
     return assetByteCache.get(cacheKey)!;
   }
@@ -56,7 +56,7 @@ export async function getAssetBytes(assetPath: string, assetBaseUrl: string): Pr
  */
 export async function getEmbeddedFontBuffer(fontPath: string, fontUrl: string): Promise<Uint8Array | null> {
   const cacheKey = fontUrl;
-  
+
   if (fontBufferCache.has(cacheKey)) {
     return fontBufferCache.get(cacheKey)!;
   }

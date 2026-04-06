@@ -228,13 +228,9 @@ export async function renderProfileImage(userId: string, profile: PlayerProfile,
   const overlay = Photon.PhotonImage.new_from_byteslice(new Uint8Array(png.buffer.slice(0) as ArrayBuffer));
 
   const rows = getRows(progresses);
-  
+
   // Parallelize all asset loading: board + stars + badges
-  const [resizedBoard, starAssets, badgeBuffers] = await Promise.all([
-    getResizedBoard(),
-    initializeStarAssets(),
-    Promise.all(rows.map(row => getAssetBytes(getCharacterBadgePath(row.key, getAffinityStars(row.affinity)), ASSET_BASE_URL)))
-  ]);
+  const [resizedBoard, starAssets, badgeBuffers] = await Promise.all([getResizedBoard(), initializeStarAssets(), Promise.all(rows.map(row => getAssetBytes(getCharacterBadgePath(row.key, getAffinityStars(row.affinity)), ASSET_BASE_URL)))]);
   perf.mark('get all assets');
 
   // Use pre-resized board
