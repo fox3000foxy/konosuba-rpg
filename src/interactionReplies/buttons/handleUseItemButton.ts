@@ -1,27 +1,27 @@
-import { Button } from 'discord-interactions';
-import { Context } from 'hono';
-import { Lang } from '../../objects/enums/Lang';
-import { getInventoryItems } from '../../services/inventoryService';
+import { Button } from "discord-interactions";
+import { Context } from "hono";
+import { Lang } from "../../objects/enums/Lang";
+import { getInventoryItems } from "../../services/inventoryService";
 
 const EPHEMERAL_FLAG = 1 << 6;
 
 export async function handleUseItemButton(c: Context, userId: string, lang: Lang, fr: boolean) {
   // Get inventory
   const inventoryItems = await getInventoryItems(userId);
-  const consumables = inventoryItems.filter(item => item.category === 'consumable');
+  const consumables = inventoryItems.filter((item) => item.category === "consumable");
 
   if (consumables.length === 0) {
     return c.json({
       type: 4,
       data: {
-        content: fr ? "Tu n'as aucun consommable disponible." : 'You have no consumables available.',
+        content: fr ? "Tu n'as aucun consommable disponible." : "You have no consumables available.",
         flags: EPHEMERAL_FLAG,
       },
     });
   }
 
   // Create button groups for consumables (5 buttons per row max)
-  const consumableButtons: Button[] = consumables.slice(0, 25).map(item => ({
+  const consumableButtons: Button[] = consumables.slice(0, 25).map((item) => ({
     type: 2,
     label: `${fr ? item.nameFr : item.nameEn} x${item.quantity}`,
     style: 1, // Blurple style
@@ -37,9 +37,9 @@ export async function handleUseItemButton(c: Context, userId: string, lang: Lang
     });
   }
 
-  const header = fr ? '# Utiliser un consommable' : '# Use a consumable';
+  const header = fr ? "# Utiliser un consommable" : "# Use a consumable";
   const moreCount = Math.max(0, consumables.length - 25);
-  const footer = moreCount > 0 ? (fr ? `\n\n... et ${moreCount} autre(s) non affiché(s)` : `\n\n... and ${moreCount} more not shown`) : '';
+  const footer = moreCount > 0 ? (fr ? `\n\n... et ${moreCount} autre(s) non affiché(s)` : `\n\n... and ${moreCount} more not shown`) : "";
 
   return c.json({
     type: 4,

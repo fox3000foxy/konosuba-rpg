@@ -1,4 +1,4 @@
-import { Button } from 'discord-interactions';
+import { Button } from "discord-interactions";
 
 export interface RawButton {
   type: number;

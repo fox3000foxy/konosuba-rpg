@@ -1,11 +1,11 @@
-import { CONSUMABLE_DEFINITIONS } from '../objects/data/consumablesCatalog';
-import { ItemId } from '../objects/enums/ItemId';
-import { ConsumableDefinition } from '../objects/types/catalog/Consumable';
-import { findItemByName, matchesName } from '../utils/itemSearch';
-import { ConsumableQuery } from './types/consumable';
+import { CONSUMABLE_DEFINITIONS } from "../objects/data/consumablesCatalog";
+import { ItemId } from "../objects/enums/ItemId";
+import { ConsumableDefinition } from "../objects/types/catalog/Consumable";
+import { findItemByName, matchesName } from "../utils/itemSearch";
+import { ConsumableQuery } from "./types/consumable";
 
 export function getItemById(id: ItemId): ConsumableDefinition | null {
-  return CONSUMABLE_DEFINITIONS.find(item => item.id === id) || null;
+  return CONSUMABLE_DEFINITIONS.find((item) => item.id === id) || null;
 }
 
 export function getItemByName(name: string): ConsumableDefinition | null {
@@ -18,27 +18,27 @@ export function getItems(query: ConsumableQuery = {}): ConsumableDefinition[] {
   let items = [...CONSUMABLE_DEFINITIONS];
 
   if (id) {
-    items = items.filter(item => item.id === id);
+    items = items.filter((item) => item.id === id);
   }
 
   if (ids && ids.length > 0) {
     const lookup = new Set(ids);
-    items = items.filter(item => lookup.has(item.id));
+    items = items.filter((item) => lookup.has(item.id));
   }
 
   if (rarity) {
-    items = items.filter(item => item.rarity === rarity);
+    items = items.filter((item) => item.rarity === rarity);
   }
 
   if (type) {
-    items = items.filter(item => item.type === type);
+    items = items.filter((item) => item.type === type);
   }
 
   if (name && name.trim()) {
-    items = items.filter(item => matchesName(item, name));
+    items = items.filter((item) => matchesName(item, name));
   }
 
-  if (typeof limit === 'number' && limit > 0) {
+  if (typeof limit === "number" && limit > 0) {
     return items.slice(0, limit);
   }
 

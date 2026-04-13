@@ -1,4 +1,4 @@
-import { AchievementKey } from '../enums/AchievementKey';
+import { AchievementKey } from "../enums/AchievementKey";
 
 export type AchievementDefinition = {
   key: AchievementKey;

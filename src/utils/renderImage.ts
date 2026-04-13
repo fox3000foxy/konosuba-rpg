@@ -1,22 +1,22 @@
-import * as Photon from '@cf-wasm/photon';
-import fs from 'fs/promises';
-import path from 'path';
-import satori from 'satori';
-import { Creature } from '../classes/Creature';
-import { Team } from '../classes/Player';
-import { imageManifest } from '../objects/data/imageManifest';
-import { EndMessages } from '../objects/enums/EndMessages';
-import { HealthBarName } from '../objects/enums/HealthBarName';
-import { Lang } from '../objects/enums/Lang';
-import { RetryMessages } from '../objects/enums/RetryMessages';
-import { TypeItem } from '../objects/enums/TypeItem';
-import { AquaImages } from '../objects/enums/player/AquaImages';
-import { DarknessImages } from '../objects/enums/player/DarknessImages';
-import { KazumaImages } from '../objects/enums/player/KazumaImages';
-import { MeguminImages } from '../objects/enums/player/MeguminImages';
-import { PlayerName } from '../objects/enums/player/PlayerName';
-import { getCreatureNameAndPrefix } from './creatureText';
-import { ensureResvgWasm, renderSvgToPng } from './resvgWasm';
+import * as Photon from "@cf-wasm/photon";
+import fs from "fs/promises";
+import path from "path";
+import satori from "satori";
+import { Creature } from "../classes/Creature";
+import { Team } from "../classes/Player";
+import { imageManifest } from "../objects/data/imageManifest";
+import { EndMessages } from "../objects/enums/EndMessages";
+import { HealthBarName } from "../objects/enums/HealthBarName";
+import { Lang } from "../objects/enums/Lang";
+import { RetryMessages } from "../objects/enums/RetryMessages";
+import { TypeItem } from "../objects/enums/TypeItem";
+import { AquaImages } from "../objects/enums/player/AquaImages";
+import { DarknessImages } from "../objects/enums/player/DarknessImages";
+import { KazumaImages } from "../objects/enums/player/KazumaImages";
+import { MeguminImages } from "../objects/enums/player/MeguminImages";
+import { PlayerName } from "../objects/enums/player/PlayerName";
+import { getCreatureNameAndPrefix } from "./creatureText";
+import { ensureResvgWasm, renderSvgToPng } from "./resvgWasm";
 
 // ─── LRU Cache ───────────────────────────────────────────────────────────────
 
@@ -25,7 +25,7 @@ class LRUCache<K, V> {
 
   constructor(
     private maxSize: number,
-    private onEvict?: (key: K, val: V) => void
+    private onEvict?: (key: K, val: V) => void,
   ) {}
 
   has(key: K): boolean {
@@ -94,7 +94,7 @@ const pendingFontFetches = new Map<string, Promise<ArrayBuffer>>();
 
 // ─── Image / Font helpers ────────────────────────────────────────────────────
 
-const BASE_URL = 'https://konosuba-rpg.vercel.app'; /* Should match the base path used in src/index.ts for /assets/ */
+const BASE_URL = "https://konosuba-rpg.vercel.app"; /* Should match the base path used in src/index.ts for /assets/ */
 
 export async function getImageBytes(key: string): Promise<ArrayBuffer> {
   if (imageCache[key]) return imageCache[key];
@@ -106,10 +106,10 @@ export async function getImageBytes(key: string): Promise<ArrayBuffer> {
 
   const request = (async () => {
     // Try filesystem paths in order (Vercel then local)
-    const cleanPath = manifestPath.replace(/^\/assets\//, '');
+    const cleanPath = manifestPath.replace(/^\/assets\//, "");
     const possiblePaths = [
       `/var/task/assets/${cleanPath}`, // Vercel serverless
-      path.join(process.cwd(), 'assets', cleanPath), // Dev/local
+      path.join(process.cwd(), "assets", cleanPath), // Dev/local
     ];
 
     for (const filePath of possiblePaths) {
@@ -151,7 +151,7 @@ async function getFontBytes(fontUrl: string): Promise<ArrayBuffer> {
 
   const request = (async () => {
     // Try filesystem paths in order (Vercel then local)
-    const fontPath = 'assets/swordgame/font/GintoNordMedium.otf';
+    const fontPath = "assets/swordgame/font/GintoNordMedium.otf";
     const possiblePaths = [
       `/var/task/${fontPath}`, // Vercel serverless
       path.join(process.cwd(), fontPath), // Dev/local
@@ -186,7 +186,7 @@ function getBase64Cached(key: string, buf: ArrayBuffer): string {
   if (base64Cache[key]) return base64Cache[key];
   const bytes = new Uint8Array(buf);
   const chunkSize = 0x8000;
-  let binary = '';
+  let binary = "";
   for (let i = 0; i < bytes.length; i += chunkSize) {
     binary += String.fromCharCode(...bytes.subarray(i, Math.min(i + chunkSize, bytes.length)));
   }
@@ -258,7 +258,7 @@ async function getBackground(W: number, H: number): Promise<Photon.PhotonImage> 
   const cached = layerCache.get(key);
   if (cached) return clonePhoton(cached);
 
-  const [boardSource, frame] = await Promise.all([getImageReadOnly('board', W, H), getImageReadOnly('frameless', W, H)]);
+  const [boardSource, frame] = await Promise.all([getImageReadOnly("board", W, H), getImageReadOnly("frameless", W, H)]);
   const board = clonePhoton(boardSource);
   Photon.watermark(board, frame, 0n, 0n);
 
@@ -269,7 +269,7 @@ async function getBackground(W: number, H: number): Promise<Photon.PhotonImage> 
 // ─── Characters layer ─────────────────────────────────────────────────────────
 
 function buildCharactersKey(playerImages: string[][], playerHp: number[], creatureImages: string[], creatureHp: number): string {
-  const players = playerImages.map((imgs, i) => `${imgs[0]}:${playerHp[i] > 0 ? 1 : 0}`).join('|');
+  const players = playerImages.map((imgs, i) => `${imgs[0]}:${playerHp[i] > 0 ? 1 : 0}`).join("|");
   return `chars::${players}::${creatureImages[0]}:${creatureHp > 0 ? 1 : 0}`;
 }
 
@@ -287,8 +287,8 @@ async function getCharactersLayer(playerImages: string[][], playerHp: number[], 
     { i: 0, x: (W * 2) / 8 + 50, y: H / 2 - 52 * 2 + 45 },
   ];
 
-  const activeSlots = slots.filter(s => playerHp[s.i] > 0);
-  const sprites = await Promise.all(activeSlots.map(s => getImageReadOnly(playerImages[s.i][0], undefined, 184, true).then(img => ({ s, img }))));
+  const activeSlots = slots.filter((s) => playerHp[s.i] > 0);
+  const sprites = await Promise.all(activeSlots.map((s) => getImageReadOnly(playerImages[s.i][0], undefined, 184, true).then((img) => ({ s, img }))));
 
   for (const { s, img } of sprites) {
     Photon.watermark(layer, img, BigInt(Math.round(s.x)), BigInt(Math.round(s.y)));
@@ -311,16 +311,16 @@ async function buildOverlayJsx(team: Team, creature: Creature, messages: string[
 
   function detectConsumableEffectType(message: string): TypeItem | null {
     const lower = message.toLowerCase();
-    if (lower.includes('regagn') || lower.includes('healed for')) {
+    if (lower.includes("regagn") || lower.includes("healed for")) {
       return TypeItem.Potion;
     }
-    if (lower.includes('pv max') || lower.includes('max hp')) {
+    if (lower.includes("pv max") || lower.includes("max hp")) {
       return TypeItem.Chrono;
     }
-    if (lower.includes('defense') || lower.includes('defense')) {
+    if (lower.includes("defense") || lower.includes("defense")) {
       return TypeItem.Stone;
     }
-    if (lower.includes('attaque') || lower.includes('attack')) {
+    if (lower.includes("attaque") || lower.includes("attack")) {
       return TypeItem.Scroll;
     }
     return null;
@@ -328,12 +328,12 @@ async function buildOverlayJsx(team: Team, creature: Creature, messages: string[
 
   function detectConsumableTargetPlayerId(message: string): number | null {
     const lower = message.toLowerCase();
-    const target = team.players.find(player => {
-      const n0 = player.name[0]?.toLowerCase?.() ?? '';
-      const n1 = player.name[1]?.toLowerCase?.() ?? '';
+    const target = team.players.find((player) => {
+      const n0 = player.name[0]?.toLowerCase?.() ?? "";
+      const n1 = player.name[1]?.toLowerCase?.() ?? "";
       return lower.includes(n0) || lower.includes(n1);
     });
-    return typeof target?.playerId === 'number' ? target.playerId : null;
+    return typeof target?.playerId === "number" ? target.playerId : null;
   }
 
   function playerEffectAnchor(playerId: number): { left: number; top: number } {
@@ -361,8 +361,8 @@ async function buildOverlayJsx(team: Team, creature: Creature, messages: string[
   }
 
   function buildConsumableEffectBadge(effectType: TypeItem, playerId: number): object {
-    let label = '';
-    let effectImageKey = '';
+    let label = "";
+    let effectImageKey = "";
 
     // Effect assets:
     // - assets/ui/effects/potion.png
@@ -370,47 +370,47 @@ async function buildOverlayJsx(team: Team, creature: Creature, messages: string[
     // - assets/ui/effects/stone.png
     // - assets/ui/effects/scroll.png
     if (effectType === TypeItem.Potion) {
-      label = '✚';
-      effectImageKey = 'ui_effect_potion';
+      label = "✚";
+      effectImageKey = "ui_effect_potion";
     }
     if (effectType === TypeItem.Chrono) {
-      label = '↑♡';
-      effectImageKey = 'ui_effect_chrono';
+      label = "↑♡";
+      effectImageKey = "ui_effect_chrono";
     }
     if (effectType === TypeItem.Stone) {
-      label = '🛡';
-      effectImageKey = 'ui_effect_stone';
+      label = "🛡";
+      effectImageKey = "ui_effect_stone";
     }
     if (effectType === TypeItem.Scroll) {
-      label = '⚔';
-      effectImageKey = 'ui_effect_scroll';
+      label = "⚔";
+      effectImageKey = "ui_effect_scroll";
     }
 
     const effectImageSrc = effectImageKey && imageCache[effectImageKey] ? `data:image/png;base64,${getBase64Cached(effectImageKey, imageCache[effectImageKey])}` : null;
 
     const { left, top } = playerEffectAnchor(playerId);
     return {
-      type: 'div',
+      type: "div",
       props: {
         style: {
-          display: 'flex' as const,
-          position: 'absolute' as const,
-          alignItems: 'center' as const,
-          justifyContent: 'center' as const,
+          display: "flex" as const,
+          position: "absolute" as const,
+          alignItems: "center" as const,
+          justifyContent: "center" as const,
           left,
           top,
           width: 28,
           height: 28,
           borderRadius: 14,
-          background: 'rgba(0,0,0,0.55)',
-          border: '1px solid rgba(255,255,255,0.65)',
-          color: '#FFFFFF',
+          background: "rgba(0,0,0,0.55)",
+          border: "1px solid rgba(255,255,255,0.65)",
+          color: "#FFFFFF",
           fontSize: 16,
           fontFamily: '"Ginto Nord Black"',
         },
         children: effectImageSrc
           ? {
-              type: 'img',
+              type: "img",
               props: {
                 src: effectImageSrc,
                 style: {
@@ -427,24 +427,24 @@ async function buildOverlayJsx(team: Team, creature: Creature, messages: string[
   function healthBar(current: number, max: number, x: number, y: number, w: number, h: number) {
     const pct = Math.max(0, Math.min(1, current / max));
     return {
-      type: 'div',
+      type: "div",
       props: {
         style: {
-          position: 'absolute' as const,
-          display: 'flex' as const,
+          position: "absolute" as const,
+          display: "flex" as const,
           left: x,
           top: y,
           width: w,
           height: h,
-          background: '#ff0000',
+          background: "#ff0000",
         },
         children: {
-          type: 'div',
+          type: "div",
           props: {
             style: {
               width: Math.round(w * pct),
               height: h,
-              background: '#00FF00',
+              background: "#00FF00",
             },
             children: null,
           },
@@ -478,7 +478,7 @@ async function buildOverlayJsx(team: Team, creature: Creature, messages: string[
     : null;
 
   // Résolution synchrone depuis le cache — pas d'await dans la construction JSX
-  const endImgSrc = endMsg && imageCache['end_' + state] ? `data:image/png;base64,${getBase64Cached('end_' + state, imageCache['end_' + state])}` : null;
+  const endImgSrc = endMsg && imageCache["end_" + state] ? `data:image/png;base64,${getBase64Cached("end_" + state, imageCache["end_" + state])}` : null;
 
   let pid = 0;
   switch (team.activePlayer?.name[0]) {
@@ -497,35 +497,35 @@ async function buildOverlayJsx(team: Team, creature: Creature, messages: string[
   }
   team.setActivePlayer(team.players[pid]);
 
-  const latestMessage = messages.length > 0 ? messages[messages.length - 1] : '';
+  const latestMessage = messages.length > 0 ? messages[messages.length - 1] : "";
   const latestConsumableEffect = detectConsumableEffectType(latestMessage);
   const latestConsumableTargetId = latestMessage && latestConsumableEffect ? detectConsumableTargetPlayerId(latestMessage) : null;
 
   return {
-    type: 'div',
+    type: "div",
     props: {
       style: {
-        display: 'flex' as const,
-        position: 'relative' as const,
+        display: "flex" as const,
+        position: "relative" as const,
         width: W,
         height: H,
         fontFamily: '"Ginto Nord Black"',
-        color: '#000000',
-        overflow: 'hidden',
+        color: "#000000",
+        overflow: "hidden",
       },
       children: [
         // ── Chat messages ──────────────────────────────────────────────
         ...messages.map((msg, i) => ({
-          type: 'div',
+          type: "div",
           props: {
             style: {
-              display: 'flex' as const,
-              position: 'absolute' as const,
+              display: "flex" as const,
+              position: "absolute" as const,
               left: 104,
               top: (192 + i * 16) * 2 + 120,
               fontSize: 16,
               fontFamily: '"Ginto Nord Black"',
-              color: '#000000',
+              color: "#000000",
             },
             children: msg,
           },
@@ -533,11 +533,11 @@ async function buildOverlayJsx(team: Team, creature: Creature, messages: string[
 
         // ── Player info (main) ─────────────────────────────────────────
         {
-          type: 'img',
+          type: "img",
           props: {
             src: team.activePlayer?.icon,
             style: {
-              position: 'absolute' as const,
+              position: "absolute" as const,
               left: 40 * 1.5 + 10,
               top: 40 + 10 - 38,
               width: 50,
@@ -546,11 +546,11 @@ async function buildOverlayJsx(team: Team, creature: Creature, messages: string[
           },
         },
         {
-          type: 'div',
+          type: "div",
           props: {
             style: {
-              display: 'flex' as const,
-              position: 'absolute' as const,
+              display: "flex" as const,
+              position: "absolute" as const,
               left: 40 * 2 + 40,
               top: 42 * 2 - 55,
               fontSize: 16,
@@ -560,11 +560,11 @@ async function buildOverlayJsx(team: Team, creature: Creature, messages: string[
           },
         },
         {
-          type: 'div',
+          type: "div",
           props: {
             style: {
-              display: 'flex' as const,
-              position: 'absolute' as const,
+              display: "flex" as const,
+              position: "absolute" as const,
               right: W - 210 * 2,
               top: 42 * 2 - 55,
               fontSize: 16,
@@ -576,7 +576,7 @@ async function buildOverlayJsx(team: Team, creature: Creature, messages: string[
         healthBar(team.activePlayer?.hp || 0, team.activePlayer?.hpMax || 0, 38 * 2, 46.25 * 2 - 38, 173.5 * 2, 8.5 * 2),
 
         // ── Player info (secondary x3) ─────────────────────────────────
-        ...[1, 2, 3].flatMap(offset => {
+        ...[1, 2, 3].flatMap((offset) => {
           const i = (pid + offset) % 4;
           const xBase = offset === 2 ? 332 * 2 : 234 * 2;
           const yBase = offset === 3 ? 56.25 * 2 - 38 : 36 * 2 - 38 + 3;
@@ -585,11 +585,11 @@ async function buildOverlayJsx(team: Team, creature: Creature, messages: string[
           const op = team.players[i];
           return [
             {
-              type: 'img',
+              type: "img",
               props: {
                 src: op?.icon,
                 style: {
-                  position: 'absolute' as const,
+                  position: "absolute" as const,
                   left: thmX,
                   top: thmY,
                   width: 40,
@@ -598,11 +598,11 @@ async function buildOverlayJsx(team: Team, creature: Creature, messages: string[
               },
             },
             {
-              type: 'div',
+              type: "div",
               props: {
                 style: {
-                  display: 'flex' as const,
-                  position: 'absolute' as const,
+                  display: "flex" as const,
+                  position: "absolute" as const,
                   left: xBase + 32,
                   top: yBase - 16,
                   fontSize: 12,
@@ -619,11 +619,11 @@ async function buildOverlayJsx(team: Team, creature: Creature, messages: string[
 
         // ── Creature info ──────────────────────────────────────────────
         {
-          type: 'div',
+          type: "div",
           props: {
             style: {
-              display: 'flex' as const,
-              position: 'absolute' as const,
+              display: "flex" as const,
+              position: "absolute" as const,
               left: 288 * 2,
               top: 148 * 2 + 129,
               fontSize: 12,
@@ -633,11 +633,11 @@ async function buildOverlayJsx(team: Team, creature: Creature, messages: string[
           },
         },
         {
-          type: 'div',
+          type: "div",
           props: {
             style: {
-              display: 'flex' as const,
-              position: 'absolute' as const,
+              display: "flex" as const,
+              position: "absolute" as const,
               right: W - 460 * 2,
               top: 148 * 2 + 129,
               fontSize: 12,
@@ -652,48 +652,48 @@ async function buildOverlayJsx(team: Team, creature: Creature, messages: string[
         ...(endMsg && endImgSrc
           ? [
               {
-                type: 'img',
+                type: "img",
                 props: {
                   src: endImgSrc,
                   style: {
-                    position: 'absolute' as const,
+                    position: "absolute" as const,
                     left: 0,
                     top: 0,
-                    width: '100%',
-                    height: '100%',
+                    width: "100%",
+                    height: "100%",
                   },
                 },
               },
               {
-                type: 'div',
+                type: "div",
                 props: {
                   style: {
-                    display: 'flex' as const,
-                    position: 'absolute' as const,
+                    display: "flex" as const,
+                    position: "absolute" as const,
                     left: W / 2 - endMsg.length * 9,
                     right: 0,
                     top: 135 * 2 + 100,
-                    textAlign: 'center' as const,
+                    textAlign: "center" as const,
                     fontSize: 32,
                     fontFamily: '"Ginto Nord Medium"',
-                    color: '#FFFFFF',
+                    color: "#FFFFFF",
                   },
                   children: endMsg,
                 },
               },
               {
-                type: 'div',
+                type: "div",
                 props: {
                   style: {
-                    display: 'flex' as const,
-                    position: 'absolute' as const,
+                    display: "flex" as const,
+                    position: "absolute" as const,
                     left: W / 2 - (endMsg2?.length || 0) * 9,
                     right: 0,
                     top: 135 * 2 + 100 + 50,
-                    textAlign: 'center' as const,
+                    textAlign: "center" as const,
                     fontSize: 32,
                     fontFamily: '"Ginto Nord Medium"',
-                    color: '#FFFFFF',
+                    color: "#FFFFFF",
                   },
                   children: endMsg2,
                 },
@@ -714,7 +714,7 @@ function hashString(value: string): string {
 }
 
 function buildUiCacheKey(team: Team, creature: Creature, messages: string[], state: string | null, lang: string): string {
-  return [team.players.map(p => `${p.name}:${Math.max(p.hp, 0)}/${p.hpMax}:${p.attack[0]}-${p.attack[1]}`).join(','), team.activePlayer?.name ?? '', `${creature.name}:${creature.hp}/${creature.hpMax}:${creature.attack[0]}-${creature.attack[1]}`, hashString(messages.join('\x00')), state ?? '', lang].join('|');
+  return [team.players.map((p) => `${p.name}:${Math.max(p.hp, 0)}/${p.hpMax}:${p.attack[0]}-${p.attack[1]}`).join(","), team.activePlayer?.name ?? "", `${creature.name}:${creature.hp}/${creature.hpMax}:${creature.attack[0]}-${creature.attack[1]}`, hashString(messages.join("\x00")), state ?? "", lang].join("|");
 }
 
 async function getUIOverlay(uiCacheKey: string, team: Team, creature: Creature, messages: string[], state: string | null, lang: string, fontMediumBuf: ArrayBuffer, W: number, H: number): Promise<Photon.PhotonImage> {
@@ -726,10 +726,10 @@ async function getUIOverlay(uiCacheKey: string, team: Team, creature: Creature, 
   const svg = await satori(overlayJsx, {
     width: W,
     height: H,
-    fonts: [{ name: 'Sans-Serif', data: fontMediumBuf, weight: 400, style: 'normal' }],
+    fonts: [{ name: "Sans-Serif", data: fontMediumBuf, weight: 400, style: "normal" }],
   });
 
-  const png = await renderSvgToPng(svg, { fitTo: { mode: 'width', value: W } });
+  const png = await renderSvgToPng(svg, { fitTo: { mode: "width", value: W } });
   const img = toPhoton(png.buffer.slice(0) as ArrayBuffer);
 
   uiPhotonCache.set(uiCacheKey, img);
@@ -738,53 +738,53 @@ async function getUIOverlay(uiCacheKey: string, team: Team, creature: Creature, 
 
 // ─── Warmup (appeler au démarrage du Worker) ──────────────────────────────────
 
-const END_STATES = ['good', 'bad', 'giveup', 'best'];
+const END_STATES = ["good", "bad", "giveup", "best"];
 
 export async function warmup(): Promise<void> {
   const fontUrl = `${BASE_URL}/assets/swordgame/font/GintoNordMedium.otf`;
-  console.log('Starting warmup process...');
+  console.log("Starting warmup process...");
   try {
-    console.log('Ensuring ResvgWasm is loaded...');
+    console.log("Ensuring ResvgWasm is loaded...");
     await ensureResvgWasm();
-    console.log('ResvgWasm loaded successfully.');
+    console.log("ResvgWasm loaded successfully.");
 
     console.log(`Fetching font from: ${fontUrl}`);
     await getFontBytes(fontUrl);
-    console.log('Font loaded successfully.');
+    console.log("Font loaded successfully.");
 
-    console.log('Loading END_STATES images...');
+    console.log("Loading END_STATES images...");
     await Promise.all(
-      END_STATES.map(async s => {
+      END_STATES.map(async (s) => {
         try {
-          await getImageBytes('end_' + s);
+          await getImageBytes("end_" + s);
           console.log(`Image 'end_${s}' loaded successfully.`);
         } catch (err) {
           console.error(`Failed to load image 'end_${s}':`, err);
         }
-      })
+      }),
     );
 
-    console.log('Warmup completed successfully.');
+    console.log("Warmup completed successfully.");
   } catch (error) {
-    console.error('Warmup failed:', error);
+    console.error("Warmup failed:", error);
   }
 }
 
 // Avoid heavy boot-time warmup in serverless by default.
-const isVercelRuntime = process.env.VERCEL === '1' || process.env.VERCEL === 'true';
-const shouldAutoWarmup = process.env.RENDER_WARMUP_ON_BOOT === '1' || (!isVercelRuntime && process.env.NODE_ENV !== 'test');
+const isVercelRuntime = process.env.VERCEL === "1" || process.env.VERCEL === "true";
+const shouldAutoWarmup = process.env.RENDER_WARMUP_ON_BOOT === "1" || (!isVercelRuntime && process.env.NODE_ENV !== "test");
 
-console.log('Warmup condition:', { isVercelRuntime, shouldAutoWarmup });
+console.log("Warmup condition:", { isVercelRuntime, shouldAutoWarmup });
 
 // if (shouldAutoWarmup) {
 // }
 
 // ─── Main render ──────────────────────────────────────────────────────────────
 
-export default async function renderImage(state: string | null, messages: string[], team: Team, creature: Creature, lang = 'en'): Promise<Uint8Array> {
-  await warmup().catch(err => console.error('Warmup failed:', err));
+export default async function renderImage(state: string | null, messages: string[], team: Team, creature: Creature, lang = "en"): Promise<Uint8Array> {
+  await warmup().catch((err) => console.error("Warmup failed:", err));
 
-  const perfEnabled = process.env.RENDER_PERF === '1' || process.env.DEV_MODE === '1' || process.env.DEV_MODE === 'true';
+  const perfEnabled = process.env.RENDER_PERF === "1" || process.env.DEV_MODE === "1" || process.env.DEV_MODE === "true";
   const startedAt = perfEnabled ? performance.now() : 0;
   const spans: PerfSpan[] = [];
   const mark = (label: string, t0: number): void => {
@@ -806,8 +806,8 @@ export default async function renderImage(state: string | null, messages: string
   creature.hp = Math.max(creature.hp, 0);
 
   const uiCacheKey = buildUiCacheKey(team, creature, messages, state, lang);
-  const playerImages = team.players.map(p => p.images);
-  const teamHp = team.players.map(p => p.hp);
+  const playerImages = team.players.map((p) => p.images);
+  const teamHp = team.players.map((p) => p.hp);
   const charsKey = buildCharactersKey(playerImages, teamHp, creature.images, creature.hp);
   const renderCacheKey = `render::${uiCacheKey}::${charsKey}`;
 
@@ -828,22 +828,28 @@ export default async function renderImage(state: string | null, messages: string
   }
 
   const tFetch = perfEnabled ? performance.now() : 0;
-  const [fontMediumBuf] = await Promise.all([getFontBytes(`${BASE_URL}/assets/swordgame/font/GintoNordMedium.otf`), getImageBytes('ui_effect_potion').catch(() => undefined), getImageBytes('ui_effect_chrono').catch(() => undefined), getImageBytes('ui_effect_stone').catch(() => undefined), getImageBytes('ui_effect_scroll').catch(() => undefined)]);
-  mark('assets.fetch', tFetch);
+  const [fontMediumBuf] = await Promise.all([
+    getFontBytes(`${BASE_URL}/assets/swordgame/font/GintoNordMedium.otf`),
+    getImageBytes("ui_effect_potion").catch(() => undefined),
+    getImageBytes("ui_effect_chrono").catch(() => undefined),
+    getImageBytes("ui_effect_stone").catch(() => undefined),
+    getImageBytes("ui_effect_scroll").catch(() => undefined),
+  ]);
+  mark("assets.fetch", tFetch);
 
   const tLayers = perfEnabled ? performance.now() : 0;
   const [canvas, chars, uiImg] = await Promise.all([getBackground(W, H), getCharactersLayer(playerImages, teamHp, creature.images, creature.hp, W, H), getUIOverlay(uiCacheKey, team, creature, messages, state, lang, fontMediumBuf, W, H)]);
-  mark('layers.build', tLayers);
+  mark("layers.build", tLayers);
 
   const tComposite = perfEnabled ? performance.now() : 0;
   Photon.watermark(canvas, chars, 0n, 0n);
   Photon.watermark(canvas, uiImg, 0n, 0n);
-  mark('layers.composite', tComposite);
+  mark("layers.composite", tComposite);
 
   const tEncode = perfEnabled ? performance.now() : 0;
   const output = new Uint8Array(canvas.get_bytes_webp());
   canvas.free();
-  mark('webp.encode', tEncode);
+  mark("webp.encode", tEncode);
 
   renderOutputCache.set(renderCacheKey, new Uint8Array(output));
 

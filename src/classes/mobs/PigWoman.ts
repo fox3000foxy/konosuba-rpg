@@ -1,8 +1,8 @@
-import { Gender } from '../../objects/enums/Gender';
-import { FrenchLores } from '../../objects/enums/FrenchLores';
-import { GenericCreature, GenericCreatureInterface } from '../GenericCreature';
-import { Random } from '../Random';
-import { EnglishLore } from '../../objects/enums/EnglishLore';
+import { Gender } from "../../objects/enums/Gender";
+import { FrenchLores } from "../../objects/enums/FrenchLores";
+import { GenericCreature, GenericCreatureInterface } from "../GenericCreature";
+import { Random } from "../Random";
+import { EnglishLore } from "../../objects/enums/EnglishLore";
 
 export default class PigWoman extends GenericCreature implements GenericCreatureInterface {
   constructor() {
@@ -11,12 +11,12 @@ export default class PigWoman extends GenericCreature implements GenericCreature
     this.love = 5;
     this.hpMax = 550;
     this.hp = this.hpMax;
-    this.name = ['Pig Woman', 'Femme cochon'];
+    this.name = ["Pig Woman", "Femme cochon"];
     this.prefix = true;
   }
 
   pickColor(rng: Random) {
-    this.color = rng.choice(['11101', '11104', '11105', '11102']);
+    this.color = rng.choice(["11101", "11104", "11105", "11102"]);
     this.images = [`enemy_image_${this.color}`];
     this.lore = [FrenchLores.Creature_PigWoman, EnglishLore.Creature_PigWoman];
     this.gender = Gender.Female;

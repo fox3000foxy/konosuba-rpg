@@ -1,9 +1,9 @@
 /** Utility functions for moves compression and decompression */
 
 function splitPayload(payload: string): { head: string; actions: string } {
-  const slashIndex = payload.indexOf('/');
+  const slashIndex = payload.indexOf("/");
   if (slashIndex === -1) {
-    return { head: payload, actions: '' };
+    return { head: payload, actions: "" };
   }
 
   return {
@@ -23,14 +23,14 @@ export function compressMoves(moves: string): string {
     return moves;
   }
 
-  let result = '';
+  let result = "";
   let count = 1;
 
   for (let i = 1; i <= actions.length; i += 1) {
     if (actions[i] === actions[i - 1]) {
       count += 1;
     } else {
-      result += actions[i - 1] + (count > 1 ? String(count) : '');
+      result += actions[i - 1] + (count > 1 ? String(count) : "");
       count = 1;
     }
   }
@@ -45,7 +45,7 @@ export function decompressMoves(comp: string): string {
     return comp;
   }
 
-  let result = '';
+  let result = "";
   let i = 0;
 
   while (i < actions.length) {
@@ -53,7 +53,7 @@ export function decompressMoves(comp: string): string {
     i += 1;
 
     let count = 0;
-    while (i < actions.length && actions[i] >= '0' && actions[i] <= '9') {
+    while (i < actions.length && actions[i] >= "0" && actions[i] <= "9") {
       count = count * 10 + (actions.charCodeAt(i) - 48);
       i += 1;
     }

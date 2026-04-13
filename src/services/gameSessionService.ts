@@ -1,11 +1,11 @@
-import { RawButton } from '../objects/enums/RawButton';
-import { withPerf } from '../utils/perfLogger';
-import { getSupabaseAdminClient } from '../utils/supabaseClient';
-import { DecodeGameplayPayloadResult } from './types/gameSession';
+import { RawButton } from "../objects/enums/RawButton";
+import { withPerf } from "../utils/perfLogger";
+import { getSupabaseAdminClient } from "../utils/supabaseClient";
+import { DecodeGameplayPayloadResult } from "./types/gameSession";
 
-const TOKEN_PREFIX = 'gs.';
+const TOKEN_PREFIX = "gs.";
 const TOKEN_SIZE = 10;
-const TOKEN_CHARS = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+const TOKEN_CHARS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 const SESSION_TTL_MS = 7 * 24 * 60 * 60 * 1000;
 const PRUNE_INTERVAL_MS = 10 * 60 * 1000;
 
@@ -43,15 +43,15 @@ const latestTurnByBattle = G.__gameSessionLatestTurnByBattle;
 let lastPruneAt = G.__gameSessionLastPruneAt;
 
 function hasCustomId(component: unknown): component is { custom_id: string } {
-  if (!component || typeof component !== 'object') {
+  if (!component || typeof component !== "object") {
     return false;
   }
 
-  return 'custom_id' in component && typeof (component as { custom_id?: unknown }).custom_id === 'string';
+  return "custom_id" in component && typeof (component as { custom_id?: unknown }).custom_id === "string";
 }
 
 function randomToken(length: number): string {
-  let out = '';
+  let out = "";
   for (let i = 0; i < length; i += 1) {
     const idx = Math.floor(Math.random() * TOKEN_CHARS.length);
     out += TOKEN_CHARS[idx];
@@ -106,10 +106,10 @@ async function pruneExpiredSessions(force = false): Promise<void> {
     return;
   }
 
-  const { error } = await supabase.from('game_sessions').delete().lt('expires_at', new Date(now).toISOString());
+  const { error } = await supabase.from("game_sessions").delete().lt("expires_at", new Date(now).toISOString());
 
   if (error) {
-    console.error('[db] prune expired game sessions failed:', error.message);
+    console.error("[db] prune expired game sessions failed:", error.message);
   }
 }
 
@@ -129,9 +129,9 @@ function isExpired(entry: SessionEntry): boolean {
 }
 
 function parseCustomId(customId: string): { payload: string; owner: string } {
-  const colonIdx = customId.lastIndexOf(':');
+  const colonIdx = customId.lastIndexOf(":");
   if (colonIdx === -1) {
-    return { payload: customId, owner: '' };
+    return { payload: customId, owner: "" };
   }
 
   return {
@@ -145,7 +145,7 @@ function needsEncoding(payload: string): boolean {
     return false;
   }
 
-  if (payload.startsWith('menu.')) {
+  if (payload.startsWith("menu.")) {
     return false;
   }
 
@@ -153,11 +153,11 @@ function needsEncoding(payload: string): boolean {
     return false;
   }
 
-  if (payload === 'consumables') {
+  if (payload === "consumables") {
     return false;
   }
 
-  if (payload === 'useitem') {
+  if (payload === "useitem") {
     return false;
   }
 
@@ -165,8 +165,8 @@ function needsEncoding(payload: string): boolean {
 }
 
 export function extractBattleKeyFromPayload(payload: string): string {
-  const cleanPayload = payload.replace(/\[.*?\]/g, '');
-  const slashIndex = cleanPayload.indexOf('/');
+  const cleanPayload = payload.replace(/\[.*?\]/g, "");
+  const slashIndex = cleanPayload.indexOf("/");
   if (slashIndex === -1) {
     return cleanPayload;
   }
@@ -182,10 +182,10 @@ async function getLatestTurnVersion(ownerUserId: string, battleKey: string): Pro
     return latestTurnByBattle.get(key) || 1;
   }
 
-  const { data, error } = await supabase.from('game_sessions').select('turn_version').eq('owner_user_id', ownerUserId).eq('battle_key', battleKey).order('turn_version', { ascending: false }).limit(1).maybeSingle();
+  const { data, error } = await supabase.from("game_sessions").select("turn_version").eq("owner_user_id", ownerUserId).eq("battle_key", battleKey).order("turn_version", { ascending: false }).limit(1).maybeSingle();
 
   if (error) {
-    console.error('[db] load latest turn version failed:', error.message);
+    console.error("[db] load latest turn version failed:", error.message);
     return latestTurnByBattle.get(key) || 1;
   }
 
@@ -211,7 +211,7 @@ async function insertSessionRows(
     turn_version: number;
     expires_at: string;
     updated_at: string;
-  }>
+  }>,
 ): Promise<boolean> {
   if (rows.length === 0) {
     return true;
@@ -222,12 +222,12 @@ async function insertSessionRows(
     return false;
   }
 
-  const { error } = await supabase.from('game_sessions').insert(rows);
+  const { error } = await supabase.from("game_sessions").insert(rows);
   if (!error) {
     return true;
   }
 
-  console.error('[db] insert game sessions failed:', error.message);
+  console.error("[db] insert game sessions failed:", error.message);
   return false;
 }
 
@@ -241,7 +241,7 @@ async function createTokenMapForBattle(ownerUserId: string, battleKey: string, p
   const expiresAt = nowMs() + SESSION_TTL_MS;
   const updatedAt = toIso(nowMs());
 
-  let rows = payloads.map(payload => ({
+  let rows = payloads.map((payload) => ({
     token: randomToken(TOKEN_SIZE),
     owner_user_id: ownerUserId,
     payload,
@@ -253,7 +253,7 @@ async function createTokenMapForBattle(ownerUserId: string, battleKey: string, p
 
   const inserted = await insertSessionRows(rows);
   if (!inserted) {
-    rows = payloads.map(payload => ({
+    rows = payloads.map((payload) => ({
       token: randomToken(TOKEN_SIZE),
       owner_user_id: ownerUserId,
       payload,
@@ -289,7 +289,7 @@ type PendingEncoding = {
 };
 
 export async function encodeGameplayButtons(buttons: RawButton[]): Promise<RawButton[]> {
-  return withPerf('gameSessionService', 'encodeGameplayButtons', async () => {
+  return withPerf("gameSessionService", "encodeGameplayButtons", async () => {
     await pruneExpiredSessions();
 
     const groups = new Map<string, PendingEncoding>();
@@ -305,7 +305,7 @@ export async function encodeGameplayButtons(buttons: RawButton[]): Promise<RawBu
           continue;
         }
 
-        const ownerUserId = owner || 'all';
+        const ownerUserId = owner || "all";
         const battleKey = extractBattleKeyFromPayload(payload);
         const key = `${ownerUserId}::${battleKey}`;
 
@@ -329,9 +329,9 @@ export async function encodeGameplayButtons(buttons: RawButton[]): Promise<RawBu
       tokenMaps.set(key, map);
     }
 
-    return buttons.map(row => ({
+    return buttons.map((row) => ({
       ...row,
-      components: row.components.map(component => {
+      components: row.components.map((component) => {
         if (!hasCustomId(component)) {
           return component;
         }
@@ -341,7 +341,7 @@ export async function encodeGameplayButtons(buttons: RawButton[]): Promise<RawBu
           return component;
         }
 
-        const ownerUserId = owner || 'all';
+        const ownerUserId = owner || "all";
         const battleKey = extractBattleKeyFromPayload(payload);
         const map = tokenMaps.get(`${ownerUserId}::${battleKey}`);
         const token = map?.get(payload);
@@ -351,7 +351,7 @@ export async function encodeGameplayButtons(buttons: RawButton[]): Promise<RawBu
 
         return {
           ...component,
-          custom_id: `${TOKEN_PREFIX}${token}${owner ? `:${owner}` : ''}`,
+          custom_id: `${TOKEN_PREFIX}${token}${owner ? `:${owner}` : ""}`,
         };
       }),
     }));
@@ -364,10 +364,10 @@ async function loadTokenRowByToken(token: string): Promise<SessionEntry | null> 
     return null;
   }
 
-  const { data, error } = await supabase.from('game_sessions').select('token, payload, owner_user_id, battle_key, turn_version, expires_at').eq('token', token).maybeSingle();
+  const { data, error } = await supabase.from("game_sessions").select("token, payload, owner_user_id, battle_key, turn_version, expires_at").eq("token", token).maybeSingle();
 
   if (error) {
-    console.error('[db] load game session by token failed:', error.message);
+    console.error("[db] load game session by token failed:", error.message);
     return null;
   }
 
@@ -382,7 +382,7 @@ async function loadTokenRowByToken(token: string): Promise<SessionEntry | null> 
 }
 
 export async function decodeGameplayPayloadWithStatus(encodedPayload: string, userID: string): Promise<DecodeGameplayPayloadResult> {
-  return withPerf('gameSessionService', 'decodeGameplayPayloadWithStatus', async () => {
+  return withPerf("gameSessionService", "decodeGameplayPayloadWithStatus", async () => {
     await pruneExpiredSessions();
 
     if (!encodedPayload.startsWith(TOKEN_PREFIX)) {
@@ -391,26 +391,26 @@ export async function decodeGameplayPayloadWithStatus(encodedPayload: string, us
 
     const token = encodedPayload.slice(TOKEN_PREFIX.length);
     if (!token) {
-      return { payload: null, reason: 'invalid-token' };
+      return { payload: null, reason: "invalid-token" };
     }
 
     const cached = tokenToSession.get(token) || null;
     const entry = cached || (await loadTokenRowByToken(token));
     if (!entry) {
-      return { payload: null, reason: 'not-found' };
+      return { payload: null, reason: "not-found" };
     }
 
-    if (entry.ownerUserId !== userID && entry.ownerUserId !== 'all') {
-      return { payload: null, reason: 'forbidden' };
+    if (entry.ownerUserId !== userID && entry.ownerUserId !== "all") {
+      return { payload: null, reason: "forbidden" };
     }
 
     if (isExpired(entry)) {
-      return { payload: null, reason: 'expired' };
+      return { payload: null, reason: "expired" };
     }
 
     const latestTurn = await getLatestTurnVersion(entry.ownerUserId, entry.battleKey);
     if (entry.turnVersion !== latestTurn) {
-      return { payload: null, reason: 'stale' };
+      return { payload: null, reason: "stale" };
     }
 
     return { payload: entry.payload };
@@ -418,7 +418,7 @@ export async function decodeGameplayPayloadWithStatus(encodedPayload: string, us
 }
 
 export async function decodeGameplayPayload(encodedPayload: string, userID: string): Promise<string | null> {
-  return withPerf('gameSessionService', 'decodeGameplayPayload', async () => {
+  return withPerf("gameSessionService", "decodeGameplayPayload", async () => {
     const result = await decodeGameplayPayloadWithStatus(encodedPayload, userID);
     return result.payload;
   });

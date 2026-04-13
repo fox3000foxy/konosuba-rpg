@@ -1,8 +1,8 @@
-import { Gender } from '../../objects/enums/Gender';
-import { FrenchLores } from '../../objects/enums/FrenchLores';
-import { GenericCreature, GenericCreatureInterface } from '../GenericCreature';
-import { Random } from '../Random';
-import { EnglishLore } from '../../objects/enums/EnglishLore';
+import { Gender } from "../../objects/enums/Gender";
+import { FrenchLores } from "../../objects/enums/FrenchLores";
+import { GenericCreature, GenericCreatureInterface } from "../GenericCreature";
+import { Random } from "../Random";
+import { EnglishLore } from "../../objects/enums/EnglishLore";
 
 export default class Destroyer extends GenericCreature implements GenericCreatureInterface {
   constructor() {
@@ -11,12 +11,12 @@ export default class Destroyer extends GenericCreature implements GenericCreatur
     this.love = 100;
     this.hpMax = 3500;
     this.hp = this.hpMax;
-    this.name = ['Destroyer', 'Destroyer'];
+    this.name = ["Destroyer", "Destroyer"];
     this.prefix = true;
   }
 
   pickColor(rng: Random) {
-    this.color = rng.choice(['19300', '19302']);
+    this.color = rng.choice(["19300", "19302"]);
     this.images = [`enemy_image_${this.color}`];
     this.lore = [FrenchLores.Creature_Destroyer, EnglishLore.Creature_Destroyer];
     this.gender = Gender.Neutral;

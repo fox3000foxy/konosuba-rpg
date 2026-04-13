@@ -1,4 +1,4 @@
 export enum QuestAction {
-  View = 'view',
-  Claim = 'claim',
+  View = "view",
+  Claim = "claim",
 }

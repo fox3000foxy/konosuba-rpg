@@ -1,6 +1,6 @@
-import { config } from 'dotenv';
-import { readFile } from 'node:fs/promises';
-import path from 'node:path';
+import { config } from "dotenv";
+import { readFile } from "node:fs/promises";
+import path from "node:path";
 config();
 
 type JsonObject = Record<string, unknown>;
@@ -33,23 +33,23 @@ const OPTION_TYPE_MAP: Record<string, number> = {
 export const applicationCommandIndex = {
   applications: [
     {
-      id: process.env.DISCORD_APPLICATION_ID || '',
-      name: 'KonosubaRPG',
+      id: process.env.DISCORD_APPLICATION_ID || "",
+      name: "KonosubaRPG",
     },
   ],
   application_commands: [],
 };
 
 function isObject(value: unknown): value is JsonObject {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
+  return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
 function normalizeOptionType(value: unknown): unknown {
-  if (typeof value === 'number') {
+  if (typeof value === "number") {
     return value;
   }
 
-  if (typeof value !== 'string') {
+  if (typeof value !== "string") {
     return value;
   }
 
@@ -63,7 +63,7 @@ function normalizeOption(option: unknown): unknown {
 
   const normalized: JsonObject = { ...option };
 
-  if ('type' in normalized) {
+  if ("type" in normalized) {
     normalized.type = normalizeOptionType(normalized.type);
   }
 
@@ -76,12 +76,12 @@ function normalizeOption(option: unknown): unknown {
 
 function normalizeCommand(command: unknown): JsonObject {
   if (!isObject(command)) {
-    throw new Error('Invalid command format in commands.json');
+    throw new Error("Invalid command format in commands.json");
   }
 
   const normalized: JsonObject = { ...command };
 
-  if ('type' in normalized) {
+  if ("type" in normalized) {
     normalized.type = normalizeOptionType(normalized.type);
   }
 
@@ -93,12 +93,12 @@ function normalizeCommand(command: unknown): JsonObject {
 }
 
 async function loadCommands(): Promise<JsonObject[]> {
-  const commandsPath = path.resolve(process.cwd(), 'commands.json');
-  const content = await readFile(commandsPath, 'utf-8');
+  const commandsPath = path.resolve(process.cwd(), "commands.json");
+  const content = await readFile(commandsPath, "utf-8");
   const parsed: unknown = JSON.parse(content);
 
   if (!Array.isArray(parsed)) {
-    throw new Error('commands.json must contain an array of slash commands');
+    throw new Error("commands.json must contain an array of slash commands");
   }
 
   return parsed.map(normalizeCommand);
@@ -112,14 +112,14 @@ async function discordApi<T>(url: string, token: string, init?: RequestInit): Pr
       ...init,
       headers: {
         Authorization: `Bot ${token}`,
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
         ...(init?.headers || {}),
       },
     });
 
     if (response.status === 429 && attempt < maxAttempts) {
       let waitMs = 1000;
-      const retryAfterHeader = response.headers.get('retry-after');
+      const retryAfterHeader = response.headers.get("retry-after");
       if (retryAfterHeader) {
         const seconds = Number.parseFloat(retryAfterHeader);
         if (Number.isFinite(seconds) && seconds > 0) {
@@ -131,7 +131,7 @@ async function discordApi<T>(url: string, token: string, init?: RequestInit): Pr
       if (bodyText) {
         try {
           const parsed = JSON.parse(bodyText) as DiscordRateLimitBody;
-          if (typeof parsed.retry_after === 'number' && Number.isFinite(parsed.retry_after) && parsed.retry_after > 0) {
+          if (typeof parsed.retry_after === "number" && Number.isFinite(parsed.retry_after) && parsed.retry_after > 0) {
             waitMs = Math.ceil(parsed.retry_after * 1000);
           }
         } catch {
@@ -141,8 +141,8 @@ async function discordApi<T>(url: string, token: string, init?: RequestInit): Pr
 
       // Add a small safety buffer to reduce chance of immediate re-limit.
       waitMs += 250;
-      console.warn(`[commandsUpdater] Rate limited on ${init?.method || 'GET'} ${url}. Retrying in ${waitMs}ms (attempt ${attempt}/${maxAttempts}).`);
-      await new Promise(resolve => setTimeout(resolve, waitMs));
+      console.warn(`[commandsUpdater] Rate limited on ${init?.method || "GET"} ${url}. Retrying in ${waitMs}ms (attempt ${attempt}/${maxAttempts}).`);
+      await new Promise((resolve) => setTimeout(resolve, waitMs));
       continue;
     }
 
@@ -158,7 +158,7 @@ async function discordApi<T>(url: string, token: string, init?: RequestInit): Pr
     return (await response.json()) as T;
   }
 
-  throw new Error('Discord API request failed after retries');
+  throw new Error("Discord API request failed after retries");
 }
 
 function getCommandsBaseUrl(applicationId: string): string {
@@ -172,38 +172,38 @@ export async function patchCommands(): Promise<void> {
   const guildId = process.env.DISCORD_GUILD_ID;
 
   if (!token) {
-    throw new Error('Missing DISCORD_TOKEN');
+    throw new Error("Missing DISCORD_TOKEN");
   }
 
   if (!applicationId) {
-    throw new Error('Missing DISCORD_APPLICATION_ID');
+    throw new Error("Missing DISCORD_APPLICATION_ID");
   }
 
   if (guildId) {
-    console.warn('[commandsUpdater] DISCORD_GUILD_ID is set but ignored. This updater patches global commands only.');
+    console.warn("[commandsUpdater] DISCORD_GUILD_ID is set but ignored. This updater patches global commands only.");
   }
 
   const commands = await loadCommands();
   const baseUrl = getCommandsBaseUrl(applicationId);
 
   const existing = await discordApi<DiscordCommand[]>(baseUrl, token, {
-    method: 'GET',
+    method: "GET",
   });
-  const existingByName = new Map(existing.map(command => [command.name, command]));
+  const existingByName = new Map(existing.map((command) => [command.name, command]));
 
   let created = 0;
   let updated = 0;
 
   for (const command of commands) {
-    const name = typeof command.name === 'string' ? command.name : '';
+    const name = typeof command.name === "string" ? command.name : "";
     if (!name) {
-      throw new Error('Each command in commands.json must have a non-empty name');
+      throw new Error("Each command in commands.json must have a non-empty name");
     }
 
     const previous = existingByName.get(name);
     if (previous) {
       await discordApi(`${baseUrl}/${previous.id}`, token, {
-        method: 'PATCH',
+        method: "PATCH",
         body: JSON.stringify(command),
       });
       updated += 1;
@@ -211,7 +211,7 @@ export async function patchCommands(): Promise<void> {
     }
 
     await discordApi(baseUrl, token, {
-      method: 'POST',
+      method: "POST",
       body: JSON.stringify(command),
     });
     created += 1;

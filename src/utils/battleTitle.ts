@@ -1,4 +1,4 @@
-import { isTraining } from './payloadUtils';
+import { isTraining } from "./payloadUtils";
 
 export function buildBattleTitle(payload: string, fr: boolean, userID: string, monsterName: string): string {
   if (isTraining(payload)) {

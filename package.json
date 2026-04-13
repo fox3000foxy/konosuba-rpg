@@ -23,6 +23,7 @@
     "dev:node": "npx ts-node-dev --respawn --transpile-only --logger=debug --ignore-watch node_modules src/index.ts",
     "dev:wrangler": "npx wrangler dev --config wrangler.toml",
     "check": "bun run tsc:build && bun run test",
+    "biomeFormat": "npx @biomejs/biome format --write ./src",
     "format": "npx prettier --config prettier.json --write src",
     "format:check": "npx prettier --config prettier.json --check src",
     "lint": "npx eslint src",

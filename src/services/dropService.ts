@@ -1,17 +1,17 @@
-import { Random } from '../classes/Random';
-import { getMonsterDifficulty } from '../objects/data/monsterDifficultyMap';
-import { CharacterKey } from '../objects/enums/CharacterKey';
-import { ItemId } from '../objects/enums/ItemId';
-import { MonsterDifficulty } from '../objects/enums/MonsterDifficulty';
-import { Rarity } from '../objects/enums/Rarity';
-import { TypeItem } from '../objects/enums/TypeItem';
-import { AccessoryDefinition } from '../objects/types/catalog/Accessory';
-import { withPerf } from '../utils/perfLogger';
-import { getSupabaseAdminClient } from '../utils/supabaseClient';
-import { getItems } from './accessoryService';
-import { addCharacterAffinity } from './characterService';
-import { getItems as getConsumableItems } from './consumableService';
-import { AccessoryDropResult, ConsumableDropResult } from './types/drop';
+import { Random } from "../classes/Random";
+import { getMonsterDifficulty } from "../objects/data/monsterDifficultyMap";
+import { CharacterKey } from "../objects/enums/CharacterKey";
+import { ItemId } from "../objects/enums/ItemId";
+import { MonsterDifficulty } from "../objects/enums/MonsterDifficulty";
+import { Rarity } from "../objects/enums/Rarity";
+import { TypeItem } from "../objects/enums/TypeItem";
+import { AccessoryDefinition } from "../objects/types/catalog/Accessory";
+import { withPerf } from "../utils/perfLogger";
+import { getSupabaseAdminClient } from "../utils/supabaseClient";
+import { getItems } from "./accessoryService";
+import { addCharacterAffinity } from "./characterService";
+import { getItems as getConsumableItems } from "./consumableService";
+import { AccessoryDropResult, ConsumableDropResult } from "./types/drop";
 
 type LootRarityWeight = {
   rarity: Rarity;
@@ -234,13 +234,13 @@ function pickAccessoryByRarity(rarity: Rarity, rand: Random): AccessoryDefinitio
 }
 
 function pickConsumableByRarity(rarity: Rarity, rand: Random): ItemId {
-  const byRarity = getConsumableItems({ rarity }).map(item => item.id);
-  const pool = byRarity.length > 0 ? byRarity : getConsumableItems().map(item => item.id);
+  const byRarity = getConsumableItems({ rarity }).map((item) => item.id);
+  const pool = byRarity.length > 0 ? byRarity : getConsumableItems().map((item) => item.id);
   return rand.choice(pool) as ItemId;
 }
 
-function inventoryTypeForConsumableType(type: TypeItem): 'potion' | 'component' {
-  return type === TypeItem.Potion ? 'potion' : 'component';
+function inventoryTypeForConsumableType(type: TypeItem): "potion" | "component" {
+  return type === TypeItem.Potion ? "potion" : "component";
 }
 
 export function rollAccessoryDrop(runKey: string, monsterName?: string | null): AccessoryDropResult[] {
@@ -293,7 +293,7 @@ export function rollConsumableDrop(runKey: string, monsterName?: string | null):
 }
 
 export async function grantAccessoryDropRewards(userId: string, runKey: string, monsterName?: string | null): Promise<AccessoryDropResult[] | null> {
-  return withPerf('dropService', 'grantAccessoryDropRewards', async () => {
+  return withPerf("dropService", "grantAccessoryDropRewards", async () => {
     const supabase = getSupabaseAdminClient();
     if (!supabase) {
       return null;
@@ -312,15 +312,15 @@ export async function grantAccessoryDropRewards(userId: string, runKey: string, 
     }
 
     const itemKeys = [...countsByItem.keys()];
-    const { data: existingRows, error: loadError } = await supabase.from('inventory_items').select('item_key, quantity').eq('user_id', userId).in('item_key', itemKeys);
+    const { data: existingRows, error: loadError } = await supabase.from("inventory_items").select("item_key, quantity").eq("user_id", userId).in("item_key", itemKeys);
 
     if (loadError) {
-      console.error('[db] load inventory item for drop failed:', loadError.message);
+      console.error("[db] load inventory item for drop failed:", loadError.message);
       return null;
     }
 
     const nowIso = new Date().toISOString();
-    const existingByItemKey = new Map(((existingRows || []) as InventoryRow[]).map(row => [String(row.item_key), Number(row.quantity || 0)]));
+    const existingByItemKey = new Map(((existingRows || []) as InventoryRow[]).map((row) => [String(row.item_key), Number(row.quantity || 0)]));
 
     const rowsToInsert: Array<{
       user_id: string;
@@ -334,11 +334,11 @@ export async function grantAccessoryDropRewards(userId: string, runKey: string, 
 
     for (const [itemKey, increment] of countsByItem.entries()) {
       const currentQuantity = existingByItemKey.get(itemKey);
-      if (typeof currentQuantity !== 'number') {
+      if (typeof currentQuantity !== "number") {
         rowsToInsert.push({
           user_id: userId,
           item_key: itemKey,
-          item_type: 'affinity',
+          item_type: "affinity",
           quantity: increment,
           updated_at: nowIso,
         });
@@ -347,20 +347,20 @@ export async function grantAccessoryDropRewards(userId: string, runKey: string, 
 
       updateOps.push(
         supabase
-          .from('inventory_items')
+          .from("inventory_items")
           .update({
             quantity: currentQuantity + increment,
             updated_at: nowIso,
           })
-          .eq('user_id', userId)
-          .eq('item_key', itemKey)
+          .eq("user_id", userId)
+          .eq("item_key", itemKey),
       );
     }
 
     if (rowsToInsert.length > 0) {
-      const { error: insertError } = await supabase.from('inventory_items').insert(rowsToInsert);
+      const { error: insertError } = await supabase.from("inventory_items").insert(rowsToInsert);
       if (insertError) {
-        console.error('[db] insert dropped accessory failed:', insertError.message);
+        console.error("[db] insert dropped accessory failed:", insertError.message);
         return null;
       }
     }
@@ -369,7 +369,7 @@ export async function grantAccessoryDropRewards(userId: string, runKey: string, 
       const updateResults = await Promise.all(updateOps);
       for (const result of updateResults) {
         if (result.error) {
-          console.error('[db] update dropped accessory quantity failed:', result.error.message);
+          console.error("[db] update dropped accessory quantity failed:", result.error.message);
           return null;
         }
       }
@@ -382,7 +382,7 @@ export async function grantAccessoryDropRewards(userId: string, runKey: string, 
 }
 
 export async function grantConsumableDropRewards(userId: string, runKey: string, monsterName?: string | null): Promise<ConsumableDropResult[] | null> {
-  return withPerf('dropService', 'grantConsumableDropRewards', async () => {
+  return withPerf("dropService", "grantConsumableDropRewards", async () => {
     const supabase = getSupabaseAdminClient();
     if (!supabase) {
       return null;
@@ -407,15 +407,15 @@ export async function grantConsumableDropRewards(userId: string, runKey: string,
     }
 
     const itemKeys = [...groupedByItem.keys()];
-    const { data: existingRows, error: loadError } = await supabase.from('inventory_items').select('item_key, quantity').eq('user_id', userId).in('item_key', itemKeys);
+    const { data: existingRows, error: loadError } = await supabase.from("inventory_items").select("item_key, quantity").eq("user_id", userId).in("item_key", itemKeys);
 
     if (loadError) {
-      console.error('[db] load inventory item for consumable drop failed:', loadError.message);
+      console.error("[db] load inventory item for consumable drop failed:", loadError.message);
       return null;
     }
 
     const nowIso = new Date().toISOString();
-    const existingByItemKey = new Map(((existingRows || []) as InventoryRow[]).map(row => [String(row.item_key), Number(row.quantity || 0)]));
+    const existingByItemKey = new Map(((existingRows || []) as InventoryRow[]).map((row) => [String(row.item_key), Number(row.quantity || 0)]));
 
     const rowsToInsert: Array<{
       user_id: string;
@@ -429,7 +429,7 @@ export async function grantConsumableDropRewards(userId: string, runKey: string,
 
     for (const [itemKey, grouped] of groupedByItem.entries()) {
       const currentQuantity = existingByItemKey.get(itemKey);
-      if (typeof currentQuantity !== 'number') {
+      if (typeof currentQuantity !== "number") {
         rowsToInsert.push({
           user_id: userId,
           item_key: itemKey,
@@ -442,21 +442,21 @@ export async function grantConsumableDropRewards(userId: string, runKey: string,
 
       updateOps.push(
         supabase
-          .from('inventory_items')
+          .from("inventory_items")
           .update({
             quantity: currentQuantity + grouped.quantity,
             updated_at: nowIso,
           })
-          .eq('user_id', userId)
-          .eq('item_key', itemKey)
+          .eq("user_id", userId)
+          .eq("item_key", itemKey),
       );
     }
 
     if (rowsToInsert.length > 0) {
-      const { error: insertError } = await supabase.from('inventory_items').insert(rowsToInsert);
+      const { error: insertError } = await supabase.from("inventory_items").insert(rowsToInsert);
 
       if (insertError) {
-        console.error('[db] insert dropped consumable failed:', insertError.message);
+        console.error("[db] insert dropped consumable failed:", insertError.message);
         return null;
       }
     }
@@ -465,7 +465,7 @@ export async function grantConsumableDropRewards(userId: string, runKey: string,
       const updateResults = await Promise.all(updateOps);
       for (const result of updateResults) {
         if (result.error) {
-          console.error('[db] update dropped consumable quantity failed:', result.error.message);
+          console.error("[db] update dropped consumable quantity failed:", result.error.message);
           return null;
         }
       }

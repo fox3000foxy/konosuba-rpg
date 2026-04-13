@@ -1,9 +1,9 @@
-import { CRAFTING_RECIPES } from '../objects/data/craftingCatalog';
-import { ItemId } from '../objects/enums/ItemId';
-import { withPerf } from '../utils/perfLogger';
-import { getSupabaseAdminClient } from '../utils/supabaseClient';
-import { getItemById } from './consumableService';
-import { CraftingRecipeView, CraftRecipeResult } from './types/craft';
+import { CRAFTING_RECIPES } from "../objects/data/craftingCatalog";
+import { ItemId } from "../objects/enums/ItemId";
+import { withPerf } from "../utils/perfLogger";
+import { getSupabaseAdminClient } from "../utils/supabaseClient";
+import { getItemById } from "./consumableService";
+import { CraftingRecipeView, CraftRecipeResult } from "./types/craft";
 
 type CraftRecipeRpcRow = {
   success: boolean;
@@ -17,29 +17,29 @@ type CraftRecipeRpcRow = {
   }> | null;
 };
 
-function mapReason(reason: string): CraftRecipeResult['reason'] {
+function mapReason(reason: string): CraftRecipeResult["reason"] {
   switch (reason) {
-    case 'crafted':
-    case 'recipe_not_found':
-    case 'recipe_disabled':
-    case 'insufficient_ingredients':
-    case 'internal_error':
+    case "crafted":
+    case "recipe_not_found":
+    case "recipe_disabled":
+    case "insufficient_ingredients":
+    case "internal_error":
       return reason;
     default:
-      return 'internal_error';
+      return "internal_error";
   }
 }
 
 export function getCraftingRecipes(): CraftingRecipeView[] {
-  return CRAFTING_RECIPES.filter(recipe => recipe.enabled)
-    .map(recipe => {
+  return CRAFTING_RECIPES.filter((recipe) => recipe.enabled)
+    .map((recipe) => {
       const result = getItemById(recipe.resultItemId);
       if (!result) {
         return null;
       }
 
       const ingredients = recipe.ingredients
-        .map(ingredient => {
+        .map((ingredient) => {
           const item = getItemById(ingredient.itemId);
           if (!item) {
             return null;
@@ -71,25 +71,25 @@ export function getCraftingRecipes(): CraftingRecipeView[] {
 }
 
 export async function craftRecipe(userId: string, recipeKey: string): Promise<CraftRecipeResult> {
-  return withPerf('craftService', 'craftRecipe', async () => {
+  return withPerf("craftService", "craftRecipe", async () => {
     const supabase = getSupabaseAdminClient();
     if (!supabase) {
       return {
         success: false,
-        reason: 'service_unavailable',
+        reason: "service_unavailable",
       };
     }
 
-    const { data, error } = await supabase.rpc('craft_recipe_atomic', {
+    const { data, error } = await supabase.rpc("craft_recipe_atomic", {
       p_user_id: userId,
       p_recipe_key: recipeKey,
     });
 
     if (error) {
-      console.error('[db] craftRecipe failed:', error.message);
+      console.error("[db] craftRecipe failed:", error.message);
       return {
         success: false,
-        reason: 'internal_error',
+        reason: "internal_error",
       };
     }
 
@@ -99,13 +99,13 @@ export async function craftRecipe(userId: string, recipeKey: string): Promise<Cr
     if (!row) {
       return {
         success: false,
-        reason: 'internal_error',
+        reason: "internal_error",
       };
     }
 
     if (!row.success) {
       const missingIngredients =
-        row.missing_ingredients?.map(item => ({
+        row.missing_ingredients?.map((item) => ({
           itemId: item.item_key as ItemId,
           required: item.required,
           available: item.available,
@@ -120,7 +120,7 @@ export async function craftRecipe(userId: string, recipeKey: string): Promise<Cr
 
     return {
       success: true,
-      reason: 'crafted',
+      reason: "crafted",
       craftedItemId: row.crafted_item_key as ItemId,
       craftedQuantity: Number(row.crafted_quantity || 0),
     };

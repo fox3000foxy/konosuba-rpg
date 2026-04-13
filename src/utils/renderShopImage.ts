@@ -1,8 +1,8 @@
-import * as Photon from '@cf-wasm/photon';
-import { ShopItem } from '../objects/types/ShopItem';
-import { createPerfLogger } from './perfLogger';
-import { cacheRenderOutput, createBoundedArrayBufferCache, createBoundedStringCache, resolveResvgImageUri, SizedCache } from './renderImageHelpers';
-import { ensureResvgWasm, renderSvgToPng } from './resvgWasm';
+import * as Photon from "@cf-wasm/photon";
+import { ShopItem } from "../objects/types/ShopItem";
+import { createPerfLogger } from "./perfLogger";
+import { cacheRenderOutput, createBoundedArrayBufferCache, createBoundedStringCache, resolveResvgImageUri, SizedCache } from "./renderImageHelpers";
+import { ensureResvgWasm, renderSvgToPng } from "./resvgWasm";
 
 type ShopImageGlobals = {
   __shopAssetCache?: SizedCache<ArrayBuffer>;
@@ -29,9 +29,9 @@ const pendingResvgUriConversions = new Map<string, Promise<string | null>>();
 
 const RENDER_OUTPUT_CACHE_MAX = 32;
 
-const ASSET_BASE_URL = 'https://konosuba-rpg.vercel.app';
+const ASSET_BASE_URL = "https://konosuba-rpg.vercel.app";
 const FONT_URL = `${ASSET_BASE_URL}/assets/swordgame/font/GintoNordMedium.otf`;
-const BOARD_PATH = '/assets/swordgame/art/board.webp';
+const BOARD_PATH = "/assets/swordgame/art/board.webp";
 const WIDTH = 1100;
 const LINE_HEIGHT = 40;
 
@@ -44,7 +44,7 @@ function getCanvasHeight(itemsCount: number): number {
 }
 
 function escapeXml(value: string): string {
-  return value.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&apos;');
+  return value.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&apos;");
 }
 
 async function getEmbeddedFontBuffer(): Promise<Uint8Array | null> {
@@ -68,23 +68,23 @@ async function resolveResvgImageUriShop(path: string | null): Promise<string | n
 }
 
 function buildRenderCacheKey(items: ShopItem[], page: number, pageCount: number, fr: boolean, hasEmbeddedFont: boolean): string {
-  const itemSignature = items.map(i => `${i.itemKey}:${i.price}`).join('|');
-  return `${fr ? 'fr' : 'en'}::${hasEmbeddedFont ? 'font' : 'system'}::page${page}of${pageCount}::${itemSignature}`;
+  const itemSignature = items.map((i) => `${i.itemKey}:${i.price}`).join("|");
+  return `${fr ? "fr" : "en"}::${hasEmbeddedFont ? "font" : "system"}::page${page}of${pageCount}::${itemSignature}`;
 }
 
 export async function buildShopSvg(items: ShopItem[], page: number, pageCount: number, fr: boolean, hasEmbeddedFont = false, boardDataUri?: string, iconUris?: Array<string | null>): Promise<string> {
   const width = WIDTH;
   const lineHeight = LINE_HEIGHT;
   const height = getCanvasHeight(items.length);
-  const title = fr ? 'Boutique' : 'Shop';
+  const title = fr ? "Boutique" : "Shop";
   const subtitle = fr ? `Page ${page}/${pageCount} - ${items.length} items` : `Page ${page}/${pageCount} - ${items.length} items`;
-  const fontFamily = hasEmbeddedFont ? 'GintoNordMedium' : 'Arial';
+  const fontFamily = hasEmbeddedFont ? "GintoNordMedium" : "Arial";
 
   const lines = items.map((item, idx) => {
     const y = 170 + idx * lineHeight;
     const itemName = fr ? item.nameFr : item.nameEn;
-    const iconHref = iconUris?.[idx] ? escapeXml(String(iconUris[idx])) : '';
-    const iconTag = iconHref ? `<image href="${iconHref}" xlink:href="${iconHref}" x="44" y="${y - 20}" width="24" height="24" preserveAspectRatio="none" />` : '';
+    const iconHref = iconUris?.[idx] ? escapeXml(String(iconUris[idx])) : "";
+    const iconTag = iconHref ? `<image href="${iconHref}" xlink:href="${iconHref}" x="44" y="${y - 20}" width="24" height="24" preserveAspectRatio="none" />` : "";
 
     return `
       <rect x="36" y="${y - 24}" width="1028" height="32" rx="8" fill="#0f1729" fill-opacity="0.72" />
@@ -95,34 +95,34 @@ export async function buildShopSvg(items: ShopItem[], page: number, pageCount: n
     `;
   });
 
-  const emptyState = !items.length ? `<text x="36" y="190" fill="#d7deef" font-size="22" font-family="${fontFamily}">${escapeXml(fr ? 'Aucun objet disponible sur cette page.' : 'No items available on this page.')}</text>` : '';
+  const emptyState = !items.length ? `<text x="36" y="190" fill="#d7deef" font-size="22" font-family="${fontFamily}">${escapeXml(fr ? "Aucun objet disponible sur cette page." : "No items available on this page.")}</text>` : "";
 
   return `
   <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">
-    ${boardDataUri ? `<image href="${escapeXml(String(boardDataUri))}" xlink:href="${escapeXml(String(boardDataUri))}" x="0" y="0" width="${width}" height="${height}" preserveAspectRatio="none" />` : ''}
+    ${boardDataUri ? `<image href="${escapeXml(String(boardDataUri))}" xlink:href="${escapeXml(String(boardDataUri))}" x="0" y="0" width="${width}" height="${height}" preserveAspectRatio="none" />` : ""}
     <rect x="24" y="24" width="1052" height="${height - 48}" rx="16" fill="#070c1b" fill-opacity="0.76" stroke="#34405e" stroke-opacity="0.9" />
     <text x="36" y="72" fill="#ffffff" font-size="42" font-family="${fontFamily}">${escapeXml(title)}</text>
     <text x="36" y="106" fill="#b2bdd6" font-size="18" font-family="${fontFamily}">${escapeXml(subtitle)}</text>
-    <text x="80" y="136" fill="#7f8bad" font-size="14" font-family="${fontFamily}">${escapeXml(fr ? 'objet' : 'item')}</text>
+    <text x="80" y="136" fill="#7f8bad" font-size="14" font-family="${fontFamily}">${escapeXml(fr ? "objet" : "item")}</text>
     <text x="1030" y="136" text-anchor="end" fill="#7f8bad" font-size="14" font-family="${fontFamily}">price</text>
-    ${lines.join('')}
+    ${lines.join("")}
     ${emptyState}
   </svg>`;
 }
 
 export async function renderShopImage(items: ShopItem[], page: number, pageCount: number, fr: boolean): Promise<Uint8Array> {
-  const perf = createPerfLogger('renderShopImage');
+  const perf = createPerfLogger("renderShopImage");
   await ensureResvgWasm();
-  perf.mark('ensureResvgWasm');
+  perf.mark("ensureResvgWasm");
 
   const fontBuffer = await getEmbeddedFontBuffer();
-  perf.mark('getEmbeddedFontBuffer');
+  perf.mark("getEmbeddedFontBuffer");
 
   const hasEmbeddedFont = Boolean(fontBuffer);
   const renderKey = buildRenderCacheKey(items, page, pageCount, fr, hasEmbeddedFont);
   const cachedOutput = renderOutputCache.get(renderKey);
   if (cachedOutput) {
-    perf.done('cache hit -> return');
+    perf.done("cache hit -> return");
     return cachedOutput;
   }
 
@@ -132,26 +132,26 @@ export async function renderShopImage(items: ShopItem[], page: number, pageCount
   }
 
   const renderPromise = (async () => {
-    const [boardUri, iconUris] = await Promise.all([resolveResvgImageUriShop(BOARD_PATH), Promise.all(items.map(item => resolveResvgImageUriShop(item.imagePath)))]);
-    perf.mark('resolve URIs');
+    const [boardUri, iconUris] = await Promise.all([resolveResvgImageUriShop(BOARD_PATH), Promise.all(items.map((item) => resolveResvgImageUriShop(item.imagePath)))]);
+    perf.mark("resolve URIs");
 
     const boardDataUri = boardUri || undefined;
 
     const svg = await buildShopSvg(items, page, pageCount, fr, hasEmbeddedFont, boardDataUri, iconUris);
-    perf.mark('buildSvg');
+    perf.mark("buildSvg");
 
     const options = fontBuffer
       ? {
           font: {
             fontBuffers: [fontBuffer],
             loadSystemFonts: false,
-            defaultFontFamily: 'GintoNordMedium',
+            defaultFontFamily: "GintoNordMedium",
           },
         }
       : { font: { loadSystemFonts: true } };
 
     const pngBytes = await renderSvgToPng(svg, options);
-    perf.mark('Resvg render -> PNG');
+    perf.mark("Resvg render -> PNG");
 
     const image = Photon.PhotonImage.new_from_byteslice(pngBytes);
     let webpBytes: Uint8Array;
@@ -160,7 +160,7 @@ export async function renderShopImage(items: ShopItem[], page: number, pageCount
     } finally {
       image.free();
     }
-    perf.mark('Photon PNG -> WebP');
+    perf.mark("Photon PNG -> WebP");
 
     cacheRenderOutput(renderKey, webpBytes, renderOutputCache, RENDER_OUTPUT_CACHE_MAX);
     perf.done();

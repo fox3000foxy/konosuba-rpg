@@ -1,25 +1,25 @@
 // import fs from 'fs';
-import { Creature } from '../classes/Creature';
-import { GenericCreature } from '../classes/GenericCreature';
-import Troll from '../classes/mobs/Troll';
-import { Aqua, Player, Team } from '../classes/Player';
-import { Random } from '../classes/Random';
-import lines from '../objects/data/constants';
-import descriptions from '../objects/data/embedText';
-import { generateMob } from '../objects/data/mobMap';
-import { getMonstersByDifficulty } from '../objects/data/monsterDifficultyMap';
-import { EndMessages } from '../objects/enums/EndMessages';
-import { GameState } from '../objects/enums/GameState';
-import { ItemId } from '../objects/enums/ItemId';
-import { Lang } from '../objects/enums/Lang';
-import { MessagesTemplates } from '../objects/enums/MessagesTemplates';
-import { MonsterDifficulty } from '../objects/enums/MonsterDifficulty';
-import { PlayerAction } from '../objects/enums/player/PlayerAction';
-import { Game } from '../objects/types/Game';
-import { LinesType } from '../objects/types/LinesType';
-import { applyConsumableEffect } from '../services/consumableEffectService';
-import { consumeInventoryItem } from '../services/inventoryConsumptionService';
-import { getCreatureNameAndPrefix } from './creatureText';
+import { Creature } from "../classes/Creature";
+import { GenericCreature } from "../classes/GenericCreature";
+import Troll from "../classes/mobs/Troll";
+import { Aqua, Player, Team } from "../classes/Player";
+import { Random } from "../classes/Random";
+import lines from "../objects/data/constants";
+import descriptions from "../objects/data/embedText";
+import { generateMob } from "../objects/data/mobMap";
+import { getMonstersByDifficulty } from "../objects/data/monsterDifficultyMap";
+import { EndMessages } from "../objects/enums/EndMessages";
+import { GameState } from "../objects/enums/GameState";
+import { ItemId } from "../objects/enums/ItemId";
+import { Lang } from "../objects/enums/Lang";
+import { MessagesTemplates } from "../objects/enums/MessagesTemplates";
+import { MonsterDifficulty } from "../objects/enums/MonsterDifficulty";
+import { PlayerAction } from "../objects/enums/player/PlayerAction";
+import { Game } from "../objects/types/Game";
+import { LinesType } from "../objects/types/LinesType";
+import { applyConsumableEffect } from "../services/consumableEffectService";
+import { consumeInventoryItem } from "../services/inventoryConsumptionService";
+import { getCreatureNameAndPrefix } from "./creatureText";
 
 const linesTyped = lines as LinesType;
 const descriptionsTyped = descriptions as LinesType;
@@ -32,11 +32,11 @@ const PLAYER_USE = PlayerAction.Use.toUpperCase();
 
 export function pascalCaseToString(pascalCaseWord: string): string {
   const regex = /([a-z])([A-Z])/g;
-  const stringWithSpaces = pascalCaseWord.replace(regex, '$1 $2');
+  const stringWithSpaces = pascalCaseWord.replace(regex, "$1 $2");
   return stringWithSpaces
-    .split(' ')
-    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(' ');
+    .split(" ")
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
 }
 
 function generateMessage(template: MessagesTemplates, replacements: Record<string, string | number>): string {
@@ -70,7 +70,39 @@ function applyTeamLevelFactors(team: Team, factors?: number[]): void {
   });
 }
 
-async function handlePlayerAction({ move, currentPlayer, team, creature, rand, lang, linesTyped, descriptionsTyped, messages, embedDescription, userId, itemIds, consumedItemIds, selectedUseTargetPlayerId, isLastMove }: { move: string; currentPlayer: Aqua | Player; team: Team; creature: Creature | Troll; rand: Random; lang: Lang; linesTyped: LinesType; descriptionsTyped: LinesType; messages: string[]; embedDescription: string[]; userId?: string; itemIds?: ItemId[]; consumedItemIds?: Set<ItemId>; selectedUseTargetPlayerId?: number; isLastMove?: boolean }): Promise<void> {
+async function handlePlayerAction({
+  move,
+  currentPlayer,
+  team,
+  creature,
+  rand,
+  lang,
+  linesTyped,
+  descriptionsTyped,
+  messages,
+  embedDescription,
+  userId,
+  itemIds,
+  consumedItemIds,
+  selectedUseTargetPlayerId,
+  isLastMove,
+}: {
+  move: string;
+  currentPlayer: Aqua | Player;
+  team: Team;
+  creature: Creature | Troll;
+  rand: Random;
+  lang: Lang;
+  linesTyped: LinesType;
+  descriptionsTyped: LinesType;
+  messages: string[];
+  embedDescription: string[];
+  userId?: string;
+  itemIds?: ItemId[];
+  consumedItemIds?: Set<ItemId>;
+  selectedUseTargetPlayerId?: number;
+  isLastMove?: boolean;
+}): Promise<void> {
   const langIndex = lang === Lang.French ? 1 : 0;
   const langLines = linesTyped[lang];
   const langDescriptions = descriptionsTyped[lang];
@@ -129,7 +161,7 @@ async function handlePlayerAction({ move, currentPlayer, team, creature, rand, l
       break;
     }
     case PLAYER_HEA: {
-      if (currentPlayer.name[langIndex] === 'Aqua') {
+      if (currentPlayer.name[langIndex] === "Aqua") {
         currentPlayer.performAction(PlayerAction.Hea);
         (currentPlayer as Aqua).heal();
         const rng = rand.randint(0, langLines.aquaHealMsgs.length - 1);
@@ -164,7 +196,7 @@ async function handlePlayerAction({ move, currentPlayer, team, creature, rand, l
     }
     case PLAYER_USE: {
       // Use a consumable item on a selected player (fallback to current player)
-      const selectedTarget = typeof selectedUseTargetPlayerId === 'number' ? team.players.find(player => player.playerId === selectedUseTargetPlayerId) : undefined;
+      const selectedTarget = typeof selectedUseTargetPlayerId === "number" ? team.players.find((player) => player.playerId === selectedUseTargetPlayerId) : undefined;
       const targetPlayer = selectedTarget && selectedTarget.hp > 0 ? selectedTarget : currentPlayer;
 
       // Prefer itemIds passed from URL, otherwise use a fixed set for testing
@@ -192,8 +224,8 @@ async function handlePlayerAction({ move, currentPlayer, team, creature, rand, l
           consumedItemIds.add(selectedItemId);
         }
       } else {
-        messages.push(lang === Lang.French ? "Impossible d'utiliser cet item" : 'Cannot use this item');
-        embedDescription.push(lang === Lang.French ? "Impossible d'utiliser cet item" : 'Cannot use this item');
+        messages.push(lang === Lang.French ? "Impossible d'utiliser cet item" : "Cannot use this item");
+        embedDescription.push(lang === Lang.French ? "Impossible d'utiliser cet item" : "Cannot use this item");
       }
       break;
     }
@@ -204,10 +236,10 @@ export default async function processGame(rand: Random, moves: string[], monster
   lang = lang === Lang.French ? Lang.French : Lang.English;
   const team = new Team();
   applyTeamLevelFactors(team, teamLevelFactors);
-  const normalizedMoves = moves.map(move => move.toUpperCase());
+  const normalizedMoves = moves.map((move) => move.toUpperCase());
 
   // Precompute monster and team setup
-  const creature = monsterName ? generateMob().find(MobClass => MobClass.name[lang === Lang.French ? 1 : 0].toLowerCase() === monsterName.toLowerCase()) || new Troll() : rand.choice(Object.values(getMonstersByDifficulty(difficulty || null)));
+  const creature = monsterName ? generateMob().find((MobClass) => MobClass.name[lang === Lang.French ? 1 : 0].toLowerCase() === monsterName.toLowerCase()) || new Troll() : rand.choice(Object.values(getMonstersByDifficulty(difficulty || null)));
 
   if (creature instanceof GenericCreature) {
     creature.pickColor(rand);
@@ -217,7 +249,9 @@ export default async function processGame(rand: Random, moves: string[], monster
 
   const messages: string[] = [lang === Lang.French ? `Attention, ${prefix.toLowerCase()}${name.toLowerCase()} !` : `Watch out, ${prefix.toLowerCase()}${name.toLowerCase()}!`];
 
-  const embedDescription: string[] = [lang === Lang.French ? 'Utilisez les boutons pour attaquer, défendre ou faire un câlin à la créature. Essayez de réduire ses points de vie à zéro ou son amour à zéro pour gagner !' : 'Use the buttons to attack, defend, or hug the creature. Try to reduce its HP to zero or its love to zero to win!'];
+  const embedDescription: string[] = [
+    lang === Lang.French ? "Utilisez les boutons pour attaquer, défendre ou faire un câlin à la créature. Essayez de réduire ses points de vie à zéro ou son amour à zéro pour gagner !" : "Use the buttons to attack, defend, or hug the creature. Try to reduce its HP to zero or its love to zero to win!",
+  ];
 
   let state: GameState = GameState.Incomplete;
   let playerId: number;
@@ -225,11 +259,11 @@ export default async function processGame(rand: Random, moves: string[], monster
   const consumedItemIds = new Set<ItemId>();
 
   // Reset special attack status for all players
-  team.players.forEach(player => player.resetSpecialAttack());
+  team.players.forEach((player) => player.resetSpecialAttack());
 
   // Precompute reusable values
   const langIndex = lang === Lang.French ? 1 : 0;
-  const activePlayers: Player[] = team.players.filter(player => player.hp > 0);
+  const activePlayers: Player[] = team.players.filter((player) => player.hp > 0);
   const lastActivePlayer = activePlayers[activePlayers.length - 1];
 
   // Reducing the creature HP by dividing it per 2
@@ -252,7 +286,7 @@ export default async function processGame(rand: Random, moves: string[], monster
     const move = normalizedMoves[moveIndex];
     if (state !== GameState.Incomplete) break; // Early exit if game state is resolved
 
-    if (move === 'GIV') {
+    if (move === "GIV") {
       state = GameState.Giveup;
       break;
     }
@@ -310,7 +344,7 @@ export default async function processGame(rand: Random, moves: string[], monster
 
     if (randomPlayer.defending) {
       const { name, prefix } = getCreatureNameAndPrefix(creature as Creature, lang, true);
-      const msg = generateMessage(MessagesTemplates[`${lang === Lang.French ? 'French' : 'English'}_CreatureMisses`], {
+      const msg = generateMessage(MessagesTemplates[`${lang === Lang.French ? "French" : "English"}_CreatureMisses`], {
         NAME: prefix + name,
         DMG: creatureMove[1],
         PLAYER: randomPlayer.name[langIndex],

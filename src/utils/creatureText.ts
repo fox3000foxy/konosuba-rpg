@@ -1,10 +1,10 @@
-import { Creature } from '../classes/Creature';
-import { Gender } from '../objects/enums/Gender';
-import { Lang } from '../objects/enums/Lang';
-import { Prefix } from '../objects/enums/Prefix';
+import { Creature } from "../classes/Creature";
+import { Gender } from "../objects/enums/Gender";
+import { Lang } from "../objects/enums/Lang";
+import { Prefix } from "../objects/enums/Prefix";
 
 function isFrench(lang: string | Lang): boolean {
-  return lang === Lang.French || lang === 'fr';
+  return lang === Lang.French || lang === "fr";
 }
 
 function startsWithFrenchElisionLetter(value: string): boolean {
@@ -20,9 +20,9 @@ export function getCreatureDisplayName(creature: Creature, lang: string | Lang):
 export function toTitleCase(value: string): string {
   return value
     .toLowerCase()
-    .split(' ')
-    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(' ');
+    .split(" ")
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
 }
 
 export function getCreaturePrefix(creature: Creature, lang: string | Lang, determined: boolean): string {

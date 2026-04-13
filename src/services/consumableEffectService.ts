@@ -1,8 +1,8 @@
-import { Player } from '../classes/Player';
-import { ItemId } from '../objects/enums/ItemId';
-import { Rarity } from '../objects/enums/Rarity';
-import { TypeItem } from '../objects/enums/TypeItem';
-import { getItemById } from './consumableService';
+import { Player } from "../classes/Player";
+import { ItemId } from "../objects/enums/ItemId";
+import { Rarity } from "../objects/enums/Rarity";
+import { TypeItem } from "../objects/enums/TypeItem";
+import { getItemById } from "./consumableService";
 
 export type ConsumableEffectResult = {
   applied: boolean;
@@ -30,8 +30,8 @@ export function applyConsumableEffect(itemId: ItemId, player: Player): Consumabl
     return {
       applied: false,
       message: {
-        fr: 'Objet non trouvé',
-        en: 'Item not found',
+        fr: "Objet non trouvé",
+        en: "Item not found",
       },
       targetName: playerName,
     };

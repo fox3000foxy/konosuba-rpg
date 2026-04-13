@@ -1,5 +1,5 @@
-import fs from 'fs/promises';
-import path from 'path';
+import fs from "fs/promises";
+import path from "path";
 
 const assetByteCache = new Map<string, ArrayBuffer>();
 const fontBufferCache = new Map<string, Uint8Array>();
@@ -17,10 +17,10 @@ export async function getAssetBytes(assetPath: string, assetBaseUrl: string): Pr
   }
 
   // Try filesystem paths in order
-  const cleanPath = assetPath.replace(/^\/assets\//, '');
+  const cleanPath = assetPath.replace(/^\/assets\//, "");
   const possiblePaths = [
     `/var/task/assets/${cleanPath}`, // Vercel serverless
-    path.join(process.cwd(), 'assets', cleanPath), // Dev/local
+    path.join(process.cwd(), "assets", cleanPath), // Dev/local
   ];
 
   for (const filePath of possiblePaths) {

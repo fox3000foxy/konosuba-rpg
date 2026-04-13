@@ -1,7 +1,7 @@
-import { Gender } from '../../objects/enums/Gender';
-import { FrenchLores } from '../../objects/enums/FrenchLores';
-import { Creature, CreatureInterface } from '../Creature';
-import { EnglishLore } from '../../objects/enums/EnglishLore';
+import { Gender } from "../../objects/enums/Gender";
+import { FrenchLores } from "../../objects/enums/FrenchLores";
+import { Creature, CreatureInterface } from "../Creature";
+import { EnglishLore } from "../../objects/enums/EnglishLore";
 
 export default class MedusaMan extends Creature implements CreatureInterface {
   constructor() {
@@ -10,7 +10,7 @@ export default class MedusaMan extends Creature implements CreatureInterface {
     this.love = 100;
     this.hpMax = 650;
     this.hp = this.hpMax;
-    this.name = ['Medusa Man', 'Homme méduse'];
+    this.name = ["Medusa Man", "Homme méduse"];
     this.images = [`enemy_image_22600`, `enemy_image_22601`];
     this.prefix = true;
     this.lore = [FrenchLores.Creature_MedusaMan, EnglishLore.Creature_MedusaMan];

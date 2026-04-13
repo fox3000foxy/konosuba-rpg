@@ -1,8 +1,8 @@
-import { Context } from 'hono';
-import { BASE_URL } from '../../objects/config';
-import { AchievementOverviewItem } from '../../objects/types/AchievementOverviewItem';
-import { ensurePlayerProfile, getAchievementsOverview } from '../../services/progressionService';
-import { addImageVersion } from '../../utils/imageUtils';
+import { Context } from "hono";
+import { BASE_URL } from "../../objects/config";
+import { AchievementOverviewItem } from "../../objects/types/AchievementOverviewItem";
+import { ensurePlayerProfile, getAchievementsOverview } from "../../services/progressionService";
+import { addImageVersion } from "../../utils/imageUtils";
 
 const ACHIEVEMENTS_PAGE_SIZE = 5;
 
@@ -16,14 +16,14 @@ export function buildAchievementsComponents(page: number, pageCount: number, use
       components: [
         {
           type: 2,
-          label: fr ? 'Page precedente' : 'Previous page',
+          label: fr ? "Page precedente" : "Previous page",
           style: 2,
           custom_id: `achievements_page:${page - 1}:${userId}`,
           disabled: !canGoBack,
         },
         {
           type: 2,
-          label: fr ? 'Page suivante' : 'Next page',
+          label: fr ? "Page suivante" : "Next page",
           style: 1,
           custom_id: `achievements_page:${page + 1}:${userId}`,
           disabled: !canGoNext,
@@ -35,7 +35,7 @@ export function buildAchievementsComponents(page: number, pageCount: number, use
 
 function getPagedAchievements(
   achievements: AchievementOverviewItem[],
-  page: number
+  page: number,
 ): {
   page: number;
   pageCount: number;
@@ -60,15 +60,15 @@ export async function handleAchievementsCommand(c: Context, userID: string, fr: 
     return c.json({
       type: 4,
       data: {
-        content: fr ? 'Achievements indisponibles pour le moment.' : 'Achievements are unavailable right now.',
+        content: fr ? "Achievements indisponibles pour le moment." : "Achievements are unavailable right now.",
         flags: 1 << 6,
       },
     });
   }
 
   const { page, pageCount, items } = getPagedAchievements(achievements, 1);
-  const unlockedCount = achievements.filter(item => item.unlocked).length;
-  const imageUrl = addImageVersion(`${BASE_URL}/achievements/${userID}?lang=${fr ? 'fr' : 'en'}&page=${page}`);
+  const unlockedCount = achievements.filter((item) => item.unlocked).length;
+  const imageUrl = addImageVersion(`${BASE_URL}/achievements/${userID}?lang=${fr ? "fr" : "en"}&page=${page}`);
 
   const description = fr ? `# Achievements de <@${userID}>\n\nProgression: **${unlockedCount}/${achievements.length}**\nPage: **${page}/${pageCount}**` : `# <@${userID}> achievements\n\nProgress: **${unlockedCount}/${achievements.length}**\nPage: **${page}/${pageCount}**`;
 
