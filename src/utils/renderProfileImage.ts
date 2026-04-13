@@ -148,7 +148,7 @@ function getRows(progresses: CharacterProgress[]) {
   ];
 }
 
-export async function buildProfileSvg(userId: string, profile: PlayerProfile, progresses: CharacterProgress[], runSummary: PlayerRunSummary, achievementsCount: number, totalAchievements: number, fr: boolean, hasEmbeddedFont = false): Promise<string> {
+export async function buildProfileSvg(profile: PlayerProfile, progresses: CharacterProgress[], runSummary: PlayerRunSummary, achievementsCount: number, totalAchievements: number, fr: boolean, hasEmbeddedFont = false): Promise<string> {
   const fontFamily = hasEmbeddedFont ? "GintoNordMedium" : "Arial";
   const title = fr ? "Profil" : "Profile";
   const teamAffinity = progresses.reduce((sum, p) => sum + p.affinity, 0);
@@ -201,7 +201,7 @@ export async function buildProfileSvg(userId: string, profile: PlayerProfile, pr
   </svg>`;
 }
 
-export async function renderProfileImage(userId: string, profile: PlayerProfile, progresses: CharacterProgress[], runSummary: PlayerRunSummary, achievementsCount: number, totalAchievements: number, fr: boolean): Promise<Uint8Array> {
+export async function renderProfileImage(profile: PlayerProfile, progresses: CharacterProgress[], runSummary: PlayerRunSummary, achievementsCount: number, totalAchievements: number, fr: boolean): Promise<Uint8Array> {
   const perf = createPerfLogger("renderProfileImage");
   await ensureResvgWasm();
   perf.mark("ensureResvgWasm");
@@ -209,7 +209,7 @@ export async function renderProfileImage(userId: string, profile: PlayerProfile,
   const fontBuffer = await getEmbeddedFontBuffer();
   perf.mark("getEmbeddedFontBuffer");
 
-  const svg = await buildProfileSvg(userId, profile, progresses, runSummary, achievementsCount, totalAchievements, fr, Boolean(fontBuffer));
+  const svg = await buildProfileSvg(profile, progresses, runSummary, achievementsCount, totalAchievements, fr, Boolean(fontBuffer));
   perf.mark("buildSvg");
 
   const options = fontBuffer

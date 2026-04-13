@@ -1,6 +1,6 @@
 import * as Photon from "@cf-wasm/photon";
-import fs from "fs/promises";
-import path from "path";
+import fs from "node:fs/promises";
+import path from "node:path";
 import satori from "satori";
 import { type Creature } from "../classes/Creature";
 import { type Team } from "../classes/Player";
@@ -34,7 +34,8 @@ class LRUCache<K, V> {
 
   get(key: K): V | undefined {
     if (!this.map.has(key)) return undefined;
-    const val = this.map.get(key)!;
+    const val = this.map.get(key);
+    if (val === undefined) return undefined;
     this.map.delete(key);
     this.map.set(key, val);
     return val;
@@ -43,7 +44,10 @@ class LRUCache<K, V> {
   set(key: K, val: V): void {
     if (this.map.size >= this.maxSize) {
       const firstKey = this.map.keys().next().value as K;
-      this.onEvict?.(firstKey, this.map.get(firstKey)!);
+      const firstVal = this.map.get(firstKey);
+      if (firstVal !== undefined) {
+        this.onEvict?.(firstKey, firstVal);
+      }
       this.map.delete(firstKey);
     }
     this.map.set(key, val);
@@ -51,7 +55,11 @@ class LRUCache<K, V> {
 
   delete(key: K): void {
     if (this.map.has(key)) {
-      this.onEvict?.(key, this.map.get(key)!);
+      const firstKey = this.map.keys().next().value as K;
+      const firstVal = this.map.get(firstKey);
+      if (firstVal !== undefined) {
+        this.onEvict?.(firstKey, firstVal);
+      }
       this.map.delete(key);
     }
   }
@@ -71,7 +79,7 @@ function freePhoton(_key: string, img: Photon.PhotonImage): void {
 
 // ─── Global caches ───────────────────────────────────────────────────────────
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+// biome-ignore lint/suspicious/noExplicitAny: global cache for images, fonts, and rendered layers to avoid redundant work across requests
 const G = globalThis as any;
 
 G.__imageCache ??= {} as Record<string, ArrayBuffer>;
@@ -122,8 +130,7 @@ export async function getImageBytes(key: string): Promise<ArrayBuffer> {
         const arrayBuffer = buffer.buffer.slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength);
         imageCache[key] = arrayBuffer;
         return arrayBuffer;
-      } catch {
-      }
+      } catch {}
     }
 
     // Fallback to fetch if no file found locally
@@ -161,8 +168,7 @@ async function getFontBytes(fontUrl: string): Promise<ArrayBuffer> {
         const arrayBuffer = buffer.buffer.slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength);
         fontCache[fontUrl] = arrayBuffer;
         return arrayBuffer;
-      } catch {
-      }
+      } catch {}
     }
 
     // Fallback to fetch if no file found locally
@@ -474,7 +480,7 @@ async function buildOverlayJsx(team: Team, creature: Creature, messages: string[
     : null;
 
   // Résolution synchrone depuis le cache — pas d'await dans la construction JSX
-  const endImgSrc = endMsg && imageCache["end_" + state] ? `data:image/png;base64,${getBase64Cached("end_" + state, imageCache["end_" + state])}` : null;
+  const endImgSrc = endMsg && imageCache[`end_${state}`] ? `data:image/png;base64,${getBase64Cached(`end_${state}`, imageCache[`end_${state}`])}` : null;
 
   let pid = 0;
   switch (team.activePlayer?.name[0]) {
@@ -752,7 +758,7 @@ export async function warmup(): Promise<void> {
     await Promise.all(
       END_STATES.map(async (s) => {
         try {
-          await getImageBytes("end_" + s);
+          await getImageBytes(`end_${s}`);
           console.log(`Image 'end_${s}' loaded successfully.`);
         } catch (err) {
           console.error(`Failed to load image 'end_${s}':`, err);

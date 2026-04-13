@@ -138,9 +138,9 @@ export function generateMonsterInfos(
         embeds: [
           {
             description: fr
-              ? `# Informations de monstre:\n\n**Nom**: ${preparedMonster.name[langIndex]}\n**PV de base**: ${preparedMonster.hp} PV\n**ATK de base**: ${preparedMonster.attack[0]}-${preparedMonster.attack[1]} points de dégâts.\n**LP**: ${preparedMonster.love !== 100 ? preparedMonster.love + " points d'amour" : "Ne peut pas être ami"}` +
+              ? `# Informations de monstre:\n\n**Nom**: ${preparedMonster.name[langIndex]}\n**PV de base**: ${preparedMonster.hp} PV\n**ATK de base**: ${preparedMonster.attack[0]}-${preparedMonster.attack[1]} points de dégâts.\n**LP**: ${preparedMonster.love !== 100 ? `${preparedMonster.love} points d'amour` : "Ne peut pas être ami"}` +
                 `\n\n${lore}`
-              : `# Monster infos:\n\n**Name**: ${preparedMonster.name[langIndex]}\n**Basic HP**: ${preparedMonster.hp} HP\n**Basic ATK**: ${preparedMonster.attack[0]}-${preparedMonster.attack[1]} damage points.\n**LP**: ${preparedMonster.love !== 100 ? preparedMonster.love + " love points" : "Can't be friends"}` +
+              : `# Monster infos:\n\n**Name**: ${preparedMonster.name[langIndex]}\n**Basic HP**: ${preparedMonster.hp} HP\n**Basic ATK**: ${preparedMonster.attack[0]}-${preparedMonster.attack[1]} damage points.\n**LP**: ${preparedMonster.love !== 100 ? `${preparedMonster.love} love points` : "Can't be friends"}` +
                 `\n\n${lore}`,
             image: { url: imgUrl },
             color: 0x2b2d31,

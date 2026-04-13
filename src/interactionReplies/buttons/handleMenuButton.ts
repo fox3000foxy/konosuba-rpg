@@ -222,7 +222,7 @@ async function buildTrainData(userID: string, lang: Lang, fr: boolean, monsterId
     embeds: [
       {
         image: { url: imageUrl },
-        description: `${title} ${fr ? `(joueur <@${userID}>)` : `(player <@${userID}>)`}` + (embedDescription.length > 0 ? `\n\n${embedDescription.join("\n")}` : ""),
+        description: `${title} ${fr ? `(joueur <@${userID}>)` : `(player <@${userID}>)`}${embedDescription.length > 0 ? `\n\n${embedDescription.join("\n")}` : ""}`,
         color: 0x2b2d31,
       },
     ],

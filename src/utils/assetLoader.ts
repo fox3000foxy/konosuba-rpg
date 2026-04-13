@@ -1,5 +1,5 @@
-import fs from "fs/promises";
-import path from "path";
+import fs from "node:fs/promises";
+import path from "node:path";
 
 const assetByteCache = new Map<string, ArrayBuffer>();
 const fontBufferCache = new Map<string, Uint8Array>();
@@ -13,7 +13,10 @@ export async function getAssetBytes(assetPath: string, assetBaseUrl: string): Pr
   const cacheKey = `${assetBaseUrl}${assetPath}`;
 
   if (assetByteCache.has(cacheKey)) {
-    return assetByteCache.get(cacheKey)!;
+    const cachedValue = assetByteCache.get(cacheKey);
+    if (cachedValue) {
+      return cachedValue;
+    }
   }
 
   // Try filesystem paths in order
@@ -56,7 +59,10 @@ export async function getEmbeddedFontBuffer(fontPath: string, fontUrl: string): 
   const cacheKey = fontUrl;
 
   if (fontBufferCache.has(cacheKey)) {
-    return fontBufferCache.get(cacheKey)!;
+    const cachedValue = fontBufferCache.get(cacheKey);
+    if (cachedValue) {
+      return cachedValue;
+    }
   }
 
   // Try filesystem paths in order

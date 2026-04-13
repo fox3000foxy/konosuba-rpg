@@ -9,7 +9,7 @@ export function makeid(length: number): string {
   for (let i = 0; i < length; i += 1) {
     result += ID_CHARACTERS.charAt(Math.floor(Math.random() * ID_CHARACTERS_LENGTH));
   }
-  return result + "/";
+  return `${result}/`;
 }
 
 /** Clears action letters after the seed/training id segment */
