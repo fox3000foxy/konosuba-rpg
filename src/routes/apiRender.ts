@@ -167,14 +167,14 @@ export function registerApiRenderRoutes(app: Hono): void {
 
     if (renderSvg) {
       const { buildProfileSvg } = await import("../utils/renderProfileImage.js");
-      const image = await buildProfileSvg(userId, profile, progresses, runSummary, achievements.filter((item) => item.unlocked).length, achievements.length, fr);
+      const image = await buildProfileSvg(profile, progresses, runSummary, achievements.filter((item) => item.unlocked).length, achievements.length, fr);
       return c.text(image, 200, {
         ...imageCacheHeaders("image/svg+xml"),
       });
     }
 
     const { renderProfileImage } = await import("../utils/renderProfileImage.js");
-    const image = await renderProfileImage(userId, profile, progresses, runSummary, achievements.filter((item) => item.unlocked).length, achievements.length, fr);
+    const image = await renderProfileImage(profile, progresses, runSummary, achievements.filter((item) => item.unlocked).length, achievements.length, fr);
     const responseBody = image.buffer.slice(image.byteOffset, image.byteOffset + image.byteLength);
 
     return new Response(responseBody as ArrayBuffer, {
