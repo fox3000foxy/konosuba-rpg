@@ -1,9 +1,9 @@
 import { QUEST_DEFINITIONS } from "../objects/data/progressionCatalog";
 import { QuestClaimStatus } from "../objects/enums/QuestClaimStatus";
 import { QuestKey } from "../objects/enums/QuestKey";
-import { ClaimDailyQuestResult } from "../objects/types/ClaimDailyQuestResult";
-import { DailyQuestStatus } from "../objects/types/DailyQuestStatus";
-import { QuestDefinition } from "../objects/types/QuestDefinition";
+import type { ClaimDailyQuestResult } from "../objects/types/ClaimDailyQuestResult";
+import type { DailyQuestStatus } from "../objects/types/DailyQuestStatus";
+import type { QuestDefinition } from "../objects/types/QuestDefinition";
 import { withPerf } from "../utils/perfLogger";
 import { getSupabaseAdminClient } from "../utils/supabaseClient";
 import { syncAchievements } from "./achievementService";

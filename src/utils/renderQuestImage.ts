@@ -1,10 +1,10 @@
 import * as Photon from "@cf-wasm/photon";
 import { BASE_URL } from "../objects/config/constants";
-import { DailyQuestStatus } from "../objects/types/DailyQuestStatus";
+import type { DailyQuestStatus } from "../objects/types/DailyQuestStatus";
 import { getQuestLabel } from "../services/progressionService";
 import { getAssetBytes as getAssetBytesFromLoader, getEmbeddedFontBuffer as getEmbeddedFontBufferUtil } from "./assetLoader";
 import { createPerfLogger } from "./perfLogger";
-import { cacheRenderOutput, createBoundedStringCache, SizedCache } from "./renderImageHelpers";
+import { cacheRenderOutput, createBoundedStringCache, type SizedCache } from "./renderImageHelpers";
 import { ensureResvgWasm, renderSvgToPng } from "./resvgWasm";
 
 type QuestImageGlobals = {

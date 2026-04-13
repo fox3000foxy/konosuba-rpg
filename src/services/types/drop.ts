@@ -1,6 +1,6 @@
-import { CharacterKey } from "../../objects/enums/CharacterKey";
-import { Rarity } from "../../objects/enums/Rarity";
-import { TypeItem } from "../../objects/enums/TypeItem";
+import type { CharacterKey } from "../../objects/enums/CharacterKey";
+import type { Rarity } from "../../objects/enums/Rarity";
+import type { TypeItem } from "../../objects/enums/TypeItem";
 
 export type AccessoryDropResult = {
   accessoryId: string;

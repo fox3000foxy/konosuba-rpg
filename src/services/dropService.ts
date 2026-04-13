@@ -1,17 +1,17 @@
 import { Random } from "../classes/Random";
 import { getMonsterDifficulty } from "../objects/data/monsterDifficultyMap";
 import { CharacterKey } from "../objects/enums/CharacterKey";
-import { ItemId } from "../objects/enums/ItemId";
+import type { ItemId } from "../objects/enums/ItemId";
 import { MonsterDifficulty } from "../objects/enums/MonsterDifficulty";
 import { Rarity } from "../objects/enums/Rarity";
 import { TypeItem } from "../objects/enums/TypeItem";
-import { AccessoryDefinition } from "../objects/types/catalog/Accessory";
+import type { AccessoryDefinition } from "../objects/types/catalog/Accessory";
 import { withPerf } from "../utils/perfLogger";
 import { getSupabaseAdminClient } from "../utils/supabaseClient";
 import { getItems } from "./accessoryService";
 import { addCharacterAffinity } from "./characterService";
 import { getItems as getConsumableItems } from "./consumableService";
-import { AccessoryDropResult, ConsumableDropResult } from "./types/drop";
+import type { AccessoryDropResult, ConsumableDropResult } from "./types/drop";
 
 type LootRarityWeight = {
   rarity: Rarity;

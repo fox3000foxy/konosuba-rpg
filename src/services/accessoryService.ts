@@ -1,8 +1,8 @@
 import { ACCESSORY_DEFINITIONS } from "../objects/data/accessoriesCatalog";
-import { AccessoryId } from "../objects/enums/AccessoryId";
-import { AccessoryDefinition } from "../objects/types/catalog/Accessory";
+import type { AccessoryId } from "../objects/enums/AccessoryId";
+import type { AccessoryDefinition } from "../objects/types/catalog/Accessory";
 import { findItemByName, matchesName } from "../utils/itemSearch";
-import { AccessoryQuery } from "./types/accessory";
+import type { AccessoryQuery } from "./types/accessory";
 
 export function getItemById(id: AccessoryId): AccessoryDefinition | null {
   return ACCESSORY_DEFINITIONS.find((item) => item.id === id) || null;

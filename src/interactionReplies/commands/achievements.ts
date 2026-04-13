@@ -1,6 +1,6 @@
-import { Context } from "hono";
+import type { Context } from "hono";
 import { BASE_URL } from "../../objects/config";
-import { AchievementOverviewItem } from "../../objects/types/AchievementOverviewItem";
+import type { AchievementOverviewItem } from "../../objects/types/AchievementOverviewItem";
 import { ensurePlayerProfile, getAchievementsOverview } from "../../services/progressionService";
 import { addImageVersion } from "../../utils/imageUtils";
 

@@ -1,5 +1,5 @@
-import { Context } from "hono";
-import { Lang } from "../objects/enums/Lang";
+import type { Context } from "hono";
+import type { Lang } from "../objects/enums/Lang";
 import { calculateGameImageFromUrl } from "../services/gameRenderService";
 import { imageCacheHeaders } from "../utils/cacheHeaders";
 

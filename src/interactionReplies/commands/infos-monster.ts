@@ -1,9 +1,9 @@
-import { Context } from "hono";
-import { Creature } from "../../classes/Creature";
+import type { Context } from "hono";
+import type { Creature } from "../../classes/Creature";
 import { GenericCreature } from "../../classes/GenericCreature";
 import { Random } from "../../classes/Random";
 import { generateMob } from "../../objects/data/mobMap";
-import { InteractionDataOption } from "../../objects/types/InteractionDataOption";
+import type { InteractionDataOption } from "../../objects/types/InteractionDataOption";
 
 type MonsterCatalogItem = {
   id: string;

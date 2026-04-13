@@ -1,7 +1,7 @@
-import { Context } from "hono";
+import type { Context } from "hono";
 import { generateMob } from "../../objects/data/mobMap";
 import { Lang } from "../../objects/enums/Lang";
-import { InteractionDataOption } from "../../objects/types/InteractionDataOption";
+import type { InteractionDataOption } from "../../objects/types/InteractionDataOption";
 import { buildComponents } from "../../utils/componentsBuilder";
 import { makeid } from "../../utils/idUtils";
 import { buildImageUrl } from "../../utils/imageUtils";

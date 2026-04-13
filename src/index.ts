@@ -1,6 +1,6 @@
 import { config } from "dotenv";
 import { readFileSync } from "fs";
-import { Context, Hono } from "hono";
+import { type Context, Hono } from "hono";
 import { registerApiRoutes } from "./routes/api";
 import { registerApiRenderRoutes } from "./routes/apiRender";
 import { calculateGame } from "./routes/game";

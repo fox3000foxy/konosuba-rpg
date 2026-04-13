@@ -1,4 +1,4 @@
-import { ItemId } from "../../objects/enums/ItemId";
+import type { ItemId } from "../../objects/enums/ItemId";
 
 export type CraftingRecipeView = {
   key: string;

@@ -1,5 +1,5 @@
-import { InteractionDataOption } from "../types/InteractionDataOption";
-import { Lang } from "./Lang";
+import type { InteractionDataOption } from "../types/InteractionDataOption";
+import type { Lang } from "./Lang";
 
 export interface Interaction {
   token: string;

@@ -1,4 +1,4 @@
-import { GameState } from "../enums/GameState";
+import type { GameState } from "../enums/GameState";
 
 export type RecordRunInput = {
   userId: string;

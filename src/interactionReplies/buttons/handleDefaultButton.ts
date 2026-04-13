@@ -1,5 +1,5 @@
-import { Context } from "hono";
-import { RawButton } from "../../objects/enums/RawButton";
+import type { Context } from "hono";
+import type { RawButton } from "../../objects/enums/RawButton";
 import { buildBattleTitle } from "../../utils/battleTitle";
 import { buildImageUrl } from "../../utils/imageUtils";
 

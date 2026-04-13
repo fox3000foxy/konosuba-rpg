@@ -1,4 +1,4 @@
-import { Hono } from "hono";
+import type { Hono } from "hono";
 
 export function logEnvironmentStatus(): void {
   const supabaseUrl = process.env.SUPABASE_URL;

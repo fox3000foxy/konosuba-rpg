@@ -1,7 +1,7 @@
 import { GameState } from "../objects/enums/GameState";
-import { LeaderboardEntry } from "../objects/types/LeaderboardEntry";
-import { PlayerProfile } from "../objects/types/PlayerProfile";
-import { PlayerRunSummary } from "../objects/types/PlayerRunSummary";
+import type { LeaderboardEntry } from "../objects/types/LeaderboardEntry";
+import type { PlayerProfile } from "../objects/types/PlayerProfile";
+import type { PlayerRunSummary } from "../objects/types/PlayerRunSummary";
 import { withPerf } from "../utils/perfLogger";
 import { inferMonsterFromRunKey } from "../utils/runMonsterUtils";
 import { getSupabaseAdminClient } from "../utils/supabaseClient";

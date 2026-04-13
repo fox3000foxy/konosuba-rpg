@@ -1,4 +1,4 @@
-import { Context } from "hono";
+import type { Context } from "hono";
 import { getLeaderboard } from "../../services/progressionService";
 
 export async function handleLeaderboardCommand(c: Context, fr: boolean) {
