@@ -48,6 +48,7 @@
     "db:check": "npx ts-node scripts/supabaseCrudCheck.ts"
   },
   "devDependencies": {
+    "@biomejs/biome": "^2.4.11",
     "@eslint/js": "^10.0.1",
     "@hono/node-server": "^1.19.13",
     "@types/eslint-plugin-security": "^3.0.1",
