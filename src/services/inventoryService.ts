@@ -1,7 +1,7 @@
-import { AccessoryId } from "../objects/enums/AccessoryId";
-import { ItemId } from "../objects/enums/ItemId";
+import type { AccessoryId } from "../objects/enums/AccessoryId";
+import type { ItemId } from "../objects/enums/ItemId";
 import { Rarity } from "../objects/enums/Rarity";
-import { InventoryItemView } from "../objects/types/InventoryItemView";
+import type { InventoryItemView } from "../objects/types/InventoryItemView";
 import { withPerf } from "../utils/perfLogger";
 import { getSupabaseAdminClient } from "../utils/supabaseClient";
 import { getItemById } from "./accessoryService";

@@ -1,8 +1,8 @@
 import { AchievementKey } from "../enums/AchievementKey";
 import { QuestConditionKey } from "../enums/QuestConditionKey";
 import { QuestKey } from "../enums/QuestKey";
-import { AchievementDefinition } from "../types/AchievementDefinition";
-import { QuestDefinition } from "../types/QuestDefinition";
+import type { AchievementDefinition } from "../types/AchievementDefinition";
+import type { QuestDefinition } from "../types/QuestDefinition";
 
 export const QUEST_DEFINITIONS: QuestDefinition[] = [
   {

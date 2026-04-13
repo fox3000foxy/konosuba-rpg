@@ -1,7 +1,7 @@
-import { RawButton } from "../objects/enums/RawButton";
+import type { RawButton } from "../objects/enums/RawButton";
 import { withPerf } from "../utils/perfLogger";
 import { getSupabaseAdminClient } from "../utils/supabaseClient";
-import { DecodeGameplayPayloadResult } from "./types/gameSession";
+import type { DecodeGameplayPayloadResult } from "./types/gameSession";
 
 const TOKEN_PREFIX = "gs.";
 const TOKEN_SIZE = 10;

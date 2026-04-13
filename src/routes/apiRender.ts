@@ -1,6 +1,6 @@
-import { Context, Hono } from "hono";
+import type { Context, Hono } from "hono";
 import { getPriceFromRarity } from "../interactionReplies/commands/shop";
-import { ShopItem } from "../objects/types/ShopItem";
+import type { ShopItem } from "../objects/types/ShopItem";
 import { getItems as getAccessoryItems } from "../services/accessoryService";
 import { getItems as getConsumableItems } from "../services/consumableService";
 import { getInventoryItems } from "../services/inventoryService";

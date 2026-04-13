@@ -1,8 +1,8 @@
-import { Gender } from "../../objects/enums/Gender";
-import { FrenchLores } from "../../objects/enums/FrenchLores";
-import { GenericCreature, GenericCreatureInterface } from "../GenericCreature";
-import { Random } from "../Random";
 import { EnglishLore } from "../../objects/enums/EnglishLore";
+import { FrenchLores } from "../../objects/enums/FrenchLores";
+import { Gender } from "../../objects/enums/Gender";
+import { GenericCreature, type GenericCreatureInterface } from "../GenericCreature";
+import type { Random } from "../Random";
 
 export default class AliveTree extends GenericCreature implements GenericCreatureInterface {
   constructor() {

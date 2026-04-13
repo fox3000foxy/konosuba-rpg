@@ -1,5 +1,5 @@
-import { Context } from "hono";
-import { Lang } from "../objects/enums/Lang";
+import type { Context } from "hono";
+import type { Lang } from "../objects/enums/Lang";
 import { serializeGameForApi } from "../services/gameSerializer";
 import { calculateGameStateFromUrl } from "../services/gameService";
 

@@ -1,9 +1,9 @@
 // import fs from 'fs';
-import { Creature } from "../classes/Creature";
+import type { Creature } from "../classes/Creature";
 import { GenericCreature } from "../classes/GenericCreature";
 import Troll from "../classes/mobs/Troll";
-import { Aqua, Player, Team } from "../classes/Player";
-import { Random } from "../classes/Random";
+import { type Aqua, type Player, Team } from "../classes/Player";
+import type { Random } from "../classes/Random";
 import lines from "../objects/data/constants";
 import descriptions from "../objects/data/embedText";
 import { generateMob } from "../objects/data/mobMap";
@@ -13,10 +13,10 @@ import { GameState } from "../objects/enums/GameState";
 import { ItemId } from "../objects/enums/ItemId";
 import { Lang } from "../objects/enums/Lang";
 import { MessagesTemplates } from "../objects/enums/MessagesTemplates";
-import { MonsterDifficulty } from "../objects/enums/MonsterDifficulty";
+import type { MonsterDifficulty } from "../objects/enums/MonsterDifficulty";
 import { PlayerAction } from "../objects/enums/player/PlayerAction";
-import { Game } from "../objects/types/Game";
-import { LinesType } from "../objects/types/LinesType";
+import type { Game } from "../objects/types/Game";
+import type { LinesType } from "../objects/types/LinesType";
 import { applyConsumableEffect } from "../services/consumableEffectService";
 import { consumeInventoryItem } from "../services/inventoryConsumptionService";
 import { getCreatureNameAndPrefix } from "./creatureText";
@@ -42,7 +42,7 @@ export function pascalCaseToString(pascalCaseWord: string): string {
 function generateMessage(template: MessagesTemplates, replacements: Record<string, string | number>): string {
   let msg = template as string;
   for (const key in replacements) {
-    if (Object.prototype.hasOwnProperty.call(replacements, key)) {
+    if (Object.hasOwn(replacements, key)) {
       msg = msg.replace(key, String(replacements[key]));
     }
   }

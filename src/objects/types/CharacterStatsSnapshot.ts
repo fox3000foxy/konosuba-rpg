@@ -1,4 +1,4 @@
-import { CharacterKey } from "../enums/CharacterKey";
+import type { CharacterKey } from "../enums/CharacterKey";
 
 export type CharacterStatsSnapshot = {
   characterKey: CharacterKey | "kazuma";

@@ -1,6 +1,6 @@
-import { Context } from "hono";
+import type { Context } from "hono";
 import { BASE_URL } from "../../objects/config";
-import { InteractionDataOption } from "../../objects/types/InteractionDataOption";
+import type { InteractionDataOption } from "../../objects/types/InteractionDataOption";
 import { ensurePlayerProfile, getPlayerProfile } from "../../services/progressionService";
 import { addImageVersion } from "../../utils/imageUtils";
 

@@ -1,6 +1,6 @@
-import { Button } from "discord-interactions";
-import { Context } from "hono";
-import { Lang } from "../../objects/enums/Lang";
+import type { Button } from "discord-interactions";
+import type { Context } from "hono";
+import type { Lang } from "../../objects/enums/Lang";
 import { getInventoryItems } from "../../services/inventoryService";
 
 const EPHEMERAL_FLAG = 1 << 6;

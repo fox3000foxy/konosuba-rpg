@@ -1,7 +1,7 @@
 import * as Photon from "@cf-wasm/photon";
-import { InventoryItemView } from "../objects/types/InventoryItemView";
+import type { InventoryItemView } from "../objects/types/InventoryItemView";
 import { createPerfLogger } from "./perfLogger";
-import { cacheRenderOutput, createBoundedArrayBufferCache, createBoundedStringCache, resolveAssetUrl, resolveResvgImageUri, SizedCache } from "./renderImageHelpers";
+import { cacheRenderOutput, createBoundedArrayBufferCache, createBoundedStringCache, resolveAssetUrl, resolveResvgImageUri, type SizedCache } from "./renderImageHelpers";
 import { ensureResvgWasm, renderSvgToPng } from "./resvgWasm";
 
 type InventoryImageGlobals = {

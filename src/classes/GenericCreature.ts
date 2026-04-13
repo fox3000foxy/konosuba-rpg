@@ -1,6 +1,6 @@
 import { Errors } from "../objects/enums/Errors";
 import { Creature } from "./Creature";
-import { Random } from "./Random";
+import type { Random } from "./Random";
 
 export type { GenericCreatureInterface } from "../objects/types/GenericCreatureInterface";
 

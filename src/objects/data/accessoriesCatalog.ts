@@ -1,7 +1,7 @@
 import { AccessoryId } from "../enums/AccessoryId";
 import { AccessoryType } from "../enums/AccessoryType";
 import { Rarity } from "../enums/Rarity";
-import { AccessoryCombinationRule, AccessoryDefinition } from "../types/catalog/Accessory";
+import type { AccessoryCombinationRule, AccessoryDefinition } from "../types/catalog/Accessory";
 
 type AccessoryDefinitionSeed = Omit<AccessoryDefinition, "nameFr" | "nameEn">;
 

@@ -1,5 +1,5 @@
-import { Context } from "hono";
-import { InteractionDataOption } from "../../objects/types/InteractionDataOption";
+import type { Context } from "hono";
+import type { InteractionDataOption } from "../../objects/types/InteractionDataOption";
 import { craftRecipe, getCraftingRecipes } from "../../services/craftService";
 import { ensurePlayerProfile } from "../../services/progressionService";
 
@@ -107,13 +107,13 @@ export async function handleCraftCommand(c: Context, userId: string, fr: boolean
   const crafted = recipes.find((recipe) => recipe.resultItemId === result.craftedItemId);
   const craftedName = crafted ? (fr ? crafted.resultNameFr : crafted.resultNameEn) : result.craftedItemId;
 
-  let successMessage;
+  let successMessage: string;
   if (crafted && fr) {
     const consumedItems = crafted.ingredients.map((ing) => `${ing.nameFr} x${ing.quantity}`).join(", ");
-    successMessage = `✅ Craft reussi\n` + `- Consommé: ${consumedItems}\n` + `- Ajouté: ${craftedName} x${result.craftedQuantity || 1}`;
+    successMessage = `✅ Craft reussi\n- Consommé: ${consumedItems}\n- Ajouté: ${craftedName} x${result.craftedQuantity || 1}`;
   } else if (crafted) {
     const consumedItems = crafted.ingredients.map((ing) => `${ing.nameEn} x${ing.quantity}`).join(", ");
-    successMessage = `✅ Craft successful\n` + `- Consumed: ${consumedItems}\n` + `- Added: ${craftedName} x${result.craftedQuantity || 1}`;
+    successMessage = `✅ Craft successful\n- Consumed: ${consumedItems}\n- Added: ${craftedName} x${result.craftedQuantity || 1}`;
   } else {
     successMessage = fr ? `✅ Craft reussi: ${craftedName} x${result.craftedQuantity || 1}` : `✅ Craft successful: ${craftedName} x${result.craftedQuantity || 1}`;
   }

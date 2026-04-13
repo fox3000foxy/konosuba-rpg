@@ -1,5 +1,5 @@
-import { Context } from "hono";
-import { Interaction } from "../../objects/enums/Interaction";
+import type { Context } from "hono";
+import type { Interaction } from "../../objects/enums/Interaction";
 import { MonsterDifficulty } from "../../objects/enums/MonsterDifficulty";
 import { QuestAction } from "../../objects/enums/QuestAction";
 import { getItems as getAccessoryItems } from "../../services/accessoryService";

@@ -5,5 +5,10 @@
     "lineWidth": 320,
     "bracketSameLine": false,
     "bracketSpacing": true
+  },
+  "linter": {
+    "rules": {
+      "security": "warn"
+    }
   }
 }

@@ -20,6 +20,7 @@ export default defineConfig([
     plugins: {
       // eslint-plugin-security is not typed, so we have to cast it to any
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      // biome-ignore lint/suspicious/noExplicitAny: security plugin is not typed
       security: security as any,
     },
     extends: [

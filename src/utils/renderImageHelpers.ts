@@ -105,8 +105,6 @@ export async function getAssetBytes(assetPath: string | null, baseUrl: string, p
         assetCache.set(assetPath, arrayBuffer);
         return arrayBuffer;
       } catch {
-        // Try next path
-        continue;
       }
     }
 

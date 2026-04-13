@@ -1,8 +1,8 @@
-import { Random } from "../classes/Random";
-import { ItemId } from "../objects/enums/ItemId";
+import type { Random } from "../classes/Random";
+import type { ItemId } from "../objects/enums/ItemId";
 import { Lang } from "../objects/enums/Lang";
-import { MonsterDifficulty } from "../objects/enums/MonsterDifficulty";
-import { Game } from "../objects/types/Game";
+import type { MonsterDifficulty } from "../objects/enums/MonsterDifficulty";
+import type { Game } from "../objects/types/Game";
 import processGame from "./processGame";
 import renderImage from "./renderImage";
 

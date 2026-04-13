@@ -19,7 +19,7 @@ import { BASE_URL } from "../objects/config/constants";
 import { Lang } from "../objects/enums/Lang";
 import processGameWithRender from "./processGameWithRender";
 import processUrl from "./processUrl";
-import { PerfReport, getCacheDiagnostics, getLastPerfReport, renderOutputCache } from "./renderImage";
+import { type PerfReport, getCacheDiagnostics, getLastPerfReport, renderOutputCache } from "./renderImage";
 
 // ─── Générateur d'URL ─────────────────────────────────────────────────────────
 

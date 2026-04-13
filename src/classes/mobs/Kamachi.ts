@@ -1,6 +1,6 @@
 import { Gender } from "../../objects/enums/Gender";
 import { FrenchLores } from "../../objects/enums/FrenchLores";
-import { Creature, CreatureInterface } from "../Creature";
+import { Creature, type CreatureInterface } from "../Creature";
 import { EnglishLore } from "../../objects/enums/EnglishLore";
 
 export default class Kamachi extends Creature implements CreatureInterface {

@@ -2,8 +2,8 @@ import * as Photon from "@cf-wasm/photon";
 import fs from "fs/promises";
 import path from "path";
 import satori from "satori";
-import { Creature } from "../classes/Creature";
-import { Team } from "../classes/Player";
+import type { Creature } from "../classes/Creature";
+import type { Team } from "../classes/Player";
 import { imageManifest } from "../objects/data/imageManifest";
 import { EndMessages } from "../objects/enums/EndMessages";
 import { HealthBarName } from "../objects/enums/HealthBarName";
@@ -123,8 +123,6 @@ export async function getImageBytes(key: string): Promise<ArrayBuffer> {
         imageCache[key] = arrayBuffer;
         return arrayBuffer;
       } catch {
-        // Try next path
-        continue;
       }
     }
 
@@ -164,8 +162,6 @@ async function getFontBytes(fontUrl: string): Promise<ArrayBuffer> {
         fontCache[fontUrl] = arrayBuffer;
         return arrayBuffer;
       } catch {
-        // Try next path
-        continue;
       }
     }
 

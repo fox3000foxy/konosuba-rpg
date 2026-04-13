@@ -1,5 +1,5 @@
-import { Player } from "../classes/Player";
-import { ItemId } from "../objects/enums/ItemId";
+import type { Player } from "../classes/Player";
+import type { ItemId } from "../objects/enums/ItemId";
 import { Rarity } from "../objects/enums/Rarity";
 import { TypeItem } from "../objects/enums/TypeItem";
 import { getItemById } from "./consumableService";

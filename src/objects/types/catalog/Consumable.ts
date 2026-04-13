@@ -1,6 +1,6 @@
-import { ItemId } from "../../enums/ItemId";
-import { Rarity } from "../../enums/Rarity";
-import { TypeItem } from "../../enums/TypeItem";
+import type { ItemId } from "../../enums/ItemId";
+import type { Rarity } from "../../enums/Rarity";
+import type { TypeItem } from "../../enums/TypeItem";
 
 export type ConsumableDefinition = {
   id: ItemId;

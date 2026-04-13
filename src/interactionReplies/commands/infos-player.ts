@@ -1,5 +1,5 @@
-import { Context } from "hono";
-import { Aqua, Darkness, Megumin, Player, Team } from "../../classes/Player";
+import type { Context } from "hono";
+import { type Aqua, type Darkness, type Megumin, type Player, Team } from "../../classes/Player";
 import { Lang } from "../../objects/enums/Lang";
 
 function getPlayerById(team: Team, characterId: number) {
