@@ -17,7 +17,6 @@ describe('renderProfileImage helper', () => {
     const runSummary = { totalRuns: 4, killedMonsters: [{ name: 'Slime', count: 2 }] };
 
     const svg = await buildProfileSvg(
-      'u1',
       profile,
       progresses,
       runSummary,
