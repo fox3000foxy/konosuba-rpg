@@ -79,8 +79,15 @@ function freePhoton(_key: string, img: Photon.PhotonImage): void {
 
 // ─── Global caches ───────────────────────────────────────────────────────────
 
-// biome-ignore lint/suspicious/noExplicitAny: global cache for images, fonts, and rendered layers to avoid redundant work across requests
-const G = globalThis as any;
+const G = {
+  __imageCache: undefined as Record<string, ArrayBuffer> | undefined,
+  __base64Cache: undefined as Record<string, string> | undefined,
+  __fontCache: undefined as Record<string, ArrayBuffer> | undefined,
+  __photonCache: undefined as LRUCache<string, Photon.PhotonImage> | undefined,
+  __layerCache: undefined as LRUCache<string, Photon.PhotonImage> | undefined,
+  __uiPhotonCache: undefined as LRUCache<string, Photon.PhotonImage> | undefined,
+  __renderOutputCache: undefined as LRUCache<string, Uint8Array> | undefined,
+};
 
 G.__imageCache ??= {} as Record<string, ArrayBuffer>;
 G.__base64Cache ??= {} as Record<string, string>;
@@ -130,7 +137,9 @@ export async function getImageBytes(key: string): Promise<ArrayBuffer> {
         const arrayBuffer = buffer.buffer.slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength);
         imageCache[key] = arrayBuffer;
         return arrayBuffer;
-      } catch {}
+      } catch {
+        // Ignore and try next path
+      }
     }
 
     // Fallback to fetch if no file found locally
@@ -168,7 +177,9 @@ async function getFontBytes(fontUrl: string): Promise<ArrayBuffer> {
         const arrayBuffer = buffer.buffer.slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength);
         fontCache[fontUrl] = arrayBuffer;
         return arrayBuffer;
-      } catch {}
+      } catch {
+        // Ignore and try next path
+      }
     }
 
     // Fallback to fetch if no file found locally

@@ -33,6 +33,7 @@ export async function getAssetBytes(assetPath: string, assetBaseUrl: string): Pr
       assetByteCache.set(cacheKey, arrayBuffer);
       return arrayBuffer;
     } catch {
+      // Ignore and try next path
     }
   }
 
@@ -78,6 +79,7 @@ export async function getEmbeddedFontBuffer(fontPath: string, fontUrl: string): 
       fontBufferCache.set(cacheKey, fontBytes);
       return fontBytes;
     } catch {
+      // Ignore and try next path
     }
   }
 
