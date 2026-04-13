@@ -42,7 +42,8 @@ export function pascalCaseToString(pascalCaseWord: string): string {
 function generateMessage(template: MessagesTemplates, replacements: Record<string, string | number>): string {
   let msg = template as string;
   for (const key in replacements) {
-    if (Object.hasOwn(replacements, key)) {
+    // biome-ignore lint/suspicious/noPrototypeBuiltins: hasOwn does not work with our replacement objects
+    if (Object.prototype.hasOwnProperty.call(replacements, key)) {
       msg = msg.replace(key, String(replacements[key]));
     }
   }
@@ -259,7 +260,9 @@ export default async function processGame(rand: Random, moves: string[], monster
   const consumedItemIds = new Set<ItemId>();
 
   // Reset special attack status for all players
-  team.players.forEach((player) => player.resetSpecialAttack());
+  team.players.forEach((player) => {
+    player.resetSpecialAttack();
+  });
 
   // Precompute reusable values
   const langIndex = lang === Lang.French ? 1 : 0;

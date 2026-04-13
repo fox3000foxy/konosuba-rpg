@@ -34,7 +34,7 @@ export function getItems(query: ConsumableQuery = {}): ConsumableDefinition[] {
     items = items.filter((item) => item.type === type);
   }
 
-  if (name && name.trim()) {
+  if (name?.trim()) {
     items = items.filter((item) => matchesName(item, name));
   }
 

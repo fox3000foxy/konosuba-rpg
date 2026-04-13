@@ -128,7 +128,7 @@ function stddev(arr: number[], mean: number): number {
 }
 
 function fmt(ms: number): string {
-  return ms.toFixed(2).padStart(8) + " ms";
+  return `${ms.toFixed(2).padStart(8)} ms`;
 }
 
 function bar(ratio: number, width = 28): string {
@@ -177,7 +177,7 @@ async function runScenario(scenario: Scenario, runs: number, warmup: number): Pr
 
 // ─── Report printer ───────────────────────────────────────────────────────────
 
-function printScenarioReport(scenario: Scenario, url: string, result: RunResult): void {
+function printScenarioReport(scenario: Scenario, _url: string, result: RunResult): void {
   const { timings, reports, outputSizes, states } = result;
   const mean = timings.reduce((a, b) => a + b, 0) / timings.length;
   const sd = stddev(timings, mean);
@@ -189,9 +189,9 @@ function printScenarioReport(scenario: Scenario, url: string, result: RunResult)
   const avgSz = outputSizes.reduce((a, b) => a + b, 0) / outputSizes.length;
   const lastState = states[states.length - 1] ?? "incomplete";
 
-  console.log("\n" + "─".repeat(72));
+  console.log(`\n${"─".repeat(72)}`);
   console.log(`📊  ${scenario.name}`);
-  console.log(`    URL   : .../${scenario.lang}/${scenario.seed}${scenario.moves.length ? "/" + scenario.moves.join("/") : ""}${scenario.monster ? "?monster=" + scenario.monster : ""}`);
+  console.log(`    URL   : .../${scenario.lang}/${scenario.seed}${scenario.moves.length ? `/${scenario.moves.join("/")}` : ""}${scenario.monster ? `?monster=${scenario.monster}` : ""}`);
   console.log(`    State : ${lastState}`);
   console.log("─".repeat(72));
   console.log(`  min      ${fmt(min)}`);
@@ -266,7 +266,7 @@ function printThroughput(allTimings: number[]): void {
   const med = median(allTimings);
   const p95 = percentile(allTimings, 95);
 
-  console.log("\n" + "═".repeat(72));
+  console.log(`\n${"═".repeat(72)}`);
   console.log("🚀  Estimation de scalabilité (pipeline complet processGame + render)");
   console.log("═".repeat(72));
   console.log("");
@@ -333,7 +333,7 @@ async function main(): Promise<void> {
 
   printThroughput(allTimings);
 
-  console.log("\n" + "─".repeat(72));
+  console.log(`\n${"─".repeat(72)}`);
   console.log("🗃️  État des caches en fin de benchmark :");
   for (const [k, v] of Object.entries(getCacheDiagnostics())) {
     console.log(`  ${k.padEnd(28)} ${v}`);

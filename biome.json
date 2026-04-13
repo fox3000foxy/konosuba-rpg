@@ -7,8 +7,18 @@
     "bracketSpacing": true
   },
   "linter": {
+    "enabled": true,
     "rules": {
-      "security": "warn"
+      "style": {
+        "useImportType": {
+          "level": "on",
+          "options": { "style": "inlineType" }
+        }
+      }
     }
+  },
+  "assist": {
+    "enabled": false,
+    "actions": { "source": { "organizeImports": "on" } }
   }
 }

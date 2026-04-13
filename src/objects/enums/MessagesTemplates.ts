@@ -1,3 +1,4 @@
+/** biome-ignore-all lint/suspicious/noTemplateCurlyInString: templates */
 export enum MessagesTemplates {
   French_CreatureAttacks = "${NAME} attaque {PLAYER} et lui inflige {DMG} DMG.",
   French_CreatureMisses = "${NAME} a essayé d'attaquer {PLAYER} mais l'a donc raté.",

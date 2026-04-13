@@ -207,7 +207,7 @@ export class Team {
   }
 
   performTeamAction(action: PlayerAction): void {
-    this.players.forEach((player) => player.performAction(action));
+    this.players.forEach((player) => {player.performAction(action)});
   }
 
   setActivePlayer(player: Player): void {

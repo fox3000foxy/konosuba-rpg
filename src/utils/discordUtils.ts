@@ -2,7 +2,7 @@
 
 import { verifyKey } from "discord-interactions";
 import { config } from "dotenv";
-import { type Context } from "vm";
+import { type Context } from "node:vm";
 config();
 
 export async function verifySignature(c: Context, body: string): Promise<boolean> {

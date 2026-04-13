@@ -5,7 +5,7 @@ import { getInventoryItems } from "../../services/inventoryService";
 
 const EPHEMERAL_FLAG = 1 << 6;
 
-export async function handleUseItemButton(c: Context, userId: string, lang: Lang, fr: boolean) {
+export async function handleUseItemButton(c: Context, userId: string, _lang: Lang, fr: boolean) {
   // Get inventory
   const inventoryItems = await getInventoryItems(userId);
   const consumables = inventoryItems.filter((item) => item.category === "consumable");
