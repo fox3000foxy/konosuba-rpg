@@ -1,12 +1,12 @@
-import { Errors } from '../objects/enums/Errors';
-import { Gender } from '../objects/enums/Gender';
-import { MessagesTemplates } from '../objects/enums/MessagesTemplates';
-import { CreatureInterface } from '../objects/types/CreatureInterface';
-import { getCreatureNameAndPrefix } from '../utils/creatureText';
-import { Player } from './Player';
+import { Errors } from "../objects/enums/Errors";
+import { Gender } from "../objects/enums/Gender";
+import { MessagesTemplates } from "../objects/enums/MessagesTemplates";
+import { CreatureInterface } from "../objects/types/CreatureInterface";
+import { getCreatureNameAndPrefix } from "../utils/creatureText";
+import { Player } from "./Player";
 
-export { MessagesTemplates } from '../objects/enums/MessagesTemplates';
-export type { CreatureInterface } from '../objects/types/CreatureInterface';
+export { MessagesTemplates } from "../objects/enums/MessagesTemplates";
+export type { CreatureInterface } from "../objects/types/CreatureInterface";
 
 export abstract class Creature implements CreatureInterface {
   public hpMax: number;
@@ -25,10 +25,10 @@ export abstract class Creature implements CreatureInterface {
     this.hp = this.hpMax;
     this.attack = [0, 12];
     this.love = 10;
-    this.name = ['Creature', 'Créature'];
-    this.images = ['frame'];
+    this.name = ["Creature", "Créature"];
+    this.images = ["frame"];
     this.prefix = true;
-    this.lore = ['', ''];
+    this.lore = ["", ""];
     this.gender = Gender.Neutral;
 
     if (new.target === Creature) {
@@ -42,13 +42,13 @@ export abstract class Creature implements CreatureInterface {
 
   turn(options: { lang: string; dmg: number; player: Player }): [string, number] {
     const dmg = options.dmg;
-    const isFrench = options.lang === 'fr';
+    const isFrench = options.lang === "fr";
     const langIndex = isFrench ? 1 : 0;
     const { name, prefix } = getCreatureNameAndPrefix(this, options.lang, true);
 
     const template = isFrench ? (dmg ? MessagesTemplates.French_CreatureAttacks : MessagesTemplates.French_CreatureMisses) : dmg ? MessagesTemplates.English_CreatureAttacks : MessagesTemplates.English_CreatureMisses;
 
-    const message = template.replace('${NAME}', `${prefix}${name}`).replace('{DMG}', dmg.toString()).replace('{PLAYER}', options.player.name[langIndex]);
+    const message = template.replace("${NAME}", `${prefix}${name}`).replace("{DMG}", dmg.toString()).replace("{PLAYER}", options.player.name[langIndex]);
 
     return [message, dmg];
   }

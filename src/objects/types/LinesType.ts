@@ -1,5 +1,5 @@
-import { Lang } from '../enums/Lang';
-import { MessagesTemplates } from '../enums/MessagesTemplates';
+import { Lang } from "../enums/Lang";
+import { MessagesTemplates } from "../enums/MessagesTemplates";
 
 export type LinesType = {
   [key in Lang]: {

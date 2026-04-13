@@ -1,4 +1,4 @@
-import { Random } from '../../classes/Random';
+import { Random } from "../../classes/Random";
 
 export type ParsedGameUrl = {
   rand: Random;

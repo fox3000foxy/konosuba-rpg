@@ -1,5 +1,5 @@
-import fs from 'fs/promises';
-import path from 'path';
+import fs from "fs/promises";
+import path from "path";
 
 type CacheEntry<T> = {
   value: T;
@@ -17,7 +17,7 @@ class FifoSizedCache<T> implements SizedCache<T> {
 
   constructor(
     private readonly maxSizeBytes: number,
-    private readonly estimateSize: (value: T) => number
+    private readonly estimateSize: (value: T) => number,
   ) {}
 
   get(key: string): T | undefined {
@@ -56,11 +56,11 @@ class FifoSizedCache<T> implements SizedCache<T> {
 }
 
 export function createBoundedArrayBufferCache(maxSizeBytes: number): SizedCache<ArrayBuffer> {
-  return new FifoSizedCache<ArrayBuffer>(maxSizeBytes, value => value.byteLength);
+  return new FifoSizedCache<ArrayBuffer>(maxSizeBytes, (value) => value.byteLength);
 }
 
 export function createBoundedStringCache(maxSizeBytes: number): SizedCache<string> {
-  return new FifoSizedCache<string>(maxSizeBytes, value => Buffer.byteLength(value, 'utf8'));
+  return new FifoSizedCache<string>(maxSizeBytes, (value) => Buffer.byteLength(value, "utf8"));
 }
 
 export type RenderImageGlobals = {
@@ -92,10 +92,10 @@ export async function getAssetBytes(assetPath: string | null, baseUrl: string, p
 
   const request = (async () => {
     // Try filesystem paths in order (Vercel then local)
-    const cleanPath = assetPath.replace(/^\/assets\//, '');
+    const cleanPath = assetPath.replace(/^\/assets\//, "");
     const possiblePaths = [
       `/var/task/assets/${cleanPath}`, // Vercel serverless
-      path.join(process.cwd(), 'assets', cleanPath), // Dev/local
+      path.join(process.cwd(), "assets", cleanPath), // Dev/local
     ];
 
     for (const filePath of possiblePaths) {
@@ -132,7 +132,7 @@ export async function getAssetBytes(assetPath: string | null, baseUrl: string, p
 }
 
 export function toDataUri(buffer: ArrayBuffer, mimeType: string): string {
-  return `data:${mimeType};base64,${Buffer.from(buffer).toString('base64')}`;
+  return `data:${mimeType};base64,${Buffer.from(buffer).toString("base64")}`;
 }
 
 export function bytesToArrayBuffer(bytes: Uint8Array): ArrayBuffer {
@@ -140,11 +140,11 @@ export function bytesToArrayBuffer(bytes: Uint8Array): ArrayBuffer {
 }
 
 export function getMimeTypeFromPath(path: string): string {
-  const clean = path.split('?')[0].toLowerCase();
-  if (clean.endsWith('.png')) return 'image/png';
-  if (clean.endsWith('.jpg') || clean.endsWith('.jpeg')) return 'image/jpeg';
-  if (clean.endsWith('.gif')) return 'image/gif';
-  return 'image/webp';
+  const clean = path.split("?")[0].toLowerCase();
+  if (clean.endsWith(".png")) return "image/png";
+  if (clean.endsWith(".jpg") || clean.endsWith(".jpeg")) return "image/jpeg";
+  if (clean.endsWith(".gif")) return "image/gif";
+  return "image/webp";
 }
 
 export function resolveAssetUrl(path: string | null, baseUrl: string): string | null {
@@ -152,11 +152,11 @@ export function resolveAssetUrl(path: string | null, baseUrl: string): string | 
     return null;
   }
 
-  if (path.startsWith('http://') || path.startsWith('https://')) {
+  if (path.startsWith("http://") || path.startsWith("https://")) {
     return path;
   }
 
-  return `${baseUrl}${path.startsWith('/') ? path : `/${path}`}`;
+  return `${baseUrl}${path.startsWith("/") ? path : `/${path}`}`;
 }
 
 export async function toResvgCompatibleDataUri(path: string, bytes: ArrayBuffer, resvgUriCache: SizedCache<string>): Promise<string> {
@@ -166,7 +166,7 @@ export async function toResvgCompatibleDataUri(path: string, bytes: ArrayBuffer,
   }
 
   const mimeType = getMimeTypeFromPath(path);
-  if (mimeType !== 'image/webp') {
+  if (mimeType !== "image/webp") {
     const uri = toDataUri(bytes, mimeType);
     resvgUriCache.set(path, uri);
     return uri;
@@ -174,7 +174,7 @@ export async function toResvgCompatibleDataUri(path: string, bytes: ArrayBuffer,
 
   try {
     // Use edge-light for Cloudflare Workers compatibility (cf-wasm official export)
-    const Photon = await import('@cf-wasm/photon/edge-light');
+    const Photon = await import("@cf-wasm/photon/edge-light");
     const image = Photon.PhotonImage.new_from_byteslice(new Uint8Array(bytes));
     let pngBytes: Uint8Array;
     try {
@@ -182,7 +182,7 @@ export async function toResvgCompatibleDataUri(path: string, bytes: ArrayBuffer,
     } finally {
       image.free();
     }
-    const uri = toDataUri(bytesToArrayBuffer(pngBytes), 'image/png');
+    const uri = toDataUri(bytesToArrayBuffer(pngBytes), "image/png");
     resvgUriCache.set(path, uri);
     return uri;
   } catch {
@@ -239,5 +239,5 @@ export function cacheRenderOutput(key: string, value: Uint8Array, renderOutputCa
 }
 
 export function escapeXml(value: string): string {
-  return value.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&apos;');
+  return value.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&apos;");
 }

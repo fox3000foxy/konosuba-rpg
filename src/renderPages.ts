@@ -1,6 +1,6 @@
-import { config } from 'dotenv';
-import { Hono } from 'hono';
-import { registerApiRenderRoutes } from './routes/apiRender';
+import { config } from "dotenv";
+import { Hono } from "hono";
+import { registerApiRenderRoutes } from "./routes/apiRender";
 
 config();
 

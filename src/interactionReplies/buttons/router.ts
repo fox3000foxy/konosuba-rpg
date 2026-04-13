@@ -1,32 +1,32 @@
-import { Context } from 'hono';
-import { AccessoryId } from '../../objects/enums/AccessoryId';
-import { AccessoryType } from '../../objects/enums/AccessoryType';
-import { CharacterKey } from '../../objects/enums/CharacterKey';
-import { Interaction } from '../../objects/enums/Interaction';
-import { ItemId } from '../../objects/enums/ItemId';
-import { Lang } from '../../objects/enums/Lang';
-import { Rarity } from '../../objects/enums/Rarity';
-import { ShopItem } from '../../objects/types/ShopItem';
-import { decodeGameplayPayloadWithStatus } from '../../services/gameSessionService';
-import { donateAccessoryToCharacter, ensurePlayerProfile, getAchievementsOverview, recordRunResult } from '../../services/progressionService';
+import { Context } from "hono";
+import { AccessoryId } from "../../objects/enums/AccessoryId";
+import { AccessoryType } from "../../objects/enums/AccessoryType";
+import { CharacterKey } from "../../objects/enums/CharacterKey";
+import { Interaction } from "../../objects/enums/Interaction";
+import { ItemId } from "../../objects/enums/ItemId";
+import { Lang } from "../../objects/enums/Lang";
+import { Rarity } from "../../objects/enums/Rarity";
+import { ShopItem } from "../../objects/types/ShopItem";
+import { decodeGameplayPayloadWithStatus } from "../../services/gameSessionService";
+import { donateAccessoryToCharacter, ensurePlayerProfile, getAchievementsOverview, recordRunResult } from "../../services/progressionService";
 
-import { BASE_URL } from '../../objects/config';
-import { addInventoryItem } from '../../services/inventoryService';
-import { getPlayerProfile, updatePlayerGold } from '../../services/playerService';
-import { buildComponents, getBattleMonsterNames } from '../../utils/componentsBuilder';
-import { addImageVersion } from '../../utils/imageUtils';
-import { decompressMoves } from '../../utils/movesUtils';
-import { extractDifficulty, isTraining } from '../../utils/payloadUtils';
-import { buildAchievementsComponents } from '../commands/achievements';
-import { buildAffinityGiftComponents, buildAffinityMessageData } from '../commands/affinity';
-import { buildShopComponents, getShopItem } from '../commands/shop';
-import { handleConsumablesButton } from './handleConsumablesButton';
-import { handleDefaultButton } from './handleDefaultButton';
-import { handleSpecialButton } from './handleSpecialButton';
+import { BASE_URL } from "../../objects/config";
+import { addInventoryItem } from "../../services/inventoryService";
+import { getPlayerProfile, updatePlayerGold } from "../../services/playerService";
+import { buildComponents, getBattleMonsterNames } from "../../utils/componentsBuilder";
+import { addImageVersion } from "../../utils/imageUtils";
+import { decompressMoves } from "../../utils/movesUtils";
+import { extractDifficulty, isTraining } from "../../utils/payloadUtils";
+import { buildAchievementsComponents } from "../commands/achievements";
+import { buildAffinityGiftComponents, buildAffinityMessageData } from "../commands/affinity";
+import { buildShopComponents, getShopItem } from "../commands/shop";
+import { handleConsumablesButton } from "./handleConsumablesButton";
+import { handleDefaultButton } from "./handleDefaultButton";
+import { handleSpecialButton } from "./handleSpecialButton";
 
 function getPagedShopItems(page: number) {
   const pageSize = 16;
-  const allShopItems = [...Object.values(AccessoryId), ...Object.values(ItemId)].map(key => getShopItem(key)).filter((item): item is ShopItem => Boolean(item));
+  const allShopItems = [...Object.values(AccessoryId), ...Object.values(ItemId)].map((key) => getShopItem(key)).filter((item): item is ShopItem => Boolean(item));
 
   const pageCount = Math.max(1, Math.ceil(allShopItems.length / pageSize));
   const pageIndex = Math.min(pageCount - 1, Math.max(0, page - 1));
@@ -37,14 +37,14 @@ function getPagedShopItems(page: number) {
 
 export async function handleButtonInteraction(c: Context, interaction: Interaction, userID: string, lang: Lang, fr: boolean) {
   if (!interaction.data?.custom_id) {
-    return c.json({ error: 'Unknown interaction' }, 400);
+    return c.json({ error: "Unknown interaction" }, 400);
   }
 
   const customId: string = interaction.data.custom_id;
 
-  if (customId.startsWith('affinity_select_type:')) {
-    const parts = customId.split(':');
-    const requestUserId = parts[1] || '';
+  if (customId.startsWith("affinity_select_type:")) {
+    const parts = customId.split(":");
+    const requestUserId = parts[1] || "";
     const selectedType = interaction.data.values?.[0];
 
     if (!selectedType || requestUserId !== userID) {
@@ -67,10 +67,10 @@ export async function handleButtonInteraction(c: Context, interaction: Interacti
     });
   }
 
-  if (customId.startsWith('affinity_select_rarity:')) {
-    const parts = customId.split(':');
-    const selectedTypeRaw = parts[1] || 'all';
-    const requestUserId = parts[2] || '';
+  if (customId.startsWith("affinity_select_rarity:")) {
+    const parts = customId.split(":");
+    const selectedTypeRaw = parts[1] || "all";
+    const requestUserId = parts[2] || "";
     const selectedRarity = interaction.data.values?.[0];
 
     if (!selectedRarity || requestUserId !== userID) {
@@ -81,7 +81,7 @@ export async function handleButtonInteraction(c: Context, interaction: Interacti
       return c.json({ type: 6 });
     }
 
-    const selectedType = selectedTypeRaw !== 'all' && Object.values(AccessoryType).includes(selectedTypeRaw as AccessoryType) ? (selectedTypeRaw as AccessoryType) : undefined;
+    const selectedType = selectedTypeRaw !== "all" && Object.values(AccessoryType).includes(selectedTypeRaw as AccessoryType) ? (selectedTypeRaw as AccessoryType) : undefined;
 
     const components = await buildAffinityGiftComponents(userID, fr, {
       accessoryType: selectedType,
@@ -96,10 +96,10 @@ export async function handleButtonInteraction(c: Context, interaction: Interacti
     });
   }
 
-  if (customId.startsWith('affinity_select_item:')) {
-    const parts = customId.split(':');
-    const requestUserId = parts[3] || '';
-    const itemKey = interaction.data.values?.[0] || '';
+  if (customId.startsWith("affinity_select_item:")) {
+    const parts = customId.split(":");
+    const requestUserId = parts[3] || "";
+    const itemKey = interaction.data.values?.[0] || "";
 
     if (!itemKey || requestUserId !== userID) {
       return c.json({ type: 6 });
@@ -111,19 +111,19 @@ export async function handleButtonInteraction(c: Context, interaction: Interacti
         components: [
           {
             type: 2,
-            label: 'Darkness',
+            label: "Darkness",
             style: 2,
             custom_id: `affinity_gift_apply:${itemKey}:${CharacterKey.Darkness}:${userID}`,
           },
           {
             type: 2,
-            label: 'Megumin',
+            label: "Megumin",
             style: 4,
             custom_id: `affinity_gift_apply:${itemKey}:${CharacterKey.Megumin}:${userID}`,
           },
           {
             type: 2,
-            label: 'Aqua',
+            label: "Aqua",
             style: 1,
             custom_id: `affinity_gift_apply:${itemKey}:${CharacterKey.Aqua}:${userID}`,
           },
@@ -134,7 +134,7 @@ export async function handleButtonInteraction(c: Context, interaction: Interacti
         components: [
           {
             type: 2,
-            label: fr ? 'Annuler' : 'Cancel',
+            label: fr ? "Annuler" : "Cancel",
             style: 2,
             custom_id: `affinity_gift_back:${userID}`,
           },
@@ -150,9 +150,9 @@ export async function handleButtonInteraction(c: Context, interaction: Interacti
     });
   }
 
-  if (customId.startsWith('affinity_gift_back:')) {
-    const parts = customId.split(':');
-    const requestUserId = parts[1] || '';
+  if (customId.startsWith("affinity_gift_back:")) {
+    const parts = customId.split(":");
+    const requestUserId = parts[1] || "";
 
     if (requestUserId !== userID) {
       return c.json({ type: 6 });
@@ -167,11 +167,11 @@ export async function handleButtonInteraction(c: Context, interaction: Interacti
     });
   }
 
-  if (customId.startsWith('achievements_page:')) {
+  if (customId.startsWith("achievements_page:")) {
     try {
-      const parts = customId.split(':');
-      const pageRaw = parts[1] || '1';
-      const requestUserId = parts[2] || '';
+      const parts = customId.split(":");
+      const pageRaw = parts[1] || "1";
+      const requestUserId = parts[2] || "";
 
       if (requestUserId !== userID) {
         return c.json({ type: 6 });
@@ -186,7 +186,7 @@ export async function handleButtonInteraction(c: Context, interaction: Interacti
       const pageSize = 5;
       const pageCount = Math.max(1, Math.ceil(achievements.length / pageSize));
       const page = Math.min(pageCount, Math.max(1, Number(pageRaw) || 1));
-      const unlockedCount = achievements.filter(item => item.unlocked).length;
+      const unlockedCount = achievements.filter((item) => item.unlocked).length;
 
       const components = buildAchievementsComponents(page, pageCount, userID, fr);
 
@@ -199,7 +199,7 @@ export async function handleButtonInteraction(c: Context, interaction: Interacti
             {
               description,
               image: {
-                url: addImageVersion(`${BASE_URL}/achievements/${userID}?lang=${fr ? 'fr' : 'en'}&page=${page}`),
+                url: addImageVersion(`${BASE_URL}/achievements/${userID}?lang=${fr ? "fr" : "en"}&page=${page}`),
               },
               color: 0x2b2d31,
             },
@@ -208,18 +208,18 @@ export async function handleButtonInteraction(c: Context, interaction: Interacti
         },
       });
     } catch (error) {
-      console.error('[achievements_page] error:', error);
+      console.error("[achievements_page] error:", error);
       return c.json({ type: 6 });
     }
   }
 
-  if (customId.startsWith('shop_forward:') || customId.startsWith('shop_backward:') || customId.startsWith('shop_back:') || customId.startsWith('shop_page:')) {
+  if (customId.startsWith("shop_forward:") || customId.startsWith("shop_backward:") || customId.startsWith("shop_back:") || customId.startsWith("shop_page:")) {
     try {
-      const parts = customId.split(':');
-      const pageRaw = parts[1] || '1';
-      const requestUserId = parts[2] || '';
+      const parts = customId.split(":");
+      const pageRaw = parts[1] || "1";
+      const requestUserId = parts[2] || "";
       if (requestUserId !== userID) {
-        console.log('Unauthorized shop navigation attempt', {
+        console.log("Unauthorized shop navigation attempt", {
           customId,
           userID,
         });
@@ -235,10 +235,10 @@ export async function handleButtonInteraction(c: Context, interaction: Interacti
         data: {
           embeds: [
             {
-              title: fr ? 'Boutique' : 'Shop',
+              title: fr ? "Boutique" : "Shop",
               description: fr ? `Page ${page} / ${pageCount}` : `Page ${page} / ${pageCount}`,
               image: {
-                url: addImageVersion(`${BASE_URL}/shop/${page}?lang=${fr ? 'fr' : 'en'}`),
+                url: addImageVersion(`${BASE_URL}/shop/${page}?lang=${fr ? "fr" : "en"}`),
               },
               color: 0x2b2d31,
             },
@@ -247,16 +247,16 @@ export async function handleButtonInteraction(c: Context, interaction: Interacti
         },
       });
     } catch (error) {
-      console.error('[shop_page] error:', error);
+      console.error("[shop_page] error:", error);
       return c.json({ type: 6 });
     }
   }
 
-  if (customId.startsWith('shop_select:')) {
+  if (customId.startsWith("shop_select:")) {
     try {
-      const parts = customId.split(':');
-      const pageRaw = parts[1] || '1';
-      const requestUserId = parts[2] || '';
+      const parts = customId.split(":");
+      const pageRaw = parts[1] || "1";
+      const requestUserId = parts[2] || "";
       if (requestUserId !== userID) {
         return c.json({ type: 6 });
       }
@@ -266,18 +266,18 @@ export async function handleButtonInteraction(c: Context, interaction: Interacti
       const { pageCount, pageItems } = getPagedShopItems(page);
       const components = buildShopComponents(pageItems, page, pageCount, fr, userID, selectedItemKey);
 
-      console.log(addImageVersion(`${BASE_URL}/shop/${page}?lang=${fr ? 'fr' : 'en'}`));
-      const selectedItemName = selectedItemKey ? getShopItem(selectedItemKey)?.nameEn || selectedItemKey : fr ? 'aucun' : 'none';
+      console.log(addImageVersion(`${BASE_URL}/shop/${page}?lang=${fr ? "fr" : "en"}`));
+      const selectedItemName = selectedItemKey ? getShopItem(selectedItemKey)?.nameEn || selectedItemKey : fr ? "aucun" : "none";
       const description = fr ? `Page ${page} / ${pageCount}.\n\n Objet sélectionné : ${selectedItemName}` : `Page ${page} / ${pageCount}.\n\n Selected item: ${selectedItemName}`;
       return c.json({
         type: 7,
         data: {
           embeds: [
             {
-              title: fr ? 'Boutique' : 'Shop',
+              title: fr ? "Boutique" : "Shop",
               description,
               image: {
-                url: addImageVersion(`${BASE_URL}/shop/${page}?lang=${fr ? 'fr' : 'en'}`),
+                url: addImageVersion(`${BASE_URL}/shop/${page}?lang=${fr ? "fr" : "en"}`),
               },
               color: 0x2b2d31,
             },
@@ -286,17 +286,17 @@ export async function handleButtonInteraction(c: Context, interaction: Interacti
         },
       });
     } catch (error) {
-      console.error('[shop_select] error:', error);
+      console.error("[shop_select] error:", error);
       return c.json({ type: 6 });
     }
   }
 
-  if (customId.startsWith('shop_buy:')) {
+  if (customId.startsWith("shop_buy:")) {
     try {
-      const parts = customId.split(':');
-      const itemKey = parts[1] || '';
-      const pageRaw = parts[2] || '1';
-      const requestUserId = parts[3] || '';
+      const parts = customId.split(":");
+      const itemKey = parts[1] || "";
+      const pageRaw = parts[2] || "1";
+      const requestUserId = parts[3] || "";
       if (requestUserId !== userID) {
         return c.json({ type: 6 });
       }
@@ -305,7 +305,7 @@ export async function handleButtonInteraction(c: Context, interaction: Interacti
       if (!shopItem) {
         return c.json({
           type: 7,
-          data: { content: fr ? 'Item invalide' : 'Invalid item' },
+          data: { content: fr ? "Item invalide" : "Invalid item" },
         });
       }
 
@@ -313,7 +313,7 @@ export async function handleButtonInteraction(c: Context, interaction: Interacti
       if (!profile) {
         return c.json({
           type: 7,
-          data: { content: fr ? 'Profil indisponible' : 'Profile unavailable' },
+          data: { content: fr ? "Profil indisponible" : "Profile unavailable" },
         });
       }
 
@@ -321,7 +321,7 @@ export async function handleButtonInteraction(c: Context, interaction: Interacti
       if (profile.gold < cost) {
         return c.json({
           type: 7,
-          data: { content: fr ? 'Or insuffisant' : 'Not enough gold' },
+          data: { content: fr ? "Or insuffisant" : "Not enough gold" },
         });
       }
 
@@ -339,10 +339,10 @@ export async function handleButtonInteraction(c: Context, interaction: Interacti
         data: {
           embeds: [
             {
-              title: fr ? 'Achat réussi' : 'Purchase success',
+              title: fr ? "Achat réussi" : "Purchase success",
               description: message,
               image: {
-                url: addImageVersion(`${BASE_URL}/shop/${page}?lang=${fr ? 'fr' : 'en'}`),
+                url: addImageVersion(`${BASE_URL}/shop/${page}?lang=${fr ? "fr" : "en"}`),
               },
               color: 0x2b2d31,
             },
@@ -351,16 +351,16 @@ export async function handleButtonInteraction(c: Context, interaction: Interacti
         },
       });
     } catch (error) {
-      console.error('[shop_buy] error:', error);
+      console.error("[shop_buy] error:", error);
       return c.json({ type: 6 });
     }
   }
 
-  if (customId.startsWith('affinity_gift_apply:')) {
-    const parts = customId.split(':');
-    const itemKey = parts[1] || '';
-    const characterKeyRaw = parts[2] || '';
-    const requestUserId = parts[3] || '';
+  if (customId.startsWith("affinity_gift_apply:")) {
+    const parts = customId.split(":");
+    const itemKey = parts[1] || "";
+    const characterKeyRaw = parts[2] || "";
+    const requestUserId = parts[3] || "";
 
     if (!itemKey || requestUserId !== userID) {
       return c.json({ type: 6 });
@@ -374,7 +374,7 @@ export async function handleButtonInteraction(c: Context, interaction: Interacti
     const donation = await donateAccessoryToCharacter(userID, itemKey, characterKey);
 
     if (!donation.success) {
-      const message = donation.reason === 'out-of-stock' ? (fr ? 'Accessoire indisponible ou stock insuffisant.' : 'Accessory unavailable or insufficient stock.') : fr ? 'Accessoire invalide.' : 'Invalid accessory.';
+      const message = donation.reason === "out-of-stock" ? (fr ? "Accessoire indisponible ou stock insuffisant." : "Accessory unavailable or insufficient stock.") : fr ? "Accessoire invalide." : "Invalid accessory.";
 
       const data = await buildAffinityMessageData(userID, userID, fr, message, undefined, false);
 
@@ -384,7 +384,7 @@ export async function handleButtonInteraction(c: Context, interaction: Interacti
       });
     }
 
-    const targetLabel = characterKey === CharacterKey.Darkness ? 'Darkness' : characterKey === CharacterKey.Megumin ? 'Megumin' : 'Aqua';
+    const targetLabel = characterKey === CharacterKey.Darkness ? "Darkness" : characterKey === CharacterKey.Megumin ? "Megumin" : "Aqua";
 
     const successMessage = fr ? `Don effectue sur ${targetLabel}: +${donation.affinityPoints} affinite.` : `Gift sent to ${targetLabel}: +${donation.affinityPoints} affinity.`;
 
@@ -397,12 +397,12 @@ export async function handleButtonInteraction(c: Context, interaction: Interacti
   }
 
   // Handle consumable item selection (step 1): choose which item to use
-  if (customId.startsWith('consumable_item:')) {
+  if (customId.startsWith("consumable_item:")) {
     try {
-      const parts = customId.split(':');
-      const payload = parts[1] || '';
-      const itemKey = parts[2] || '';
-      const requestUserId = parts[3] || '';
+      const parts = customId.split(":");
+      const payload = parts[1] || "";
+      const itemKey = parts[2] || "";
+      const requestUserId = parts[3] || "";
 
       if (requestUserId !== userID) {
         return c.json({
@@ -411,10 +411,10 @@ export async function handleButtonInteraction(c: Context, interaction: Interacti
       }
 
       const targets = [
-        { id: 0, labelFr: 'Kazuma', labelEn: 'Kazuma' },
-        { id: 1, labelFr: 'Aqua', labelEn: 'Aqua' },
-        { id: 2, labelFr: 'Megumin', labelEn: 'Megumin' },
-        { id: 3, labelFr: 'Darkness', labelEn: 'Darkness' },
+        { id: 0, labelFr: "Kazuma", labelEn: "Kazuma" },
+        { id: 1, labelFr: "Aqua", labelEn: "Aqua" },
+        { id: 2, labelFr: "Megumin", labelEn: "Megumin" },
+        { id: 3, labelFr: "Darkness", labelEn: "Darkness" },
       ];
 
       const difficulty = extractDifficulty(payload) ?? undefined;
@@ -423,7 +423,7 @@ export async function handleButtonInteraction(c: Context, interaction: Interacti
       const components = [
         {
           type: 1,
-          components: targets.map(target => ({
+          components: targets.map((target) => ({
             type: 2,
             label: fr ? target.labelFr : target.labelEn,
             style: 1,
@@ -436,7 +436,7 @@ export async function handleButtonInteraction(c: Context, interaction: Interacti
           components: [
             {
               type: 2,
-              label: fr ? 'Retour en jeu' : 'Back to game',
+              label: fr ? "Retour en jeu" : "Back to game",
               style: 2,
               custom_id: `${payload}:${userID}`,
             },
@@ -452,7 +452,7 @@ export async function handleButtonInteraction(c: Context, interaction: Interacti
       });
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
-      console.error('[consumable_item] Interaction error:', message);
+      console.error("[consumable_item] Interaction error:", message);
       return c.json({
         type: 6,
       });
@@ -460,13 +460,13 @@ export async function handleButtonInteraction(c: Context, interaction: Interacti
   }
 
   // Handle consumable application (step 2): apply item to selected target
-  if (customId.startsWith('consumable_apply:')) {
+  if (customId.startsWith("consumable_apply:")) {
     try {
-      const parts = customId.split(':');
-      const payload = parts[1] || '';
-      const itemKey = parts[2] || '';
-      const targetIdRaw = parts[3] || '0';
-      const requestUserId = parts[4] || '';
+      const parts = customId.split(":");
+      const payload = parts[1] || "";
+      const itemKey = parts[2] || "";
+      const targetIdRaw = parts[3] || "0";
+      const requestUserId = parts[4] || "";
 
       if (requestUserId !== userID) {
         return c.json({
@@ -492,7 +492,7 @@ export async function handleButtonInteraction(c: Context, interaction: Interacti
       return handleDefaultButton(c, nextPayload, userID, lang, fr, monsterName, embedDescription, buttons);
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
-      console.error('[consumable_apply] Interaction error:', message);
+      console.error("[consumable_apply] Interaction error:", message);
       return c.json({
         type: 6,
       });
@@ -500,12 +500,19 @@ export async function handleButtonInteraction(c: Context, interaction: Interacti
   }
 
   // Handle combat-related custom_ids (require payload decoding)
-  const colonIdx = customId.lastIndexOf(':');
+  const colonIdx = customId.lastIndexOf(":");
   const encodedPayload = colonIdx !== -1 ? customId.slice(0, colonIdx) : customId;
   const decodeResult = await decodeGameplayPayloadWithStatus(encodedPayload, userID);
 
   if (!decodeResult.payload) {
-    const content = decodeResult.reason === 'stale' ? (fr ? 'Ce bouton est obsolete. Utilise le dernier message de combat.' : 'This button is outdated. Use the latest battle message.') : fr ? 'Session de combat invalide ou expirée. Utilise le dernier message de combat.' : 'Battle session is invalid or expired. Use the latest battle message.';
+    const content =
+      decodeResult.reason === "stale"
+        ? fr
+          ? "Ce bouton est obsolete. Utilise le dernier message de combat."
+          : "This button is outdated. Use the latest battle message."
+        : fr
+          ? "Session de combat invalide ou expirée. Utilise le dernier message de combat."
+          : "Battle session is invalid or expired. Use the latest battle message.";
 
     return c.json({
       type: 4,
@@ -519,16 +526,16 @@ export async function handleButtonInteraction(c: Context, interaction: Interacti
   const resolvedEncodedPayload = decodeResult.payload;
 
   // Check if this is a consumables menu action (ends with 'c')
-  if (resolvedEncodedPayload.endsWith('c')) {
+  if (resolvedEncodedPayload.endsWith("c")) {
     try {
       return await handleConsumablesButton(c, userID, fr, resolvedEncodedPayload);
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
-      console.error('[consumables] Interaction error:', message);
+      console.error("[consumables] Interaction error:", message);
       return c.json({
         type: 4,
         data: {
-          content: fr ? "Erreur lors de l'ouverture du menu consommables. Réessayez." : 'Error opening consumables menu. Please try again.',
+          content: fr ? "Erreur lors de l'ouverture du menu consommables. Réessayez." : "Error opening consumables menu. Please try again.",
           flags: 1 << 6,
         },
       });
@@ -536,19 +543,19 @@ export async function handleButtonInteraction(c: Context, interaction: Interacti
   }
 
   const payload = decompressMoves(resolvedEncodedPayload);
-  const owner = colonIdx !== -1 ? customId.slice(colonIdx + 1) : '';
+  const owner = colonIdx !== -1 ? customId.slice(colonIdx + 1) : "";
 
-  if (owner && owner !== userID && owner !== 'all') {
+  if (owner && owner !== userID && owner !== "all") {
     return c.json({
       type: 4,
       data: {
-        content: fr ? "Ce n'est pas votre partie !" : 'Not your game!',
+        content: fr ? "Ce n'est pas votre partie !" : "Not your game!",
         flags: 1 << 6,
       },
     });
   }
 
-  console.log('Received button interaction with payload:', resolvedEncodedPayload);
+  console.log("Received button interaction with payload:", resolvedEncodedPayload);
 
   const training = isTraining(payload);
   const difficulty = extractDifficulty(payload) ?? undefined;
@@ -564,7 +571,7 @@ export async function handleButtonInteraction(c: Context, interaction: Interacti
     monsterName: actualMonsterNames.recordName,
   });
 
-  const special = resolvedEncodedPayload.endsWith('p');
+  const special = resolvedEncodedPayload.endsWith("p");
   if (special) {
     return handleSpecialButton(interaction, c, payload, userID, lang, fr, monsterName, activePlayerName, embedDescription, buttons);
   }

@@ -1,9 +1,9 @@
-import { ItemId } from '../enums/ItemId';
-import { CraftingRecipe } from '../types/catalog/Crafting';
+import { ItemId } from "../enums/ItemId";
+import { CraftingRecipe } from "../types/catalog/Crafting";
 
 export const CRAFTING_RECIPES: CraftingRecipe[] = [
   {
-    key: 'potion_fire_basic',
+    key: "potion_fire_basic",
     resultItemId: ItemId.I20001000,
     resultQuantity: 1,
     ingredients: [
@@ -13,7 +13,7 @@ export const CRAFTING_RECIPES: CraftingRecipe[] = [
     enabled: true,
   },
   {
-    key: 'potion_water_basic',
+    key: "potion_water_basic",
     resultItemId: ItemId.I20001001,
     resultQuantity: 1,
     ingredients: [
@@ -23,7 +23,7 @@ export const CRAFTING_RECIPES: CraftingRecipe[] = [
     enabled: true,
   },
   {
-    key: 'potion_earth_basic',
+    key: "potion_earth_basic",
     resultItemId: ItemId.I20001002,
     resultQuantity: 1,
     ingredients: [

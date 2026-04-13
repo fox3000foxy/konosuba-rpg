@@ -1,4 +1,4 @@
-import { QuestClaimStatus } from '../enums/QuestClaimStatus';
+import { QuestClaimStatus } from "../enums/QuestClaimStatus";
 
 export type ClaimDailyQuestResult = {
   status: QuestClaimStatus;

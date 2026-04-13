@@ -1,9 +1,9 @@
-import { CharacterKey } from '../objects/enums/CharacterKey';
-import { CharacterProgress } from '../objects/types/CharacterProgress';
-import { CharacterStatsSnapshot } from '../objects/types/CharacterStatsSnapshot';
-import { withPerf } from '../utils/perfLogger';
-import { getSupabaseAdminClient } from '../utils/supabaseClient';
-import { ensurePlayerProfile } from './playerService';
+import { CharacterKey } from "../objects/enums/CharacterKey";
+import { CharacterProgress } from "../objects/types/CharacterProgress";
+import { CharacterStatsSnapshot } from "../objects/types/CharacterStatsSnapshot";
+import { withPerf } from "../utils/perfLogger";
+import { getSupabaseAdminClient } from "../utils/supabaseClient";
+import { ensurePlayerProfile } from "./playerService";
 
 const CHARACTER_KEYS: CharacterKey[] = [CharacterKey.Darkness, CharacterKey.Aqua, CharacterKey.Megumin];
 
@@ -31,7 +31,7 @@ export function getAffinityFactor(affinity: number): number {
 }
 
 export async function ensureCharacterProgress(userId: string): Promise<void> {
-  await withPerf('characterService', 'ensureCharacterProgress', async () => {
+  await withPerf("characterService", "ensureCharacterProgress", async () => {
     const supabase = getSupabaseAdminClient();
     if (!supabase) {
       return;
@@ -40,16 +40,16 @@ export async function ensureCharacterProgress(userId: string): Promise<void> {
     // Ensure FK target exists before inserting character_progress rows.
     await ensurePlayerProfile(userId);
 
-    const { data: existingRows, error: loadError } = await supabase.from('character_progress').select('character_key').eq('user_id', userId);
+    const { data: existingRows, error: loadError } = await supabase.from("character_progress").select("character_key").eq("user_id", userId);
 
     if (loadError) {
-      console.error('[db] ensureCharacterProgress load failed:', loadError.message);
+      console.error("[db] ensureCharacterProgress load failed:", loadError.message);
       return;
     }
 
-    const existingKeys = new Set((existingRows || []).map(row => String(row.character_key) as CharacterKey));
+    const existingKeys = new Set((existingRows || []).map((row) => String(row.character_key) as CharacterKey));
 
-    const missingRows = CHARACTER_KEYS.filter(characterKey => !existingKeys.has(characterKey)).map(characterKey => ({
+    const missingRows = CHARACTER_KEYS.filter((characterKey) => !existingKeys.has(characterKey)).map((characterKey) => ({
       user_id: userId,
       character_key: characterKey,
       xp: 0,
@@ -62,10 +62,10 @@ export async function ensureCharacterProgress(userId: string): Promise<void> {
       return;
     }
 
-    const { error } = await supabase.from('character_progress').insert(missingRows);
+    const { error } = await supabase.from("character_progress").insert(missingRows);
 
     if (error) {
-      console.error('[db] ensureCharacterProgress failed:', error.message);
+      console.error("[db] ensureCharacterProgress failed:", error.message);
     }
   });
 }
@@ -76,10 +76,10 @@ export async function getCharacterProgress(userId: string, characterKey: Charact
     return null;
   }
 
-  const { data, error } = await supabase.from('character_progress').select('user_id, character_key, xp, level, affinity').eq('user_id', userId).eq('character_key', characterKey).maybeSingle();
+  const { data, error } = await supabase.from("character_progress").select("user_id, character_key, xp, level, affinity").eq("user_id", userId).eq("character_key", characterKey).maybeSingle();
 
   if (error) {
-    console.error('[db] getCharacterProgress failed:', error.message);
+    console.error("[db] getCharacterProgress failed:", error.message);
     return null;
   }
 
@@ -102,16 +102,16 @@ export async function getCharacterProgresses(userId: string): Promise<CharacterP
     return null;
   }
 
-  const { data, error } = await supabase.from('character_progress').select('user_id, character_key, xp, level, affinity').eq('user_id', userId);
+  const { data, error } = await supabase.from("character_progress").select("user_id, character_key, xp, level, affinity").eq("user_id", userId);
 
   if (error) {
-    console.error('[db] getCharacterProgresses failed:', error.message);
+    console.error("[db] getCharacterProgresses failed:", error.message);
     return null;
   }
 
-  const byKey = new Map((data || []).map(row => [String(row.character_key) as CharacterKey, row]));
+  const byKey = new Map((data || []).map((row) => [String(row.character_key) as CharacterKey, row]));
 
-  return CHARACTER_KEYS.map(characterKey => {
+  return CHARACTER_KEYS.map((characterKey) => {
     const row = byKey.get(characterKey);
     return {
       userId,
@@ -146,7 +146,7 @@ export async function addCharacterXp(userId: string, characterKey: CharacterKey,
     const initialXp = amount;
     const initialLevel = computeLevelFromXp(initialXp);
 
-    const { error: insertError } = await supabase.from('character_progress').insert({
+    const { error: insertError } = await supabase.from("character_progress").insert({
       user_id: userId,
       character_key: characterKey,
       xp: initialXp,
@@ -156,7 +156,7 @@ export async function addCharacterXp(userId: string, characterKey: CharacterKey,
     });
 
     if (insertError) {
-      console.error('[db] addCharacterXp insert failed:', insertError.message);
+      console.error("[db] addCharacterXp insert failed:", insertError.message);
     }
     return;
   }
@@ -166,18 +166,18 @@ export async function addCharacterXp(userId: string, characterKey: CharacterKey,
   const nextLevel = computeLevelFromXp(nextXp);
 
   const { data: updatedRow, error } = await supabase
-    .from('character_progress')
+    .from("character_progress")
     .update({
       xp: nextXp,
       level: nextLevel,
     })
-    .eq('user_id', userId)
-    .eq('character_key', characterKey)
-    .select('user_id')
+    .eq("user_id", userId)
+    .eq("character_key", characterKey)
+    .select("user_id")
     .maybeSingle();
 
   if (error) {
-    console.error('[db] addCharacterXp failed:', error.message);
+    console.error("[db] addCharacterXp failed:", error.message);
     return;
   }
 
@@ -202,7 +202,7 @@ export async function addCharacterAffinity(userId: string, characterKey: Charact
 
   const current = await getCharacterProgress(userId, characterKey);
   if (!current) {
-    const { error: insertError } = await supabase.from('character_progress').insert({
+    const { error: insertError } = await supabase.from("character_progress").insert({
       user_id: userId,
       character_key: characterKey,
       xp: 0,
@@ -212,7 +212,7 @@ export async function addCharacterAffinity(userId: string, characterKey: Charact
     });
 
     if (insertError) {
-      console.error('[db] addCharacterAffinity insert failed:', insertError.message);
+      console.error("[db] addCharacterAffinity insert failed:", insertError.message);
     }
     return;
   }
@@ -220,18 +220,18 @@ export async function addCharacterAffinity(userId: string, characterKey: Charact
   const nextAffinity = Number(current?.affinity || 0) + amount;
 
   const { data: updatedRow, error } = await supabase
-    .from('character_progress')
+    .from("character_progress")
     .update({
       affinity: nextAffinity,
       updated_at: new Date().toISOString(),
     })
-    .eq('user_id', userId)
-    .eq('character_key', characterKey)
-    .select('user_id')
+    .eq("user_id", userId)
+    .eq("character_key", characterKey)
+    .select("user_id")
     .maybeSingle();
 
   if (error) {
-    console.error('[db] addCharacterAffinity failed:', error.message);
+    console.error("[db] addCharacterAffinity failed:", error.message);
     return;
   }
 
@@ -241,16 +241,16 @@ export async function addCharacterAffinity(userId: string, characterKey: Charact
 }
 
 export async function getCharacterStatsSnapshot(userId: string): Promise<CharacterStatsSnapshot[] | null> {
-  return withPerf('characterService', 'getCharacterStatsSnapshot', async () => {
+  return withPerf("characterService", "getCharacterStatsSnapshot", async () => {
     const supabase = getSupabaseAdminClient();
     if (!supabase) {
       return null;
     }
 
-    const { data: playerRow, error: playerError } = await supabase.from('players').select('level').eq('user_id', userId).maybeSingle();
+    const { data: playerRow, error: playerError } = await supabase.from("players").select("level").eq("user_id", userId).maybeSingle();
 
     if (playerError) {
-      console.error('[db] getCharacterStatsSnapshot player load failed:', playerError.message);
+      console.error("[db] getCharacterStatsSnapshot player load failed:", playerError.message);
       return null;
     }
 
@@ -260,11 +260,11 @@ export async function getCharacterStatsSnapshot(userId: string): Promise<Charact
       return null;
     }
 
-    const byKey = new Map(progresses.map(progress => [progress.characterKey, progress]));
+    const byKey = new Map(progresses.map((progress) => [progress.characterKey, progress]));
 
     return [
       {
-        characterKey: 'kazuma',
+        characterKey: "kazuma",
         level: clampLevel(kazumaLevel),
         factor: getLevelFactor(kazumaLevel),
       },

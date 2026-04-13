@@ -1,27 +1,27 @@
 /** Function to build Discord components */
 
-import { Creature } from '../classes/Creature';
-import { ButtonsLabels } from '../objects/enums/ButtonsLabels';
-import { GameState } from '../objects/enums/GameState';
-import { Lang } from '../objects/enums/Lang';
-import { RawButton } from '../objects/enums/RawButton';
-import { encodeGameplayButtons } from '../services/gameSessionService';
-import { getCharacterStatsSnapshot } from '../services/progressionService';
-import { getCreatureDisplayName } from './creatureText';
-import { makeid, restartId } from './idUtils';
-import { buildImageUrl } from './imageUtils';
-import { compressMoves } from './movesUtils';
-import { addDifficultyToPayload, extractDifficulty, extractMonster, isTraining, removeDifficultyFromPayload } from './payloadUtils';
-import processGame from './processGame';
-import processUrl from './processUrl';
+import { Creature } from "../classes/Creature";
+import { ButtonsLabels } from "../objects/enums/ButtonsLabels";
+import { GameState } from "../objects/enums/GameState";
+import { Lang } from "../objects/enums/Lang";
+import { RawButton } from "../objects/enums/RawButton";
+import { encodeGameplayButtons } from "../services/gameSessionService";
+import { getCharacterStatsSnapshot } from "../services/progressionService";
+import { getCreatureDisplayName } from "./creatureText";
+import { makeid, restartId } from "./idUtils";
+import { buildImageUrl } from "./imageUtils";
+import { compressMoves } from "./movesUtils";
+import { addDifficultyToPayload, extractDifficulty, extractMonster, isTraining, removeDifficultyFromPayload } from "./payloadUtils";
+import processGame from "./processGame";
+import processUrl from "./processUrl";
 
-const ATTACK_LABELS = ['1', '4', '10'];
-const HUG_LABELS = ['1', '4', '10'];
+const ATTACK_LABELS = ["1", "4", "10"];
+const HUG_LABELS = ["1", "4", "10"];
 
-const ATTACK_LABELS_FR = ATTACK_LABELS.map(value => ButtonsLabels.AttackFr.replace('x', value));
-const ATTACK_LABELS_EN = ATTACK_LABELS.map(value => ButtonsLabels.Attack.replace('x', value));
-const HUG_LABELS_FR = HUG_LABELS.map(value => ButtonsLabels.HugFr.replace('x', value));
-const HUG_LABELS_EN = HUG_LABELS.map(value => ButtonsLabels.Hug.replace('x', value));
+const ATTACK_LABELS_FR = ATTACK_LABELS.map((value) => ButtonsLabels.AttackFr.replace("x", value));
+const ATTACK_LABELS_EN = ATTACK_LABELS.map((value) => ButtonsLabels.Attack.replace("x", value));
+const HUG_LABELS_FR = HUG_LABELS.map((value) => ButtonsLabels.HugFr.replace("x", value));
+const HUG_LABELS_EN = HUG_LABELS.map((value) => ButtonsLabels.Hug.replace("x", value));
 
 export function getBattleMonsterNames(creature: Creature, lang: Lang) {
   return {
@@ -37,7 +37,7 @@ export async function buildComponents(
   disableChangeMonster = false,
   difficulty?: string,
   selectedConsumableItemId?: string,
-  selectedConsumableTargetId?: number
+  selectedConsumableTargetId?: number,
 ): Promise<{
   buttons: RawButton[];
   embedDescription: string[];
@@ -55,7 +55,7 @@ export async function buildComponents(
   console.log(imageUrl);
   const [rand, moves, , monster, difficultyFromUrl] = processUrl(imageUrl);
   const characterStatsSnapshot = await getCharacterStatsSnapshot(userID);
-  const characterFactors = characterStatsSnapshot ? characterStatsSnapshot.map(snapshot => snapshot.factor) : undefined;
+  const characterFactors = characterStatsSnapshot ? characterStatsSnapshot.map((snapshot) => snapshot.factor) : undefined;
 
   const { state, team, embedDescription, creature } = await processGame(rand, moves, monster, lang, characterFactors, difficultyFromUrl || effectiveDifficulty, userID, selectedConsumableItemId ? [selectedConsumableItemId as never] : undefined, selectedConsumableTargetId);
 
@@ -75,7 +75,7 @@ export async function buildComponents(
   const attackLabels = fr ? ATTACK_LABELS_FR : ATTACK_LABELS_EN;
   const hugLabels = fr ? HUG_LABELS_FR : HUG_LABELS_EN;
 
-  const showAquaHealButton = activePlayerName === 'Megumin' && state === GameState.Incomplete;
+  const showAquaHealButton = activePlayerName === "Megumin" && state === GameState.Incomplete;
 
   let buttons: RawButton[] = [];
   if (state === GameState.Incomplete) {
@@ -205,7 +205,7 @@ export async function buildComponents(
     embedDescription,
     activePlayerName,
     gameState: state,
-    alivePlayerIds: team.players.filter(player => player.hp > 0).map(player => player.playerId),
+    alivePlayerIds: team.players.filter((player) => player.hp > 0).map((player) => player.playerId),
     creature,
   };
 }

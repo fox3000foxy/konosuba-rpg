@@ -5,11 +5,11 @@ type PerfLogger = {
 };
 
 function isTruthyEnv(value: string | undefined): boolean {
-  return value === '1' || value === 'true';
+  return value === "1" || value === "true";
 }
 
 function nowMs(): number {
-  if (typeof performance !== 'undefined' && typeof performance.now === 'function') {
+  if (typeof performance !== "undefined" && typeof performance.now === "function") {
     return performance.now();
   }
 
@@ -37,7 +37,7 @@ export function createPerfLogger(scope: string): PerfLogger {
     console.log(`[perf][${scope}] ${label}: ${elapsedMs.toFixed(1)}ms`);
   };
 
-  const done = (label = 'done'): void => {
+  const done = (label = "done"): void => {
     mark(label);
   };
 

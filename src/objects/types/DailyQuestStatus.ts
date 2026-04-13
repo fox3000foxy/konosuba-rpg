@@ -1,4 +1,4 @@
-import { QuestKey } from '../enums/QuestKey';
+import { QuestKey } from "../enums/QuestKey";
 
 export type DailyQuestStatus = {
   questKey: QuestKey | string;

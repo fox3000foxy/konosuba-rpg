@@ -1,6 +1,6 @@
-import { Random } from '../classes/Random';
-import { generateMob } from '../objects/data/mobMap';
-import { extractMonster, isTraining } from './payloadUtils';
+import { Random } from "../classes/Random";
+import { generateMob } from "../objects/data/mobMap";
+import { extractMonster, isTraining } from "./payloadUtils";
 
 function seedFromRunId(runId: string): number {
   const normalized = runId.toLowerCase();
@@ -14,7 +14,7 @@ function seedFromRunId(runId: string): number {
 }
 
 export function extractPayloadFromRunKey(runKey: string): string | null {
-  const separatorIndex = runKey.indexOf(':');
+  const separatorIndex = runKey.indexOf(":");
   if (separatorIndex === -1) {
     return null;
   }
@@ -32,7 +32,7 @@ export function inferMonsterFromPayload(payload: string): string | null {
     return extractMonster(payload);
   }
 
-  const slashIndex = payload.indexOf('/');
+  const slashIndex = payload.indexOf("/");
   const runId = (slashIndex === -1 ? payload : payload.slice(0, slashIndex)).trim();
   if (!runId) {
     return null;

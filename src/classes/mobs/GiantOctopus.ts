@@ -1,8 +1,8 @@
-import { Gender } from '../../objects/enums/Gender';
-import { FrenchLores } from '../../objects/enums/FrenchLores';
-import { GenericCreature, GenericCreatureInterface } from '../GenericCreature';
-import { Random } from '../Random';
-import { EnglishLore } from '../../objects/enums/EnglishLore';
+import { Gender } from "../../objects/enums/Gender";
+import { FrenchLores } from "../../objects/enums/FrenchLores";
+import { GenericCreature, GenericCreatureInterface } from "../GenericCreature";
+import { Random } from "../Random";
+import { EnglishLore } from "../../objects/enums/EnglishLore";
 
 export default class GiantOctopus extends GenericCreature implements GenericCreatureInterface {
   constructor() {
@@ -11,12 +11,12 @@ export default class GiantOctopus extends GenericCreature implements GenericCrea
     this.love = 100;
     this.hpMax = 850;
     this.hp = this.hpMax;
-    this.name = ['Giant Octopus', 'Poulpe Géant'];
+    this.name = ["Giant Octopus", "Poulpe Géant"];
     this.prefix = true;
   }
 
   pickColor(rng: Random) {
-    this.color = rng.choice(['15100', '15101', '15102']);
+    this.color = rng.choice(["15100", "15101", "15102"]);
     this.images = [`enemy_image_${this.color}`];
     this.lore = [FrenchLores.Creature_GiantOctopus, EnglishLore.Creature_GiantOctopus];
     this.gender = Gender.Male;

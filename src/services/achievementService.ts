@@ -1,24 +1,24 @@
-import { ACHIEVEMENT_DEFINITIONS } from '../objects/data/progressionCatalog';
-import { AchievementKey } from '../objects/enums/AchievementKey';
-import { GameState } from '../objects/enums/GameState';
-import { AchievementDefinition } from '../objects/types/AchievementDefinition';
-import { AchievementOverviewItem } from '../objects/types/AchievementOverviewItem';
-import { AchievementUnlockRow } from '../objects/types/AchievementUnlockRow';
-import { UserRunStats } from '../objects/types/UserRunStats';
-import { withPerf } from '../utils/perfLogger';
-import { inferMonsterFromRunKey } from '../utils/runMonsterUtils';
-import { getSupabaseAdminClient } from '../utils/supabaseClient';
+import { ACHIEVEMENT_DEFINITIONS } from "../objects/data/progressionCatalog";
+import { AchievementKey } from "../objects/enums/AchievementKey";
+import { GameState } from "../objects/enums/GameState";
+import { AchievementDefinition } from "../objects/types/AchievementDefinition";
+import { AchievementOverviewItem } from "../objects/types/AchievementOverviewItem";
+import { AchievementUnlockRow } from "../objects/types/AchievementUnlockRow";
+import { UserRunStats } from "../objects/types/UserRunStats";
+import { withPerf } from "../utils/perfLogger";
+import { inferMonsterFromRunKey } from "../utils/runMonsterUtils";
+import { getSupabaseAdminClient } from "../utils/supabaseClient";
 
 export const ACHIEVEMENTS: AchievementDefinition[] = ACHIEVEMENT_DEFINITIONS;
 
 const normalizeMonsterName = (value: string) => value.trim().toLowerCase();
 
 const MONSTER_ACHIEVEMENT_REQUIREMENTS: ReadonlyArray<readonly [AchievementKey, string]> = [
-  [AchievementKey.SlayerDragon, 'Dragon'],
-  [AchievementKey.SlayerHydra, 'Hydra'],
-  [AchievementKey.SlayerDestroyer, 'Destroyer'],
-  [AchievementKey.SlayerBeldia, 'Beldia'],
-  [AchievementKey.SlayerVanir, 'Vanir'],
+  [AchievementKey.SlayerDragon, "Dragon"],
+  [AchievementKey.SlayerHydra, "Hydra"],
+  [AchievementKey.SlayerDestroyer, "Destroyer"],
+  [AchievementKey.SlayerBeldia, "Beldia"],
+  [AchievementKey.SlayerVanir, "Vanir"],
 ];
 
 const LEVEL_ACHIEVEMENT_REQUIREMENTS: ReadonlyArray<readonly [AchievementKey, number]> = [
@@ -62,23 +62,23 @@ async function getUserRunStats(userId: string): Promise<UserRunStats> {
     return { totalRuns: 0, winRuns: 0, winsByMonster: {} };
   }
 
-  const { data, error } = await supabase.from('runs').select('state, monster_name, run_key').eq('user_id', userId);
+  const { data, error } = await supabase.from("runs").select("state, monster_name, run_key").eq("user_id", userId);
 
   if (error) {
-    console.error('[db] getUserRunStats failed:', error.message);
+    console.error("[db] getUserRunStats failed:", error.message);
     return { totalRuns: 0, winRuns: 0, winsByMonster: {} };
   }
 
   const rows = data || [];
-  const winRuns = rows.filter(row => row.state === GameState.Good || row.state === GameState.Best).length;
+  const winRuns = rows.filter((row) => row.state === GameState.Good || row.state === GameState.Best).length;
 
   const winsByMonster: Record<string, number> = {};
   const updates: Array<{ runKey: string; monsterName: string }> = [];
 
   for (const row of rows) {
     const didWin = row.state === GameState.Good || row.state === GameState.Best;
-    const existingMonster = row.monster_name ? String(row.monster_name) : '';
-    const inferredMonster = existingMonster || inferMonsterFromRunKey(String(row.run_key || ''));
+    const existingMonster = row.monster_name ? String(row.monster_name) : "";
+    const inferredMonster = existingMonster || inferMonsterFromRunKey(String(row.run_key || ""));
 
     if (!existingMonster && inferredMonster && row.run_key) {
       updates.push({
@@ -96,20 +96,20 @@ async function getUserRunStats(userId: string): Promise<UserRunStats> {
   }
 
   await Promise.all(
-    updates.map(async update => {
+    updates.map(async (update) => {
       const { error: updateError } = await supabase
-        .from('runs')
+        .from("runs")
         .update({
           monster_name: update.monsterName,
         })
-        .eq('run_key', update.runKey)
-        .eq('user_id', userId)
-        .is('monster_name', null);
+        .eq("run_key", update.runKey)
+        .eq("user_id", userId)
+        .is("monster_name", null);
 
       if (updateError) {
-        console.error('[db] getUserRunStats backfill failed:', updateError.message);
+        console.error("[db] getUserRunStats backfill failed:", updateError.message);
       }
-    })
+    }),
   );
 
   return {
@@ -120,16 +120,16 @@ async function getUserRunStats(userId: string): Promise<UserRunStats> {
 }
 
 export async function syncAchievements(userId: string): Promise<void> {
-  return withPerf('achievementService', 'syncAchievements', async () => {
+  return withPerf("achievementService", "syncAchievements", async () => {
     const supabase = getSupabaseAdminClient();
     if (!supabase) {
       return;
     }
 
-    const { data: profile, error: profileError } = await supabase.from('players').select('level, xp, gold').eq('user_id', userId).maybeSingle();
+    const { data: profile, error: profileError } = await supabase.from("players").select("level, xp, gold").eq("user_id", userId).maybeSingle();
 
     if (profileError || !profile) {
-      console.error('[db] syncAchievements profile load failed:', profileError?.message || 'missing row');
+      console.error("[db] syncAchievements profile load failed:", profileError?.message || "missing row");
       return;
     }
 
@@ -169,38 +169,38 @@ export async function syncAchievements(userId: string): Promise<void> {
       return;
     }
 
-    const rows = toUnlock.map(key => ({
+    const rows = toUnlock.map((key) => ({
       user_id: userId,
       achievement_key: key,
       unlocked_at: new Date().toISOString(),
     }));
 
-    const { error: unlockError } = await supabase.from('achievements_unlocked').upsert(rows, { onConflict: 'user_id,achievement_key' });
+    const { error: unlockError } = await supabase.from("achievements_unlocked").upsert(rows, { onConflict: "user_id,achievement_key" });
 
     if (unlockError) {
-      console.error('[db] syncAchievements unlock failed:', unlockError.message);
+      console.error("[db] syncAchievements unlock failed:", unlockError.message);
     }
   });
 }
 
 export async function getAchievementsOverview(userId: string, fr: boolean): Promise<AchievementOverviewItem[] | null> {
-  return withPerf('achievementService', 'getAchievementsOverview', async () => {
+  return withPerf("achievementService", "getAchievementsOverview", async () => {
     const supabase = getSupabaseAdminClient();
     if (!supabase) {
       return null;
     }
 
-    const { data, error } = await supabase.from('achievements_unlocked').select('achievement_key, unlocked_at').eq('user_id', userId);
+    const { data, error } = await supabase.from("achievements_unlocked").select("achievement_key, unlocked_at").eq("user_id", userId);
 
     if (error) {
-      console.error('[db] getAchievementsOverview failed:', error.message);
+      console.error("[db] getAchievementsOverview failed:", error.message);
       return null;
     }
 
     const unlockedRows = (data || []) as AchievementUnlockRow[];
-    const unlockedByKey = new Map(unlockedRows.map(row => [row.achievement_key, row.unlocked_at]));
+    const unlockedByKey = new Map(unlockedRows.map((row) => [row.achievement_key, row.unlocked_at]));
 
-    return ACHIEVEMENTS.map(achievement => {
+    return ACHIEVEMENTS.map((achievement) => {
       const unlockedAt = unlockedByKey.get(achievement.key) || null;
       return {
         key: achievement.key,

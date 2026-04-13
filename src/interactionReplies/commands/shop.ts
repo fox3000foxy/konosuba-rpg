@@ -1,22 +1,22 @@
-import { Context } from 'hono';
-import { BASE_URL } from '../../objects/config';
-import { AccessoryId } from '../../objects/enums/AccessoryId';
-import { Button } from '../../objects/enums/Button';
-import { ItemId } from '../../objects/enums/ItemId';
-import { Rarity } from '../../objects/enums/Rarity';
-import { InteractionDataOption } from '../../objects/types/InteractionDataOption';
-import { ShopItem } from '../../objects/types/ShopItem';
-import { getItemById as getAccessoryById, getItemByName as getAccessoryByName, getItems as getAllAccessories } from '../../services/accessoryService';
-import { getItems as getAllConsumables, getItemById as getConsumableById, getItemByName as getConsumableByName } from '../../services/consumableService';
-import { consumeInventoryItem, getInventoryItemQuantity } from '../../services/inventoryConsumptionService';
-import { addInventoryItem } from '../../services/inventoryService';
-import { ensurePlayerProfile, getPlayerProfile, updatePlayerGold } from '../../services/playerService';
-import { addImageVersion } from '../../utils/imageUtils';
+import { Context } from "hono";
+import { BASE_URL } from "../../objects/config";
+import { AccessoryId } from "../../objects/enums/AccessoryId";
+import { Button } from "../../objects/enums/Button";
+import { ItemId } from "../../objects/enums/ItemId";
+import { Rarity } from "../../objects/enums/Rarity";
+import { InteractionDataOption } from "../../objects/types/InteractionDataOption";
+import { ShopItem } from "../../objects/types/ShopItem";
+import { getItemById as getAccessoryById, getItemByName as getAccessoryByName, getItems as getAllAccessories } from "../../services/accessoryService";
+import { getItems as getAllConsumables, getItemById as getConsumableById, getItemByName as getConsumableByName } from "../../services/consumableService";
+import { consumeInventoryItem, getInventoryItemQuantity } from "../../services/inventoryConsumptionService";
+import { addInventoryItem } from "../../services/inventoryService";
+import { ensurePlayerProfile, getPlayerProfile, updatePlayerGold } from "../../services/playerService";
+import { addImageVersion } from "../../utils/imageUtils";
 
 const SHOP_CATALOG_KEYS: Array<AccessoryId | ItemId> = [...Object.values(AccessoryId), ...Object.values(ItemId)];
 
-export function getPriceFromRarity(rarity: Rarity, itemType: 'accessory' | 'consumable'): number {
-  const base = itemType === 'accessory' ? 90 : 40;
+export function getPriceFromRarity(rarity: Rarity, itemType: "accessory" | "consumable"): number {
+  const base = itemType === "accessory" ? 90 : 40;
   const multiplier: Record<Rarity, number> = {
     [Rarity.Basic]: 1,
     [Rarity.Bronze]: 1.2,
@@ -34,10 +34,10 @@ function normalizeShopInput(input: string | AccessoryId | ItemId): string {
 function toShopItemFromAccessory(accessory: NonNullable<ReturnType<typeof getAccessoryById>>): ShopItem {
   return {
     itemKey: accessory.id,
-    itemType: 'accessory',
+    itemType: "accessory",
     nameFr: accessory.nameFr,
     nameEn: accessory.nameEn,
-    price: getPriceFromRarity(accessory.rarity, 'accessory'),
+    price: getPriceFromRarity(accessory.rarity, "accessory"),
     imagePath: `/assets/accessories/${accessory.fileName}`,
   };
 }
@@ -45,10 +45,10 @@ function toShopItemFromAccessory(accessory: NonNullable<ReturnType<typeof getAcc
 function toShopItemFromConsumable(consumable: NonNullable<ReturnType<typeof getConsumableById>>): ShopItem {
   return {
     itemKey: consumable.id,
-    itemType: 'consumable',
+    itemType: "consumable",
     nameFr: consumable.nameFr,
     nameEn: consumable.nameEn,
-    price: getPriceFromRarity(consumable.rarity, 'consumable'),
+    price: getPriceFromRarity(consumable.rarity, "consumable"),
     imagePath: `/assets/consumables/${consumable.fileName}`,
   };
 }
@@ -66,7 +66,7 @@ export function getShopItem(itemKeyOrName: string | AccessoryId | ItemId): ShopI
     return toShopItemFromConsumable(consumable);
   }
 
-  const directFromCatalog = SHOP_CATALOG_KEYS.find(key => normalizeShopInput(key) === normalized);
+  const directFromCatalog = SHOP_CATALOG_KEYS.find((key) => normalizeShopInput(key) === normalized);
   if (directFromCatalog) {
     const accessoryFromCatalog = getAccessoryById(directFromCatalog as AccessoryId);
     if (accessoryFromCatalog) {
@@ -83,8 +83,8 @@ export function getShopItem(itemKeyOrName: string | AccessoryId | ItemId): ShopI
 }
 
 function getOptionValue(options: InteractionDataOption[] | undefined, name: string) {
-  const option = options?.find(o => o.name === name);
-  return option ? String(option.value).trim() : '';
+  const option = options?.find((o) => o.name === name);
+  return option ? String(option.value).trim() : "";
 }
 
 const MAX_CUSTOM_ID_LENGTH = 100;
@@ -111,24 +111,24 @@ export function buildShopComponents(items: ShopItem[], page: number, pageCount: 
 
   const arrowBack = {
     type: 2,
-    label: '<',
+    label: "<",
     style: 2,
     custom_id: sanitizeComponentId(`shop_backward:${Math.max(1, safePage - 1)}:${safeUserId}`),
     disabled: safePage <= 1,
   };
   const arrowForward = {
     type: 2,
-    label: '>',
+    label: ">",
     style: 2,
     custom_id: sanitizeComponentId(`shop_forward:${Math.min(safePageCount, safePage + 1)}:${safeUserId}`),
     disabled: safePage >= safePageCount,
   };
 
-  const options = items.slice(0, 1000).map(item => ({
+  const options = items.slice(0, 1000).map((item) => ({
     label: sanitizeOptionLabel(fr ? item.nameFr : item.nameEn),
     value: sanitizeOptionValue(String(item.itemKey)),
     description: `${item.price} gold`.slice(0, 100),
-    emoji: item.imagePath ? { name: 'item', animated: false, id: null } : undefined,
+    emoji: item.imagePath ? { name: "item", animated: false, id: null } : undefined,
   }));
 
   const selectHasOptions = options.length > 0;
@@ -136,9 +136,9 @@ export function buildShopComponents(items: ShopItem[], page: number, pageCount: 
     ? options.slice(0, MAX_SELECT_OPTIONS)
     : [
         {
-          label: fr ? 'Aucun objet disponible' : 'No items available',
-          value: 'none',
-          description: '',
+          label: fr ? "Aucun objet disponible" : "No items available",
+          value: "none",
+          description: "",
         },
       ];
 
@@ -146,7 +146,7 @@ export function buildShopComponents(items: ShopItem[], page: number, pageCount: 
     type: 3,
     custom_id: sanitizeComponentId(`shop_select:${safePage}:${safeUserId}`),
     options: selectOptions,
-    placeholder: fr ? 'Choisir un objet' : 'Choose an item',
+    placeholder: fr ? "Choisir un objet" : "Choose an item",
     min_values: selectHasOptions ? 1 : 0,
     max_values: 1,
     disabled: !selectHasOptions,
@@ -159,7 +159,7 @@ export function buildShopComponents(items: ShopItem[], page: number, pageCount: 
   if (selectedItemKey) {
     bottomButtons.push({
       type: 2,
-      label: fr ? 'Acheter' : 'Buy',
+      label: fr ? "Acheter" : "Buy",
       style: 3,
       custom_id: sanitizeComponentId(`shop_buy:${sanitizeOptionValue(selectedItemKey)}:${safePage}:${safeUserId}`),
       disabled: !selectHasOptions,
@@ -167,7 +167,7 @@ export function buildShopComponents(items: ShopItem[], page: number, pageCount: 
 
     bottomButtons.push({
       type: 2,
-      label: fr ? 'Retour' : 'Back',
+      label: fr ? "Retour" : "Back",
       style: 2,
       custom_id: sanitizeComponentId(`shop_back:${safePage}:${safeUserId}`),
     });
@@ -179,15 +179,15 @@ export function buildShopComponents(items: ShopItem[], page: number, pageCount: 
 export async function handleShopCommand(c: Context, userId: string, fr: boolean, options?: InteractionDataOption[]) {
   await ensurePlayerProfile(userId);
 
-  const action = (getOptionValue(options, 'action') || 'items').toLowerCase();
-  const format = (getOptionValue(options, 'format') || 'image').toLowerCase();
-  const pageValue = Number(getOptionValue(options, 'page')) || 1;
+  const action = (getOptionValue(options, "action") || "items").toLowerCase();
+  const format = (getOptionValue(options, "format") || "image").toLowerCase();
+  const pageValue = Number(getOptionValue(options, "page")) || 1;
   const page = Math.max(1, pageValue);
-  const itemInput = getOptionValue(options, 'item');
-  const quantityValue = Number(getOptionValue(options, 'quantity')) || 1;
+  const itemInput = getOptionValue(options, "item");
+  const quantityValue = Number(getOptionValue(options, "quantity")) || 1;
   const quantity = Math.max(1, Math.min(quantityValue, 99));
 
-  if (action === 'items' || action === 'list' || action === 'view') {
+  if (action === "items" || action === "list" || action === "view") {
     const accessoryItems = getAllAccessories().map(toShopItemFromAccessory);
     const consumableItems = getAllConsumables().map(toShopItemFromConsumable);
     const allShopItems = [...accessoryItems, ...consumableItems];
@@ -196,8 +196,8 @@ export async function handleShopCommand(c: Context, userId: string, fr: boolean,
     const pageIndex = Math.min(pageCount - 1, page - 1);
     const itemsOnPage = allShopItems.slice(pageIndex * pageSize, pageIndex * pageSize + pageSize);
 
-    if (format === 'image') {
-      const imageUrl = addImageVersion(`${BASE_URL}/shop/${page}?lang=${fr ? 'fr' : 'en'}`);
+    if (format === "image") {
+      const imageUrl = addImageVersion(`${BASE_URL}/shop/${page}?lang=${fr ? "fr" : "en"}`);
       console.log(`[ShopCommand] Generated shop image URL: ${imageUrl}`);
       const description = fr ? `Voici la page ${page} de la boutique (${pageCount}).` : `Page ${page} of shop (${pageCount}).`;
 
@@ -205,7 +205,7 @@ export async function handleShopCommand(c: Context, userId: string, fr: boolean,
       try {
         components = buildShopComponents(itemsOnPage, page, pageCount, fr, userId);
       } catch (eventError) {
-        console.error('[ShopCommand] buildShopComponents failed:', eventError);
+        console.error("[ShopCommand] buildShopComponents failed:", eventError);
       }
 
       return c.json({
@@ -213,7 +213,7 @@ export async function handleShopCommand(c: Context, userId: string, fr: boolean,
         data: {
           embeds: [
             {
-              title: fr ? 'Boutique' : 'Shop',
+              title: fr ? "Boutique" : "Shop",
               description,
               image: { url: imageUrl },
               color: 0x2b2d31,
@@ -224,7 +224,7 @@ export async function handleShopCommand(c: Context, userId: string, fr: boolean,
       });
     }
 
-    const list = itemsOnPage.map(item => `${fr ? item.nameFr : item.nameEn} (${item.itemKey}) - ${item.price} gold`).join('\n');
+    const list = itemsOnPage.map((item) => `${fr ? item.nameFr : item.nameEn} (${item.itemKey}) - ${item.price} gold`).join("\n");
 
     return c.json({
       type: 4,
@@ -243,18 +243,18 @@ export async function handleShopCommand(c: Context, userId: string, fr: boolean,
     return c.json({
       type: 4,
       data: {
-        content: fr ? 'Indique un objet avec `item:` pour acheter/vendre.' : 'Specify an item with `item:` to buy/sell.',
+        content: fr ? "Indique un objet avec `item:` pour acheter/vendre." : "Specify an item with `item:` to buy/sell.",
         flags: 1 << 6,
       },
     });
   }
 
   const shopItem = getShopItem(itemInput);
-  if (!shopItem || shopItem.itemType === 'unknown') {
+  if (!shopItem || shopItem.itemType === "unknown") {
     return c.json({
       type: 4,
       data: {
-        content: fr ? 'Objet indisponible en boutique.' : 'Item not available in shop.',
+        content: fr ? "Objet indisponible en boutique." : "Item not available in shop.",
         flags: 1 << 6,
       },
     });
@@ -265,13 +265,13 @@ export async function handleShopCommand(c: Context, userId: string, fr: boolean,
     return c.json({
       type: 4,
       data: {
-        content: fr ? 'Profil indisponible pour le moment.' : 'Player profile is unavailable right now.',
+        content: fr ? "Profil indisponible pour le moment." : "Player profile is unavailable right now.",
         flags: 1 << 6,
       },
     });
   }
 
-  if (action === 'buy') {
+  if (action === "buy") {
     const cost = shopItem.price * quantity;
     if (profile.gold < cost) {
       return c.json({
@@ -288,7 +288,7 @@ export async function handleShopCommand(c: Context, userId: string, fr: boolean,
       return c.json({
         type: 4,
         data: {
-          content: fr ? "Impossible de mettre à jour l'or. Essaie plus tard." : 'Unable to update gold. Try again later.',
+          content: fr ? "Impossible de mettre à jour l'or. Essaie plus tard." : "Unable to update gold. Try again later.",
           flags: 1 << 6,
         },
       });
@@ -300,7 +300,7 @@ export async function handleShopCommand(c: Context, userId: string, fr: boolean,
       return c.json({
         type: 4,
         data: {
-          content: fr ? "Impossible d'ajouter l'objet à l'inventaire." : 'Unable to add item to inventory.',
+          content: fr ? "Impossible d'ajouter l'objet à l'inventaire." : "Unable to add item to inventory.",
           flags: 1 << 6,
         },
       });
@@ -315,7 +315,7 @@ export async function handleShopCommand(c: Context, userId: string, fr: boolean,
     });
   }
 
-  if (action === 'sell') {
+  if (action === "sell") {
     const owned = await getInventoryItemQuantity(userId, shopItem.itemKey);
     if (owned < quantity) {
       return c.json({
@@ -332,7 +332,7 @@ export async function handleShopCommand(c: Context, userId: string, fr: boolean,
       return c.json({
         type: 4,
         data: {
-          content: fr ? "Impossible de vendre l'objet; vérifie ton inventaire." : 'Unable to sell item; check your inventory.',
+          content: fr ? "Impossible de vendre l'objet; vérifie ton inventaire." : "Unable to sell item; check your inventory.",
           flags: 1 << 6,
         },
       });
@@ -345,7 +345,7 @@ export async function handleShopCommand(c: Context, userId: string, fr: boolean,
       return c.json({
         type: 4,
         data: {
-          content: fr ? "Impossible de mettre à jour l'or après vente." : 'Unable to update gold after selling.',
+          content: fr ? "Impossible de mettre à jour l'or après vente." : "Unable to update gold after selling.",
           flags: 1 << 6,
         },
       });

@@ -1,56 +1,56 @@
-import { ItemId } from '../enums/ItemId';
-import { Rarity } from '../enums/Rarity';
-import { TypeItem } from '../enums/TypeItem';
-import { ConsumableCombinationRule, ConsumableDefinition } from '../types/catalog/Consumable';
+import { ItemId } from "../enums/ItemId";
+import { Rarity } from "../enums/Rarity";
+import { TypeItem } from "../enums/TypeItem";
+import { ConsumableCombinationRule, ConsumableDefinition } from "../types/catalog/Consumable";
 
-type ConsumableDefinitionSeed = Omit<ConsumableDefinition, 'nameFr' | 'nameEn'>;
+type ConsumableDefinitionSeed = Omit<ConsumableDefinition, "nameFr" | "nameEn">;
 
 const ELEMENTAL_POTION_BASIC: ConsumableDefinitionSeed[] = [
   {
     id: ItemId.I20001000,
-    fileName: '20001000.webp',
+    fileName: "20001000.webp",
     rarity: Rarity.Basic,
     type: TypeItem.Potion,
   },
   {
     id: ItemId.I20001001,
-    fileName: '20001001.webp',
+    fileName: "20001001.webp",
     rarity: Rarity.Basic,
     type: TypeItem.Potion,
   },
   {
     id: ItemId.I20001002,
-    fileName: '20001002.webp',
+    fileName: "20001002.webp",
     rarity: Rarity.Basic,
     type: TypeItem.Potion,
   },
   {
     id: ItemId.I20001003,
-    fileName: '20001003.webp',
+    fileName: "20001003.webp",
     rarity: Rarity.Basic,
     type: TypeItem.Potion,
   },
   {
     id: ItemId.I20001004,
-    fileName: '20001004.webp',
+    fileName: "20001004.webp",
     rarity: Rarity.Basic,
     type: TypeItem.Potion,
   },
   {
     id: ItemId.I20001005,
-    fileName: '20001005.webp',
+    fileName: "20001005.webp",
     rarity: Rarity.Basic,
     type: TypeItem.Potion,
   },
   {
     id: ItemId.I20001006,
-    fileName: '20001006.webp',
+    fileName: "20001006.webp",
     rarity: Rarity.Basic,
     type: TypeItem.Potion,
   },
   {
     id: ItemId.I20001007,
-    fileName: '20001007.webp',
+    fileName: "20001007.webp",
     rarity: Rarity.Basic,
     type: TypeItem.Potion,
   },
@@ -59,49 +59,49 @@ const ELEMENTAL_POTION_BASIC: ConsumableDefinitionSeed[] = [
 const ELEMENTAL_POTION_GOLD: ConsumableDefinitionSeed[] = [
   {
     id: ItemId.I20002000,
-    fileName: '20002000.webp',
+    fileName: "20002000.webp",
     rarity: Rarity.Gold,
     type: TypeItem.Potion,
   },
   {
     id: ItemId.I20002001,
-    fileName: '20002001.webp',
+    fileName: "20002001.webp",
     rarity: Rarity.Gold,
     type: TypeItem.Potion,
   },
   {
     id: ItemId.I20002002,
-    fileName: '20002002.webp',
+    fileName: "20002002.webp",
     rarity: Rarity.Gold,
     type: TypeItem.Potion,
   },
   {
     id: ItemId.I20002003,
-    fileName: '20002003.webp',
+    fileName: "20002003.webp",
     rarity: Rarity.Gold,
     type: TypeItem.Potion,
   },
   {
     id: ItemId.I20002004,
-    fileName: '20002004.webp',
+    fileName: "20002004.webp",
     rarity: Rarity.Gold,
     type: TypeItem.Potion,
   },
   {
     id: ItemId.I20002005,
-    fileName: '20002005.webp',
+    fileName: "20002005.webp",
     rarity: Rarity.Gold,
     type: TypeItem.Potion,
   },
   {
     id: ItemId.I20002006,
-    fileName: '20002006.webp',
+    fileName: "20002006.webp",
     rarity: Rarity.Gold,
     type: TypeItem.Potion,
   },
   {
     id: ItemId.I20002007,
-    fileName: '20002007.webp',
+    fileName: "20002007.webp",
     rarity: Rarity.Gold,
     type: TypeItem.Potion,
   },
@@ -110,49 +110,49 @@ const ELEMENTAL_POTION_GOLD: ConsumableDefinitionSeed[] = [
 const CHRONO_AND_SPECIAL_GOLD: ConsumableDefinitionSeed[] = [
   {
     id: ItemId.I20003000,
-    fileName: '20003000.webp',
+    fileName: "20003000.webp",
     rarity: Rarity.Gold,
     type: TypeItem.Chrono,
   },
   {
     id: ItemId.I20003001,
-    fileName: '20003001.webp',
+    fileName: "20003001.webp",
     rarity: Rarity.Gold,
     type: TypeItem.Chrono,
   },
   {
     id: ItemId.I20003002,
-    fileName: '20003002.webp',
+    fileName: "20003002.webp",
     rarity: Rarity.Gold,
     type: TypeItem.Chrono,
   },
   {
     id: ItemId.I20003003,
-    fileName: '20003003.webp',
+    fileName: "20003003.webp",
     rarity: Rarity.Gold,
     type: TypeItem.Chrono,
   },
   {
     id: ItemId.I20003004,
-    fileName: '20003004.webp',
+    fileName: "20003004.webp",
     rarity: Rarity.Gold,
     type: TypeItem.Chrono,
   },
   {
     id: ItemId.I20003005,
-    fileName: '20003005.webp',
+    fileName: "20003005.webp",
     rarity: Rarity.Gold,
     type: TypeItem.Potion,
   },
   {
     id: ItemId.I20003006,
-    fileName: '20003006.webp',
+    fileName: "20003006.webp",
     rarity: Rarity.Gold,
     type: TypeItem.Chrono,
   },
   {
     id: ItemId.I20003007,
-    fileName: '20003007.webp',
+    fileName: "20003007.webp",
     rarity: Rarity.Gold,
     type: TypeItem.Chrono,
   },
@@ -161,114 +161,114 @@ const CHRONO_AND_SPECIAL_GOLD: ConsumableDefinitionSeed[] = [
 const STONES_AND_SCROLLS_EPIC: ConsumableDefinitionSeed[] = [
   {
     id: ItemId.I20004001,
-    fileName: '20004001.webp',
+    fileName: "20004001.webp",
     rarity: Rarity.Epic,
     type: TypeItem.Stone,
   },
   {
     id: ItemId.I20004002,
-    fileName: '20004002.webp',
+    fileName: "20004002.webp",
     rarity: Rarity.Epic,
     type: TypeItem.Stone,
   },
   {
     id: ItemId.I20004003,
-    fileName: '20004003.webp',
+    fileName: "20004003.webp",
     rarity: Rarity.Epic,
     type: TypeItem.Stone,
   },
   {
     id: ItemId.I20004004,
-    fileName: '20004004.webp',
+    fileName: "20004004.webp",
     rarity: Rarity.Epic,
     type: TypeItem.Stone,
   },
   {
     id: ItemId.I20004005,
-    fileName: '20004005.webp',
+    fileName: "20004005.webp",
     rarity: Rarity.Epic,
     type: TypeItem.Stone,
   },
   {
     id: ItemId.I20004006,
-    fileName: '20004006.webp',
+    fileName: "20004006.webp",
     rarity: Rarity.Epic,
     type: TypeItem.Stone,
   },
   {
     id: ItemId.I20004007,
-    fileName: '20004007.webp',
+    fileName: "20004007.webp",
     rarity: Rarity.Epic,
     type: TypeItem.Stone,
   },
   {
     id: ItemId.I20004008,
-    fileName: '20004008.webp',
+    fileName: "20004008.webp",
     rarity: Rarity.Epic,
     type: TypeItem.Scroll,
   },
   {
     id: ItemId.I20004009,
-    fileName: '20004009.webp',
+    fileName: "20004009.webp",
     rarity: Rarity.Epic,
     type: TypeItem.Scroll,
   },
   {
     id: ItemId.I20004010,
-    fileName: '20004010.webp',
+    fileName: "20004010.webp",
     rarity: Rarity.Epic,
     type: TypeItem.Scroll,
   },
   {
     id: ItemId.I20004011,
-    fileName: '20004011.webp',
+    fileName: "20004011.webp",
     rarity: Rarity.Epic,
     type: TypeItem.Scroll,
   },
   {
     id: ItemId.I20004012,
-    fileName: '20004012.webp',
+    fileName: "20004012.webp",
     rarity: Rarity.Epic,
     type: TypeItem.Scroll,
   },
   {
     id: ItemId.I20004013,
-    fileName: '20004013.webp',
+    fileName: "20004013.webp",
     rarity: Rarity.Epic,
     type: TypeItem.Scroll,
   },
   {
     id: ItemId.I20004014,
-    fileName: '20004014.webp',
+    fileName: "20004014.webp",
     rarity: Rarity.Epic,
     type: TypeItem.Scroll,
   },
 ];
 
 const ELEMENT_NAME_BY_SUFFIX: Record<string, { fr: string; en: string }> = {
-  '00': { fr: 'feu', en: 'fire' },
-  '01': { fr: 'eau', en: 'water' },
-  '02': { fr: 'terre', en: 'earth' },
-  '03': { fr: 'vent', en: 'wind' },
-  '04': { fr: 'foudre', en: 'lightning' },
-  '05': { fr: 'lumiere', en: 'light' },
-  '06': { fr: 'ombre', en: 'shadow' },
-  '07': { fr: 'cristal', en: 'crystal' },
-  '08': { fr: 'feu', en: 'fire' },
-  '09': { fr: 'eau', en: 'water' },
-  '10': { fr: 'terre', en: 'earth' },
-  '11': { fr: 'vent', en: 'wind' },
-  '12': { fr: 'foudre', en: 'lightning' },
-  '13': { fr: 'lumiere', en: 'light' },
-  '14': { fr: 'ombre', en: 'shadow' },
+  "00": { fr: "feu", en: "fire" },
+  "01": { fr: "eau", en: "water" },
+  "02": { fr: "terre", en: "earth" },
+  "03": { fr: "vent", en: "wind" },
+  "04": { fr: "foudre", en: "lightning" },
+  "05": { fr: "lumiere", en: "light" },
+  "06": { fr: "ombre", en: "shadow" },
+  "07": { fr: "cristal", en: "crystal" },
+  "08": { fr: "feu", en: "fire" },
+  "09": { fr: "eau", en: "water" },
+  "10": { fr: "terre", en: "earth" },
+  "11": { fr: "vent", en: "wind" },
+  "12": { fr: "foudre", en: "lightning" },
+  "13": { fr: "lumiere", en: "light" },
+  "14": { fr: "ombre", en: "shadow" },
 };
 
 const RARITY_LABEL: Record<Rarity, { fr: string; en: string }> = {
-  [Rarity.Bronze]: { fr: 'bronze', en: 'bronze' },
-  [Rarity.Silver]: { fr: 'argente', en: 'silver' },
-  [Rarity.Basic]: { fr: 'basique', en: 'basic' },
-  [Rarity.Gold]: { fr: 'doré', en: 'gold' },
-  [Rarity.Epic]: { fr: 'epique', en: 'epic' },
+  [Rarity.Bronze]: { fr: "bronze", en: "bronze" },
+  [Rarity.Silver]: { fr: "argente", en: "silver" },
+  [Rarity.Basic]: { fr: "basique", en: "basic" },
+  [Rarity.Gold]: { fr: "doré", en: "gold" },
+  [Rarity.Epic]: { fr: "epique", en: "epic" },
 };
 
 function localizedConsumableName(seed: ConsumableDefinitionSeed): {
@@ -278,8 +278,8 @@ function localizedConsumableName(seed: ConsumableDefinitionSeed): {
   const id = seed.id;
   const suffix = id.slice(-2);
   const element = ELEMENT_NAME_BY_SUFFIX[suffix] || {
-    fr: 'mystique',
-    en: 'mystic',
+    fr: "mystique",
+    en: "mystic",
   };
   const rarity = RARITY_LABEL[seed.rarity];
 
@@ -317,7 +317,7 @@ function localizedConsumableName(seed: ConsumableDefinitionSeed): {
   };
 }
 
-export const CONSUMABLE_DEFINITIONS: ConsumableDefinition[] = [...ELEMENTAL_POTION_BASIC, ...ELEMENTAL_POTION_GOLD, ...CHRONO_AND_SPECIAL_GOLD, ...STONES_AND_SCROLLS_EPIC].map(seed => ({
+export const CONSUMABLE_DEFINITIONS: ConsumableDefinition[] = [...ELEMENTAL_POTION_BASIC, ...ELEMENTAL_POTION_GOLD, ...CHRONO_AND_SPECIAL_GOLD, ...STONES_AND_SCROLLS_EPIC].map((seed) => ({
   ...seed,
   ...localizedConsumableName(seed),
 }));

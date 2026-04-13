@@ -1,5 +1,5 @@
-import { Rarity } from '../../objects/enums/Rarity';
-import { TypeItem } from '../../objects/enums/TypeItem';
+import { Rarity } from "../../objects/enums/Rarity";
+import { TypeItem } from "../../objects/enums/TypeItem";
 
 export type ConsumableQuery = {
   rarity?: Rarity;

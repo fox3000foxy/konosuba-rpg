@@ -1,5 +1,5 @@
-import { QuestConditionKey } from '../enums/QuestConditionKey';
-import { QuestKey } from '../enums/QuestKey';
+import { QuestConditionKey } from "../enums/QuestConditionKey";
+import { QuestKey } from "../enums/QuestKey";
 
 export type QuestDefinition = {
   key: QuestKey;

@@ -1,14 +1,14 @@
-import { EnglishLore } from '../objects/enums/EnglishLore';
-import { Errors } from '../objects/enums/Errors';
-import { FrenchLores } from '../objects/enums/FrenchLores';
-import { Gender } from '../objects/enums/Gender';
-import { AquaImages } from '../objects/enums/player/AquaImages';
-import { DarknessImages } from '../objects/enums/player/DarknessImages';
-import { KazumaImages } from '../objects/enums/player/KazumaImages';
-import { MeguminImages } from '../objects/enums/player/MeguminImages';
-import { PlayerAction } from '../objects/enums/player/PlayerAction';
-import { PlayerStats } from '../objects/enums/player/PlayerStats';
-import { PlayerThmb } from '../objects/enums/player/PlayerThmb';
+import { EnglishLore } from "../objects/enums/EnglishLore";
+import { Errors } from "../objects/enums/Errors";
+import { FrenchLores } from "../objects/enums/FrenchLores";
+import { Gender } from "../objects/enums/Gender";
+import { AquaImages } from "../objects/enums/player/AquaImages";
+import { DarknessImages } from "../objects/enums/player/DarknessImages";
+import { KazumaImages } from "../objects/enums/player/KazumaImages";
+import { MeguminImages } from "../objects/enums/player/MeguminImages";
+import { PlayerAction } from "../objects/enums/player/PlayerAction";
+import { PlayerStats } from "../objects/enums/player/PlayerStats";
+import { PlayerThmb } from "../objects/enums/player/PlayerThmb";
 
 type ActionImageMap = Partial<Record<PlayerAction, string>>;
 
@@ -119,7 +119,7 @@ export abstract class Player {
 
   getTeam(): Team {
     if (!this.team) {
-      throw new Error('Player is not assigned to a team.');
+      throw new Error("Player is not assigned to a team.");
     }
     return this.team;
   }
@@ -133,7 +133,7 @@ export abstract class Player {
 // HP: 80 | Atk: [3, 12]
 export class Kazuma extends Player {
   constructor() {
-    super(['Kazuma', 'Kazuma'], PlayerStats.KazumaHp, [PlayerStats.KazumaAttackMin, PlayerStats.KazumaAttackMax], [KazumaImages.Idle], PlayerThmb.Kazuma, [FrenchLores.Player_Kazuma, EnglishLore.Player_Kazuma], Gender.Male);
+    super(["Kazuma", "Kazuma"], PlayerStats.KazumaHp, [PlayerStats.KazumaAttackMin, PlayerStats.KazumaAttackMax], [KazumaImages.Idle], PlayerThmb.Kazuma, [FrenchLores.Player_Kazuma, EnglishLore.Player_Kazuma], Gender.Male);
     this.specialAttackNeededRounds = 3; // Kazuma's special attack is ready after 3 rounds
     this.playerId = 0;
   }
@@ -147,7 +147,7 @@ export class Kazuma extends Player {
 // HP: 200 | Atk: [0, 8]
 export class Darkness extends Player {
   constructor() {
-    super(['Lalatina', 'Darkness'], PlayerStats.DarknessHp, [PlayerStats.DarknessAttackMin, PlayerStats.DarknessAttackMax], [DarknessImages.Idle], PlayerThmb.Darkness, [FrenchLores.Player_Darkness, EnglishLore.Player_Darkness], Gender.Female);
+    super(["Lalatina", "Darkness"], PlayerStats.DarknessHp, [PlayerStats.DarknessAttackMin, PlayerStats.DarknessAttackMax], [DarknessImages.Idle], PlayerThmb.Darkness, [FrenchLores.Player_Darkness, EnglishLore.Player_Darkness], Gender.Female);
     this.specialAttackNeededRounds = 5; // Darkness's special attack is ready after 5 rounds
     this.playerId = 1;
   }
@@ -161,7 +161,7 @@ export class Darkness extends Player {
 // HP: 60 | Atk: [0, 60]
 export class Megumin extends Player {
   constructor() {
-    super(['Megumin', 'Megumin'], PlayerStats.MeguminHp, [PlayerStats.MeguminAttackMin, PlayerStats.MeguminAttackMax], [MeguminImages.Idle], PlayerThmb.Megumin, [FrenchLores.Player_Megumin, EnglishLore.Player_Megumin], Gender.Female);
+    super(["Megumin", "Megumin"], PlayerStats.MeguminHp, [PlayerStats.MeguminAttackMin, PlayerStats.MeguminAttackMax], [MeguminImages.Idle], PlayerThmb.Megumin, [FrenchLores.Player_Megumin, EnglishLore.Player_Megumin], Gender.Female);
     this.specialAttackNeededRounds = 4; // Megumin's special attack is ready after 4 rounds
     this.playerId = 2;
   }
@@ -175,7 +175,7 @@ export class Megumin extends Player {
 // HP: 100 | Atk: [1, 6]
 export class Aqua extends Player {
   constructor() {
-    super(['Aqua', 'Aqua'], PlayerStats.AquaHp, [PlayerStats.AquaAttackMin, PlayerStats.AquaAttackMax], [AquaImages.Idle], PlayerThmb.Aqua, [FrenchLores.Player_Aqua, EnglishLore.Player_Aqua], Gender.Female);
+    super(["Aqua", "Aqua"], PlayerStats.AquaHp, [PlayerStats.AquaAttackMin, PlayerStats.AquaAttackMax], [AquaImages.Idle], PlayerThmb.Aqua, [FrenchLores.Player_Aqua, EnglishLore.Player_Aqua], Gender.Female);
     this.specialAttackNeededRounds = 3; // Aqua's special attack is ready after 3 rounds
     this.playerId = 3;
   }
@@ -185,7 +185,7 @@ export class Aqua extends Player {
   }
 
   heal(team: Team = this.getTeam()) {
-    team.players.forEach(player => {
+    team.players.forEach((player) => {
       if (player.hp > 0) {
         player.hp = Math.min(player.hp + 15, player.hpMax);
       }
@@ -207,7 +207,7 @@ export class Team {
   }
 
   performTeamAction(action: PlayerAction): void {
-    this.players.forEach(player => player.performAction(action));
+    this.players.forEach((player) => player.performAction(action));
   }
 
   setActivePlayer(player: Player): void {

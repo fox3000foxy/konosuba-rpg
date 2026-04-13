@@ -1,4 +1,4 @@
 export enum HealthBarName {
-  English = 'HP',
-  French = 'PV',
+  English = "HP",
+  French = "PV",
 }

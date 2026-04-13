@@ -1,18 +1,18 @@
-import * as Photon from '@cf-wasm/photon';
-import { BASE_URL } from '../objects/config/constants';
-import { CharacterKey } from '../objects/enums/CharacterKey';
-import { PlayerStats } from '../objects/enums/player/PlayerStats';
-import { CharacterProgress } from '../objects/types/CharacterProgress';
-import { getAffinityFactor, getLevelFactor } from '../services/characterService';
-import { getAssetBytes, getEmbeddedFontBuffer as getEmbeddedFontBufferUtil } from './assetLoader';
-import { createPerfLogger } from './perfLogger';
-import { ensureResvgWasm, renderSvgToPng } from './resvgWasm';
+import * as Photon from "@cf-wasm/photon";
+import { BASE_URL } from "../objects/config/constants";
+import { CharacterKey } from "../objects/enums/CharacterKey";
+import { PlayerStats } from "../objects/enums/player/PlayerStats";
+import { CharacterProgress } from "../objects/types/CharacterProgress";
+import { getAffinityFactor, getLevelFactor } from "../services/characterService";
+import { getAssetBytes, getEmbeddedFontBuffer as getEmbeddedFontBufferUtil } from "./assetLoader";
+import { createPerfLogger } from "./perfLogger";
+import { ensureResvgWasm, renderSvgToPng } from "./resvgWasm";
 
 const ASSET_BASE_URL = BASE_URL;
 const FONT_URL = `${ASSET_BASE_URL}/assets/swordgame/font/GintoNordMedium.otf`;
-const BOARD_PATH = '/assets/swordgame/art/board.webp';
-const STAR_ENABLED_PATH = '/assets/star-enabled.webp';
-const STAR_DISABLED_PATH = '/assets/star-disabled.webp';
+const BOARD_PATH = "/assets/swordgame/art/board.webp";
+const STAR_ENABLED_PATH = "/assets/star-enabled.webp";
+const STAR_DISABLED_PATH = "/assets/star-disabled.webp";
 
 const WIDTH = 1100;
 const HEIGHT = 560;
@@ -84,11 +84,11 @@ function getAffinityStatBonus(key: CharacterKey, level: number, affinity: number
 }
 
 function escapeXml(value: string): string {
-  return value.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&apos;');
+  return value.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&apos;");
 }
 
 async function getEmbeddedFontBuffer(): Promise<Uint8Array | null> {
-  return getEmbeddedFontBufferUtil('assets/swordgame/font/GintoNordMedium.otf', FONT_URL);
+  return getEmbeddedFontBufferUtil("assets/swordgame/font/GintoNordMedium.otf", FONT_URL);
 }
 
 export function getAffinityStars(affinity: number): number {
@@ -97,16 +97,16 @@ export function getAffinityStars(affinity: number): number {
   return Math.max(0, Math.min(STAR_SLOT_COUNT, stars));
 }
 
-export function getAffinityTier(stars: number): 'basic' | 'gold' | 'epic' {
+export function getAffinityTier(stars: number): "basic" | "gold" | "epic" {
   if (stars >= 5) {
-    return 'epic';
+    return "epic";
   }
 
   if (stars >= 4) {
-    return 'gold';
+    return "gold";
   }
 
-  return 'basic';
+  return "basic";
 }
 
 function getCharacterBadgePath(key: CharacterKey, stars: number): string {
@@ -114,24 +114,24 @@ function getCharacterBadgePath(key: CharacterKey, stars: number): string {
   return `/assets/characters-emojis/${key}_${badgeStars}_star.webp`;
 }
 
-function getTierLabel(fr: boolean, tier: 'basic' | 'gold' | 'epic'): string {
+function getTierLabel(fr: boolean, tier: "basic" | "gold" | "epic"): string {
   if (!fr) {
     return tier;
   }
 
-  if (tier === 'epic') {
-    return 'epique';
+  if (tier === "epic") {
+    return "epique";
   }
 
-  if (tier === 'gold') {
-    return 'or';
+  if (tier === "gold") {
+    return "or";
   }
 
-  return 'base';
+  return "base";
 }
 
 function getRows(progresses: CharacterProgress[]): AffinityRow[] {
-  const byKey = new Map(progresses.map(progress => [progress.characterKey, progress]));
+  const byKey = new Map(progresses.map((progress) => [progress.characterKey, progress]));
 
   const darknessLevel = Number(byKey.get(CharacterKey.Darkness)?.level || 1);
   const darknessAffinity = Number(byKey.get(CharacterKey.Darkness)?.affinity || 0);
@@ -148,7 +148,7 @@ function getRows(progresses: CharacterProgress[]): AffinityRow[] {
   return [
     {
       key: CharacterKey.Darkness,
-      label: 'Darkness',
+      label: "Darkness",
       xp: Number(byKey.get(CharacterKey.Darkness)?.xp || 0),
       level: darknessLevel,
       affinity: darknessAffinity,
@@ -157,7 +157,7 @@ function getRows(progresses: CharacterProgress[]): AffinityRow[] {
     },
     {
       key: CharacterKey.Megumin,
-      label: 'Megumin',
+      label: "Megumin",
       xp: Number(byKey.get(CharacterKey.Megumin)?.xp || 0),
       level: meguminLevel,
       affinity: meguminAffinity,
@@ -166,7 +166,7 @@ function getRows(progresses: CharacterProgress[]): AffinityRow[] {
     },
     {
       key: CharacterKey.Aqua,
-      label: 'Aqua',
+      label: "Aqua",
       xp: Number(byKey.get(CharacterKey.Aqua)?.xp || 0),
       level: aquaLevel,
       affinity: aquaAffinity,
@@ -180,7 +180,7 @@ export async function buildAffinitySvg(userId: string, progresses: CharacterProg
   void userId;
   const rows = getRows(progresses);
   const totalAffinity = rows.reduce((acc, row) => acc + row.affinity, 0);
-  const fontFamily = hasEmbeddedFont ? 'GintoNordMedium' : 'Arial';
+  const fontFamily = hasEmbeddedFont ? "GintoNordMedium" : "Arial";
 
   const rowY = [180, 300, 420];
   const rowText = rows
@@ -196,7 +196,7 @@ export async function buildAffinitySvg(userId: string, progresses: CharacterProg
       <text x="170" y="${rowY[idx] + 24}" fill="#9db0e8" font-size="20" font-family="${fontFamily}">${escapeXml(fr ? `Rang: ${getTierLabel(fr, tier)}` : `Tier: ${tier}`)}</text>
       <text x="560" y="${rowY[idx] + 24}" fill="#9db0e8" font-size="20" font-family="${fontFamily}">${escapeXml(fr ? `Niv. ${row.level} | XP ${row.xp}` : `Lv. ${row.level} | XP ${row.xp}`)}</text>
     `;
-      if (row.affinityBonusHp > 0 || row.affinityBonusAttack.some(atk => atk > 0)) {
+      if (row.affinityBonusHp > 0 || row.affinityBonusAttack.some((atk) => atk > 0)) {
         return (
           result +
           `
@@ -208,48 +208,48 @@ export async function buildAffinitySvg(userId: string, progresses: CharacterProg
 
       return result;
     })
-    .join('');
+    .join("");
 
   return `
   <svg xmlns="http://www.w3.org/2000/svg" width="${WIDTH}" height="${HEIGHT}" viewBox="0 0 ${WIDTH} ${HEIGHT}">
     <rect x="24" y="24" width="1052" height="${HEIGHT - 48}" rx="16" fill="#070c1b" fill-opacity="0.76" stroke="#34405e" stroke-opacity="0.9" />
-    <text x="36" y="82" fill="#ffffff" font-size="42" font-family="${fontFamily}">${escapeXml(fr ? 'Affinite' : 'Affinity')}</text>
+    <text x="36" y="82" fill="#ffffff" font-size="42" font-family="${fontFamily}">${escapeXml(fr ? "Affinite" : "Affinity")}</text>
     <text x="36" y="116" fill="#b2bdd6" font-size="18" font-family="${fontFamily}">${escapeXml(fr ? `Total equipe: ${totalAffinity}` : `Team total: ${totalAffinity}`)}</text>
     ${rowText}
   </svg>`;
 }
 
 export async function renderAffinityImage(userId: string, progresses: CharacterProgress[], fr: boolean): Promise<Uint8Array> {
-  const perf = createPerfLogger('renderAffinityImage');
+  const perf = createPerfLogger("renderAffinityImage");
   await ensureResvgWasm();
-  perf.mark('ensureResvgWasm');
+  perf.mark("ensureResvgWasm");
 
   const rows = getRows(progresses);
   const fontBuffer = await getEmbeddedFontBuffer();
-  perf.mark('getEmbeddedFontBuffer');
+  perf.mark("getEmbeddedFontBuffer");
 
   const svg = await buildAffinitySvg(userId, progresses, fr, Boolean(fontBuffer));
-  perf.mark('buildSvg');
+  perf.mark("buildSvg");
 
   const options = fontBuffer
     ? {
         font: {
           fontBuffers: [fontBuffer],
           loadSystemFonts: false,
-          defaultFontFamily: 'GintoNordMedium',
+          defaultFontFamily: "GintoNordMedium",
         },
       }
     : { font: { loadSystemFonts: true } };
 
   const png = await renderSvgToPng(svg, options);
-  perf.mark('Resvg render -> PNG');
+  perf.mark("Resvg render -> PNG");
 
   const overlay = Photon.PhotonImage.new_from_byteslice(new Uint8Array(png.buffer.slice(0) as ArrayBuffer));
 
   let board: Photon.PhotonImage | null = null;
   let canvas: Photon.PhotonImage;
   const boardBytes = await getAssetBytes(BOARD_PATH, ASSET_BASE_URL);
-  perf.mark('get board');
+  perf.mark("get board");
 
   if (boardBytes) {
     board = Photon.PhotonImage.new_from_byteslice(new Uint8Array(boardBytes));
@@ -260,10 +260,10 @@ export async function renderAffinityImage(userId: string, progresses: CharacterP
   }
 
   const [starEnabledBytes, starDisabledBytes] = await Promise.all([getAssetBytes(STAR_ENABLED_PATH, ASSET_BASE_URL), getAssetBytes(STAR_DISABLED_PATH, ASSET_BASE_URL)]);
-  perf.mark('get star assets');
+  perf.mark("get star assets");
 
-  const badgeBuffers = await Promise.all(rows.map(row => getAssetBytes(getCharacterBadgePath(row.key, getAffinityStars(row.affinity)), ASSET_BASE_URL)));
-  perf.mark('get badges');
+  const badgeBuffers = await Promise.all(rows.map((row) => getAssetBytes(getCharacterBadgePath(row.key, getAffinityStars(row.affinity)), ASSET_BASE_URL)));
+  perf.mark("get badges");
 
   const rowY = [180, 300, 420];
 
@@ -310,7 +310,7 @@ export async function renderAffinityImage(userId: string, progresses: CharacterP
       }
     }
   }
-  perf.mark('compose overlays');
+  perf.mark("compose overlays");
 
   const output = new Uint8Array(canvas.get_bytes());
   if (canvas !== overlay) {

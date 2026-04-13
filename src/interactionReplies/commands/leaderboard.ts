@@ -1,5 +1,5 @@
-import { Context } from 'hono';
-import { getLeaderboard } from '../../services/progressionService';
+import { Context } from "hono";
+import { getLeaderboard } from "../../services/progressionService";
 
 export async function handleLeaderboardCommand(c: Context, fr: boolean) {
   const leaderboard = await getLeaderboard(10);
@@ -8,7 +8,7 @@ export async function handleLeaderboardCommand(c: Context, fr: boolean) {
     return c.json({
       type: 4,
       data: {
-        content: fr ? 'Classement indisponible pour le moment.' : 'Leaderboard is unavailable right now.',
+        content: fr ? "Classement indisponible pour le moment." : "Leaderboard is unavailable right now.",
         flags: 1 << 6,
       },
     });
@@ -20,7 +20,7 @@ export async function handleLeaderboardCommand(c: Context, fr: boolean) {
       data: {
         embeds: [
           {
-            description: fr ? '# Classement\n\nAucun joueur classe pour le moment.' : '# Leaderboard\n\nNo ranked players yet.',
+            description: fr ? "# Classement\n\nAucun joueur classe pour le moment." : "# Leaderboard\n\nNo ranked players yet.",
             color: 0x2b2d31,
           },
         ],
@@ -38,7 +38,7 @@ export async function handleLeaderboardCommand(c: Context, fr: boolean) {
     data: {
       embeds: [
         {
-          description: `${fr ? '# Classement' : '# Leaderboard'}\n\n${lines.join('\n')}`,
+          description: `${fr ? "# Classement" : "# Leaderboard"}\n\n${lines.join("\n")}`,
           color: 0x2b2d31,
         },
       ],

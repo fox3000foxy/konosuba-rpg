@@ -1,7 +1,7 @@
-import { CharacterKey } from '../enums/CharacterKey';
+import { CharacterKey } from "../enums/CharacterKey";
 
 export type CharacterStatsSnapshot = {
-  characterKey: CharacterKey | 'kazuma';
+  characterKey: CharacterKey | "kazuma";
   level: number;
   factor: number;
 };

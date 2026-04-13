@@ -1,10 +1,10 @@
-import { Lang } from '../objects/enums/Lang';
-import { Game } from '../objects/types/Game';
+import { Lang } from "../objects/enums/Lang";
+import { Game } from "../objects/types/Game";
 
 export function serializeGameForApi(game: Game, lang: Lang): Record<string, unknown> {
   const serializableTeam = {
     ...game.team,
-    players: game.team.players.map(player => {
+    players: game.team.players.map((player) => {
       const playerWithoutTeam = { ...player } as Record<string, unknown>;
       delete playerWithoutTeam.team;
       delete playerWithoutTeam.images;

@@ -1,7 +1,7 @@
 type ResvgModule = {
   Resvg: new (
     svg: string,
-    options?: unknown
+    options?: unknown,
   ) => {
     render(): {
       asPng(): Uint8Array;
@@ -17,7 +17,7 @@ const G = globalThis as unknown as ResvgGlobals;
 
 function getResvgModule(): Promise<ResvgModule> {
   if (!G.__resvgModulePromise) {
-    G.__resvgModulePromise = import('@cf-wasm/resvg') as Promise<ResvgModule>;
+    G.__resvgModulePromise = import("@cf-wasm/resvg") as Promise<ResvgModule>;
   }
 
   return G.__resvgModulePromise;

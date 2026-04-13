@@ -1,4 +1,4 @@
-import { CharacterKey } from '../enums/CharacterKey';
+import { CharacterKey } from "../enums/CharacterKey";
 
 export type CharacterProgress = {
   userId: string;

@@ -1,9 +1,9 @@
-import { Hono } from 'hono';
-import { registerApiRoutes } from './routes/api';
-import { registerApiRenderRoutes } from './routes/apiRender';
-import { calculateGame } from './routes/game';
-import { handleInteractions } from './routes/interactions';
-import { calculateRPG } from './routes/rpg';
+import { Hono } from "hono";
+import { registerApiRoutes } from "./routes/api";
+import { registerApiRenderRoutes } from "./routes/apiRender";
+import { calculateGame } from "./routes/game";
+import { handleInteractions } from "./routes/interactions";
+import { calculateRPG } from "./routes/rpg";
 
 type AssetFetcher = {
   fetch(input: Request | URL | string, init?: RequestInit): Promise<Response>;
@@ -18,16 +18,16 @@ const app = new Hono();
 registerApiRoutes(app);
 registerApiRenderRoutes(app);
 
-app.get('/assets/*', async c => {
+app.get("/assets/*", async (c) => {
   const env = c.env as WorkerBindings;
   if (!env.ASSETS) {
-    console.error('Assets binding is unavailable. Check worker configuration.');
-    return c.text('Assets binding unavailable.', 500);
+    console.error("Assets binding is unavailable. Check worker configuration.");
+    return c.text("Assets binding unavailable.", 500);
   }
 
   const url = new URL(c.req.url);
-  const assetPath = url.pathname.replace(/^\/assets\/?/, '/');
-  url.pathname = assetPath === '' ? '/' : assetPath;
+  const assetPath = url.pathname.replace(/^\/assets\/?/, "/");
+  url.pathname = assetPath === "" ? "/" : assetPath;
 
   try {
     const response = await env.ASSETS.fetch(new Request(url.toString(), c.req.raw));
@@ -45,22 +45,22 @@ app.get('/assets/*', async c => {
     return response;
   } catch (error) {
     console.error(`Error fetching asset: ${url.pathname}`, error);
-    return c.text('Internal server error while fetching asset.', 500);
+    return c.text("Internal server error while fetching asset.", 500);
   }
 });
 
-app.get('/konosuba-rpg/:lang/*', calculateRPG);
+app.get("/konosuba-rpg/:lang/*", calculateRPG);
 
-app.get('/game/:lang/*', calculateGame);
-app.post('/api/interactions', handleInteractions);
+app.get("/game/:lang/*", calculateGame);
+app.post("/api/interactions", handleInteractions);
 
 function syncBindingsToProcessEnv(bindings: WorkerBindings): void {
-  if (typeof process === 'undefined' || !process.env) {
+  if (typeof process === "undefined" || !process.env) {
     return;
   }
 
   for (const [key, value] of Object.entries(bindings)) {
-    if (typeof value === 'string' && value.length > 0) {
+    if (typeof value === "string" && value.length > 0) {
       process.env[key] = value;
     }
   }

@@ -1,8 +1,8 @@
-import { Gender } from '../../objects/enums/Gender';
-import { FrenchLores } from '../../objects/enums/FrenchLores';
-import { GenericCreature, GenericCreatureInterface } from '../GenericCreature';
-import { Random } from '../Random';
-import { EnglishLore } from '../../objects/enums/EnglishLore';
+import { Gender } from "../../objects/enums/Gender";
+import { FrenchLores } from "../../objects/enums/FrenchLores";
+import { GenericCreature, GenericCreatureInterface } from "../GenericCreature";
+import { Random } from "../Random";
+import { EnglishLore } from "../../objects/enums/EnglishLore";
 
 export default class GiantEarthworm extends GenericCreature implements GenericCreatureInterface {
   constructor() {
@@ -11,12 +11,12 @@ export default class GiantEarthworm extends GenericCreature implements GenericCr
     this.love = 100;
     this.hpMax = 800;
     this.hp = this.hpMax;
-    this.name = ['Giant Earthworm', 'Ver de terre Géant'];
+    this.name = ["Giant Earthworm", "Ver de terre Géant"];
     this.prefix = true;
   }
 
   pickColor(rng: Random) {
-    this.color = rng.choice(['11500', '11501', '11503']);
+    this.color = rng.choice(["11500", "11501", "11503"]);
     this.images = [`enemy_image_${this.color}`];
     this.lore = [FrenchLores.Creature_GiantEarthworm, EnglishLore.Creature_GiantEarthworm];
     this.gender = Gender.Male;

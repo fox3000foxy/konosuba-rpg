@@ -1,5 +1,5 @@
-import { MonsterDifficulty } from '../enums/MonsterDifficulty';
-import { generateMob } from './mobMap';
+import { MonsterDifficulty } from "../enums/MonsterDifficulty";
+import { generateMob } from "./mobMap";
 
 interface MonsterStats {
   hpMax: number;
@@ -87,7 +87,7 @@ export function getMonstersByDifficulty(difficulty: MonsterDifficulty | string |
   }
 
   const mobs = generateMob();
-  const filtered = mobs.filter(mob => {
+  const filtered = mobs.filter((mob) => {
     const mobName = mob?.name?.[0];
     if (!mobName) return false;
     const mobDifficulty = getMonsterDifficulty(mobName);

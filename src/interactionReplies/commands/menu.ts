@@ -1,5 +1,5 @@
-import { Context } from 'hono';
-import { RawButton } from '../../objects/enums/RawButton';
+import { Context } from "hono";
+import { RawButton } from "../../objects/enums/RawButton";
 
 function buildMenuComponents(userID: string, fr: boolean): RawButton[] {
   const owner = `:${userID}`;
@@ -11,19 +11,19 @@ function buildMenuComponents(userID: string, fr: boolean): RawButton[] {
         {
           type: 2,
           style: 3,
-          label: fr ? 'Jouer maintenant' : 'Play now',
+          label: fr ? "Jouer maintenant" : "Play now",
           custom_id: `menu.start${owner}`,
         },
         {
           type: 2,
           style: 1,
-          label: fr ? 'Train Troll' : 'Train Troll',
+          label: fr ? "Train Troll" : "Train Troll",
           custom_id: `menu.train.troll${owner}`,
         },
         {
           type: 2,
           style: 1,
-          label: fr ? 'Train aleatoire' : 'Random train',
+          label: fr ? "Train aleatoire" : "Random train",
           custom_id: `menu.train.random${owner}`,
         },
       ],
@@ -34,19 +34,19 @@ function buildMenuComponents(userID: string, fr: boolean): RawButton[] {
         {
           type: 2,
           style: 2,
-          label: fr ? 'Infos persos' : 'Player infos',
+          label: fr ? "Infos persos" : "Player infos",
           custom_id: `menu.players${owner}`,
         },
         {
           type: 2,
           style: 2,
-          label: fr ? 'Infos monstres' : 'Monster infos',
+          label: fr ? "Infos monstres" : "Monster infos",
           custom_id: `menu.monsters${owner}`,
         },
         {
           type: 2,
           style: 2,
-          label: fr ? 'Aide' : 'Help',
+          label: fr ? "Aide" : "Help",
           custom_id: `menu.help${owner}`,
         },
       ],

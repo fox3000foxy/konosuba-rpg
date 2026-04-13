@@ -1,7 +1,7 @@
-import { Gender } from '../../objects/enums/Gender';
-import { FrenchLores } from '../../objects/enums/FrenchLores';
-import { Creature } from '../Creature';
-import { EnglishLore } from '../../objects/enums/EnglishLore';
+import { Gender } from "../../objects/enums/Gender";
+import { FrenchLores } from "../../objects/enums/FrenchLores";
+import { Creature } from "../Creature";
+import { EnglishLore } from "../../objects/enums/EnglishLore";
 export default class Sylvia extends Creature {
   constructor() {
     super();
@@ -9,7 +9,7 @@ export default class Sylvia extends Creature {
     this.love = 50;
     this.hpMax = 1600;
     this.hp = this.hpMax;
-    this.name = ['Sylvia', 'Sylvia'];
+    this.name = ["Sylvia", "Sylvia"];
     // this.color = rand.choice(["11000", "11001", "11002", "11003", "11004", "11005", "11006"]);
     this.images = [`enemy_image_14500`];
     this.prefix = false;

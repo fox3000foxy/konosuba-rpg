@@ -1,8 +1,8 @@
-import * as Photon from '@cf-wasm/photon';
-import { InventoryItemView } from '../objects/types/InventoryItemView';
-import { createPerfLogger } from './perfLogger';
-import { cacheRenderOutput, createBoundedArrayBufferCache, createBoundedStringCache, resolveAssetUrl, resolveResvgImageUri, SizedCache } from './renderImageHelpers';
-import { ensureResvgWasm, renderSvgToPng } from './resvgWasm';
+import * as Photon from "@cf-wasm/photon";
+import { InventoryItemView } from "../objects/types/InventoryItemView";
+import { createPerfLogger } from "./perfLogger";
+import { cacheRenderOutput, createBoundedArrayBufferCache, createBoundedStringCache, resolveAssetUrl, resolveResvgImageUri, SizedCache } from "./renderImageHelpers";
+import { ensureResvgWasm, renderSvgToPng } from "./resvgWasm";
 
 type InventoryImageGlobals = {
   __inventoryAssetCache?: SizedCache<ArrayBuffer>;
@@ -29,9 +29,9 @@ const pendingResvgUriConversions = new Map<string, Promise<string | null>>();
 
 const RENDER_OUTPUT_CACHE_MAX = 64;
 
-const ASSET_BASE_URL = 'https://konosuba-rpg.vercel.app';
+const ASSET_BASE_URL = "https://konosuba-rpg.vercel.app";
 const FONT_URL = `${ASSET_BASE_URL}/assets/swordgame/font/GintoNordMedium.otf`;
-const BOARD_PATH = '/assets/swordgame/art/board.webp';
+const BOARD_PATH = "/assets/swordgame/art/board.webp";
 const WIDTH = 1100;
 const LINE_HEIGHT = 40;
 
@@ -44,7 +44,7 @@ function getCanvasHeight(itemsCount: number): number {
 }
 
 function escapeXml(value: string): string {
-  return value.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&apos;');
+  return value.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&apos;");
 }
 
 async function getEmbeddedFontBuffer(): Promise<Uint8Array | null> {
@@ -69,22 +69,22 @@ async function resolveResvgImageUriInventory(path: string | null): Promise<strin
 
 function buildRenderCacheKey(items: InventoryItemView[], fr: boolean, hasEmbeddedFont: boolean): string {
   const visibleItems = items.length ? items.slice(0, 18) : [];
-  const visibleSignature = visibleItems.map(item => `${item.itemKey}:${item.quantity}:${item.rarity ?? ''}:${item.imagePath ?? ''}`).join('|');
-  return `${fr ? 'fr' : 'en'}::${hasEmbeddedFont ? 'font' : 'system'}::${items.length}::${visibleSignature}`;
+  const visibleSignature = visibleItems.map((item) => `${item.itemKey}:${item.quantity}:${item.rarity ?? ""}:${item.imagePath ?? ""}`).join("|");
+  return `${fr ? "fr" : "en"}::${hasEmbeddedFont ? "font" : "system"}::${items.length}::${visibleSignature}`;
 }
 
 function rarityColor(rarity: string | null): string {
   switch (rarity) {
-    case 'epic':
-      return '#b48cff';
-    case 'gold':
-      return '#f7c948';
-    case 'silver':
-      return '#d5d9e0';
-    case 'bronze':
-      return '#d18a54';
+    case "epic":
+      return "#b48cff";
+    case "gold":
+      return "#f7c948";
+    case "silver":
+      return "#d5d9e0";
+    case "bronze":
+      return "#d18a54";
     default:
-      return '#7b8394';
+      return "#7b8394";
   }
 }
 
@@ -93,9 +93,9 @@ export async function buildSvg(userId: string, items: InventoryItemView[], fr: b
   const width = WIDTH;
   const lineHeight = LINE_HEIGHT;
   const height = getCanvasHeight(items.length);
-  const title = fr ? 'Inventaire' : 'Inventory';
+  const title = fr ? "Inventaire" : "Inventory";
   const subtitle = fr ? `Objets: ${items.length}` : `Items: ${items.length}`;
-  const fontFamily = hasEmbeddedFont ? 'GintoNordMedium' : 'Arial';
+  const fontFamily = hasEmbeddedFont ? "GintoNordMedium" : "Arial";
 
   const visibleItems = items.length ? items.slice(0, 18) : [];
   let resolvedBoardDataUri = boardDataUri;
@@ -106,15 +106,15 @@ export async function buildSvg(userId: string, items: InventoryItemView[], fr: b
   }
 
   if (!resolvedIconUris) {
-    resolvedIconUris = visibleItems.map(item => resolveAssetUrl(item.imagePath, ASSET_BASE_URL));
+    resolvedIconUris = visibleItems.map((item) => resolveAssetUrl(item.imagePath, ASSET_BASE_URL));
   }
 
   const lines = visibleItems.map((item, idx) => {
     const y = 170 + idx * lineHeight;
     const name = fr ? item.nameFr : item.nameEn;
     const color = rarityColor(item.rarity);
-    const iconHref = resolvedIconUris?.[idx] ? escapeXml(String(resolvedIconUris[idx])) : '';
-    const iconTag = iconHref ? `<image href="${iconHref}" xlink:href="${iconHref}" x="44" y="${y - 20}" width="24" height="24" preserveAspectRatio="none" />` : '';
+    const iconHref = resolvedIconUris?.[idx] ? escapeXml(String(resolvedIconUris[idx])) : "";
+    const iconTag = iconHref ? `<image href="${iconHref}" xlink:href="${iconHref}" x="44" y="${y - 20}" width="24" height="24" preserveAspectRatio="none" />` : "";
 
     return `
       <rect x="36" y="${y - 24}" width="1028" height="32" rx="8" fill="#0f1729" fill-opacity="0.72" />
@@ -125,34 +125,34 @@ export async function buildSvg(userId: string, items: InventoryItemView[], fr: b
     `;
   });
 
-  const emptyState = !items.length ? `<text x="36" y="190" fill="#d7deef" font-size="22" font-family="${fontFamily}">${escapeXml(fr ? 'Aucun objet dans cet inventaire pour le moment.' : 'No item in this inventory yet.')}</text>` : '';
+  const emptyState = !items.length ? `<text x="36" y="190" fill="#d7deef" font-size="22" font-family="${fontFamily}">${escapeXml(fr ? "Aucun objet dans cet inventaire pour le moment." : "No item in this inventory yet.")}</text>` : "";
 
   return `
   <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">
-    ${resolvedBoardDataUri ? `<image href="${escapeXml(resolvedBoardDataUri)}" xlink:href="${escapeXml(resolvedBoardDataUri)}" x="0" y="0" width="${width}" height="${height}" preserveAspectRatio="none" />` : ''}
+    ${resolvedBoardDataUri ? `<image href="${escapeXml(resolvedBoardDataUri)}" xlink:href="${escapeXml(resolvedBoardDataUri)}" x="0" y="0" width="${width}" height="${height}" preserveAspectRatio="none" />` : ""}
     <rect x="24" y="24" width="1052" height="${height - 48}" rx="16" fill="#070c1b" fill-opacity="0.76" stroke="#34405e" stroke-opacity="0.9" />
     <text x="36" y="72" fill="#ffffff" font-size="42" font-family="${fontFamily}">${escapeXml(title)}</text>
     <text x="36" y="106" fill="#b2bdd6" font-size="18" font-family="${fontFamily}">${escapeXml(subtitle)}</text>
-    <text x="80" y="136" fill="#7f8bad" font-size="14" font-family="${fontFamily}">${escapeXml(fr ? 'objet' : 'item')}</text>
+    <text x="80" y="136" fill="#7f8bad" font-size="14" font-family="${fontFamily}">${escapeXml(fr ? "objet" : "item")}</text>
     <text x="1030" y="136" text-anchor="end" fill="#7f8bad" font-size="14" font-family="${fontFamily}">qty</text>
-    ${lines.join('')}
+    ${lines.join("")}
     ${emptyState}
   </svg>`;
 }
 
 export async function renderInventoryImage(userId: string, items: InventoryItemView[], fr: boolean): Promise<Uint8Array> {
-  const perf = createPerfLogger('renderInventoryImage');
+  const perf = createPerfLogger("renderInventoryImage");
   await ensureResvgWasm();
-  perf.mark('ensureResvgWasm');
+  perf.mark("ensureResvgWasm");
 
   const fontBuffer = await getEmbeddedFontBuffer();
-  perf.mark('getEmbeddedFontBuffer');
+  perf.mark("getEmbeddedFontBuffer");
 
   const hasEmbeddedFont = Boolean(fontBuffer);
   const renderKey = buildRenderCacheKey(items, fr, hasEmbeddedFont);
   const cachedOutput = renderOutputCache.get(renderKey);
   if (cachedOutput) {
-    perf.done('cache hit -> return');
+    perf.done("cache hit -> return");
     return cachedOutput;
   }
 
@@ -163,26 +163,26 @@ export async function renderInventoryImage(userId: string, items: InventoryItemV
 
   const renderPromise = (async () => {
     const visibleItems = items.length ? items.slice(0, 18) : [];
-    const [boardUri, iconUris] = await Promise.all([resolveResvgImageUriInventory(BOARD_PATH), Promise.all(visibleItems.map(item => resolveResvgImageUriInventory(item.imagePath)))]);
-    perf.mark('resolve URIs');
+    const [boardUri, iconUris] = await Promise.all([resolveResvgImageUriInventory(BOARD_PATH), Promise.all(visibleItems.map((item) => resolveResvgImageUriInventory(item.imagePath)))]);
+    perf.mark("resolve URIs");
 
     const boardDataUri = boardUri || undefined;
 
     const svg = await buildSvg(userId, items, fr, hasEmbeddedFont, boardDataUri, iconUris);
-    perf.mark('buildSvg');
+    perf.mark("buildSvg");
 
     const options = fontBuffer
       ? {
           font: {
             fontBuffers: [fontBuffer],
             loadSystemFonts: false,
-            defaultFontFamily: 'GintoNordMedium',
+            defaultFontFamily: "GintoNordMedium",
           },
         }
       : { font: { loadSystemFonts: true } };
 
     const pngBytes = await renderSvgToPng(svg, options);
-    perf.mark('Resvg render -> PNG');
+    perf.mark("Resvg render -> PNG");
 
     const image = Photon.PhotonImage.new_from_byteslice(pngBytes);
     let webpBytes: Uint8Array;
@@ -191,7 +191,7 @@ export async function renderInventoryImage(userId: string, items: InventoryItemV
     } finally {
       image.free();
     }
-    perf.mark('Photon PNG -> WebP');
+    perf.mark("Photon PNG -> WebP");
 
     cacheRenderOutput(renderKey, webpBytes, renderOutputCache, RENDER_OUTPUT_CACHE_MAX);
     perf.done();
