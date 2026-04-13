@@ -4,9 +4,9 @@ import { Random } from "../classes/Random";
 import { BASE_URL } from "../objects/config/constants";
 import { generateMob } from "../objects/data/mobMap";
 import { CharacterKey } from "../objects/enums/CharacterKey";
-import type { CharacterProgress } from "../objects/types/CharacterProgress";
-import type { PlayerProfile } from "../objects/types/PlayerProfile";
-import type { PlayerRunSummary } from "../objects/types/PlayerRunSummary";
+import { type CharacterProgress } from "../objects/types/CharacterProgress";
+import { type PlayerProfile } from "../objects/types/PlayerProfile";
+import { type PlayerRunSummary } from "../objects/types/PlayerRunSummary";
 import { getAssetBytes, getEmbeddedFontBuffer as getEmbeddedFontBufferUtil } from "./assetLoader";
 import { createPerfLogger } from "./perfLogger";
 import { getImageBytes as getImageBytesFromManifest } from "./renderImage";
@@ -330,7 +330,7 @@ export async function renderProfileImage(userId: string, profile: PlayerProfile,
   // Cleanup resized bed global assets only on error, keep for reuse
   starEnabledResized?.free();
   starDisabledResized?.free();
-  badgeImagesMap.forEach((img) => img.free());
+  badgeImagesMap.forEach((img) => {img.free()});
   canvas.free();
   perf.done();
   return output;

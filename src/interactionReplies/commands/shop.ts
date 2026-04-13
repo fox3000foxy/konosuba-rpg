@@ -1,11 +1,11 @@
-import type { Context } from "hono";
+import { type Context } from "hono";
 import { BASE_URL } from "../../objects/config";
 import { AccessoryId } from "../../objects/enums/AccessoryId";
-import type { Button } from "../../objects/enums/Button";
+import { type Button } from "../../objects/enums/Button";
 import { ItemId } from "../../objects/enums/ItemId";
 import { Rarity } from "../../objects/enums/Rarity";
-import type { InteractionDataOption } from "../../objects/types/InteractionDataOption";
-import type { ShopItem } from "../../objects/types/ShopItem";
+import { type InteractionDataOption } from "../../objects/types/InteractionDataOption";
+import { type ShopItem } from "../../objects/types/ShopItem";
 import { getItemById as getAccessoryById, getItemByName as getAccessoryByName, getItems as getAllAccessories } from "../../services/accessoryService";
 import { getItems as getAllConsumables, getItemById as getConsumableById, getItemByName as getConsumableByName } from "../../services/consumableService";
 import { consumeInventoryItem, getInventoryItemQuantity } from "../../services/inventoryConsumptionService";

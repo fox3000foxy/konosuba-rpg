@@ -1,7 +1,7 @@
 import { ItemId } from "../enums/ItemId";
 import { Rarity } from "../enums/Rarity";
 import { TypeItem } from "../enums/TypeItem";
-import type { ConsumableCombinationRule, ConsumableDefinition } from "../types/catalog/Consumable";
+import { type ConsumableCombinationRule, type ConsumableDefinition } from "../types/catalog/Consumable";
 
 type ConsumableDefinitionSeed = Omit<ConsumableDefinition, "nameFr" | "nameEn">;
 

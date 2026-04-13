@@ -1,6 +1,6 @@
-import type { AccessoryType } from "../enums/AccessoryType";
-import type { Rarity } from "../enums/Rarity";
-import type { TypeItem } from "../enums/TypeItem";
+import { type AccessoryType } from "../enums/AccessoryType";
+import { type Rarity } from "../enums/Rarity";
+import { type TypeItem } from "../enums/TypeItem";
 
 export type InventoryItemCategory = "accessory" | "consumable" | "unknown";
 

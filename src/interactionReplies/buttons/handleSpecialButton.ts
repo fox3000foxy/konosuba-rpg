@@ -1,8 +1,8 @@
-import type { Context } from "hono";
+import { type Context } from "hono";
 import { BASE_URL, DISCORD_API_URL } from "../../objects/config";
-import type { Interaction } from "../../objects/enums/Interaction";
-import type { Lang } from "../../objects/enums/Lang";
-import type { RawButton } from "../../objects/enums/RawButton";
+import { type Interaction } from "../../objects/enums/Interaction";
+import { type Lang } from "../../objects/enums/Lang";
+import { type RawButton } from "../../objects/enums/RawButton";
 import { buildBattleTitle } from "../../utils/battleTitle";
 import { buildImageUrl } from "../../utils/imageUtils";
 

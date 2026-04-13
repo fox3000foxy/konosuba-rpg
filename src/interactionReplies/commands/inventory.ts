@@ -1,6 +1,6 @@
-import type { Context } from "hono";
+import { type Context } from "hono";
 import { BASE_URL } from "../../objects/config";
-import type { InteractionDataOption } from "../../objects/types/InteractionDataOption";
+import { type InteractionDataOption } from "../../objects/types/InteractionDataOption";
 import { addImageVersion } from "../../utils/imageUtils";
 
 export async function handleInventoryCommand(c: Context, userID: string, fr: boolean, options?: InteractionDataOption[]) {

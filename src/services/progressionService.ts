@@ -1,8 +1,8 @@
-import type { AccessoryId } from "../objects/enums/AccessoryId";
+import { type AccessoryId } from "../objects/enums/AccessoryId";
 import { CharacterKey } from "../objects/enums/CharacterKey";
 import { GameState } from "../objects/enums/GameState";
 import { QuestConditionKey } from "../objects/enums/QuestConditionKey";
-import type { RecordRunInput } from "../objects/types/RecordRunInput";
+import { type RecordRunInput } from "../objects/types/RecordRunInput";
 import { withPerf } from "../utils/perfLogger";
 import { getSupabaseAdminClient } from "../utils/supabaseClient";
 import { getItemById as getAccessoryById } from "./accessoryService";
@@ -12,7 +12,7 @@ import { ACCESSORY_AFFINITY_POINTS_BY_RARITY, grantAccessoryDropRewards, grantCo
 import { consumeInventoryItem } from "./inventoryConsumptionService";
 import { ensurePlayerProfile } from "./playerService";
 import { QUESTS } from "./questService";
-import type { DonateAccessoryResult } from "./types/progression";
+import { type DonateAccessoryResult } from "./types/progression";
 
 export { ACHIEVEMENTS, getAchievementsOverview } from "./achievementService";
 export { addCharacterAffinity, addCharacterXp, computeLevelFromXp, getCharacterProgress, getCharacterProgresses, getCharacterStatsSnapshot, getLevelFactor } from "./characterService";

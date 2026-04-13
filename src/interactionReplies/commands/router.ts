@@ -1,7 +1,7 @@
-import type { Context } from "hono";
-import type { Interaction } from "../../objects/enums/Interaction";
-import type { Lang } from "../../objects/enums/Lang";
-import type { InteractionDataOption } from "../../objects/types/InteractionDataOption";
+import { type Context } from "hono";
+import { type Interaction } from "../../objects/enums/Interaction";
+import { type Lang } from "../../objects/enums/Lang";
+import { type InteractionDataOption } from "../../objects/types/InteractionDataOption";
 import { ensurePlayerProfile } from "../../services/progressionService";
 import { handleAchievementsCommand } from "./achievements";
 import { handleAffinityCommand } from "./affinity";

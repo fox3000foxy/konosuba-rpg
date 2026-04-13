@@ -1,5 +1,5 @@
 import { Lang } from "../objects/enums/Lang";
-import type { Game } from "../objects/types/Game";
+import { type Game } from "../objects/types/Game";
 
 export function serializeGameForApi(game: Game, lang: Lang): Record<string, unknown> {
   const serializableTeam = {

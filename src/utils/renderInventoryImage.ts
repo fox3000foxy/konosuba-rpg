@@ -1,5 +1,5 @@
 import * as Photon from "@cf-wasm/photon";
-import type { InventoryItemView } from "../objects/types/InventoryItemView";
+import { type InventoryItemView } from "../objects/types/InventoryItemView";
 import { createPerfLogger } from "./perfLogger";
 import { cacheRenderOutput, createBoundedArrayBufferCache, createBoundedStringCache, resolveAssetUrl, resolveResvgImageUri, type SizedCache } from "./renderImageHelpers";
 import { ensureResvgWasm, renderSvgToPng } from "./resvgWasm";

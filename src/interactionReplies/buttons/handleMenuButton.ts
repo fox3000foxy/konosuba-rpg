@@ -1,6 +1,6 @@
-import type { Context } from "hono";
+import { type Context } from "hono";
 import { Lang } from "../../objects/enums/Lang";
-import type { RawButton } from "../../objects/enums/RawButton";
+import { type RawButton } from "../../objects/enums/RawButton";
 import { buildBattleTitle } from "../../utils/battleTitle";
 import { buildComponents, getBattleMonsterNames } from "../../utils/componentsBuilder";
 import { makeid } from "../../utils/idUtils";

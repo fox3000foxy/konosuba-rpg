@@ -1,5 +1,5 @@
-import type { Context } from "hono";
-import type { Lang } from "../../objects/enums/Lang";
+import { type Context } from "hono";
+import { type Lang } from "../../objects/enums/Lang";
 import { buildComponents } from "../../utils/componentsBuilder";
 import { makeid } from "../../utils/idUtils";
 import { buildImageUrl } from "../../utils/imageUtils";
