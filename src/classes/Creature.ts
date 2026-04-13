@@ -1,9 +1,9 @@
 import { Errors } from "../objects/enums/Errors";
 import { Gender } from "../objects/enums/Gender";
 import { MessagesTemplates } from "../objects/enums/MessagesTemplates";
-import type { CreatureInterface } from "../objects/types/CreatureInterface";
+import { type CreatureInterface } from "../objects/types/CreatureInterface";
 import { getCreatureNameAndPrefix } from "../utils/creatureText";
-import type { Player } from "./Player";
+import { type Player } from "./Player";
 
 export { MessagesTemplates } from "../objects/enums/MessagesTemplates";
 export type { CreatureInterface } from "../objects/types/CreatureInterface";

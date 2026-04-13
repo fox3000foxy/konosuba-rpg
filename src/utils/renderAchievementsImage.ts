@@ -1,6 +1,6 @@
 import * as Photon from "@cf-wasm/photon";
 import { BASE_URL } from "../objects/config/constants";
-import type { AchievementOverviewItem } from "../objects/types/AchievementOverviewItem";
+import { type AchievementOverviewItem } from "../objects/types/AchievementOverviewItem";
 import { getAssetBytes as getAssetBytesFromLoader, getEmbeddedFontBuffer as getEmbeddedFontBufferUtil } from "./assetLoader";
 import { createPerfLogger } from "./perfLogger";
 import { cacheRenderOutput, createBoundedStringCache, type SizedCache } from "./renderImageHelpers";

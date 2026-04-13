@@ -1,4 +1,4 @@
-import type { Gender } from "../enums/Gender";
+import { type Gender } from "../enums/Gender";
 
 export interface CreatureInterface {
   hpMax: number;

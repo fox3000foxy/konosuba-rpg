@@ -1,4 +1,4 @@
-import type { ItemId } from "../../enums/ItemId";
+import { type ItemId } from "../../enums/ItemId";
 
 export type CraftingIngredient = {
   itemId: ItemId;

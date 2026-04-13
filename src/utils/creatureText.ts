@@ -1,4 +1,4 @@
-import type { Creature } from "../classes/Creature";
+import { type Creature } from "../classes/Creature";
 import { Gender } from "../objects/enums/Gender";
 import { Lang } from "../objects/enums/Lang";
 import { Prefix } from "../objects/enums/Prefix";

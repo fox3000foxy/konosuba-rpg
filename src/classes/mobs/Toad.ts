@@ -1,7 +1,7 @@
 import { Gender } from "../../objects/enums/Gender";
 import { FrenchLores } from "../../objects/enums/FrenchLores";
 import { GenericCreature, type GenericCreatureInterface } from "../GenericCreature";
-import type { Random } from "../Random";
+import { type Random } from "../Random";
 import { EnglishLore } from "../../objects/enums/EnglishLore";
 
 export default class Toad extends GenericCreature implements GenericCreatureInterface {

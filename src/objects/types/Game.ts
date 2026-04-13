@@ -1,6 +1,6 @@
-import type { Creature } from "../../classes/Creature";
-import type { Team } from "../../classes/Player";
-import type { GameState } from "../../objects/enums/GameState";
+import { type Creature } from "../../classes/Creature";
+import { type Team } from "../../classes/Player";
+import { type GameState } from "../../objects/enums/GameState";
 
 export type Game = {
   image?: Uint8Array;

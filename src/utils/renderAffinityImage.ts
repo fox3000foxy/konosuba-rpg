@@ -2,7 +2,7 @@ import * as Photon from "@cf-wasm/photon";
 import { BASE_URL } from "../objects/config/constants";
 import { CharacterKey } from "../objects/enums/CharacterKey";
 import { PlayerStats } from "../objects/enums/player/PlayerStats";
-import type { CharacterProgress } from "../objects/types/CharacterProgress";
+import { type CharacterProgress } from "../objects/types/CharacterProgress";
 import { getAffinityFactor, getLevelFactor } from "../services/characterService";
 import { getAssetBytes, getEmbeddedFontBuffer as getEmbeddedFontBufferUtil } from "./assetLoader";
 import { createPerfLogger } from "./perfLogger";

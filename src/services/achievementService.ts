@@ -1,10 +1,10 @@
 import { ACHIEVEMENT_DEFINITIONS } from "../objects/data/progressionCatalog";
 import { AchievementKey } from "../objects/enums/AchievementKey";
 import { GameState } from "../objects/enums/GameState";
-import type { AchievementDefinition } from "../objects/types/AchievementDefinition";
-import type { AchievementOverviewItem } from "../objects/types/AchievementOverviewItem";
-import type { AchievementUnlockRow } from "../objects/types/AchievementUnlockRow";
-import type { UserRunStats } from "../objects/types/UserRunStats";
+import { type AchievementDefinition } from "../objects/types/AchievementDefinition";
+import { type AchievementOverviewItem } from "../objects/types/AchievementOverviewItem";
+import { type AchievementUnlockRow } from "../objects/types/AchievementUnlockRow";
+import { type UserRunStats } from "../objects/types/UserRunStats";
 import { withPerf } from "../utils/perfLogger";
 import { inferMonsterFromRunKey } from "../utils/runMonsterUtils";
 import { getSupabaseAdminClient } from "../utils/supabaseClient";

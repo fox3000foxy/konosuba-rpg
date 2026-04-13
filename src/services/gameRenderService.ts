@@ -1,5 +1,5 @@
-import type { Lang } from "../objects/enums/Lang";
-import type { Game } from "../objects/types/Game";
+import { type Lang } from "../objects/enums/Lang";
+import { type Game } from "../objects/types/Game";
 import { withPerf } from "../utils/perfLogger";
 import processGameWithRender from "../utils/processGameWithRender";
 import { getCharacterStatsSnapshot } from "./progressionService";

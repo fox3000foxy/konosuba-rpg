@@ -1,5 +1,5 @@
 import * as Photon from "@cf-wasm/photon";
-import type { ShopItem } from "../objects/types/ShopItem";
+import { type ShopItem } from "../objects/types/ShopItem";
 import { createPerfLogger } from "./perfLogger";
 import { cacheRenderOutput, createBoundedArrayBufferCache, createBoundedStringCache, resolveResvgImageUri, type SizedCache } from "./renderImageHelpers";
 import { ensureResvgWasm, renderSvgToPng } from "./resvgWasm";

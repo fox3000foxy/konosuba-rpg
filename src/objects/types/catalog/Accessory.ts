@@ -1,6 +1,6 @@
-import type { AccessoryId } from "../../enums/AccessoryId";
-import type { AccessoryType } from "../../enums/AccessoryType";
-import type { Rarity } from "../../enums/Rarity";
+import { type AccessoryId } from "../../enums/AccessoryId";
+import { type AccessoryType } from "../../enums/AccessoryType";
+import { type Rarity } from "../../enums/Rarity";
 
 export type AccessoryDefinition = {
   id: AccessoryId;

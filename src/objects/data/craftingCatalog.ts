@@ -1,5 +1,5 @@
 import { ItemId } from "../enums/ItemId";
-import type { CraftingRecipe } from "../types/catalog/Crafting";
+import { type CraftingRecipe } from "../types/catalog/Crafting";
 
 export const CRAFTING_RECIPES: CraftingRecipe[] = [
   {

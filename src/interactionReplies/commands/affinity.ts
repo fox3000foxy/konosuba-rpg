@@ -1,8 +1,8 @@
-import type { Context } from "hono";
+import { type Context } from "hono";
 import { BASE_URL } from "../../objects/config";
-import type { AccessoryType } from "../../objects/enums/AccessoryType";
+import { type AccessoryType } from "../../objects/enums/AccessoryType";
 import { Rarity } from "../../objects/enums/Rarity";
-import type { InteractionDataOption } from "../../objects/types/InteractionDataOption";
+import { type InteractionDataOption } from "../../objects/types/InteractionDataOption";
 import { getInventoryItems } from "../../services/inventoryService";
 import { ensurePlayerProfile } from "../../services/progressionService";
 import { addImageVersion } from "../../utils/imageUtils";

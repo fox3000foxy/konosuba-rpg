@@ -1,6 +1,6 @@
 import { CharacterKey } from "../objects/enums/CharacterKey";
-import type { CharacterProgress } from "../objects/types/CharacterProgress";
-import type { CharacterStatsSnapshot } from "../objects/types/CharacterStatsSnapshot";
+import { type CharacterProgress } from "../objects/types/CharacterProgress";
+import { type CharacterStatsSnapshot } from "../objects/types/CharacterStatsSnapshot";
 import { withPerf } from "../utils/perfLogger";
 import { getSupabaseAdminClient } from "../utils/supabaseClient";
 import { ensurePlayerProfile } from "./playerService";

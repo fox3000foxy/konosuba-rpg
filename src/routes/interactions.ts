@@ -1,8 +1,8 @@
-import type { Context } from "hono";
+import { type Context } from "hono";
 import { handleAutocomplete } from "../interactionReplies/autocomplete/router";
 import { handleButtonInteraction } from "../interactionReplies/buttons/router";
 import { handleSlashCommand } from "../interactionReplies/commands/router";
-import type { Interaction } from "../objects/enums/Interaction";
+import { type Interaction } from "../objects/enums/Interaction";
 import { Lang } from "../objects/enums/Lang";
 import { verifySignature } from "../utils/discordUtils";
 

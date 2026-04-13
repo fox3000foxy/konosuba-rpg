@@ -1,6 +1,6 @@
 import { config } from "dotenv";
-import { readFileSync } from "fs";
 import { type Context, Hono } from "hono";
+import { readFileSync } from "node:fs";
 import { registerApiRoutes } from "./routes/api";
 import { registerApiRenderRoutes } from "./routes/apiRender";
 import { calculateGame } from "./routes/game";
@@ -19,9 +19,9 @@ app.get("/konosuba-rpg/:lang/*", calculateRPG);
 app.post("/api/interactions", handleInteractions);
 app.get("/assets/*", (c: Context) => {
   const basePath = "https://konosuba-rpg.vercel.app/";
-  const data = readFileSync(process.cwd() + `/assets${c.req.path.replace("/assets", "")}`);
+  const data = readFileSync(`${process.cwd()}/assets${c.req.path.replace("/assets", "")}`);
   if (!data) {
-    return c.redirect(basePath + `assets${c.req.path.replace("/assets", "")}`);
+    return c.redirect(`${basePath}assets${c.req.path.replace("/assets", "")}`);
   }
   const contentType = getContentType(c.req.path);
   c.header("Content-Type", contentType);

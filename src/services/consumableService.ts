@@ -1,8 +1,8 @@
 import { CONSUMABLE_DEFINITIONS } from "../objects/data/consumablesCatalog";
-import type { ItemId } from "../objects/enums/ItemId";
-import type { ConsumableDefinition } from "../objects/types/catalog/Consumable";
+import { type ItemId } from "../objects/enums/ItemId";
+import { type ConsumableDefinition } from "../objects/types/catalog/Consumable";
 import { findItemByName, matchesName } from "../utils/itemSearch";
-import type { ConsumableQuery } from "./types/consumable";
+import { type ConsumableQuery } from "./types/consumable";
 
 export function getItemById(id: ItemId): ConsumableDefinition | null {
   return CONSUMABLE_DEFINITIONS.find((item) => item.id === id) || null;

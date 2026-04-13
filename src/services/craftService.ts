@@ -1,9 +1,9 @@
 import { CRAFTING_RECIPES } from "../objects/data/craftingCatalog";
-import type { ItemId } from "../objects/enums/ItemId";
+import { type ItemId } from "../objects/enums/ItemId";
 import { withPerf } from "../utils/perfLogger";
 import { getSupabaseAdminClient } from "../utils/supabaseClient";
 import { getItemById } from "./consumableService";
-import type { CraftingRecipeView, CraftRecipeResult } from "./types/craft";
+import { type CraftingRecipeView, type CraftRecipeResult } from "./types/craft";
 
 type CraftRecipeRpcRow = {
   success: boolean;

@@ -1,10 +1,10 @@
 /** Function to build Discord components */
 
-import type { Creature } from "../classes/Creature";
+import { type Creature } from "../classes/Creature";
 import { ButtonsLabels } from "../objects/enums/ButtonsLabels";
 import { GameState } from "../objects/enums/GameState";
 import { Lang } from "../objects/enums/Lang";
-import type { RawButton } from "../objects/enums/RawButton";
+import { type RawButton } from "../objects/enums/RawButton";
 import { encodeGameplayButtons } from "../services/gameSessionService";
 import { getCharacterStatsSnapshot } from "../services/progressionService";
 import { getCreatureDisplayName } from "./creatureText";

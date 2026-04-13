@@ -1,6 +1,6 @@
 import * as Photon from "@cf-wasm/photon";
 import { BASE_URL } from "../objects/config/constants";
-import type { DailyQuestStatus } from "../objects/types/DailyQuestStatus";
+import { type DailyQuestStatus } from "../objects/types/DailyQuestStatus";
 import { getQuestLabel } from "../services/progressionService";
 import { getAssetBytes as getAssetBytesFromLoader, getEmbeddedFontBuffer as getEmbeddedFontBufferUtil } from "./assetLoader";
 import { createPerfLogger } from "./perfLogger";
